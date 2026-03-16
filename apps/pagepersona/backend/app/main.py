@@ -3,14 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.database import get_pool, close_pool
+from app.routers import auth
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Start up — connect to database
     await get_pool()
     print(f"✓ Connected to PostgreSQL")
     yield
-    # Shut down — close connections
     await close_pool()
     print("✓ Database connections closed")
 
@@ -21,7 +20,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS — allows your Next.js frontend to talk to this backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.FRONTEND_URL],
@@ -29,6 +27,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Routers
+app.include_router(auth.router)
 
 @app.get("/")
 async def root():
