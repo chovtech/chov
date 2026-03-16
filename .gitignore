@@ -23,3 +23,5 @@ Thumbs.db
 
 # Docker
 *.log
+apps/pagepersona/backend/.env
+apps/pagepersona/backend/venv/
