@@ -1,0 +1,35 @@
+{
+  "app": {
+    "name": "PagePersona",
+    "tagline": "Turn any sales page into a smart sales page"
+  },
+  "nav": {
+    "dashboard": "Home",
+    "projects": "Projects",
+    "analytics": "Analytics",
+    "integrations": "Integrations",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "continue": "Continue",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "draft": "Draft",
+    "loading": "Loading..."
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection."
+  }
+}
