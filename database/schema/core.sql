@@ -117,3 +117,27 @@ CREATE INDEX IF NOT EXISTS idx_verification_tokens_token
 
 CREATE INDEX IF NOT EXISTS idx_password_reset_token
     ON password_reset_tokens(token);
+
+-- 07 PRICING TIERS
+-- True local currency pricing per country.
+-- DEFAULT country_code is the fallback for
+-- any country not specifically priced.
+CREATE TABLE IF NOT EXISTS pricing_tiers (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    product_id      VARCHAR(100) NOT NULL,
+    plan            VARCHAR(100) NOT NULL,
+    country_code    VARCHAR(10) NOT NULL DEFAULT 'DEFAULT',
+    currency        VARCHAR(10) NOT NULL DEFAULT 'USD',
+    amount          DECIMAL(10,2) NOT NULL,
+    billing_cycle   VARCHAR(50) NOT NULL,
+    is_active       BOOLEAN DEFAULT TRUE,
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(product_id, plan, country_code)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pricing_product
+    ON pricing_tiers(product_id);
+
+CREATE INDEX IF NOT EXISTS idx_pricing_country
+    ON pricing_tiers(country_code);
