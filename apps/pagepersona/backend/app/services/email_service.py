@@ -92,3 +92,83 @@ def send_jvzoo_welcome_email(to_email: str, name: str, magic_link: str):
     </body></html>
     """
     return send_email(to_email, subject, html_body)
+
+def send_verification_email(to_email: str, name: str, verify_token: str):
+    verify_url = f"{settings.FRONTEND_URL}/verify-email?token={verify_token}"
+    subject = "Verify your PagePersona email"
+    html_body = f"""
+    <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+      <h2 style="color:#1A56DB">Verify your email</h2>
+      <p>Hi {name.split()[0]},</p>
+      <p>Thanks for signing up. Click below to verify your email address and activate your account.</p>
+      <a href="{verify_url}"
+         style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;
+                border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
+        Verify Email →
+      </a>
+      <p style="color:#64748b;font-size:14px">This link expires in 24 hours. If you didn't sign up, ignore this email.</p>
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
+      <p style="color:#94a3b8;font-size:12px">PagePersona · usepagepersona.com</p>
+    </body></html>
+    """
+    return send_email(to_email, subject, html_body)
+
+def send_magic_link_email(to_email: str, name: str, magic_token: str):
+    magic_url = f"{settings.FRONTEND_URL}/auth/magic?token={magic_token}"
+    subject = "Your PagePersona magic link"
+    html_body = f"""
+    <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+      <h2 style="color:#1A56DB">Your magic link 🪄</h2>
+      <p>Hi {name.split()[0] if name else 'there'},</p>
+      <p>Click below to log in instantly — no password needed. This link works once and expires in 24 hours.</p>
+      <a href="{magic_url}"
+         style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;
+                border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
+        Log In to PagePersona →
+      </a>
+      <p style="color:#64748b;font-size:14px">If you didn't request this, ignore this email.</p>
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
+      <p style="color:#94a3b8;font-size:12px">PagePersona · usepagepersona.com</p>
+    </body></html>
+    """
+    return send_email(to_email, subject, html_body)
+
+def send_verification_email(to_email: str, name: str, verify_token: str):
+    verify_url = f"{settings.FRONTEND_URL}/verify-email?token={verify_token}"
+    subject = "Verify your PagePersona email"
+    html_body = f"""
+    <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+      <h2 style="color:#1A56DB">Verify your email</h2>
+      <p>Hi {name.split()[0]},</p>
+      <p>Thanks for signing up. Click below to verify your email address and activate your account.</p>
+      <a href="{verify_url}"
+         style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;
+                border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
+        Verify Email →
+      </a>
+      <p style="color:#64748b;font-size:14px">This link expires in 24 hours. If you didn't sign up, ignore this email.</p>
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
+      <p style="color:#94a3b8;font-size:12px">PagePersona · usepagepersona.com</p>
+    </body></html>
+    """
+    return send_email(to_email, subject, html_body)
+
+def send_magic_link_email(to_email: str, name: str, magic_token: str):
+    magic_url = f"{settings.FRONTEND_URL}/auth/magic?token={magic_token}"
+    subject = "Your PagePersona magic link"
+    html_body = f"""
+    <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+      <h2 style="color:#1A56DB">Your magic link 🪄</h2>
+      <p>Hi {name.split()[0] if name else 'there'},</p>
+      <p>Click below to log in instantly — no password needed. This link works once and expires in 24 hours.</p>
+      <a href="{magic_url}"
+         style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;
+                border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
+        Log In to PagePersona →
+      </a>
+      <p style="color:#64748b;font-size:14px">If you didn't request this, ignore this email.</p>
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
+      <p style="color:#94a3b8;font-size:12px">PagePersona · usepagepersona.com</p>
+    </body></html>
+    """
+    return send_email(to_email, subject, html_body)

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { authApi } from '@/lib/api/client'
+import { authApi, authApiExtended } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 
 export default function LoginPage() {
@@ -15,6 +15,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+
+  // Magic link state
+  const [magicLoading, setMagicLoading] = useState(false)
+  const [magicSent, setMagicSent] = useState(false)
+  const [magicError, setMagicError] = useState('')
 
   function validate() {
     const errors: Record<string, string> = {}
@@ -28,13 +33,8 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setFieldErrors({})
-
     const errors = validate()
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors)
-      return
-    }
-
+    if (Object.keys(errors).length > 0) { setFieldErrors(errors); return }
     setLoading(true)
     try {
       const res = await authApi.login(form)
@@ -53,22 +53,37 @@ export default function LoginPage() {
     }
   }
 
+  async function handleMagicLink() {
+    setMagicError('')
+    if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) {
+      setMagicError('Enter a valid email above first')
+      return
+    }
+    setMagicLoading(true)
+    try {
+      await authApiExtended.requestMagicLink(form.email)
+      setMagicSent(true)
+    } catch {
+      setMagicError('Something went wrong. Please try again.')
+    } finally {
+      setMagicLoading(false)
+    }
+  }
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
     if (fieldErrors[e.target.name]) {
       setFieldErrors(prev => ({ ...prev, [e.target.name]: '' }))
     }
+    // Reset magic sent if email changes
+    if (e.target.name === 'email') setMagicSent(false)
   }
 
   return (
     <>
       <section className="bg-white p-8 rounded-2xl border border-gray-100 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_10px_15px_-3px_rgba(0,0,0,0.1)]">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          {t('login.title')}
-        </h1>
-        <p className="text-sm text-gray-500 mb-6">
-          {t('login.subtitle')}
-        </p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('login.title')}</h1>
+        <p className="text-sm text-gray-500 mb-6">{t('login.subtitle')}</p>
 
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -93,9 +108,7 @@ export default function LoginPage() {
                 fieldErrors.email ? 'border-red-400 bg-red-50' : 'border-gray-300'
               }`}
             />
-            {fieldErrors.email && (
-              <p className="mt-1 text-xs text-red-500">{fieldErrors.email}</p>
-            )}
+            {fieldErrors.email && <p className="mt-1 text-xs text-red-500">{fieldErrors.email}</p>}
           </div>
 
           {/* Password */}
@@ -104,10 +117,7 @@ export default function LoginPage() {
               <label className="block text-sm font-semibold text-gray-700" htmlFor="password">
                 {t('login.passwordLabel')}
               </label>
-              <Link
-                href="/forgot-password"
-                className="text-xs text-[#1A56DB] hover:underline font-medium"
-              >
+              <Link href="/forgot-password" className="text-xs text-[#1A56DB] hover:underline font-medium">
                 {t('login.forgotPassword')}
               </Link>
             </div>
@@ -131,9 +141,7 @@ export default function LoginPage() {
                 {showPassword ? 'Hide' : 'Show'}
               </button>
             </div>
-            {fieldErrors.password && (
-              <p className="mt-1 text-xs text-red-500">{fieldErrors.password}</p>
-            )}
+            {fieldErrors.password && <p className="mt-1 text-xs text-red-500">{fieldErrors.password}</p>}
           </div>
 
           {/* Submit */}
@@ -145,14 +153,12 @@ export default function LoginPage() {
             {loading ? (
               <>
                 <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
                 Signing in...
               </>
-            ) : (
-              t('login.submitButton')
-            )}
+            ) : t('login.submitButton')}
           </button>
         </form>
 
@@ -183,9 +189,28 @@ export default function LoginPage() {
 
           {/* Magic link */}
           <div className="mt-4 text-center">
-            <button type="button" className="text-sm font-semibold text-[#1A56DB] hover:underline">
-              Send a magic link
-            </button>
+            {magicSent ? (
+              <div className="flex items-center justify-center gap-1.5 text-sm text-green-600 font-medium">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/>
+                </svg>
+                Magic link sent — check your inbox
+              </div>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleMagicLink}
+                  disabled={magicLoading}
+                  className="text-sm font-semibold text-[#1A56DB] hover:underline disabled:opacity-60"
+                >
+                  {magicLoading ? 'Sending...' : '✨ Send a magic link instead'}
+                </button>
+                {magicError && (
+                  <p className="mt-1 text-xs text-red-500">{magicError}</p>
+                )}
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -201,4 +226,3 @@ export default function LoginPage() {
     </>
   )
 }
-

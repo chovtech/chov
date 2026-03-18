@@ -234,3 +234,50 @@ async def consume_reset_token(
         token
     )
     return True
+
+async def create_magic_link_token(
+    db: asyncpg.Connection,
+    user_id: str
+) -> str:
+    """Generate a magic link token valid for 24 hours."""
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=24)
+    await db.execute(
+        """
+        INSERT INTO verification_tokens (id, user_id, token, type, expires_at)
+        VALUES ($1, $2, $3, $4, $5)
+        """,
+        uuid.uuid4(),
+        uuid.UUID(user_id),
+        token,
+        'magic_link',
+        expires_at
+    )
+    return token
+
+async def consume_verification_token(
+    db: asyncpg.Connection,
+    token: str,
+    token_type: str
+) -> Optional[dict]:
+    """Validate and consume a verification token. Returns user if valid."""
+    row = await db.fetchrow(
+        """
+        SELECT u.*, vt.id as token_id FROM users u
+        JOIN verification_tokens vt ON vt.user_id = u.id
+        WHERE vt.token = $1
+          AND vt.type = $2
+          AND vt.expires_at > NOW()
+          AND vt.used_at IS NULL
+        """,
+        token, token_type
+    )
+    if not row:
+        return None
+    user = dict(row)
+    # Mark token as used
+    await db.execute(
+        "UPDATE verification_tokens SET used_at = NOW() WHERE id = $1",
+        user['token_id']
+    )
+    return user

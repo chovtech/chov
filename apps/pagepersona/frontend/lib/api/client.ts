@@ -65,3 +65,18 @@ export const userApi = {
   resetPassword: (token: string, new_password: string) =>
     apiClient.post('/api/auth/reset-password', { token, new_password }),
 }
+
+// Extended auth API
+export const authApiExtended = {
+  verifyEmail: (token: string) =>
+    apiClient.post('/api/auth/verify-email', { token }),
+
+  resendVerification: (email: string) =>
+    apiClient.post('/api/auth/resend-verification', { email }),
+
+  requestMagicLink: (email: string) =>
+    apiClient.post('/api/auth/magic-link', { email }),
+
+  verifyMagicLink: (token: string) =>
+    apiClient.post('/api/auth/magic-link/verify', { token }),
+}

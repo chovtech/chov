@@ -8,11 +8,11 @@ import Icon from '@/components/ui/Icon'
 import { authApi } from '@/lib/api/client'
 
 const navigation = [
-  { key: 'dashboard', href: '/dashboard', icon: 'home' },
-  { key: 'projects', href: '/dashboard/projects', icon: 'folder_copy' },
-  { key: 'analytics', href: '/dashboard/analytics', icon: 'bar_chart' },
-  { key: 'integrations', href: '/dashboard/integrations', icon: 'extension' },
-  { key: 'settings', href: '/dashboard/settings', icon: 'settings' },
+  { key: 'dashboard', href: '/dashboard', icon: 'home', exact: true },
+  { key: 'projects', href: '/dashboard/projects', icon: 'folder_copy', exact: false },
+  { key: 'analytics', href: '/dashboard/analytics', icon: 'bar_chart', exact: false },
+  { key: 'integrations', href: '/dashboard/integrations', icon: 'extension', exact: false },
+  { key: 'settings', href: '/dashboard/settings', icon: 'settings', exact: false },
 ]
 
 interface User {
@@ -43,6 +43,11 @@ export default function Sidebar() {
     ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
     : '?'
 
+  function isActive(href: string, exact: boolean) {
+    if (exact) return pathname === href
+    return pathname.startsWith(href)
+  }
+
   return (
     <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col fixed inset-y-0 left-0 z-50">
 
@@ -53,9 +58,7 @@ export default function Sidebar() {
             <Icon name="layers" className="text-[18px]" />
           </div>
           <div>
-            <h1 className="text-base font-bold leading-none text-slate-900 dark:text-white">
-              PagePersona
-            </h1>
+            <h1 className="text-base font-bold leading-none text-slate-900 dark:text-white">PagePersona</h1>
             <p className="text-[10px] text-slate-400 mt-0.5">Smart Sales Pages</p>
           </div>
         </div>
@@ -76,13 +79,9 @@ export default function Sidebar() {
               {user?.name ? `${user.name.split(' ')[0]}'s Workspace` : 'My Workspace'}
             </p>
           </div>
-          <Icon
-            name="unfold_more"
-            className="text-slate-400 text-[18px] flex-shrink-0 group-hover:text-slate-600 transition-colors"
-          />
+          <Icon name="unfold_more" className="text-slate-400 text-[18px] flex-shrink-0" />
         </button>
 
-        {/* Workspace dropdown */}
         {workspaceOpen && (
           <div className="mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden">
             <div className="p-2">
@@ -112,28 +111,25 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
         {navigation.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+          const active = isActive(item.href, item.exact)
           return (
             <Link
               key={item.key}
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
-                isActive
+                active
                   ? 'bg-[#1A56DB]/10 text-[#1A56DB] font-semibold'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium'
               }`}
             >
-              <Icon
-                name={item.icon}
-                className={`text-[22px] ${isActive ? 'text-[#1A56DB]' : ''}`}
-              />
+              <Icon name={item.icon} className={`text-[22px] ${active ? 'text-[#1A56DB]' : ''}`} />
               <span>{t(`nav.${item.key}`)}</span>
             </Link>
           )
         })}
       </nav>
 
-      {/* Plan card + upgrade */}
+      {/* Plan card */}
       <div className="px-3 py-4">
         <div className="bg-gradient-to-br from-[#1A56DB] to-[#1547b3] rounded-2xl p-4 text-white shadow-lg shadow-[#1A56DB]/25">
           <div className="flex items-center gap-2 mb-3">
@@ -161,9 +157,7 @@ export default function Sidebar() {
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-              {user?.name || 'Your Name'}
-            </p>
+            <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{user?.name || 'Your Name'}</p>
             <p className="text-[10px] text-slate-400 truncate">{user?.email}</p>
           </div>
           <button

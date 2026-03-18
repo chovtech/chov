@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import asyncpg
+from pydantic import BaseModel, EmailStr
 from app.database import get_db
 from app.schemas.auth import (
     SignUpRequest, LoginRequest, AuthResponse,
@@ -11,14 +12,22 @@ from app.services.auth_service import (
     get_user_by_email, create_user_and_workspace,
     authenticate_user, create_session, get_workspace_by_owner,
     get_user_by_id, create_password_reset_token,
-    get_user_by_reset_token, consume_reset_token
+    get_user_by_reset_token, consume_reset_token,
+    create_verification_token, consume_verification_token,
+    create_magic_link_token
 )
-from app.services.email_service import send_welcome_email, send_password_reset_email
+from app.services.email_service import (
+    send_welcome_email, send_password_reset_email,
+    send_verification_email, send_magic_link_email
+)
 from app.services.mautic_service import subscribe_contact
 from app.core.security import decode_token
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 security = HTTPBearer()
+
+class MagicLinkRequest(BaseModel):
+    email: EmailStr
 
 def format_user(user: dict) -> UserResponse:
     return UserResponse(
@@ -65,16 +74,20 @@ async def signup(
         db, str(user['id']), ip
     )
 
-    # Fire and forget — don't fail signup if these fail
     name_parts = (data.name or "").split()
     firstname = name_parts[0] if name_parts else data.email.split('@')[0]
     lastname = name_parts[-1] if len(name_parts) > 1 else ""
 
+    # Send verification email (not welcome — verify first)
     try:
-        send_welcome_email(data.email, data.name or firstname)
+        verify_token = await create_verification_token(
+            db, str(user['id']), 'email_verification'
+        )
+        send_verification_email(data.email, data.name or firstname, verify_token)
     except Exception:
         pass
 
+    # Sync to Mautic
     try:
         await subscribe_contact(
             email=data.email,
@@ -137,14 +150,9 @@ async def get_me(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token"
         )
-
     user = await get_user_by_id(db, payload["sub"])
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return format_user(user)
 
 # ── LOGOUT ─────────────────────────────────────────────
@@ -159,6 +167,127 @@ async def logout(
     )
     return MessageResponse(message="Logged out successfully")
 
+# ── VERIFY EMAIL ───────────────────────────────────────
+@router.post("/verify-email", response_model=MessageResponse)
+async def verify_email(
+    request: Request,
+    db: asyncpg.Connection = Depends(get_db)
+):
+    body = await request.json()
+    token = body.get("token", "")
+    if not token:
+        raise HTTPException(status_code=400, detail="Token is required")
+
+    user = await consume_verification_token(db, token, 'email_verification')
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired verification link")
+
+    await db.execute(
+        "UPDATE users SET email_verified = TRUE, updated_at = NOW() WHERE id = $1",
+        user['id']
+    )
+
+    # Send welcome email now that they're verified
+    try:
+        send_welcome_email(user['email'], user.get('name') or user['email'].split('@')[0])
+    except Exception:
+        pass
+
+    return MessageResponse(message="Email verified successfully")
+
+# ── RESEND VERIFICATION ────────────────────────────────
+@router.post("/resend-verification", response_model=MessageResponse)
+async def resend_verification(
+    data: MagicLinkRequest,
+    db: asyncpg.Connection = Depends(get_db)
+):
+    user = await get_user_by_email(db, data.email)
+    if not user:
+        return MessageResponse(message="If that email exists, a verification link has been sent")
+    if user.get('email_verified'):
+        return MessageResponse(message="Email is already verified")
+
+    # Delete old tokens and create new one
+    await db.execute(
+        """DELETE FROM verification_tokens
+           WHERE user_id = $1 AND type = 'email_verification'""",
+        user['id']
+    )
+    try:
+        verify_token = await create_verification_token(
+            db, str(user['id']), 'email_verification'
+        )
+        send_verification_email(
+            user['email'],
+            user.get('name') or user['email'].split('@')[0],
+            verify_token
+        )
+    except Exception:
+        pass
+
+    return MessageResponse(message="Verification email sent")
+
+# ── MAGIC LINK REQUEST ─────────────────────────────────
+@router.post("/magic-link", response_model=MessageResponse)
+async def request_magic_link(
+    data: MagicLinkRequest,
+    db: asyncpg.Connection = Depends(get_db)
+):
+    user = await get_user_by_email(db, data.email)
+    # Always return success — never reveal if email exists
+    if not user:
+        return MessageResponse(message="If that email exists, a magic link has been sent")
+
+    try:
+        token = await create_magic_link_token(db, str(user['id']))
+        send_magic_link_email(
+            user['email'],
+            user.get('name') or '',
+            token
+        )
+    except Exception:
+        pass
+
+    return MessageResponse(message="Magic link sent — check your inbox")
+
+# ── MAGIC LINK VERIFY ──────────────────────────────────
+@router.post("/magic-link/verify", response_model=AuthResponse)
+async def verify_magic_link(
+    request: Request,
+    db: asyncpg.Connection = Depends(get_db)
+):
+    body = await request.json()
+    token = body.get("token", "")
+    if not token:
+        raise HTTPException(status_code=400, detail="Token is required")
+
+    user = await consume_verification_token(db, token, 'magic_link')
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired magic link")
+
+    # Auto-verify email if not already
+    if not user.get('email_verified'):
+        await db.execute(
+            "UPDATE users SET email_verified = TRUE, updated_at = NOW() WHERE id = $1",
+            user['id']
+        )
+
+    workspace = await get_workspace_by_owner(db, str(user['id']))
+    if not workspace:
+        raise HTTPException(status_code=404, detail="No workspace found")
+
+    ip = request.client.host if request.client else None
+    access_token, refresh_token = await create_session(
+        db, str(user['id']), ip
+    )
+
+    return AuthResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        user=format_user(user),
+        workspace=format_workspace(workspace)
+    )
+
 # ── FORGOT PASSWORD ────────────────────────────────────
 @router.post("/forgot-password", response_model=MessageResponse)
 async def forgot_password(
@@ -166,12 +295,10 @@ async def forgot_password(
     db: asyncpg.Connection = Depends(get_db)
 ):
     user = await get_user_by_email(db, data.email)
-    # Always return success — never reveal if email exists
     if not user:
         return MessageResponse(message="If that email exists, a reset link has been sent")
 
     token = await create_password_reset_token(db, str(user['id']))
-
     try:
         send_password_reset_email(
             to_email=data.email,
@@ -194,12 +321,10 @@ async def reset_password(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Password must be at least 8 characters"
         )
-
     success = await consume_reset_token(db, data.token, data.new_password)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired reset link"
         )
-
     return MessageResponse(message="Password updated successfully")
