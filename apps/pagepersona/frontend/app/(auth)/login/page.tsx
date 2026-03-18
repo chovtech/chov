@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { authApi, authApiExtended } from '@/lib/api/client'
+import { authApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 
 export default function LoginPage() {
@@ -15,11 +15,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
-
-  // Magic link state
-  const [magicLoading, setMagicLoading] = useState(false)
-  const [magicSent, setMagicSent] = useState(false)
-  const [magicError, setMagicError] = useState('')
 
   function validate() {
     const errors: Record<string, string> = {}
@@ -53,30 +48,11 @@ export default function LoginPage() {
     }
   }
 
-  async function handleMagicLink() {
-    setMagicError('')
-    if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) {
-      setMagicError('Enter a valid email above first')
-      return
-    }
-    setMagicLoading(true)
-    try {
-      await authApiExtended.requestMagicLink(form.email)
-      setMagicSent(true)
-    } catch {
-      setMagicError('Something went wrong. Please try again.')
-    } finally {
-      setMagicLoading(false)
-    }
-  }
-
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
     if (fieldErrors[e.target.name]) {
       setFieldErrors(prev => ({ ...prev, [e.target.name]: '' }))
     }
-    // Reset magic sent if email changes
-    if (e.target.name === 'email') setMagicSent(false)
   }
 
   return (
@@ -92,15 +68,12 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Email */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5" htmlFor="email">
               {t('login.emailLabel')}
             </label>
             <input
-              id="email"
-              name="email"
-              type="email"
+              id="email" name="email" type="email"
               placeholder={t('login.emailPlaceholder')}
               value={form.email}
               onChange={handleChange}
@@ -111,7 +84,6 @@ export default function LoginPage() {
             {fieldErrors.email && <p className="mt-1 text-xs text-red-500">{fieldErrors.email}</p>}
           </div>
 
-          {/* Password */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-sm font-semibold text-gray-700" htmlFor="password">
@@ -123,8 +95,7 @@ export default function LoginPage() {
             </div>
             <div className="relative">
               <input
-                id="password"
-                name="password"
+                id="password" name="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder={t('login.passwordPlaceholder')}
                 value={form.password}
@@ -144,11 +115,10 @@ export default function LoginPage() {
             {fieldErrors.password && <p className="mt-1 text-xs text-red-500">{fieldErrors.password}</p>}
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-lg transition-colors duration-200 shadow-sm flex items-center justify-center gap-2"
+            className="w-full py-3 px-4 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -162,7 +132,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Divider */}
         <div className="mt-6">
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
@@ -173,10 +142,9 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Google */}
           <button
             type="button"
-            className="w-full flex items-center justify-center gap-3 py-2.5 px-4 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-gray-700 font-medium"
+            className="w-full flex items-center justify-center gap-3 py-2.5 px-4 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-medium"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -186,32 +154,6 @@ export default function LoginPage() {
             </svg>
             {t('login.googleButton')}
           </button>
-
-          {/* Magic link */}
-          <div className="mt-4 text-center">
-            {magicSent ? (
-              <div className="flex items-center justify-center gap-1.5 text-sm text-green-600 font-medium">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/>
-                </svg>
-                Magic link sent — check your inbox
-              </div>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={handleMagicLink}
-                  disabled={magicLoading}
-                  className="text-sm font-semibold text-[#1A56DB] hover:underline disabled:opacity-60"
-                >
-                  {magicLoading ? 'Sending...' : '✨ Send a magic link instead'}
-                </button>
-                {magicError && (
-                  <p className="mt-1 text-xs text-red-500">{magicError}</p>
-                )}
-              </>
-            )}
-          </div>
         </div>
       </section>
 

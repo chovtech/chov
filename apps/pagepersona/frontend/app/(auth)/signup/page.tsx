@@ -6,9 +6,10 @@ import { useRouter } from 'next/navigation'
 import { authApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 
-export default function SignupPage() {
+export default function SignUpPage() {
   const router = useRouter()
   const { t } = useTranslation('auth')
+
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -17,11 +18,11 @@ export default function SignupPage() {
 
   function validate() {
     const errors: Record<string, string> = {}
-    if (!form.name.trim()) errors.name = 'Name is required'
-    if (!form.email.trim()) errors.email = 'Email is required'
-    else if (!/\S+@\S+\.\S+/.test(form.email)) errors.email = 'Please enter a valid email'
-    if (!form.password) errors.password = 'Password is required'
-    else if (form.password.length < 8) errors.password = 'Password must be at least 8 characters'
+    if (!form.name.trim()) errors.name = t('errors.nameRequired')
+    if (!form.email.trim()) errors.email = t('errors.emailRequired')
+    else if (!/\S+@\S+\.\S+/.test(form.email)) errors.email = t('errors.emailInvalid')
+    if (!form.password) errors.password = t('errors.passwordRequired')
+    else if (form.password.length < 8) errors.password = t('errors.passwordTooShort')
     return errors
   }
 
@@ -30,22 +31,19 @@ export default function SignupPage() {
     setError('')
     setFieldErrors({})
     const errors = validate()
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors)
-      return
-    }
+    if (Object.keys(errors).length > 0) { setFieldErrors(errors); return }
     setLoading(true)
     try {
       const res = await authApi.signup(form)
-      const { access_token } = res.data
+      const { access_token, refresh_token } = res.data
       localStorage.setItem('access_token', access_token)
-      localStorage.setItem('refresh_token', res.data.refresh_token)
+      localStorage.setItem('refresh_token', refresh_token)
       document.cookie = `access_token=${access_token}; path=/; max-age=${60 * 60 * 24 * 30}`
       router.push('/dashboard')
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { detail?: string } } })
-          ?.response?.data?.detail || 'Something went wrong. Please try again.'
+          ?.response?.data?.detail || t('errors.signupFailed')
       setError(message)
     } finally {
       setLoading(false)
@@ -62,9 +60,8 @@ export default function SignupPage() {
   return (
     <>
       <section className="bg-white p-8 rounded-2xl border border-gray-100 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_10px_15px_-3px_rgba(0,0,0,0.1)]">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          {t('signup.title')}
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('signup.title')}</h1>
+        <p className="text-sm text-gray-500 mb-6">{t('signup.subtitle')}</p>
 
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -73,15 +70,12 @@ export default function SignupPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Name */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5" htmlFor="name">
               {t('signup.nameLabel')}
             </label>
             <input
-              id="name"
-              name="name"
-              type="text"
+              id="name" name="name" type="text"
               placeholder={t('signup.namePlaceholder')}
               value={form.name}
               onChange={handleChange}
@@ -89,41 +83,32 @@ export default function SignupPage() {
                 fieldErrors.name ? 'border-red-400 bg-red-50' : 'border-gray-300'
               }`}
             />
-            {fieldErrors.name && (
-              <p className="mt-1 text-xs text-red-500">{fieldErrors.name}</p>
-            )}
+            {fieldErrors.name && <p className="mt-1 text-xs text-red-500">{fieldErrors.name}</p>}
           </div>
 
-          {/* Email */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5" htmlFor="email">
               {t('signup.emailLabel')}
             </label>
             <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder= {t('signup.emailPlaceholder')}
+              id="email" name="email" type="email"
+              placeholder={t('signup.emailPlaceholder')}
               value={form.email}
               onChange={handleChange}
               className={`w-full px-4 py-2.5 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-[#1A56DB] focus:border-[#1A56DB] transition-all outline-none text-gray-900 ${
                 fieldErrors.email ? 'border-red-400 bg-red-50' : 'border-gray-300'
               }`}
             />
-            {fieldErrors.email && (
-              <p className="mt-1 text-xs text-red-500">{fieldErrors.email}</p>
-            )}
+            {fieldErrors.email && <p className="mt-1 text-xs text-red-500">{fieldErrors.email}</p>}
           </div>
 
-          {/* Password */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5" htmlFor="password">
               {t('signup.passwordLabel')}
             </label>
             <div className="relative">
               <input
-                id="password"
-                name="password"
+                id="password" name="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder={t('signup.passwordPlaceholder')}
                 value={form.password}
@@ -132,7 +117,6 @@ export default function SignupPage() {
                   fieldErrors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'
                 }`}
               />
-
               <button
                 type="button"
                 onClick={() => setShowPassword(prev => !prev)}
@@ -140,34 +124,27 @@ export default function SignupPage() {
               >
                 {showPassword ? 'Hide' : 'Show'}
               </button>
-              
             </div>
-            {fieldErrors.password && (
-              <p className="mt-1 text-xs text-red-500">{fieldErrors.password}</p>
-            )}
+            {fieldErrors.password && <p className="mt-1 text-xs text-red-500">{fieldErrors.password}</p>}
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-lg transition-colors duration-200 shadow-sm flex items-center justify-center gap-2"
+            className="w-full py-3 px-4 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
                 <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
                 Creating account...
               </>
-             ) : (
-              t('signup.submitButton')
-            )}
+            ) : t('signup.submitButton')}
           </button>
         </form>
 
-        {/* Divider */}
         <div className="mt-6">
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
@@ -178,10 +155,9 @@ export default function SignupPage() {
             </div>
           </div>
 
-          {/* Google */}
           <button
             type="button"
-            className="w-full flex items-center justify-center gap-3 py-2.5 px-4 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-gray-700 font-medium"
+            className="w-full flex items-center justify-center gap-3 py-2.5 px-4 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-medium"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -191,21 +167,14 @@ export default function SignupPage() {
             </svg>
             {t('signup.googleButton')}
           </button>
-
-          {/* Magic link */}
-          <div className="mt-4 text-center">
-            <button type="button" className="text-sm font-semibold text-[#1A56DB] hover:underline">
-              Send a magic link
-            </button>
-          </div>
         </div>
       </section>
 
       <footer className="mt-8 text-center">
         <p className="text-gray-600">
-          {t('signup.haveAccount')}{' '}
+          {t('signup.hasAccount')}{' '}
           <Link href="/login" className="text-[#1A56DB] font-semibold hover:underline">
-            {t('signup.signIn')}
+            {t('signup.logIn')}
           </Link>
         </p>
       </footer>
