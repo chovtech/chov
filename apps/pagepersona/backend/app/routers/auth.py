@@ -93,7 +93,8 @@ async def signup(
             email=data.email,
             firstname=firstname,
             lastname=lastname,
-            tags=["pagepersona_signup"]
+            tags=["pagepersona_signup"],
+            company=workspace["name"],
         )
     except Exception:
         pass
