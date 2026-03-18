@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { authApi } from '@/lib/api/client'
 import Icon from '@/components/ui/Icon'
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
 
 interface User {
   name: string
@@ -24,7 +25,6 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
       .catch(() => null)
   }, [])
 
-  // Close credits dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (creditsRef.current && !creditsRef.current.contains(e.target as Node)) {
@@ -63,7 +63,7 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
       {/* Right */}
       <div className="flex items-center gap-2 flex-shrink-0">
 
-        {/* AI Credits — click to toggle */}
+        {/* AI Credits */}
         <div className="relative" ref={creditsRef}>
           <button
             onClick={() => setShowCredits(p => !p)}
@@ -74,7 +74,6 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
               {AI_CREDITS.toLocaleString()}
             </span>
           </button>
-
           {showCredits && (
             <div className="absolute top-full right-0 mt-2 w-52 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-4 z-50">
               <div className="flex items-center justify-between mb-1">
@@ -118,13 +117,18 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
 
         <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
 
+        {/* Language switcher */}
+        <LanguageSwitcher />
+
+        <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+
         {/* Notifications */}
         <button className="relative p-2 text-slate-500 hover:text-[#1A56DB] hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
           <Icon name="notifications" className="text-[20px]" />
           <span className="absolute top-1.5 right-1.5 size-2 bg-red-500 rounded-full" />
         </button>
 
-        {/* Avatar → settings */}
+        {/* Avatar */}
         <Link href="/dashboard/settings">
           <div className="w-8 h-8 rounded-full bg-[#1A56DB]/10 border-2 border-[#1A56DB]/20 flex items-center justify-center text-[#1A56DB] font-bold text-xs hover:border-[#1A56DB]/50 transition-colors cursor-pointer">
             {initials}

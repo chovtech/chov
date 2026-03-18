@@ -1,39 +1,33 @@
-export default function AuthLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
+import Icon from '@/components/ui/Icon'
+
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Header */}
-      <header className="w-full p-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col items-start gap-1">
-            {/* Logo — replace with actual logo image when ready */}
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-[#1A56DB] rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">P</span>
-              </div>
-              <span
-                className="text-2xl font-bold tracking-tight text-gray-900"
-                style={{ fontFamily: 'Syne, sans-serif' }}
-              >
-                PagePersona
-              </span>
-            </div>
-            <p className="text-sm text-gray-500 font-medium ml-0.5">
-              Turn any sales page into a smart sales page
-            </p>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Auth header */}
+      <header className="w-full px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="size-8 bg-[#1A56DB] rounded-lg flex items-center justify-center text-white shadow-md shadow-[#1A56DB]/30">
+            <Icon name="layers" className="text-[18px]" />
+          </div>
+          <div>
+            <h1 className="text-base font-bold leading-none text-slate-900">PagePersona</h1>
+            <p className="text-[10px] text-slate-400 mt-0.5">Smart Sales Pages</p>
           </div>
         </div>
+        <LanguageSwitcher />
       </header>
 
-      {/* Page content */}
-      <main className="flex-grow flex items-center justify-center px-4 pb-20">
+      {/* Content */}
+      <main className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
           {children}
         </div>
       </main>
+
+      <footer className="py-6 text-center">
+        <p className="text-xs text-slate-400">© 2026 PagePersona. All rights reserved.</p>
+      </footer>
     </div>
   )
 }

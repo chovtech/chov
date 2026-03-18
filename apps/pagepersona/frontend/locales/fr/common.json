@@ -1,0 +1,35 @@
+{
+  "app": {
+    "name": "PagePersona",
+    "tagline": "Transformez n'importe quelle page de vente en page intelligente"
+  },
+  "nav": {
+    "dashboard": "Accueil",
+    "projects": "Projets",
+    "analytics": "Analytique",
+    "integrations": "Intégrations",
+    "settings": "Paramètres",
+    "logout": "Déconnexion"
+  },
+  "actions": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "back": "Retour",
+    "next": "Suivant",
+    "continue": "Continuer",
+    "getStarted": "Commencer",
+    "learnMore": "En savoir plus"
+  },
+  "status": {
+    "active": "Actif",
+    "inactive": "Inactif",
+    "draft": "Brouillon",
+    "loading": "Chargement..."
+  },
+  "errors": {
+    "generic": "Une erreur est survenue. Veuillez réessayer.",
+    "network": "Erreur réseau. Vérifiez votre connexion."
+  }
+}
