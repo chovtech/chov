@@ -11,7 +11,6 @@ function getStoredLanguage(): string {
   if (stored && SUPPORTED_LANGUAGES.find(l => l.code === stored)) {
     return stored
   }
-  // Try browser language
   const browserLang = navigator.language.split('-')[0]
   if (SUPPORTED_LANGUAGES.find(l => l.code === browserLang)) {
     return browserLang
@@ -29,9 +28,9 @@ export function useLanguage() {
   const setLanguage = useCallback((code: string) => {
     if (!SUPPORTED_LANGUAGES.find(l => l.code === code)) return
     localStorage.setItem(STORAGE_KEY, code)
-    setLanguageState(code)
-    // Update html lang attribute for accessibility
     document.documentElement.lang = code
+    // Reload immediately so all components re-render with new language
+    window.location.reload()
   }, [])
 
   const currentLanguage: Language =
