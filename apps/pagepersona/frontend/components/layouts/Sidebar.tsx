@@ -15,10 +15,7 @@ const navigation = [
   { key: 'settings', href: '/dashboard/settings', icon: 'settings', exact: false },
 ]
 
-interface User {
-  name?: string
-  email: string
-}
+interface User { name?: string; email: string }
 
 export default function Sidebar() {
   const pathname = usePathname()
@@ -27,9 +24,7 @@ export default function Sidebar() {
   const [workspaceOpen, setWorkspaceOpen] = useState(false)
 
   useEffect(() => {
-    authApi.me()
-      .then(res => setUser(res.data))
-      .catch(() => null)
+    authApi.me().then(res => setUser(res.data)).catch(() => null)
   }, [])
 
   function handleLogout() {
@@ -44,9 +39,12 @@ export default function Sidebar() {
     : '?'
 
   function isActive(href: string, exact: boolean) {
-    if (exact) return pathname === href
-    return pathname.startsWith(href)
+    return exact ? pathname === href : pathname.startsWith(href)
   }
+
+  const workspaceName = user?.name
+    ? `${user.name.split(' ')[0]}'s ${t('nav.workspace')}`
+    : t('nav.workspace')
 
   return (
     <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col fixed inset-y-0 left-0 z-50">
@@ -58,8 +56,8 @@ export default function Sidebar() {
             <Icon name="layers" className="text-[18px]" />
           </div>
           <div>
-            <h1 className="text-base font-bold leading-none text-slate-900 dark:text-white">PagePersona</h1>
-            <p className="text-[10px] text-slate-400 mt-0.5">Smart Sales Pages</p>
+            <h1 className="text-base font-bold leading-none text-slate-900 dark:text-white">{t('app.name')}</h1>
+            <p className="text-[10px] text-slate-400 mt-0.5">{t('app.tagline')}</p>
           </div>
         </div>
       </div>
@@ -74,10 +72,8 @@ export default function Sidebar() {
             <Icon name="hub" className="text-[#1A56DB] text-[16px]" />
           </div>
           <div className="flex-1 text-left min-w-0">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Workspace</p>
-            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">
-              {user?.name ? `${user.name.split(' ')[0]}'s Workspace` : 'My Workspace'}
-            </p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('nav.workspace')}</p>
+            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{workspaceName}</p>
           </div>
           <Icon name="unfold_more" className="text-slate-400 text-[18px] flex-shrink-0" />
         </button>
@@ -86,14 +82,10 @@ export default function Sidebar() {
           <div className="mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden">
             <div className="p-2">
               <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-[#1A56DB]/5 border border-[#1A56DB]/10">
-                <div className="size-6 rounded-md bg-[#1A56DB] flex items-center justify-center text-white text-[10px] font-bold">
-                  {initials}
-                </div>
+                <div className="size-6 rounded-md bg-[#1A56DB] flex items-center justify-center text-white text-[10px] font-bold">{initials}</div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                    {user?.name ? `${user.name.split(' ')[0]}'s Workspace` : 'My Workspace'}
-                  </p>
-                  <p className="text-[10px] text-slate-400">Personal</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{workspaceName}</p>
+                  <p className="text-[10px] text-slate-400">{t('nav.personalWorkspace')}</p>
                 </div>
                 <Icon name="check" className="text-[#1A56DB] text-[16px]" />
               </div>
@@ -101,7 +93,7 @@ export default function Sidebar() {
             <div className="border-t border-slate-100 dark:border-slate-700 p-2">
               <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                 <Icon name="add" className="text-[16px]" />
-                Add workspace
+                {t('nav.addWorkspace')}
               </button>
             </div>
           </div>
@@ -137,15 +129,13 @@ export default function Sidebar() {
               <Icon name="workspace_premium" className="text-[14px] text-white" />
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-white/70">Current Plan</p>
-              <p className="text-xs font-bold text-white">Solo Plan</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-white/70">{t('sidebar.currentPlan')}</p>
+              <p className="text-xs font-bold text-white">{t('sidebar.soloPlan')}</p>
             </div>
           </div>
-          <p className="text-[10px] text-white/70 mb-3 leading-relaxed">
-            Unlock unlimited pages, rules and AI features.
-          </p>
+          <p className="text-[10px] text-white/70 mb-3 leading-relaxed">{t('sidebar.upgradeDescription')}</p>
           <button className="w-full py-2 bg-white text-[#1A56DB] rounded-xl text-xs font-bold hover:bg-white/90 transition-colors">
-            Upgrade Now
+            {t('sidebar.upgradeNow')}
           </button>
         </div>
       </div>
@@ -157,19 +147,18 @@ export default function Sidebar() {
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{user?.name || 'Your Name'}</p>
+            <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{user?.name || '...'}</p>
             <p className="text-[10px] text-slate-400 truncate">{user?.email}</p>
           </div>
           <button
             onClick={handleLogout}
-            title="Logout"
+            title={t('nav.logout')}
             className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
           >
             <Icon name="logout" className="text-[18px]" />
           </button>
         </div>
       </div>
-
     </aside>
   )
 }

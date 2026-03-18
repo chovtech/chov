@@ -36,6 +36,7 @@ def format_user(user: dict) -> UserResponse:
         name=user.get('name'),
         avatar_url=user.get('avatar_url'),
         email_verified=user.get('email_verified', False),
+        language=user.get('language', 'en'),
         created_at=user['created_at']
     )
 
@@ -66,7 +67,7 @@ async def signup(
         )
 
     user, workspace = await create_user_and_workspace(
-        db, data.email, data.name, data.password
+        db, data.email, data.name, data.password, data.language
     )
 
     ip = request.client.host if request.client else None
@@ -83,7 +84,7 @@ async def signup(
         verify_token = await create_verification_token(
             db, str(user['id']), 'email_verification'
         )
-        send_verification_email(data.email, data.name or firstname, verify_token)
+        send_verification_email(data.email, data.name or firstname, verify_token, lang=data.language)
     except Exception:
         pass
 
@@ -190,7 +191,7 @@ async def verify_email(
 
     # Send welcome email now that they're verified
     try:
-        send_welcome_email(user['email'], user.get('name') or user['email'].split('@')[0])
+        send_welcome_email(user['email'], user.get('name') or user['email'].split('@')[0], lang=user.get('language', 'en'))
     except Exception:
         pass
 
@@ -244,7 +245,8 @@ async def request_magic_link(
         send_magic_link_email(
             user['email'],
             user.get('name') or '',
-            token
+            token,
+            lang=user.get('language', 'en')
         )
     except Exception:
         pass
@@ -304,7 +306,8 @@ async def forgot_password(
         send_password_reset_email(
             to_email=data.email,
             name=user.get('name') or data.email.split('@')[0],
-            reset_token=token
+            reset_token=token,
+            lang=user.get('language', 'en')
         )
     except Exception:
         pass

@@ -15,6 +15,7 @@ security = HTTPBearer()
 class UpdateProfileRequest(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
+    language: Optional[str] = None
 
 class ChangePasswordRequest(BaseModel):
     current_password: str
@@ -57,12 +58,13 @@ async def update_profile(
     name = data.name or user.get('name')
     email = data.email or user['email']
 
+    language = data.language or user.get('language', 'en')
     updated = await db.fetchrow(
         """
-        UPDATE users SET name = $1, email = $2, updated_at = NOW()
-        WHERE id = $3 RETURNING *
+        UPDATE users SET name = $1, email = $2, language = $3, updated_at = NOW()
+        WHERE id = $4 RETURNING *
         """,
-        name, email, user['id']
+        name, email, language, user['id']
     )
 
     # Sync to Mautic
@@ -82,6 +84,7 @@ async def update_profile(
         name=u.get('name'),
         avatar_url=u.get('avatar_url'),
         email_verified=u.get('email_verified', False),
+        language=u.get('language', 'en'),
         created_at=u['created_at']
     )
 

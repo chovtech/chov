@@ -3,8 +3,6 @@
 import { useCallback } from 'react'
 import { useLanguage } from '@/lib/hooks/useLanguage'
 
-// Static imports for all supported languages
-// When adding a new language, import its files here
 import en_common from '@/locales/en/common.json'
 import en_auth from '@/locales/en/auth.json'
 import fr_common from '@/locales/fr/common.json'
@@ -13,17 +11,10 @@ import fr_auth from '@/locales/fr/auth.json'
 type TranslationMap = Record<string, Record<string, unknown>>
 
 const translations: Record<string, TranslationMap> = {
-  en: {
-    common: en_common,
-    auth: en_auth,
-  },
-  fr: {
-    common: fr_common,
-    auth: fr_auth,
-  },
+  en: { common: en_common, auth: en_auth },
+  fr: { common: fr_common, auth: fr_auth },
 }
 
-// English fallback for any missing keys
 const fallback: TranslationMap = translations['en']
 
 export function useTranslation(namespace: string = 'common') {
@@ -32,33 +23,22 @@ export function useTranslation(namespace: string = 'common') {
   const t = useCallback(
     (key: string): string => {
       const keys = key.split('.')
-
-      // Try current language first
       const langMap = translations[language] ?? fallback
       let value: unknown = langMap[namespace]
       for (const k of keys) {
         if (value && typeof value === 'object') {
           value = (value as Record<string, unknown>)[k]
-        } else {
-          value = undefined
-          break
-        }
+        } else { value = undefined; break }
       }
-
-      // Fall back to English if key missing
       if (typeof value !== 'string') {
         let fallbackValue: unknown = fallback[namespace]
         for (const k of keys) {
           if (fallbackValue && typeof fallbackValue === 'object') {
             fallbackValue = (fallbackValue as Record<string, unknown>)[k]
-          } else {
-            fallbackValue = undefined
-            break
-          }
+          } else { fallbackValue = undefined; break }
         }
         return typeof fallbackValue === 'string' ? fallbackValue : key
       }
-
       return value
     },
     [language, namespace]

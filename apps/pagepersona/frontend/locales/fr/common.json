@@ -9,7 +9,30 @@
     "analytics": "Analytique",
     "integrations": "Intégrations",
     "settings": "Paramètres",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "workspace": "Espace de travail",
+    "addWorkspace": "Ajouter un espace",
+    "personalWorkspace": "Personnel"
+  },
+  "topbar": {
+    "search": "Rechercher des pages, campagnes...",
+    "createWithAI": "Créer avec l'IA",
+    "aiCredits": "Crédits IA",
+    "creditsRemaining": "Crédits restants cette période",
+    "topUp": "Recharger les crédits",
+    "currentPlan": "Plan actuel",
+    "notifications": "Notifications"
+  },
+  "sidebar": {
+    "currentPlan": "Plan actuel",
+    "soloPlan": "Plan Solo",
+    "upgradeDescription": "Débloquez des pages, règles et fonctionnalités IA illimitées.",
+    "upgradeNow": "Mettre à niveau"
+  },
+  "footer": {
+    "rights": "© 2026 PagePersona. Tous droits réservés.",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d'utilisation"
   },
   "actions": {
     "save": "Enregistrer",
@@ -20,16 +43,99 @@
     "next": "Suivant",
     "continue": "Continuer",
     "getStarted": "Commencer",
-    "learnMore": "En savoir plus"
+    "learnMore": "En savoir plus",
+    "show": "Afficher",
+    "hide": "Masquer",
+    "send": "Envoyer",
+    "resend": "Renvoyer",
+    "sending": "Envoi en cours...",
+    "saving": "Enregistrement...",
+    "loading": "Chargement...",
+    "confirm": "Confirmer",
+    "close": "Fermer"
   },
   "status": {
     "active": "Actif",
     "inactive": "Inactif",
     "draft": "Brouillon",
-    "loading": "Chargement..."
+    "loading": "Chargement...",
+    "verified": "Vérifié",
+    "notVerified": "E-mail non vérifié"
   },
   "errors": {
     "generic": "Une erreur est survenue. Veuillez réessayer.",
-    "network": "Erreur réseau. Vérifiez votre connexion."
+    "network": "Erreur réseau. Vérifiez votre connexion.",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+    "passwordMismatch": "Les mots de passe ne correspondent pas"
+  },
+  "toast": {
+    "profileUpdated": "Profil mis à jour avec succès",
+    "profileFailed": "Échec de la mise à jour du profil",
+    "passwordUpdated": "Mot de passe mis à jour avec succès",
+    "passwordFailed": "Échec de la mise à jour du mot de passe",
+    "verificationSent": "E-mail de vérification envoyé",
+    "resendSuccess": "Lien de réinitialisation renvoyé !",
+    "resendCheck": "Vérifiez votre boîte de réception dans quelques instants.",
+    "magicLinkSent": "Lien magique envoyé — vérifiez votre boîte de réception",
+    "emailVerified": "E-mail vérifié avec succès"
+  },
+  "verification": {
+    "banner": "Veuillez vérifier votre adresse e-mail pour débloquer toutes les fonctionnalités.",
+    "resend": "Renvoyer l'e-mail de vérification",
+    "resending": "Envoi en cours...",
+    "sent": "E-mail de vérification envoyé"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Gérez votre compte et vos préférences d'espace de travail.",
+    "tabs": {
+      "general": "Général",
+      "team": "Équipe",
+      "billing": "Facturation",
+      "integrations": "Intégrations"
+    },
+    "profile": {
+      "title": "Votre profil",
+      "personalInfo": "Informations personnelles",
+      "personalInfoDesc": "Mettez à jour votre nom et votre adresse e-mail.",
+      "fullName": "Nom complet",
+      "emailAddress": "Adresse e-mail",
+      "save": "Enregistrer",
+      "saving": "Enregistrement..."
+    },
+    "password": {
+      "title": "Changer le mot de passe",
+      "desc": "Choisissez un mot de passe fort d'au moins 8 caractères.",
+      "current": "Mot de passe actuel",
+      "new": "Nouveau mot de passe",
+      "confirm": "Confirmer le nouveau mot de passe",
+      "update": "Mettre à jour",
+      "updating": "Mise à jour..."
+    },
+    "team": {
+      "title": "Membres de l'équipe",
+      "desc": "Invitez des membres à collaborer sur votre espace de travail.",
+      "comingSoon": "Collaboration d'équipe bientôt disponible",
+      "comingSoonDesc": "Invitez des coéquipiers, attribuez des rôles et gérez l'accès — disponible avec le plan Agence."
+    },
+    "billing": {
+      "title": "Facturation et plan",
+      "desc": "Gérez votre abonnement et votre utilisation.",
+      "currentPlan": "Plan actuel",
+      "soloPlan": "Plan Solo",
+      "ltdDesc": "Offre à vie — aucun frais récurrent.",
+      "upgrade": "Mettre à niveau",
+      "comingSoon": "Gestion complète de la facturation bientôt disponible."
+    },
+    "integrations": {
+      "title": "Intégrations",
+      "desc": "Connectez vos outils préférés à PagePersona.",
+      "comingSoon": "Intégrations bientôt disponibles",
+      "comingSoonDesc": "Zapier, Make, Slack, GA4, Meta Pixel et plus — disponibles avec le produit complet."
+    }
+  },
+  "language": {
+    "label": "Langue",
+    "comingSoon": "Plus de langues bientôt disponibles"
   }
 }

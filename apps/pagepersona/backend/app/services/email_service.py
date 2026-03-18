@@ -1,6 +1,10 @@
 import boto3
 from botocore.exceptions import ClientError
 from app.core.config import settings
+from app.templates.emails.emails import (
+    render_verification, render_welcome,
+    render_password_reset, render_jvzoo_welcome
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -13,7 +17,7 @@ def get_ses_client():
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
     )
 
-def send_email(to_email: str, subject: str, html_body: str, text_body: str = ""):
+def send_email(to_email: str, subject: str, html_body: str, text_body: str = "") -> bool:
     client = get_ses_client()
     sender = f"{settings.SES_SENDER_NAME} <{settings.SES_SENDER_EMAIL}>"
     try:
@@ -34,141 +38,57 @@ def send_email(to_email: str, subject: str, html_body: str, text_body: str = "")
         logger.error(f"SES error sending to {to_email}: {e.response['Error']['Message']}")
         return False
 
-def send_welcome_email(to_email: str, name: str):
-    subject = f"Welcome to PagePersona, {name.split()[0]}!"
-    html_body = f"""
-    <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-      <h2 style="color:#1A56DB">Welcome to PagePersona 👋</h2>
-      <p>Hi {name.split()[0]},</p>
-      <p>Your account is ready. Start personalising your sales pages and converting more visitors today.</p>
-      <a href="{settings.FRONTEND_URL}/dashboard"
-         style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;
-                border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
-        Go to Dashboard →
-      </a>
-      <p style="color:#64748b;font-size:14px">If you have any questions, reply to this email — we read every one.</p>
-      <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
-      <p style="color:#94a3b8;font-size:12px">PagePersona · usepagepersona.com</p>
-    </body></html>
-    """
-    return send_email(to_email, subject, html_body)
+def _get_firstname(name: str, email: str) -> str:
+    parts = (name or "").split()
+    return parts[0] if parts else email.split('@')[0]
 
-def send_password_reset_email(to_email: str, name: str, reset_token: str):
+def send_verification_email(to_email: str, name: str, verify_token: str, lang: str = "en") -> bool:
+    verify_url = f"{settings.FRONTEND_URL}/verify-email?token={verify_token}"
+    firstname = _get_firstname(name, to_email)
+    subject, html = render_verification(firstname, verify_url, lang)
+    return send_email(to_email, subject, html)
+
+def send_welcome_email(to_email: str, name: str, lang: str = "en") -> bool:
+    dashboard_url = f"{settings.FRONTEND_URL}/dashboard"
+    firstname = _get_firstname(name, to_email)
+    subject, html = render_welcome(firstname, dashboard_url, lang)
+    return send_email(to_email, subject, html)
+
+def send_password_reset_email(to_email: str, name: str, reset_token: str, lang: str = "en") -> bool:
     reset_url = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
-    subject = "Reset your PagePersona password"
-    html_body = f"""
-    <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-      <h2 style="color:#1A56DB">Reset your password</h2>
-      <p>Hi {name.split()[0]},</p>
-      <p>We received a request to reset your password. Click the button below to set a new one.</p>
-      <a href="{reset_url}"
-         style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;
-                border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
-        Reset Password →
-      </a>
-      <p style="color:#64748b;font-size:14px">This link expires in 1 hour. If you didn't request this, ignore this email.</p>
-      <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
-      <p style="color:#94a3b8;font-size:12px">PagePersona · usepagepersona.com</p>
-    </body></html>
-    """
-    return send_email(to_email, subject, html_body)
+    firstname = _get_firstname(name, to_email)
+    subject, html = render_password_reset(firstname, reset_url, lang)
+    return send_email(to_email, subject, html)
 
-def send_jvzoo_welcome_email(to_email: str, name: str, magic_link: str):
-    subject = "Your PagePersona account is ready!"
-    html_body = f"""
-    <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-      <h2 style="color:#1A56DB">You're in! 🎉</h2>
-      <p>Hi {name.split()[0]},</p>
-      <p>Thank you for purchasing PagePersona. Your account has been created and is ready to use.</p>
-      <p>Click below to log in instantly — no password needed:</p>
-      <a href="{magic_link}"
-         style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;
-                border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
-        Access My Account →
-      </a>
-      <p style="color:#64748b;font-size:14px">This link expires in 24 hours.</p>
-      <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
-      <p style="color:#94a3b8;font-size:12px">PagePersona · usepagepersona.com</p>
-    </body></html>
-    """
-    return send_email(to_email, subject, html_body)
+def send_jvzoo_welcome_email(to_email: str, name: str, magic_link: str, lang: str = "en") -> bool:
+    firstname = _get_firstname(name, to_email)
+    subject, html = render_jvzoo_welcome(firstname, magic_link, lang)
+    return send_email(to_email, subject, html)
 
-def send_verification_email(to_email: str, name: str, verify_token: str):
-    verify_url = f"{settings.FRONTEND_URL}/verify-email?token={verify_token}"
-    subject = "Verify your PagePersona email"
-    html_body = f"""
-    <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-      <h2 style="color:#1A56DB">Verify your email</h2>
-      <p>Hi {name.split()[0]},</p>
-      <p>Thanks for signing up. Click below to verify your email address and activate your account.</p>
-      <a href="{verify_url}"
-         style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;
-                border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
-        Verify Email →
-      </a>
-      <p style="color:#64748b;font-size:14px">This link expires in 24 hours. If you didn't sign up, ignore this email.</p>
-      <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
-      <p style="color:#94a3b8;font-size:12px">PagePersona · usepagepersona.com</p>
-    </body></html>
-    """
-    return send_email(to_email, subject, html_body)
-
-def send_magic_link_email(to_email: str, name: str, magic_token: str):
+def send_magic_link_email(to_email: str, name: str, magic_token: str, lang: str = "en") -> bool:
     magic_url = f"{settings.FRONTEND_URL}/auth/magic?token={magic_token}"
-    subject = "Your PagePersona magic link"
-    html_body = f"""
+    firstname = _get_firstname(name, to_email)
+    subjects = {"en": "Your PagePersona magic link", "fr": "Votre lien magique PagePersona"}
+    bodies = {
+        "en": f"Hi {firstname}, click below to log in instantly — no password needed.",
+        "fr": f"Bonjour {firstname}, cliquez ci-dessous pour vous connecter instantanément — aucun mot de passe nécessaire.",
+    }
+    ctas = {"en": "Log In to PagePersona →", "fr": "Se connecter à PagePersona →"}
+    footers = {
+        "en": "This link works once and expires in 24 hours.",
+        "fr": "Ce lien fonctionne une seule fois et expire dans 24 heures.",
+    }
+    subject = subjects.get(lang, subjects["en"])
+    html = f"""
     <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-      <h2 style="color:#1A56DB">Your magic link 🪄</h2>
-      <p>Hi {name.split()[0] if name else 'there'},</p>
-      <p>Click below to log in instantly — no password needed. This link works once and expires in 24 hours.</p>
-      <a href="{magic_url}"
-         style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;
-                border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
-        Log In to PagePersona →
+      <h2 style="color:#1A56DB">{'Your magic link 🪄' if lang != 'fr' else 'Votre lien magique 🪄'}</h2>
+      <p>{bodies.get(lang, bodies['en'])}</p>
+      <a href="{magic_url}" style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
+        {ctas.get(lang, ctas['en'])}
       </a>
-      <p style="color:#64748b;font-size:14px">If you didn't request this, ignore this email.</p>
+      <p style="color:#64748b;font-size:14px">{footers.get(lang, footers['en'])}</p>
       <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
       <p style="color:#94a3b8;font-size:12px">PagePersona · usepagepersona.com</p>
     </body></html>
     """
-    return send_email(to_email, subject, html_body)
-
-def send_verification_email(to_email: str, name: str, verify_token: str):
-    verify_url = f"{settings.FRONTEND_URL}/verify-email?token={verify_token}"
-    subject = "Verify your PagePersona email"
-    html_body = f"""
-    <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-      <h2 style="color:#1A56DB">Verify your email</h2>
-      <p>Hi {name.split()[0]},</p>
-      <p>Thanks for signing up. Click below to verify your email address and activate your account.</p>
-      <a href="{verify_url}"
-         style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;
-                border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
-        Verify Email →
-      </a>
-      <p style="color:#64748b;font-size:14px">This link expires in 24 hours. If you didn't sign up, ignore this email.</p>
-      <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
-      <p style="color:#94a3b8;font-size:12px">PagePersona · usepagepersona.com</p>
-    </body></html>
-    """
-    return send_email(to_email, subject, html_body)
-
-def send_magic_link_email(to_email: str, name: str, magic_token: str):
-    magic_url = f"{settings.FRONTEND_URL}/auth/magic?token={magic_token}"
-    subject = "Your PagePersona magic link"
-    html_body = f"""
-    <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-      <h2 style="color:#1A56DB">Your magic link 🪄</h2>
-      <p>Hi {name.split()[0] if name else 'there'},</p>
-      <p>Click below to log in instantly — no password needed. This link works once and expires in 24 hours.</p>
-      <a href="{magic_url}"
-         style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;
-                border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
-        Log In to PagePersona →
-      </a>
-      <p style="color:#64748b;font-size:14px">If you didn't request this, ignore this email.</p>
-      <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
-      <p style="color:#94a3b8;font-size:12px">PagePersona · usepagepersona.com</p>
-    </body></html>
-    """
-    return send_email(to_email, subject, html_body)
+    return send_email(to_email, subject, html)

@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react'
 import Sidebar from '@/components/layouts/Sidebar'
 import { authApi, authApiExtended } from '@/lib/api/client'
+import { useTranslation } from '@/lib/hooks/useTranslation'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation('common')
   const [emailVerified, setEmailVerified] = useState(true)
   const [userEmail, setUserEmail] = useState('')
   const [resent, setResent] = useState(false)
@@ -35,16 +37,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <span className="text-amber-500 text-lg">⚠️</span>
-              <p className="text-sm text-amber-800 font-medium">
-                Please verify your email address to unlock all features.
-              </p>
+              <p className="text-sm text-amber-800 font-medium">{t('verification.banner')}</p>
             </div>
             {resent ? (
               <span className="text-xs text-green-600 font-semibold flex-shrink-0 flex items-center gap-1">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/>
                 </svg>
-                Verification email sent
+                {t('verification.sent')}
               </span>
             ) : (
               <button
@@ -58,9 +58,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                     </svg>
-                    Sending...
+                    {t('verification.resending')}
                   </>
-                ) : 'Resend verification email'}
+                ) : t('verification.resend')}
               </button>
             )}
           </div>

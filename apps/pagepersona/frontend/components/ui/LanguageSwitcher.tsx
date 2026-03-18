@@ -2,17 +2,17 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useLanguage } from '@/lib/hooks/useLanguage'
+import { useTranslation } from '@/lib/hooks/useTranslation'
 
 export default function LanguageSwitcher() {
   const { currentLanguage, setLanguage, supportedLanguages } = useLanguage()
+  const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
@@ -23,16 +23,11 @@ export default function LanguageSwitcher() {
       <button
         onClick={() => setOpen(p => !p)}
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-        title="Change language"
+        title={t('language.label')}
       >
         <span className="text-base leading-none">{currentLanguage.flag}</span>
-        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase">
-          {currentLanguage.code}
-        </span>
-        <svg
-          className={`w-3 h-3 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`}
-          fill="none" viewBox="0 0 24 24" stroke="currentColor"
-        >
+        <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase">{currentLanguage.code}</span>
+        <svg className={`w-3 h-3 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
         </svg>
       </button>
@@ -64,9 +59,7 @@ export default function LanguageSwitcher() {
             ))}
           </div>
           <div className="px-3 py-2 border-t border-slate-100 dark:border-slate-700">
-            <p className="text-[10px] text-slate-400">
-              More languages coming soon
-            </p>
+            <p className="text-[10px] text-slate-400">{t('language.comingSoon')}</p>
           </div>
         </div>
       )}

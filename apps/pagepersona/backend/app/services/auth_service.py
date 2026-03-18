@@ -41,7 +41,8 @@ async def create_user_and_workspace(
     db: asyncpg.Connection,
     email: str,
     name: str,
-    password: str
+    password: str,
+    language: str = "en"
 ) -> tuple[dict, dict]:
     """
     Create a new user and their workspace together.
@@ -62,11 +63,11 @@ async def create_user_and_workspace(
     # Create user
     user = await db.fetchrow(
         """
-        INSERT INTO users (id, email, name, email_verified)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO users (id, email, name, email_verified, language)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING *
         """,
-        user_id, email, name, False
+        user_id, email, name, False, language
     )
 
     # Store password in sessions-adjacent table
@@ -84,7 +85,7 @@ async def create_user_and_workspace(
     workspace = await db.fetchrow(
         """
         INSERT INTO workspaces (id, name, slug, owner_id)
-        VALUES ($1, $2, $3, $4)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING *
         """,
         workspace_id,
@@ -191,7 +192,7 @@ async def create_password_reset_token(
     await db.execute(
         """
         INSERT INTO password_reset_tokens (id, user_id, token, expires_at)
-        VALUES ($1, $2, $3, $4)
+        VALUES ($1, $2, $3, $4, $5)
         """,
         uuid.uuid4(),
         uuid.UUID(user_id),

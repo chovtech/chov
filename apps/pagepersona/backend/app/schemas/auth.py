@@ -2,12 +2,13 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
 
-# ── REQUEST SCHEMAS (what the frontend sends) ──────────
+# ── REQUEST SCHEMAS ────────────────────────────────────
 
 class SignUpRequest(BaseModel):
     email: EmailStr
     password: str
     name: str
+    language: str = "en"
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -23,7 +24,7 @@ class ResetPasswordRequest(BaseModel):
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
-# ── RESPONSE SCHEMAS (what we send back) ───────────────
+# ── RESPONSE SCHEMAS ───────────────────────────────────
 
 class UserResponse(BaseModel):
     id: str
@@ -31,6 +32,7 @@ class UserResponse(BaseModel):
     name: Optional[str]
     avatar_url: Optional[str]
     email_verified: bool
+    language: str = "en"
     created_at: datetime
 
 class WorkspaceResponse(BaseModel):

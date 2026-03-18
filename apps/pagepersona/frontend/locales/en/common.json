@@ -9,10 +9,33 @@
     "analytics": "Analytics",
     "integrations": "Integrations",
     "settings": "Settings",
-    "logout": "Logout"
+    "logout": "Logout",
+    "workspace": "Workspace",
+    "addWorkspace": "Add workspace",
+    "personalWorkspace": "Personal"
+  },
+  "topbar": {
+    "search": "Search pages, campaigns...",
+    "createWithAI": "Create with AI",
+    "aiCredits": "AI Credits",
+    "creditsRemaining": "Credits remaining this period",
+    "topUp": "Top up credits",
+    "currentPlan": "Current Plan",
+    "notifications": "Notifications"
+  },
+  "sidebar": {
+    "currentPlan": "Current Plan",
+    "soloPlan": "Solo Plan",
+    "upgradeDescription": "Unlock unlimited pages, rules and AI features.",
+    "upgradeNow": "Upgrade Now"
+  },
+  "footer": {
+    "rights": "© 2026 PagePersona. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
   },
   "actions": {
-    "save": "Save",
+    "save": "Save changes",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
@@ -20,16 +43,99 @@
     "next": "Next",
     "continue": "Continue",
     "getStarted": "Get Started",
-    "learnMore": "Learn More"
+    "learnMore": "Learn More",
+    "show": "Show",
+    "hide": "Hide",
+    "send": "Send",
+    "resend": "Resend",
+    "sending": "Sending...",
+    "saving": "Saving...",
+    "loading": "Loading...",
+    "confirm": "Confirm",
+    "close": "Close"
   },
   "status": {
     "active": "Active",
     "inactive": "Inactive",
     "draft": "Draft",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "verified": "Verified",
+    "notVerified": "Email not verified"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
-    "network": "Network error. Please check your connection."
+    "network": "Network error. Please check your connection.",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords do not match"
+  },
+  "toast": {
+    "profileUpdated": "Profile updated successfully",
+    "profileFailed": "Failed to update profile",
+    "passwordUpdated": "Password updated successfully",
+    "passwordFailed": "Failed to update password",
+    "verificationSent": "Verification email sent",
+    "resendSuccess": "Reset link resent!",
+    "resendCheck": "Check your inbox again shortly.",
+    "magicLinkSent": "Magic link sent — check your inbox",
+    "emailVerified": "Email verified successfully"
+  },
+  "verification": {
+    "banner": "Please verify your email address to unlock all features.",
+    "resend": "Resend verification email",
+    "resending": "Sending...",
+    "sent": "Verification email sent"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account and workspace preferences.",
+    "tabs": {
+      "general": "General",
+      "team": "Team",
+      "billing": "Billing",
+      "integrations": "Integrations"
+    },
+    "profile": {
+      "title": "Your profile",
+      "personalInfo": "Personal information",
+      "personalInfoDesc": "Update your name and email address.",
+      "fullName": "Full name",
+      "emailAddress": "Email address",
+      "save": "Save changes",
+      "saving": "Saving..."
+    },
+    "password": {
+      "title": "Change password",
+      "desc": "Choose a strong password of at least 8 characters.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "update": "Update password",
+      "updating": "Updating..."
+    },
+    "team": {
+      "title": "Team members",
+      "desc": "Invite team members to collaborate on your workspace.",
+      "comingSoon": "Team collaboration coming soon",
+      "comingSoonDesc": "Invite teammates, assign roles and manage access — available in the Agency plan."
+    },
+    "billing": {
+      "title": "Billing & plan",
+      "desc": "Manage your subscription and usage.",
+      "currentPlan": "Current Plan",
+      "soloPlan": "Solo Plan",
+      "ltdDesc": "Lifetime deal — no recurring charges.",
+      "upgrade": "Upgrade Plan",
+      "comingSoon": "Full billing management coming soon."
+    },
+    "integrations": {
+      "title": "Integrations",
+      "desc": "Connect your favourite tools to PagePersona.",
+      "comingSoon": "Integrations coming soon",
+      "comingSoonDesc": "Zapier, Make, Slack, GA4, Meta Pixel and more — launching with the full product."
+    }
+  },
+  "language": {
+    "label": "Language",
+    "comingSoon": "More languages coming soon"
   }
 }
