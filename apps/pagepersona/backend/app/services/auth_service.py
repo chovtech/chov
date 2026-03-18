@@ -85,7 +85,7 @@ async def create_user_and_workspace(
     workspace = await db.fetchrow(
         """
         INSERT INTO workspaces (id, name, slug, owner_id)
-        VALUES ($1, $2, $3, $4, $5)
+        VALUES ($1, $2, $3, $4)
         RETURNING *
         """,
         workspace_id,
@@ -192,7 +192,7 @@ async def create_password_reset_token(
     await db.execute(
         """
         INSERT INTO password_reset_tokens (id, user_id, token, expires_at)
-        VALUES ($1, $2, $3, $4, $5)
+        VALUES ($1, $2, $3, $4)
         """,
         uuid.uuid4(),
         uuid.UUID(user_id),

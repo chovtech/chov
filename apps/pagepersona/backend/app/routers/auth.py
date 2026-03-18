@@ -55,16 +55,13 @@ async def signup(
     db: asyncpg.Connection = Depends(get_db)
 ):
     existing = await get_user_by_email(db, data.email)
+    lang = data.language or "en"
     if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="An account with this email already exists"
-        )
+        msg = "Un compte avec cet e-mail existe déjà" if lang == "fr" else "An account with this email already exists"
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
     if len(data.password) < 8:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password must be at least 8 characters"
-        )
+        msg = "Le mot de passe doit contenir au moins 8 caractères" if lang == "fr" else "Password must be at least 8 characters"
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
 
     user, workspace = await create_user_and_workspace(
         db, data.email, data.name, data.password, data.language
@@ -115,17 +112,18 @@ async def login(
     db: asyncpg.Connection = Depends(get_db)
 ):
     user = await authenticate_user(db, data.email, data.password)
+    lang = user.get('language', 'en') if user else 'en'
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
+            detail="E-mail ou mot de passe invalide" if lang == "fr" else "Invalid email or password"
         )
 
     workspace = await get_workspace_by_owner(db, str(user['id']))
     if not workspace:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="No workspace found for this account"
+            detail="Aucun espace de travail trouvé" if lang == "fr" else "No workspace found for this account"
         )
 
     ip = request.client.host if request.client else None
@@ -222,7 +220,8 @@ async def resend_verification(
         send_verification_email(
             user['email'],
             user.get('name') or user['email'].split('@')[0],
-            verify_token
+            verify_token,
+            lang=user.get('language', 'en')
         )
     except Exception:
         pass
