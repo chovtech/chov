@@ -28,6 +28,7 @@ apiClient.interceptors.response.use(
       if (typeof window !== 'undefined') {
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
+        document.cookie = 'access_token=; path=/; max-age=0'
         window.location.href = '/login'
       }
     }
@@ -48,4 +49,19 @@ export const authApi = {
 
   logout: () =>
     apiClient.post('/api/auth/logout'),
+}
+
+// User API calls
+export const userApi = {
+  updateProfile: (data: { name?: string; email?: string }) =>
+    apiClient.put('/api/users/profile', data),
+
+  changePassword: (data: { current_password: string; new_password: string }) =>
+    apiClient.put('/api/users/password', data),
+
+  forgotPassword: (email: string) =>
+    apiClient.post('/api/auth/forgot-password', { email }),
+
+  resetPassword: (token: string, new_password: string) =>
+    apiClient.post('/api/auth/reset-password', { token, new_password }),
 }

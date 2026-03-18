@@ -175,3 +175,62 @@ async def create_verification_token(
     )
 
     return token
+
+async def create_password_reset_token(
+    db: asyncpg.Connection,
+    user_id: str
+) -> str:
+    """Generate a password reset token valid for 1 hour."""
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+
+    await db.execute(
+        "DELETE FROM password_reset_tokens WHERE user_id = $1",
+        uuid.UUID(user_id)
+    )
+    await db.execute(
+        """
+        INSERT INTO password_reset_tokens (id, user_id, token, expires_at)
+        VALUES ($1, $2, $3, $4)
+        """,
+        uuid.uuid4(),
+        uuid.UUID(user_id),
+        token,
+        expires_at
+    )
+    return token
+
+async def get_user_by_reset_token(
+    db: asyncpg.Connection,
+    token: str
+) -> Optional[dict]:
+    """Validate reset token and return user if valid."""
+    row = await db.fetchrow(
+        """
+        SELECT u.* FROM users u
+        JOIN password_reset_tokens t ON t.user_id = u.id
+        WHERE t.token = $1 AND t.expires_at > NOW() AND t.used_at IS NULL
+        """,
+        token
+    )
+    return dict(row) if row else None
+
+async def consume_reset_token(
+    db: asyncpg.Connection,
+    token: str,
+    new_password: str
+) -> bool:
+    """Mark token used and update password."""
+    user = await get_user_by_reset_token(db, token)
+    if not user:
+        return False
+    hashed = hash_password(new_password)
+    await db.execute(
+        "UPDATE users SET password_hash = $1 WHERE id = $2",
+        hashed, user['id']
+    )
+    await db.execute(
+        "UPDATE password_reset_tokens SET used_at = NOW() WHERE token = $1",
+        token
+    )
+    return True

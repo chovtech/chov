@@ -2,8 +2,10 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import Icon from '@/components/ui/Icon'
+import { authApi } from '@/lib/api/client'
 
 const navigation = [
   { key: 'dashboard', href: '/dashboard', icon: 'home' },
@@ -13,9 +15,22 @@ const navigation = [
   { key: 'settings', href: '/dashboard/settings', icon: 'settings' },
 ]
 
+interface User {
+  name?: string
+  email: string
+}
+
 export default function Sidebar() {
   const pathname = usePathname()
   const { t } = useTranslation('common')
+  const [user, setUser] = useState<User | null>(null)
+  const [workspaceOpen, setWorkspaceOpen] = useState(false)
+
+  useEffect(() => {
+    authApi.me()
+      .then(res => setUser(res.data))
+      .catch(() => null)
+  }, [])
 
   function handleLogout() {
     localStorage.removeItem('access_token')
@@ -24,65 +39,143 @@ export default function Sidebar() {
     window.location.href = '/login'
   }
 
+  const initials = user?.name
+    ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+    : '?'
+
   return (
     <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col fixed inset-y-0 left-0 z-50">
+
       {/* Logo */}
-      <div className="p-6">
-        <div className="flex items-center gap-2 mb-8">
-          <div className="size-8 bg-[#1A56DB] rounded-lg flex items-center justify-center text-white">
+      <div className="px-5 pt-6 pb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="size-8 bg-[#1A56DB] rounded-lg flex items-center justify-center text-white shadow-md shadow-[#1A56DB]/30">
             <Icon name="layers" className="text-[18px]" />
           </div>
           <div>
-            <h1 className="text-lg font-bold leading-none text-slate-900 dark:text-white">
+            <h1 className="text-base font-bold leading-none text-slate-900 dark:text-white">
               PagePersona
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              SaaS Dashboard
-            </p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Smart Sales Pages</p>
           </div>
         </div>
-
-        {/* Navigation */}
-        <nav className="space-y-1">
-          {navigation.map((item) => {
-            const isActive = pathname === item.href
-            return (
-              <Link
-                key={item.key}
-                href={item.href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors ${
-                  isActive
-                    ? 'bg-[#1A56DB]/10 text-[#1A56DB] font-semibold'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium'
-                }`}
-              >
-                <Icon name={item.icon} className="text-[22px]" />
-                <span>{t(`nav.${item.key}`)}</span>
-              </Link>
-            )
-          })}
-        </nav>
       </div>
 
-      {/* Bottom */}
-      <div className="mt-auto p-6 border-t border-slate-100 dark:border-slate-800 space-y-4">
-        <div className="flex items-center gap-3 px-3 py-2 bg-slate-50 dark:bg-slate-800 rounded-xl">
-          <Icon name="workspace_premium" className="text-[#1A56DB]" />
-          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Solo Plan
-          </p>
-        </div>
-        <button className="w-full py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] text-white rounded-xl text-sm font-bold shadow-sm transition-all">
-          Upgrade
-        </button>
+      {/* Workspace Switcher */}
+      <div className="px-3 pb-3">
         <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+          onClick={() => setWorkspaceOpen(!workspaceOpen)}
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group"
         >
-          <Icon name="logout" className="text-[22px]" />
-          {t('nav.logout')}
+          <div className="size-7 rounded-lg bg-[#1A56DB]/10 flex items-center justify-center flex-shrink-0">
+            <Icon name="hub" className="text-[#1A56DB] text-[16px]" />
+          </div>
+          <div className="flex-1 text-left min-w-0">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Workspace</p>
+            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">
+              {user?.name ? `${user.name.split(' ')[0]}'s Workspace` : 'My Workspace'}
+            </p>
+          </div>
+          <Icon
+            name="unfold_more"
+            className="text-slate-400 text-[18px] flex-shrink-0 group-hover:text-slate-600 transition-colors"
+          />
         </button>
+
+        {/* Workspace dropdown */}
+        {workspaceOpen && (
+          <div className="mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden">
+            <div className="p-2">
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-[#1A56DB]/5 border border-[#1A56DB]/10">
+                <div className="size-6 rounded-md bg-[#1A56DB] flex items-center justify-center text-white text-[10px] font-bold">
+                  {initials}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                    {user?.name ? `${user.name.split(' ')[0]}'s Workspace` : 'My Workspace'}
+                  </p>
+                  <p className="text-[10px] text-slate-400">Personal</p>
+                </div>
+                <Icon name="check" className="text-[#1A56DB] text-[16px]" />
+              </div>
+            </div>
+            <div className="border-t border-slate-100 dark:border-slate-700 p-2">
+              <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                <Icon name="add" className="text-[16px]" />
+                Add workspace
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
+        {navigation.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
+                isActive
+                  ? 'bg-[#1A56DB]/10 text-[#1A56DB] font-semibold'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium'
+              }`}
+            >
+              <Icon
+                name={item.icon}
+                className={`text-[22px] ${isActive ? 'text-[#1A56DB]' : ''}`}
+              />
+              <span>{t(`nav.${item.key}`)}</span>
+            </Link>
+          )
+        })}
+      </nav>
+
+      {/* Plan card + upgrade */}
+      <div className="px-3 py-4">
+        <div className="bg-gradient-to-br from-[#1A56DB] to-[#1547b3] rounded-2xl p-4 text-white shadow-lg shadow-[#1A56DB]/25">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="size-6 rounded-md bg-white/20 flex items-center justify-center">
+              <Icon name="workspace_premium" className="text-[14px] text-white" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-white/70">Current Plan</p>
+              <p className="text-xs font-bold text-white">Solo Plan</p>
+            </div>
+          </div>
+          <p className="text-[10px] text-white/70 mb-3 leading-relaxed">
+            Unlock unlimited pages, rules and AI features.
+          </p>
+          <button className="w-full py-2 bg-white text-[#1A56DB] rounded-xl text-xs font-bold hover:bg-white/90 transition-colors">
+            Upgrade Now
+          </button>
+        </div>
+      </div>
+
+      {/* User footer */}
+      <div className="px-3 pb-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="flex items-center gap-3 px-3 py-3">
+          <div className="size-8 rounded-full bg-[#1A56DB]/10 border-2 border-[#1A56DB]/20 flex items-center justify-center text-[#1A56DB] font-bold text-xs flex-shrink-0">
+            {initials}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+              {user?.name || 'Your Name'}
+            </p>
+            <p className="text-[10px] text-slate-400 truncate">{user?.email}</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            title="Logout"
+            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+          >
+            <Icon name="logout" className="text-[18px]" />
+          </button>
+        </div>
+      </div>
+
     </aside>
   )
 }
