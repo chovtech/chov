@@ -160,7 +160,8 @@
       "cta_primary": "Créer votre premier projet",
       "cta_demo": "Voir le projet de démonstration",
       "cta_docs": "Lire le guide de démarrage"
-    }
+    },
+    "add_another_desc": "Ajouter une autre page à personnaliser"
   },
   "wizard": {
     "title": "Créer un nouveau projet",

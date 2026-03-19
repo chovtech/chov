@@ -9,39 +9,31 @@ import { projectApi } from '@/lib/api/client'
 
 const tabKeys = ['all', 'active', 'drafts', 'archived']
 
-interface Project {
-  id: string
-  name: string
-  page_url: string
-  platform: string
-  script_id: string
-  script_verified: boolean
-  status: string
-  created_at: string
-  updated_at: string
-}
-
 export default function DashboardPage() {
   const { t } = useTranslation('common')
   const [activeTab, setActiveTab] = useState('all')
   const [modalOpen, setModalOpen] = useState(false)
-  const [projects, setProjects] = useState<Project[]>([])
+  const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
 
   const fetchProjects = async () => {
-    try {
-      const res = await projectApi.list()
-      setProjects(res.data)
-    } catch {
-      setProjects([])
-    } finally {
-      setLoading(false)
-    }
+    try { const res = await projectApi.list(); setProjects(res.data) }
+    catch { setProjects([]) }
+    finally { setLoading(false) }
   }
 
-  useEffect(() => {
-    fetchProjects()
-  }, [])
+  useEffect(() => { fetchProjects() }, [])
+
+  const hasProjects = projects.length > 0
+
+  const formatDate = (d) => {
+    const h = Math.floor((Date.now() - new Date(d).getTime()) / 3600000)
+    const days = Math.floor(h / 24)
+    if (h < 1) return 'Just now'
+    if (h < 24) return h + 'h ago'
+    if (days === 1) return '1d ago'
+    return days + 'd ago'
+  }
 
   const filteredProjects = projects.filter(p => {
     if (activeTab === 'all') return true
@@ -51,41 +43,19 @@ export default function DashboardPage() {
     return true
   })
 
-  const hasProjects = projects.length > 0
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffHrs = Math.floor(diffMs / (1000 * 60 * 60))
-    const diffDays = Math.floor(diffHrs / 24)
-    if (diffHrs < 1) return 'Just now'
-    if (diffHrs < 24) return `${diffHrs}h ago`
-    if (diffDays === 1) return '1d ago'
-    return `${diffDays}d ago`
-  }
-
-  if (loading) {
-    return (
-      <>
-        <Topbar workspaceName="Marketing Team Workspace" />
-        <div className="flex flex-1 items-center justify-center min-h-[calc(100vh-64px)]">
-          <div className="flex flex-col items-center gap-3">
-            <span className="material-symbols-outlined text-4xl text-slate-300 animate-spin">sync</span>
-            <p className="text-sm text-slate-400">{t('actions.loading')}</p>
-          </div>
-        </div>
-      </>
-    )
-  }
+  if (loading) return (
+    <>
+      <Topbar workspaceName="Marketing Team Workspace" />
+      <div className="flex flex-1 items-center justify-center min-h-[calc(100vh-64px)]">
+        <span className="material-symbols-outlined text-4xl text-slate-300 animate-spin">sync</span>
+      </div>
+    </>
+  )
 
   return (
     <>
       <Topbar workspaceName="Marketing Team Workspace" />
-      <NewProjectModal
-        isOpen={modalOpen}
-        onClose={() => { setModalOpen(false); fetchProjects() }}
-      />
+      <NewProjectModal isOpen={modalOpen} onClose={() => { setModalOpen(false); fetchProjects() }} />
 
       {hasProjects ? (
 
@@ -129,12 +99,10 @@ export default function DashboardPage() {
           {/* Project grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map((project) => (
-              
+              <div
                 key={project.id}
-                href={`/dashboard/projects/${project.id}`}
                 className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 transition-all group"
               >
-                {/* Card thumbnail */}
                 <div className="h-40 bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
                   <div className={`absolute inset-0 ${
                     project.status === 'active'
@@ -152,33 +120,15 @@ export default function DashboardPage() {
                       </span>
                     )}
                   </div>
-                  {/* Script health indicator */}
-                  <div className="absolute bottom-3 left-3">
-                    {project.script_verified ? (
-                      <span className="flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full">
-                        <Icon name="check_circle" className="text-xs" />
-                        Script Live
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full">
-                        <Icon name="warning" className="text-xs" />
-                        Not Verified
-                      </span>
-                    )}
-                  </div>
                 </div>
-
-                {/* Card body */}
                 <div className="p-5">
                   <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 group-hover:text-[#1A56DB] transition-colors">
                     {project.name}
                   </h3>
-                  <p className="text-xs text-slate-500 mb-4 flex items-center gap-1 truncate">
-                    <Icon name="link" className="text-sm shrink-0" />
+                  <p className="text-xs text-slate-500 mb-4 flex items-center gap-1">
+                    <Icon name="link" className="text-sm" />
                     {project.page_url}
                   </p>
-
-                  {/* Stats */}
                   <div className="grid grid-cols-2 gap-4 mb-5 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                     <div>
                       <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-0.5">
@@ -197,27 +147,25 @@ export default function DashboardPage() {
                       </p>
                     </div>
                   </div>
-
-                  {/* Card footer */}
                   <div className="flex items-center justify-between text-[11px] text-slate-400">
                     <span>{t('dashboard.project_card.edited')} {formatDate(project.updated_at)}</span>
                     <div className="flex gap-2">
-                      <button
-                        onClick={e => { e.preventDefault(); }}
-                        className="hover:text-[#1A56DB] transition-colors"
-                      >
+                      <button className="hover:text-[#1A56DB] transition-colors">
+                        <Icon name="edit" className="text-[18px]" />
+                      </button>
+                      <button className="hover:text-[#1A56DB] transition-colors">
                         <Icon name="more_vert" className="text-[18px]" />
                       </button>
                     </div>
                   </div>
                 </div>
-              </a>
+              </div>
             ))}
 
             {/* Add new project card */}
             <div
               onClick={() => setModalOpen(true)}
-              className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center p-8 text-center hover:border-[#1A56DB]/40 transition-colors cursor-pointer group min-h-[280px]"
+              className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center p-8 text-center hover:border-[#1A56DB]/40 transition-colors cursor-pointer group"
             >
               <div className="size-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Icon name="post_add" className="text-3xl text-slate-300 group-hover:text-[#1A56DB]" />
@@ -226,7 +174,7 @@ export default function DashboardPage() {
                 {t('dashboard.new_project')}
               </h4>
               <p className="text-xs text-slate-500 mt-2 max-w-[200px]">
-                {t('dashboard.empty_state.description')}
+                {t('dashboard.add_another_desc')}
               </p>
               <span className="mt-4 text-xs font-bold text-[#1A56DB] flex items-center gap-1">
                 <Icon name="add" className="text-sm" />
