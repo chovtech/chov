@@ -99,8 +99,9 @@ export default function DashboardPage() {
           {/* Project grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map((project) => (
-              <div
+              <a
                 key={project.id}
+                href={`/dashboard/projects/${project.id}`}
                 className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 transition-all group"
               >
                 <div className="h-40 bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
@@ -159,7 +160,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </a>
             ))}
 
             {/* Add new project card */}

@@ -225,6 +225,35 @@
       "preview_page_desc": "Ouvrir votre page en direct dans un nouvel onglet",
       "project_settings": "Paramètres du projet",
       "project_settings_desc": "Gérer le script, la plateforme et le statut"
-    }
+    },
+    "ai_tips": {
+      "heading": "Conseils d optimisation IA",
+      "powered_by": "Propulsé par PagePersona IA",
+      "tip1": "Les visiteurs récurrents quittent à la section tarification. Ajoutez un bloc de confiance personnalisé pour les visiteurs à leur 2e+ visite.",
+      "action1": "Créer une règle",
+      "tip2": "Les visiteurs mobiles quittent 3x plus tôt. Envisagez un CTA mobile spécifique au-dessus de la ligne de flottaison.",
+      "action2": "Configurer une règle",
+      "tip3": "Le trafic email convertit 2,4x mieux. Créez une expérience dédiée pour vos abonnés.",
+      "action3": "Créer une règle"
+    },
+    "trend": {
+      "heading": "Tendance de performance",
+      "period": "7 derniers jours",
+      "total_sessions": "Sessions totales",
+      "avg_per_day": "Moy / Jour",
+      "no_data": "Collecte des données..."
+    },
+    "visitors": {
+      "heading": "Visiteurs récents",
+      "view_all": "Voir tout",
+      "no_visitors": "Aucun visiteur pour l instant",
+      "no_visitors_desc": "Les visiteurs apparaîtront ici une fois votre script actif.",
+      "col_visitor": "Visiteur",
+      "col_source": "Source",
+      "col_device": "Appareil",
+      "col_time": "Temps"
+    },
+    "view_all": "Voir tout",
+    "script_info": "Informations sur le script"
   }
 }

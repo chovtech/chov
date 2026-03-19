@@ -225,6 +225,35 @@
       "preview_page_desc": "Open your live page in a new tab",
       "project_settings": "Project Settings",
       "project_settings_desc": "Manage script, platform and status"
-    }
+    },
+    "ai_tips": {
+      "heading": "AI Optimisation Tips",
+      "powered_by": "Powered by PagePersona AI",
+      "tip1": "Returning visitors drop off at the pricing section. Add a personalised trust block for visitors on their 2nd+ visit.",
+      "action1": "Create a rule",
+      "tip2": "Mobile visitors are 3x more likely to exit early. Consider a mobile-specific CTA above the fold.",
+      "action2": "Set up rule",
+      "tip3": "Email traffic converts 2.4x better. Create a dedicated landing experience for your email subscribers.",
+      "action3": "Build rule"
+    },
+    "trend": {
+      "heading": "Performance Trend",
+      "period": "Last 7 days",
+      "total_sessions": "Total Sessions",
+      "avg_per_day": "Avg / Day",
+      "no_data": "Collecting data..."
+    },
+    "visitors": {
+      "heading": "Recent Visitors",
+      "view_all": "View all",
+      "no_visitors": "No visitors yet",
+      "no_visitors_desc": "Visitors will appear here once your script is live and tracking.",
+      "col_visitor": "Visitor",
+      "col_source": "Source",
+      "col_device": "Device",
+      "col_time": "Time"
+    },
+    "view_all": "View all",
+    "script_info": "Script Information"
   }
 }
