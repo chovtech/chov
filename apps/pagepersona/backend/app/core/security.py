@@ -34,3 +34,37 @@ def decode_token(token: str) -> Optional[dict]:
         return payload
     except JWTError:
         return None
+
+from fastapi import Depends, HTTPException, Request
+import asyncpg
+from app.database import get_db
+
+async def get_current_user(
+    request: Request,
+    db: asyncpg.Connection = Depends(get_db)
+) -> dict:
+    # Try cookie first, then Authorization header
+    token = request.cookies.get("access_token")
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    payload = decode_token(token)
+    if not payload or payload.get("type") != "access":
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user = await db.fetchrow(
+        "SELECT * FROM users WHERE id = $1", user_id
+    )
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    return dict(user)

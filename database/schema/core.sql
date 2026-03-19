@@ -141,3 +141,47 @@ CREATE INDEX IF NOT EXISTS idx_pricing_product
 
 CREATE INDEX IF NOT EXISTS idx_pricing_country
     ON pricing_tiers(country_code);
+
+-- 08 PROJECTS
+-- One project = one sales page being personalised.
+-- Belongs to a workspace.
+CREATE TABLE IF NOT EXISTS projects (
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    workspace_id        UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+    name                VARCHAR(255) NOT NULL,
+    page_url            TEXT NOT NULL,
+    platform            VARCHAR(100) NOT NULL DEFAULT 'html',
+    script_id           VARCHAR(50) UNIQUE NOT NULL,
+    script_verified     BOOLEAN DEFAULT FALSE,
+    status              VARCHAR(50) NOT NULL DEFAULT 'draft',
+    created_at          TIMESTAMPTZ DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_projects_workspace
+    ON projects(workspace_id);
+
+CREATE INDEX IF NOT EXISTS idx_projects_script_id
+    ON projects(script_id);
+
+-- 09 RULES
+-- One rule = one IF/THEN personalisation rule.
+-- Belongs to a project.
+CREATE TABLE IF NOT EXISTS rules (
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id          UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    name                VARCHAR(255) NOT NULL,
+    conditions          JSONB NOT NULL DEFAULT '[]',
+    condition_operator  VARCHAR(10) NOT NULL DEFAULT 'AND',
+    actions             JSONB NOT NULL DEFAULT '[]',
+    priority            INTEGER NOT NULL DEFAULT 0,
+    is_active           BOOLEAN DEFAULT FALSE,
+    created_at          TIMESTAMPTZ DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_rules_project
+    ON rules(project_id);
+
+CREATE INDEX IF NOT EXISTS idx_rules_priority
+    ON rules(project_id, priority);
