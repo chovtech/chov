@@ -161,5 +161,45 @@
       "cta_demo": "Voir le projet de démonstration",
       "cta_docs": "Lire le guide de démarrage"
     }
+  },
+  "wizard": {
+    "title": "Créer un nouveau projet",
+    "step": "Étape",
+    "of": "sur",
+    "complete": "Complété",
+    "done": "Terminé",
+    "steps": {
+      "step1": "Nom & URL",
+      "step2": "Plateforme",
+      "step3": "Installer le script"
+    },
+    "step1": {
+      "name_label": "Nom du projet",
+      "name_placeholder": "ex. Page de vente School Management",
+      "url_label": "URL de la page",
+      "url_placeholder": "https://exemple.com/page-de-vente",
+      "url_hint": "Entrez l'URL complète de la page que vous souhaitez personnaliser"
+    },
+    "step2": {
+      "heading": "Comment votre site est-il construit ?",
+      "subheading": "Sélectionnez votre plateforme pour voir les instructions d'installation optimisées.",
+      "install_note_html": "Copiez et collez le script de suivi dans la section head de votre page.",
+      "install_note_wordpress": "Copiez et collez le script dans les paramètres d'en-tête WordPress ou utilisez notre plugin officiel."
+    },
+    "step3": {
+      "heading": "Installer PagePersona",
+      "subheading_html": "Collez cette balise script dans la section head de votre page.",
+      "subheading_wordpress": "Connectez votre site WordPress pour activer PagePersona.",
+      "paste_instruction": "Collez ceci dans le <head> de votre page",
+      "copy": "Copier le code",
+      "copied": "Copié !",
+      "connect_wordpress": "Connecter le plugin WordPress",
+      "connect_wordpress_note": "Cela liera PagePersona à votre site WordPress de manière sécurisée. Vous serez redirigé vers votre panneau d'administration WordPress.",
+      "verify": "Vérifier l'installation",
+      "verifying": "Vérification...",
+      "detected": "Script détecté ✓",
+      "not_verified": "Pas encore vérifié",
+      "tip": "Si vous utilisez un CMS comme WordPress ou Webflow, collez ce code dans les paramètres d'en-tête global. Contactez le support si vous avez besoin d'aide."
+    }
   }
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
+import NewProjectModal from '@/components/ui/NewProjectModal'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 
 const tabKeys = ['all', 'active', 'drafts', 'archived']
@@ -32,6 +33,7 @@ const sampleProjects = [
 export default function DashboardPage() {
   const { t } = useTranslation('common')
   const [activeTab, setActiveTab] = useState('all')
+  const [modalOpen, setModalOpen] = useState(false)
 
   // Switch to true once projects API is wired up
   const hasProjects = false
@@ -39,13 +41,12 @@ export default function DashboardPage() {
   return (
     <>
       <Topbar workspaceName="Marketing Team Workspace" />
+      <NewProjectModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
 
       {hasProjects ? (
 
         /* ── PROJECTS STATE ── */
         <div className="p-8 max-w-7xl mx-auto w-full">
-
-          {/* Page heading */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
               <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
@@ -56,8 +57,8 @@ export default function DashboardPage() {
               </p>
             </div>
             <button
+              onClick={() => setModalOpen(true)}
               className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] text-white rounded-xl font-bold shadow-lg shadow-[#1A56DB]/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-              onClick={() => {/* TODO: open new project modal */}}
             >
               <Icon name="add" className="text-lg" />
               <span>{t('dashboard.new_project')}</span>
@@ -88,7 +89,6 @@ export default function DashboardPage() {
                 key={project.id}
                 className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 transition-all group"
               >
-                {/* Card thumbnail */}
                 <div className="h-40 bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
                   <div className={`absolute inset-0 ${
                     project.status === 'active'
@@ -107,8 +107,6 @@ export default function DashboardPage() {
                     )}
                   </div>
                 </div>
-
-                {/* Card body */}
                 <div className="p-5">
                   <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 group-hover:text-[#1A56DB] transition-colors">
                     {project.name}
@@ -117,8 +115,6 @@ export default function DashboardPage() {
                     <Icon name="link" className="text-sm" />
                     {project.url}
                   </p>
-
-                  {/* Stats */}
                   <div className="grid grid-cols-2 gap-4 mb-5 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                     <div>
                       <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-0.5">
@@ -137,8 +133,6 @@ export default function DashboardPage() {
                       </p>
                     </div>
                   </div>
-
-                  {/* Card footer */}
                   <div className="flex items-center justify-between text-[11px] text-slate-400">
                     <span>{t('dashboard.project_card.edited')} {project.edited}</span>
                     <div className="flex gap-2">
@@ -156,8 +150,8 @@ export default function DashboardPage() {
 
             {/* Add new project card */}
             <div
+              onClick={() => setModalOpen(true)}
               className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center p-8 text-center hover:border-[#1A56DB]/40 transition-colors cursor-pointer group"
-              onClick={() => {/* TODO: open new project modal */}}
             >
               <div className="size-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Icon name="post_add" className="text-3xl text-slate-300 group-hover:text-[#1A56DB]" />
@@ -181,8 +175,6 @@ export default function DashboardPage() {
         /* ── EMPTY STATE ── */
         <div className="flex flex-1 items-center justify-center p-8 min-h-[calc(100vh-64px)]">
           <div className="w-full max-w-2xl text-center">
-
-            {/* Illustration */}
             <div className="mb-10 flex justify-center">
               <div className="relative">
                 <div className="absolute inset-0 scale-150 rounded-full bg-[#1A56DB]/5 blur-3xl" />
@@ -204,7 +196,6 @@ export default function DashboardPage() {
                       <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">add</span>
                     </div>
                   </div>
-                  {/* Floating badges */}
                   <div className="absolute -top-6 -right-6 h-16 w-16 rounded-full bg-[#1A56DB] flex items-center justify-center text-white shadow-lg shadow-[#1A56DB]/30 animate-bounce">
                     <span className="material-symbols-outlined text-3xl">magic_button</span>
                   </div>
@@ -214,20 +205,16 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-
-            {/* Text */}
             <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-4">
               {t('dashboard.empty_state.heading')}
             </h2>
             <p className="mx-auto max-w-md text-lg text-slate-600 dark:text-slate-400 mb-10 leading-relaxed">
               {t('dashboard.empty_state.description')}
             </p>
-
-            {/* CTAs */}
             <div className="flex flex-col items-center gap-6">
               <button
+                onClick={() => setModalOpen(true)}
                 className="flex items-center gap-2 rounded-xl bg-[#1A56DB] px-8 py-4 text-lg font-bold text-white shadow-lg shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 hover:-translate-y-0.5 transition-all"
-                onClick={() => {/* TODO: open new project modal */}}
               >
                 <span className="material-symbols-outlined">add_circle</span>
                 {t('dashboard.empty_state.cta_primary')}
@@ -244,7 +231,6 @@ export default function DashboardPage() {
                 </a>
               </div>
             </div>
-
           </div>
         </div>
       )}

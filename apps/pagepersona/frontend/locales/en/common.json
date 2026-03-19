@@ -161,5 +161,45 @@
       "cta_demo": "View demo project",
       "cta_docs": "Read the quickstart guide"
     }
+  },
+  "wizard": {
+    "title": "Create New Project",
+    "step": "Step",
+    "of": "of",
+    "complete": "Complete",
+    "done": "Done",
+    "steps": {
+      "step1": "Name & URL",
+      "step2": "Platform",
+      "step3": "Install Script"
+    },
+    "step1": {
+      "name_label": "Project name",
+      "name_placeholder": "e.g. School Management Sales Page",
+      "url_label": "Page URL",
+      "url_placeholder": "https://example.com/landing-page",
+      "url_hint": "Enter the full URL of the page you want to personalise"
+    },
+    "step2": {
+      "heading": "How is your site built?",
+      "subheading": "Select your platform to see the optimised installation instructions.",
+      "install_note_html": "Copy and paste the tracking script into the head section of your page.",
+      "install_note_wordpress": "Copy and paste the tracking script into your WordPress header settings or use our official plugin."
+    },
+    "step3": {
+      "heading": "Install PagePersona",
+      "subheading_html": "Paste this script tag into the head section of your page.",
+      "subheading_wordpress": "Connect your WordPress site to enable PagePersona.",
+      "paste_instruction": "Paste this into the <head> of your page",
+      "copy": "Copy Code",
+      "copied": "Copied!",
+      "connect_wordpress": "Connect WordPress Plugin",
+      "connect_wordpress_note": "This will securely link PagePersona to your WordPress site. You will be redirected to your WordPress admin panel.",
+      "verify": "Verify Installation",
+      "verifying": "Verifying...",
+      "detected": "Script Detected ✓",
+      "not_verified": "Not yet verified",
+      "tip": "If you use a CMS like WordPress or Webflow, paste this code into the Global Header settings. Contact support if you need help with your specific platform."
+    }
   }
 }
