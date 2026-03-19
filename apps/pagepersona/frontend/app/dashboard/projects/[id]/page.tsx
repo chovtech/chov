@@ -29,7 +29,7 @@ export default function ProjectDashboardPage() {
   const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchProject = async () => {
       try {
         const res = await projectApi.get(projectId)
         setProject(res.data)
@@ -39,154 +39,258 @@ export default function ProjectDashboardPage() {
         setLoading(false)
       }
     }
-    if (projectId) fetch()
+    if (projectId) fetchProject()
   }, [projectId])
 
   if (loading || notFound || !project) return (
-    <>
-      <Topbar workspaceName='Marketing Team Workspace' />
-      <div className='flex flex-1 items-center justify-center min-h-[calc(100vh-64px)]'>
+    <div className="flex flex-col min-h-screen">
+      <Topbar workspaceName="Marketing Team Workspace" />
+      <div className="flex flex-1 items-center justify-center">
         {loading ? (
-          <span className='material-symbols-outlined text-4xl text-slate-300 animate-spin'>sync</span>
+          <span className="material-symbols-outlined text-4xl text-slate-300 animate-spin">sync</span>
         ) : (
-          <div className='text-center'>
-            <p className='text-slate-500 mb-4'>Project not found.</p>
-            <button onClick={() => router.push('/dashboard')} className='text-[#1A56DB] font-semibold hover:underline'>
-              Back to dashboard
-            </button>
+          <div className="text-center">
+            <p className="text-slate-500 mb-4">Project not found.</p>
+            <button onClick={() => router.push("/dashboard")} className="text-[#1A56DB] font-semibold hover:underline">Back to dashboard</button>
           </div>
         )}
       </div>
-    </>
+    </div>
   )
 
-  return (
-    <>
-      <Topbar workspaceName='Marketing Team Workspace' />
-      <div className='p-8 max-w-7xl mx-auto w-full'>
+  const activityItems = [
+    { bg: "bg-blue-100", color: "text-blue-600", icon: "bolt", title: "No rules fired yet", desc: "Rules will appear here once active and visitors arrive", time: "" },
+    { bg: "bg-emerald-100", color: "text-emerald-600", icon: "check_circle", title: "Script installed", desc: "PagePersona script was verified on your page", time: "Just now" },
+  ]
 
-        <div className='flex items-center gap-2 text-sm text-slate-500 mb-6'>
-          <button onClick={() => router.push('/dashboard')} className='hover:text-[#1A56DB] transition-colors'>
-            {t('dashboard.heading')}
+  const stubVisitors = [
+    { location: "New York, US", ip: "72.14.xx.xxx", stage: "HOT", stageColor: "bg-red-100 text-red-700 border-red-200", rule: "Pricing Modal", time: "2m 14s", last: "Just now", lastColor: "text-emerald-600" },
+    { location: "London, UK", ip: "194.223.xx.xx", stage: "WARM", stageColor: "bg-amber-100 text-amber-700 border-amber-200", rule: "None", time: "5m 42s", last: "4m ago", lastColor: "text-slate-500" },
+    { location: "Berlin, DE", ip: "85.214.xx.xxx", stage: "COLD", stageColor: "bg-slate-100 text-slate-600 border-slate-200", rule: "None", time: "0m 34s", last: "12m ago", lastColor: "text-slate-500" },
+  ]
+
+  return (
+    <div className="flex flex-col min-h-screen bg-slate-50">
+      <Topbar workspaceName="Marketing Team Workspace" />
+      <div className="p-8 max-w-7xl mx-auto w-full">
+
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
+          <button onClick={() => router.push("/dashboard")} className="hover:text-[#1A56DB] transition-colors">
+            {t("dashboard.heading")}
           </button>
-          <Icon name='chevron_right' className='text-base' />
-          <span className='text-slate-900 font-semibold'>{project.name}</span>
+          <Icon name="chevron_right" className="text-base" />
+          <span className="text-slate-900 font-semibold">{project.name}</span>
         </div>
 
-        <div className='flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8'>
+        {/* Project Header */}
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8">
           <div>
-            <div className='flex items-center gap-3 mb-2'>
-              <h1 className='text-2xl font-black tracking-tight text-slate-900 dark:text-white'>{project.name}</h1>
-              {project.status === 'active' ? (
-                <span className='px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase tracking-wider'>
-                  {t('status.active')}
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-2xl font-black tracking-tight text-slate-900">{project.name}</h1>
+              {project.status === "active" ? (
+                <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase tracking-wider border border-green-200">
+                  {t("status.active")}
                 </span>
               ) : (
-                <span className='px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full uppercase tracking-wider'>
-                  {t('status.draft')}
+                <span className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full uppercase tracking-wider border border-slate-200">
+                  {t("status.draft")}
                 </span>
               )}
             </div>
-            <a href={project.page_url} target='_blank' rel='noopener noreferrer'
-              className='text-sm text-slate-500 hover:text-[#1A56DB] flex items-center gap-1 transition-colors'>
-              <Icon name='link' className='text-sm' />
+            <a href={project.page_url} target="_blank" rel="noopener noreferrer"
+              className="text-sm text-slate-500 hover:text-[#1A56DB] flex items-center gap-1 transition-colors">
+              <Icon name="link" className="text-sm" />
               {project.page_url}
-              <Icon name='open_in_new' className='text-xs' />
+              <Icon name="open_in_new" className="text-xs" />
             </a>
           </div>
           <div className={project.script_verified
-            ? 'flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold bg-emerald-50 border-emerald-200 text-emerald-700'
-            : 'flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold bg-amber-50 border-amber-200 text-amber-700'}>
-            <Icon name={project.script_verified ? 'check_circle' : 'warning'} className='text-base' />
-            {project.script_verified ? t('project.script_live') : t('project.script_not_verified')}
+            ? "flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold bg-emerald-50 border-emerald-200 text-emerald-700"
+            : "flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold bg-amber-50 border-amber-200 text-amber-700"}>
+            <Icon name={project.script_verified ? "check_circle" : "warning"} className="text-base" />
+            {project.script_verified ? t("project.script_live") : t("project.script_not_verified")}
           </div>
         </div>
 
-        <div className='grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8'>
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
           {[
-            { label: t('project.stats.active_rules'), value: '0', icon: 'rule' },
-            { label: t('project.stats.sessions_today'), value: '0', icon: 'visibility' },
-            { label: t('project.stats.conversions_today'), value: '0', icon: 'trending_up' },
-            { label: t('project.stats.conversion_lift'), value: '—', icon: 'percent' },
+            { label: t("project.stats.active_rules"), value: "0", delta: "0%", deltaColor: "text-slate-400" },
+            { label: t("project.stats.sessions_today"), value: "0", delta: "+0%", deltaColor: "text-emerald-500" },
+            { label: t("project.stats.conversions_today"), value: "0", delta: "+0%", deltaColor: "text-emerald-500" },
+            { label: t("project.stats.conversion_lift"), value: "—", delta: "", deltaColor: "" },
           ].map((stat) => (
-            <div key={stat.label} className='bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5'>
-              <div className='flex items-center justify-between mb-3'>
-                <p className='text-xs font-bold text-slate-400 uppercase tracking-widest'>{stat.label}</p>
-                <div className='w-8 h-8 rounded-lg bg-[#1A56DB]/5 flex items-center justify-center'>
-                  <Icon name={stat.icon} className='text-sm text-[#1A56DB]' />
-                </div>
+            <div key={stat.label} className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+              <p className="text-slate-500 text-sm font-medium mb-2">{stat.label}</p>
+              <div className="flex items-baseline justify-between">
+                <h3 className="text-3xl font-bold text-slate-900">{stat.value}</h3>
+                {stat.delta && <span className={"text-sm font-medium " + stat.deltaColor}>{stat.delta}</span>}
               </div>
-              <p className='text-2xl font-black text-slate-900 dark:text-white'>{stat.value}</p>
             </div>
           ))}
         </div>
 
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-          <div className='lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6'>
-            <h2 className='text-base font-bold text-slate-900 dark:text-white mb-4'>{t('project.recent_activity')}</h2>
-            <div className='flex flex-col items-center justify-center py-12 text-center'>
-              <div className='w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3'>
-                <Icon name='history' className='text-2xl text-slate-300' />
-              </div>
-              <p className='text-sm font-semibold text-slate-500'>{t('project.no_activity')}</p>
-              <p className='text-xs text-slate-400 mt-1'>{t('project.no_activity_desc')}</p>
+        {/* Row 2: Recent Activity + Quick Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+          {/* Recent Activity */}
+          <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+              <h4 className="font-bold text-slate-900">{t("project.recent_activity")}</h4>
+              <button className="text-[#1A56DB] text-sm font-semibold hover:underline">{t("project.view_all")}</button>
+            </div>
+            <div>
+              {activityItems.map((item, i) => (
+                <div key={i} className="flex items-start gap-4 px-6 py-4 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
+                  <div className={"mt-1 w-8 h-8 rounded-full flex items-center justify-center shrink-0 " + item.bg}>
+                    <Icon name={item.icon} className={"text-lg " + item.color} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                    <p className="text-xs text-slate-500">{item.desc}</p>
+                  </div>
+                  {item.time && <span className="text-xs text-slate-400 whitespace-nowrap">{item.time}</span>}
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className='bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6'>
-            <h2 className='text-base font-bold text-slate-900 dark:text-white mb-4'>{t('project.quick_actions')}</h2>
-            <div className='flex flex-col gap-3'>
-
-              <a href={'/dashboard/projects/' + project.id + '/rules'}
-                className='flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-[#1A56DB] hover:bg-[#1A56DB]/5 transition-all group'>
-                <div className='w-9 h-9 rounded-lg bg-[#1A56DB]/10 flex items-center justify-center shrink-0'>
-                  <Icon name='rule' className='text-base text-[#1A56DB]' />
+          {/* Quick Actions */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <h4 className="font-bold text-slate-900 mb-5">{t("project.quick_actions")}</h4>
+            <div className="space-y-3">
+              <a href={"/dashboard/projects/" + project.id + "/rules"}
+                className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#1A56DB]/30 transition-all">
+                <div className="flex items-center gap-3">
+                  <Icon name="edit_note" className="text-slate-400 group-hover:text-[#1A56DB] transition-colors" />
+                  <span className="text-sm font-semibold text-slate-700">{t("project.actions.setup_rules")}</span>
                 </div>
-                <div>
-                  <p className='text-sm font-bold text-slate-700 group-hover:text-[#1A56DB] transition-colors'>{t('project.actions.setup_rules')}</p>
-                  <p className='text-xs text-slate-400'>{t('project.actions.setup_rules_desc')}</p>
-                </div>
-                <Icon name='arrow_forward' className='text-sm text-slate-300 group-hover:text-[#1A56DB] ml-auto transition-colors' />
+                <Icon name="chevron_right" className="text-slate-300 group-hover:text-[#1A56DB] transition-colors" />
               </a>
-
-              <button className='flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-[#1A56DB] hover:bg-[#1A56DB]/5 transition-all group'>
-                <div className='w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0'>
-                  <Icon name='bar_chart' className='text-base text-slate-500' />
+              <button className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#1A56DB]/30 transition-all">
+                <div className="flex items-center gap-3">
+                  <Icon name="category" className="text-slate-400 group-hover:text-[#1A56DB] transition-colors" />
+                  <span className="text-sm font-semibold text-slate-700">Manage Blocks</span>
                 </div>
-                <div className='text-left'>
-                  <p className='text-sm font-bold text-slate-700 group-hover:text-[#1A56DB] transition-colors'>{t('project.actions.view_analytics')}</p>
-                  <p className='text-xs text-slate-400'>{t('project.actions.view_analytics_desc')}</p>
-                </div>
-                <Icon name='arrow_forward' className='text-sm text-slate-300 group-hover:text-[#1A56DB] ml-auto transition-colors' />
+                <Icon name="chevron_right" className="text-slate-300 group-hover:text-[#1A56DB] transition-colors" />
               </button>
-
-              <a href={project.page_url} target='_blank' rel='noopener noreferrer'
-                className='flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-[#1A56DB] hover:bg-[#1A56DB]/5 transition-all group'>
-                <div className='w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0'>
-                  <Icon name='preview' className='text-base text-slate-500' />
+              <button className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#1A56DB]/30 transition-all">
+                <div className="flex items-center gap-3">
+                  <Icon name="leaderboard" className="text-slate-400 group-hover:text-[#1A56DB] transition-colors" />
+                  <span className="text-sm font-semibold text-slate-700">{t("project.actions.view_analytics")}</span>
                 </div>
-                <div>
-                  <p className='text-sm font-bold text-slate-700 group-hover:text-[#1A56DB] transition-colors'>{t('project.actions.preview_page')}</p>
-                  <p className='text-xs text-slate-400'>{t('project.actions.preview_page_desc')}</p>
+                <Icon name="chevron_right" className="text-slate-300 group-hover:text-[#1A56DB] transition-colors" />
+              </button>
+              <a href={project.page_url} target="_blank" rel="noopener noreferrer"
+                className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#1A56DB]/30 transition-all">
+                <div className="flex items-center gap-3">
+                  <Icon name="preview" className="text-slate-400 group-hover:text-[#1A56DB] transition-colors" />
+                  <span className="text-sm font-semibold text-slate-700">{t("project.actions.preview_page")}</span>
                 </div>
-                <Icon name='open_in_new' className='text-sm text-slate-300 group-hover:text-[#1A56DB] ml-auto transition-colors' />
+                <Icon name="chevron_right" className="text-slate-300 group-hover:text-[#1A56DB] transition-colors" />
               </a>
-
-              <button className='flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-slate-300 transition-all'>
-                <div className='w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0'>
-                  <Icon name='settings' className='text-base text-slate-500' />
-                </div>
-                <div className='text-left'>
-                  <p className='text-sm font-bold text-slate-700'>{t('project.actions.project_settings')}</p>
-                  <p className='text-xs text-slate-400'>{t('project.actions.project_settings_desc')}</p>
-                </div>
-                <Icon name='arrow_forward' className='text-sm text-slate-300 ml-auto' />
-              </button>
-
             </div>
           </div>
         </div>
+
+        {/* Row 3: Performance Trend + Optimization Tip */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+          {/* Performance Trend */}
+          <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-bold text-slate-900">{t("project.trend.heading")}</h4>
+              <div className="flex gap-3">
+                <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#1A56DB]"></span>
+                  Conversions
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-200"></span>
+                  Sessions
+                </span>
+              </div>
+            </div>
+            <div className="h-48 bg-slate-50 rounded-lg flex items-end justify-between p-4 gap-2 mb-3">
+              {[30,45,40,60,55,85,50,95].map((h, i) => (
+                <div key={i} className="w-full flex flex-col gap-1 items-center justify-end h-full">
+                  <div className="w-full rounded-t" style={{height: h + "%", backgroundColor: i % 2 === 0 ? "#e2e8f0" : "rgba(26,86,219," + (0.3 + (h/100)*0.7) + ")"}}></div>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-between text-[10px] text-slate-400 px-4">
+              {["Mon","Tue","Wed","Thu","Fri","Sat","Sun","Today"].map(d => (
+                <span key={d}>{d}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Optimization Tip */}
+          <div className="bg-gradient-to-br from-[#1A56DB] to-blue-700 p-6 rounded-xl text-white shadow-lg shadow-[#1A56DB]/20 flex flex-col">
+            <Icon name="lightbulb" className="text-3xl mb-4" />
+            <h5 className="font-bold text-lg mb-2">{t("project.ai_tips.heading")}</h5>
+            <p className="text-blue-100 text-sm leading-relaxed mb-6 flex-1">
+              {t("project.ai_tips.tip1")}
+            </p>
+            <button className="bg-white/20 hover:bg-white/30 transition-colors text-white py-2.5 px-4 rounded-xl text-sm font-bold w-full backdrop-blur-sm">
+              {t("project.ai_tips.action1")}
+            </button>
+          </div>
+        </div>
+
+        {/* Row 4: Recent Visitors */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-8">
+          <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+            <h4 className="font-bold text-slate-900">{t("project.visitors.heading")}</h4>
+            <button className="text-[#1A56DB] text-sm font-semibold hover:underline">{t("project.visitors.view_all")}</button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50">
+                  <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("project.visitors.col_visitor")}</th>
+                  <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Awareness Stage</th>
+                  <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Rule Triggered</th>
+                  <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Time on Site</th>
+                  <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Last Active</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {stubVisitors.map((v, i) => (
+                  <tr key={i} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                          <Icon name="person" className="text-slate-400 text-lg" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">{v.location}</p>
+                          <p className="text-xs text-slate-500">{v.ip}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={"px-2.5 py-0.5 text-xs font-bold rounded-full border " + v.stageColor}>{v.stage}</span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-600">{v.rule}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600">{v.time}</td>
+                    <td className={"px-6 py-4 text-sm font-medium " + v.lastColor}>{v.last}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {stubVisitors.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <Icon name="group" className="text-3xl text-slate-300 mb-3" />
+                <p className="text-sm font-semibold text-slate-500">{t("project.visitors.no_visitors")}</p>
+                <p className="text-xs text-slate-400 mt-1">{t("project.visitors.no_visitors_desc")}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
-    </>
+    </div>
   )
 }
