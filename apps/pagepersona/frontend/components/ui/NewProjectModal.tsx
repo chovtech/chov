@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
+import { projectApi } from '@/lib/api/client'
 
 interface Props {
   isOpen: boolean
@@ -10,19 +12,21 @@ interface Props {
 }
 
 const platforms = [
-  { key: 'html',          label: 'Native HTML/JS',  icon: 'code' },
-  { key: 'wordpress',     label: 'WordPress',        icon: 'web_asset' },
-  { key: 'shopify',       label: 'Shopify',          icon: 'shopping_bag' },
-  { key: 'webflow',       label: 'Webflow',          icon: 'dashboard_customize' },
-  { key: 'gohighlevel',   label: 'GoHighLevel',      icon: 'rocket_launch' },
-  { key: 'clickfunnels',  label: 'ClickFunnels',     icon: 'filter_alt' },
-  { key: 'systeme',       label: 'Systeme.io',       icon: 'hub' },
-  { key: 'framer',        label: 'Framer',           icon: 'animation' },
-  { key: 'other',         label: 'Other',            icon: 'more_horiz' },
+  { key: 'html',         label: 'Native HTML/JS', icon: 'code' },
+  { key: 'wordpress',    label: 'WordPress',       icon: 'web_asset' },
+  { key: 'shopify',      label: 'Shopify',         icon: 'shopping_bag' },
+  { key: 'webflow',      label: 'Webflow',         icon: 'dashboard_customize' },
+  { key: 'gohighlevel',  label: 'GoHighLevel',     icon: 'rocket_launch' },
+  { key: 'clickfunnels', label: 'ClickFunnels',    icon: 'filter_alt' },
+  { key: 'systeme',      label: 'Systeme.io',      icon: 'hub' },
+  { key: 'framer',       label: 'Framer',          icon: 'animation' },
+  { key: 'other',        label: 'Other',           icon: 'more_horiz' },
 ]
 
 export default function NewProjectModal({ isOpen, onClose }: Props) {
   const { t } = useTranslation('common')
+  const router = useRouter()
+
   const [step, setStep] = useState(1)
   const [projectName, setProjectName] = useState('')
   const [pageUrl, setPageUrl] = useState('')
@@ -31,25 +35,23 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
   const [copied, setCopied] = useState(false)
   const [verified, setVerified] = useState(false)
   const [verifying, setVerifying] = useState(false)
+  const [launching, setLaunching] = useState(false)
+  const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
+  const [scriptId, setScriptId] = useState<string>('')
+  const [error, setError] = useState('')
 
   if (!isOpen) return null
 
   const totalSteps = 3
   const progress = Math.round((step / totalSteps) * 100)
 
-  // URL validation
   const validateUrl = (val: string) => {
-    try {
-      new URL(val)
-      setUrlValid(true)
-    } catch {
-      setUrlValid(false)
-    }
+    try { new URL(val); setUrlValid(true) }
+    catch { setUrlValid(false) }
     setPageUrl(val)
   }
 
-  // Fake script tag
-  const scriptTag = `<script src="https://cdn.pagepersona.com/js/sdk.js?id=PP-${Math.random().toString(36).slice(2, 8).toUpperCase()}"></script>`
+  const scriptTag = `<script src="https://cdn.pagepersona.com/js/sdk.js?id=${scriptId}"></script>`
 
   const handleCopy = () => {
     navigator.clipboard.writeText(scriptTag)
@@ -57,13 +59,47 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // Stub verify — will poll real URL once projects API is wired
+  // Step 1 → Step 2: create project in DB, get script ID
+  const handleStep1Next = async () => {
+    setError('')
+    try {
+      const res = await projectApi.create({
+        name: projectName,
+        page_url: pageUrl,
+        platform: platform || 'html',
+      })
+      setCreatedProjectId(res.data.id)
+      setScriptId(res.data.script_id)
+      setStep(2)
+    } catch (e: any) {
+      setError(e.response?.data?.detail || 'Failed to create project. Please try again.')
+    }
+  }
+
+  // Stub verify — will poll real URL once tracking script is built
   const handleVerify = () => {
     setVerifying(true)
     setTimeout(() => {
       setVerifying(false)
       setVerified(true)
+      // Update script_verified in DB
+      if (createdProjectId) {
+        projectApi.update(createdProjectId, { script_verified: true }).catch(() => {})
+      }
     }, 2000)
+  }
+
+  // Launch Project → update status to active, route to project dashboard
+  const handleLaunch = async () => {
+    if (!createdProjectId) return
+    setLaunching(true)
+    try {
+      await projectApi.update(createdProjectId, { status: 'active' })
+      handleClose()
+      router.push(`/dashboard/projects/${createdProjectId}`)
+    } catch {
+      setLaunching(false)
+    }
   }
 
   const handleClose = () => {
@@ -75,6 +111,10 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
     setCopied(false)
     setVerified(false)
     setVerifying(false)
+    setLaunching(false)
+    setCreatedProjectId(null)
+    setScriptId('')
+    setError('')
     onClose()
   }
 
@@ -88,17 +128,11 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
         {/* Header */}
         <div className="px-8 pt-8 pb-6 bg-white border-b border-slate-100">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-slate-900">
-              {t('wizard.title')}
-            </h2>
-            <button
-              onClick={handleClose}
-              className="text-slate-400 hover:text-slate-600 transition-colors"
-            >
+            <h2 className="text-xl font-bold text-slate-900">{t('wizard.title')}</h2>
+            <button onClick={handleClose} className="text-slate-400 hover:text-slate-600 transition-colors">
               <Icon name="close" />
             </button>
           </div>
-          {/* Progress */}
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold text-[#1A56DB]">
               {t('wizard.step')} {step} {t('wizard.of')} {totalSteps}: {t(`wizard.steps.step${step}`)}
@@ -119,11 +153,8 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
           {/* ── STEP 1: Name & URL ── */}
           {step === 1 && (
             <div className="flex flex-col gap-5">
-              {/* Project name */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-slate-700">
-                  {t('wizard.step1.name_label')}
-                </label>
+                <label className="text-sm font-semibold text-slate-700">{t('wizard.step1.name_label')}</label>
                 <input
                   type="text"
                   value={projectName}
@@ -132,12 +163,8 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-[#1A56DB] focus:ring-2 focus:ring-[#1A56DB]/20 outline-none transition-all text-sm"
                 />
               </div>
-
-              {/* Page URL */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-slate-700">
-                  {t('wizard.step1.url_label')}
-                </label>
+                <label className="text-sm font-semibold text-slate-700">{t('wizard.step1.url_label')}</label>
                 <div className="relative">
                   <input
                     type="url"
@@ -145,11 +172,9 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                     onChange={e => validateUrl(e.target.value)}
                     placeholder={t('wizard.step1.url_placeholder')}
                     className={`w-full rounded-xl border bg-white px-4 py-3 pr-10 text-slate-900 placeholder:text-slate-400 focus:ring-2 outline-none transition-all text-sm ${
-                      urlValid === true
-                        ? 'border-emerald-400 focus:ring-emerald-400/20'
-                        : urlValid === false
-                        ? 'border-red-400 focus:ring-red-400/20'
-                        : 'border-slate-200 focus:border-[#1A56DB] focus:ring-[#1A56DB]/20'
+                      urlValid === true ? 'border-emerald-400 focus:ring-emerald-400/20'
+                      : urlValid === false ? 'border-red-400 focus:ring-red-400/20'
+                      : 'border-slate-200 focus:border-[#1A56DB] focus:ring-[#1A56DB]/20'
                     }`}
                   />
                   {urlValid === true && (
@@ -168,6 +193,12 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                   {t('wizard.step1.url_hint')}
                 </p>
               </div>
+              {error && (
+                <p className="text-xs text-red-500 flex items-center gap-1">
+                  <Icon name="error" className="text-sm" />
+                  {error}
+                </p>
+              )}
             </div>
           )}
 
@@ -175,12 +206,8 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
           {step === 2 && (
             <div className="flex flex-col gap-5">
               <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1">
-                  {t('wizard.step2.heading')}
-                </h3>
-                <p className="text-sm text-slate-500">
-                  {t('wizard.step2.subheading')}
-                </p>
+                <h3 className="text-lg font-bold text-slate-900 mb-1">{t('wizard.step2.heading')}</h3>
+                <p className="text-sm text-slate-500">{t('wizard.step2.subheading')}</p>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {platforms.map(p => (
@@ -199,14 +226,9 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                       </div>
                     )}
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      platform === p.key
-                        ? 'bg-[#1A56DB]/10'
-                        : 'bg-slate-100'
+                      platform === p.key ? 'bg-[#1A56DB]/10' : 'bg-slate-100'
                     }`}>
-                      <Icon
-                        name={p.icon}
-                        className={`text-2xl ${platform === p.key ? 'text-[#1A56DB]' : 'text-slate-500'}`}
-                      />
+                      <Icon name={p.icon} className={`text-2xl ${platform === p.key ? 'text-[#1A56DB]' : 'text-slate-500'}`} />
                     </div>
                     <span className={`text-xs font-bold ${platform === p.key ? 'text-[#1A56DB]' : 'text-slate-700'}`}>
                       {p.label}
@@ -214,16 +236,13 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                   </button>
                 ))}
               </div>
-
-              {/* Install method note */}
               {platform && (
                 <div className="flex items-start gap-3 rounded-xl border border-[#1A56DB]/20 bg-[#1A56DB]/5 p-4">
                   <Icon name="info" className="text-[#1A56DB] mt-0.5 shrink-0" />
                   <p className="text-sm text-slate-700">
                     {platform === 'wordpress'
                       ? t('wizard.step2.install_note_wordpress')
-                      : t('wizard.step2.install_note_html')
-                    }
+                      : t('wizard.step2.install_note_html')}
                   </p>
                 </div>
               )}
@@ -234,19 +253,15 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
           {step === 3 && (
             <div className="flex flex-col gap-5">
               <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1">
-                  {t('wizard.step3.heading')}
-                </h3>
+                <h3 className="text-lg font-bold text-slate-900 mb-1">{t('wizard.step3.heading')}</h3>
                 <p className="text-sm text-slate-500">
                   {platform === 'wordpress'
                     ? t('wizard.step3.subheading_wordpress')
-                    : t('wizard.step3.subheading_html')
-                  }
+                    : t('wizard.step3.subheading_html')}
                 </p>
               </div>
 
               {platform === 'wordpress' ? (
-                /* WordPress connect */
                 <div className="rounded-xl border-2 border-dashed border-slate-200 bg-white p-6 flex flex-col items-center gap-4 text-center">
                   <div className="w-14 h-14 rounded-full bg-[#1A56DB]/10 flex items-center justify-center">
                     <Icon name="web_asset" className="text-3xl text-[#1A56DB]" />
@@ -255,16 +270,11 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                     <Icon name="extension" />
                     {t('wizard.step3.connect_wordpress')}
                   </button>
-                  <p className="text-xs text-slate-500 max-w-sm">
-                    {t('wizard.step3.connect_wordpress_note')}
-                  </p>
+                  <p className="text-xs text-slate-500 max-w-sm">{t('wizard.step3.connect_wordpress_note')}</p>
                 </div>
               ) : (
-                /* HTML script */
                 <div>
-                  <p className="text-xs text-slate-500 mb-2">
-                    {t('wizard.step3.paste_instruction')}
-                  </p>
+                  <p className="text-xs text-slate-500 mb-2">{t('wizard.step3.paste_instruction')}</p>
                   <div className="rounded-xl bg-[#0F172A] p-5 relative">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex gap-1.5">
@@ -297,7 +307,6 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                   <Icon name={verifying ? 'sync' : 'refresh'} className={verifying ? 'animate-spin text-sm' : 'text-sm'} />
                   {verifying ? t('wizard.step3.verifying') : t('wizard.step3.verify')}
                 </button>
-
                 {verified ? (
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold border border-emerald-200">
                     <Icon name="check_circle" className="text-base" />
@@ -314,9 +323,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
               {/* Tip */}
               <div className="flex gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100 text-blue-800">
                 <Icon name="lightbulb" className="text-xl shrink-0 mt-0.5" />
-                <p className="text-xs leading-relaxed">
-                  {t('wizard.step3.tip')}
-                </p>
+                <p className="text-xs leading-relaxed">{t('wizard.step3.tip')}</p>
               </div>
             </div>
           )}
@@ -325,10 +332,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
         {/* Footer */}
         <div className="px-8 py-5 bg-white border-t border-slate-100 flex items-center justify-between">
           {step === 1 ? (
-            <button
-              onClick={handleClose}
-              className="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors"
-            >
+            <button onClick={handleClose} className="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors">
               {t('actions.cancel')}
             </button>
           ) : (
@@ -341,10 +345,19 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
             </button>
           )}
 
-          {step < 3 ? (
+          {step === 1 ? (
             <button
-              onClick={() => setStep(s => s + 1)}
-              disabled={step === 1 ? !canProceedStep1 : !canProceedStep2}
+              onClick={handleStep1Next}
+              disabled={!canProceedStep1}
+              className="flex items-center gap-1.5 px-7 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            >
+              {t('actions.next')}
+              <Icon name="arrow_forward" className="text-sm" />
+            </button>
+          ) : step === 2 ? (
+            <button
+              onClick={() => setStep(3)}
+              disabled={!canProceedStep2}
               className="flex items-center gap-1.5 px-7 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               {t('actions.next')}
@@ -352,12 +365,12 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
             </button>
           ) : (
             <button
-              disabled={!verified}
-              onClick={handleClose}
+              disabled={!verified || launching}
+              onClick={handleLaunch}
               className="flex items-center gap-1.5 px-7 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               <Icon name="rocket_launch" className="text-sm" />
-              {t('wizard.done')}
+              {launching ? 'Launching...' : t('wizard.done')}
             </button>
           )}
         </div>

@@ -80,3 +80,17 @@ export const authApiExtended = {
   verifyMagicLink: (token: string) =>
     apiClient.post('/api/auth/magic-link/verify', { token }),
 }
+
+// Projects API
+export const projectApi = {
+  create: (data: { name: string; page_url: string; platform: string }) =>
+    apiClient.post('/api/projects', data),
+  list: () =>
+    apiClient.get('/api/projects'),
+  get: (id: string) =>
+    apiClient.get(`/api/projects/${id}`),
+  update: (id: string, data: { name?: string; status?: string; script_verified?: boolean }) =>
+    apiClient.put(`/api/projects/${id}`, data),
+  delete: (id: string) =>
+    apiClient.delete(`/api/projects/${id}`),
+}
