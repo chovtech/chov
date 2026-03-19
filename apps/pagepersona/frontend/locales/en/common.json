@@ -137,5 +137,29 @@
   "language": {
     "label": "Language",
     "comingSoon": "More languages coming soon"
+  },
+  "dashboard": {
+    "heading": "Your Projects",
+    "subheading": "Manage and optimise your landing pages performance.",
+    "new_project": "New Project",
+    "tabs": {
+      "all": "All Projects",
+      "active": "Active",
+      "drafts": "Drafts",
+      "archived": "Archived"
+    },
+    "project_card": {
+      "rules": "Rules",
+      "conversions": "Conversions",
+      "today": "Today",
+      "edited": "Edited"
+    },
+    "empty_state": {
+      "heading": "Welcome to PagePersona!",
+      "description": "You haven't created any projects yet. Start by adding your first page to begin personalizing your visitor experience.",
+      "cta_primary": "Create Your First Project",
+      "cta_demo": "View demo project",
+      "cta_docs": "Read the quickstart guide"
+    }
   }
 }

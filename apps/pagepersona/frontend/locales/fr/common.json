@@ -137,5 +137,29 @@
   "language": {
     "label": "Langue",
     "comingSoon": "Plus de langues bientôt disponibles"
+  },
+  "dashboard": {
+    "heading": "Vos Projets",
+    "subheading": "Gérez et optimisez les performances de vos pages de destination.",
+    "new_project": "Nouveau Projet",
+    "tabs": {
+      "all": "Tous les projets",
+      "active": "Actifs",
+      "drafts": "Brouillons",
+      "archived": "Archivés"
+    },
+    "project_card": {
+      "rules": "Règles",
+      "conversions": "Conversions",
+      "today": "Aujourd'hui",
+      "edited": "Modifié"
+    },
+    "empty_state": {
+      "heading": "Bienvenue sur PagePersona !",
+      "description": "Vous n'avez pas encore créé de projets. Commencez par ajouter votre première page pour personnaliser l'expérience de vos visiteurs.",
+      "cta_primary": "Créer votre premier projet",
+      "cta_demo": "Voir le projet de démonstration",
+      "cta_docs": "Lire le guide de démarrage"
+    }
   }
 }
