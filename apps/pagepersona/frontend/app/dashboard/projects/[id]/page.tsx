@@ -27,6 +27,7 @@ export default function ProjectDashboardPage() {
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [publishing, setPublishing] = useState(false)
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -57,6 +58,16 @@ export default function ProjectDashboardPage() {
       </div>
     </div>
   )
+
+  const handlePublishToggle = async () => {
+    setPublishing(true)
+    try {
+      const newStatus = project.status === 'active' ? 'draft' : 'active'
+      const res = await projectApi.update(project.id, { status: newStatus })
+      setProject(res.data)
+    } catch { }
+    finally { setPublishing(false) }
+  }
 
   const activityItems = [
     { bg: "bg-blue-100", color: "text-blue-600", icon: "bolt", title: "No rules fired yet", desc: "Rules will appear here once active and visitors arrive", time: "" },
@@ -105,11 +116,22 @@ export default function ProjectDashboardPage() {
               <Icon name="open_in_new" className="text-xs" />
             </a>
           </div>
-          <div className={project.script_verified
-            ? "flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold bg-emerald-50 border-emerald-200 text-emerald-700"
-            : "flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold bg-amber-50 border-amber-200 text-amber-700"}>
-            <Icon name={project.script_verified ? "check_circle" : "warning"} className="text-base" />
-            {project.script_verified ? t("project.script_live") : t("project.script_not_verified")}
+          <div className="flex items-center gap-3">
+            <div className={project.script_verified
+              ? "flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold bg-emerald-50 border-emerald-200 text-emerald-700"
+              : "flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold bg-amber-50 border-amber-200 text-amber-700"}>
+              <Icon name={project.script_verified ? "check_circle" : "warning"} className="text-base" />
+              {project.script_verified ? t("project.script_live") : t("project.script_not_verified")}
+            </div>
+            <button
+              onClick={handlePublishToggle}
+              disabled={publishing}
+              className={project.status === 'active'
+                ? "flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-all"
+                : "flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold bg-[#1A56DB] text-white shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-50 transition-all"}>
+              <Icon name={project.status === 'active' ? "cloud_off" : "cloud_upload"} className="text-base" />
+              {publishing ? '...' : project.status === 'active' ? t('project.unpublish') : t('project.publish')}
+            </button>
           </div>
         </div>
 

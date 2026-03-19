@@ -254,6 +254,8 @@
       "col_time": "Temps"
     },
     "view_all": "Voir tout",
-    "script_info": "Informations sur le script"
+    "script_info": "Informations sur le script",
+    "publish": "Publier le projet",
+    "unpublish": "Dépublier"
   }
 }

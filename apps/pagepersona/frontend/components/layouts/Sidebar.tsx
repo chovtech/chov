@@ -9,7 +9,6 @@ import { authApi } from '@/lib/api/client'
 
 const navigation = [
   { key: 'dashboard', href: '/dashboard', icon: 'home', exact: true },
-  { key: 'projects', href: '/dashboard/projects', icon: 'folder_copy', exact: false },
   { key: 'analytics', href: '/dashboard/analytics', icon: 'bar_chart', exact: false },
   { key: 'integrations', href: '/dashboard/integrations', icon: 'extension', exact: false },
   { key: 'settings', href: '/dashboard/settings', icon: 'settings', exact: false },

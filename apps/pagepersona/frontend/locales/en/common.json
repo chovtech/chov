@@ -254,6 +254,8 @@
       "col_time": "Time"
     },
     "view_all": "View all",
-    "script_info": "Script Information"
+    "script_info": "Script Information",
+    "publish": "Publish Project",
+    "unpublish": "Unpublish"
   }
 }
