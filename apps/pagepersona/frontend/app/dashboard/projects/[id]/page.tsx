@@ -95,11 +95,11 @@ export default function ProjectDashboardPage() {
         </div>
 
         {/* Project Header */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-2xl font-black tracking-tight text-slate-900">{project.name}</h1>
-              {project.status === "active" ? (
+              {project.status === 'active' ? (
                 <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase tracking-wider border border-green-200">
                   {t("status.active")}
                 </span>
@@ -108,6 +108,12 @@ export default function ProjectDashboardPage() {
                   {t("status.draft")}
                 </span>
               )}
+              <div className={project.script_verified
+                ? "flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-emerald-50 border-emerald-200 text-emerald-700"
+                : "flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-amber-50 border-amber-200 text-amber-700"}>
+                <Icon name={project.script_verified ? "check_circle" : "warning"} className="text-sm" />
+                {project.script_verified ? t("project.script_live") : t("project.script_not_verified")}
+              </div>
             </div>
             <a href={project.page_url} target="_blank" rel="noopener noreferrer"
               className="text-sm text-slate-500 hover:text-[#1A56DB] flex items-center gap-1 transition-colors">
@@ -117,21 +123,20 @@ export default function ProjectDashboardPage() {
             </a>
           </div>
           <div className="flex items-center gap-3">
-            <div className={project.script_verified
-              ? "flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold bg-emerald-50 border-emerald-200 text-emerald-700"
-              : "flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold bg-amber-50 border-amber-200 text-amber-700"}>
-              <Icon name={project.script_verified ? "check_circle" : "warning"} className="text-base" />
-              {project.script_verified ? t("project.script_live") : t("project.script_not_verified")}
-            </div>
             <button
               onClick={handlePublishToggle}
               disabled={publishing}
               className={project.status === 'active'
-                ? "flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-all"
-                : "flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold bg-[#1A56DB] text-white shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-50 transition-all"}>
+                ? "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 disabled:opacity-50 transition-all"
+                : "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-[#1A56DB]/30 text-[#1A56DB] bg-[#1A56DB]/5 hover:bg-[#1A56DB]/10 disabled:opacity-50 transition-all"}>
               <Icon name={project.status === 'active' ? "cloud_off" : "cloud_upload"} className="text-base" />
               {publishing ? '...' : project.status === 'active' ? t('project.unpublish') : t('project.publish')}
             </button>
+            <a href={"/dashboard/projects/" + project.id + "/rules"}
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 transition-all">
+              <Icon name="add" className="text-base" />
+              {t('project.cta_rules_btn')}
+            </a>
           </div>
         </div>
 

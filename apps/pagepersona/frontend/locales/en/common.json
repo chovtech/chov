@@ -256,6 +256,9 @@
     "view_all": "View all",
     "script_info": "Script Information",
     "publish": "Publish Project",
-    "unpublish": "Unpublish"
+    "unpublish": "Unpublish",
+    "cta_rules_btn": "Create Conversion Rule",
+    "cta_rules_heading": "Set up your first conversion rule",
+    "cta_rules_desc": "Define who sees what — personalise your page for different visitor segments."
   }
 }
