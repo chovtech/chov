@@ -201,5 +201,29 @@
       "not_verified": "Not yet verified",
       "tip": "If you use a CMS like WordPress or Webflow, paste this code into the Global Header settings. Contact support if you need help with your specific platform."
     }
+  },
+  "project": {
+    "script_live": "Script Live ✓",
+    "script_not_verified": "Script Not Verified",
+    "recent_activity": "Recent Activity",
+    "no_activity": "No activity yet",
+    "no_activity_desc": "Activity will appear here once your rules are live and visitors start arriving.",
+    "quick_actions": "Quick Actions",
+    "stats": {
+      "active_rules": "Active Rules",
+      "sessions_today": "Sessions Today",
+      "conversions_today": "Conversions Today",
+      "conversion_lift": "Conversion Lift"
+    },
+    "actions": {
+      "setup_rules": "Set Up Rules",
+      "setup_rules_desc": "Create personalisation rules for your visitors",
+      "view_analytics": "View Analytics",
+      "view_analytics_desc": "See how your page is performing",
+      "preview_page": "Preview Page",
+      "preview_page_desc": "Open your live page in a new tab",
+      "project_settings": "Project Settings",
+      "project_settings_desc": "Manage script, platform and status"
+    }
   }
 }

@@ -201,5 +201,29 @@
       "not_verified": "Pas encore vérifié",
       "tip": "Si vous utilisez un CMS comme WordPress ou Webflow, collez ce code dans les paramètres d'en-tête global. Contactez le support si vous avez besoin d'aide."
     }
+  },
+  "project": {
+    "script_live": "Script actif ✓",
+    "script_not_verified": "Script non vérifié",
+    "recent_activity": "Activité récente",
+    "no_activity": "Aucune activité pour l instant",
+    "no_activity_desc": "L activité apparaîtra ici une fois vos règles actives et vos visiteurs arrivés.",
+    "quick_actions": "Actions rapides",
+    "stats": {
+      "active_rules": "Règles actives",
+      "sessions_today": "Sessions aujourd hui",
+      "conversions_today": "Conversions aujourd hui",
+      "conversion_lift": "Gain de conversion"
+    },
+    "actions": {
+      "setup_rules": "Configurer les règles",
+      "setup_rules_desc": "Créez des règles de personnalisation pour vos visiteurs",
+      "view_analytics": "Voir les analyses",
+      "view_analytics_desc": "Consultez les performances de votre page",
+      "preview_page": "Aperçu de la page",
+      "preview_page_desc": "Ouvrir votre page en direct dans un nouvel onglet",
+      "project_settings": "Paramètres du projet",
+      "project_settings_desc": "Gérer le script, la plateforme et le statut"
+    }
   }
 }
