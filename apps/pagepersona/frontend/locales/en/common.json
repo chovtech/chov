@@ -260,5 +260,23 @@
     "cta_rules_btn": "Create Conversion Rule",
     "cta_rules_heading": "Set up your first conversion rule",
     "cta_rules_desc": "Define who sees what — personalise your page for different visitor segments."
+  },
+  "rules": {
+    "heading": "Personalisation Rules",
+    "subheading": "Define who sees what on your page based on visitor signals.",
+    "new_rule": "New Rule",
+    "tab_manual": "Manual Rules",
+    "tab_ai": "AI-Adaptive",
+    "col_name": "Rule Name",
+    "col_trigger": "Trigger Condition",
+    "col_action": "Action",
+    "col_lift": "Conversion Lift",
+    "col_status": "Status",
+    "col_actions": "Actions",
+    "rule_count": "active rules",
+    "empty_heading": "No rules created yet",
+    "empty_desc": "Get started by creating your first personalisation rule. Define a trigger signal and an action to personalise your visitors experience.",
+    "empty_cta": "Create Your First Rule",
+    "browse_templates": "Browse Templates"
   }
 }

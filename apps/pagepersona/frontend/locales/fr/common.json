@@ -260,5 +260,23 @@
     "cta_rules_btn": "Créer une règle de conversion",
     "cta_rules_heading": "Créez votre première règle de conversion",
     "cta_rules_desc": "Définissez qui voit quoi — personnalisez votre page pour différents segments de visiteurs."
+  },
+  "rules": {
+    "heading": "Règles de personnalisation",
+    "subheading": "Définissez qui voit quoi sur votre page selon les signaux des visiteurs.",
+    "new_rule": "Nouvelle règle",
+    "tab_manual": "Règles manuelles",
+    "tab_ai": "IA adaptative",
+    "col_name": "Nom de la règle",
+    "col_trigger": "Condition de déclenchement",
+    "col_action": "Action",
+    "col_lift": "Gain de conversion",
+    "col_status": "Statut",
+    "col_actions": "Actions",
+    "rule_count": "règles actives",
+    "empty_heading": "Aucune règle créée",
+    "empty_desc": "Commencez par créer votre première règle de personnalisation. Définissez un signal déclencheur et une action pour personnaliser l expérience de vos visiteurs.",
+    "empty_cta": "Créer votre première règle",
+    "browse_templates": "Parcourir les modèles"
   }
 }
