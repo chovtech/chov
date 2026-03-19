@@ -277,6 +277,15 @@
     "empty_heading": "No rules created yet",
     "empty_desc": "Get started by creating your first personalisation rule. Define a trigger signal and an action to personalise your visitors experience.",
     "empty_cta": "Create Your First Rule",
-    "browse_templates": "Browse Templates"
+    "browse_templates": "Browse Templates",
+    "builder_subheading": "Define your trigger signal and what action to take when it fires.",
+    "rule_name_label": "Rule name",
+    "rule_name_placeholder": "e.g. High-intent returning visitors",
+    "trigger_conditions": "Trigger Conditions",
+    "add_condition": "Add condition",
+    "actions": "Actions",
+    "add_action": "Add Action",
+    "no_actions_yet": "No actions added yet. Click Add Action to define what happens when this rule fires.",
+    "save_rule": "Save Rule"
   }
 }

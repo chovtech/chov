@@ -277,6 +277,15 @@
     "empty_heading": "Aucune règle créée",
     "empty_desc": "Commencez par créer votre première règle de personnalisation. Définissez un signal déclencheur et une action pour personnaliser l expérience de vos visiteurs.",
     "empty_cta": "Créer votre première règle",
-    "browse_templates": "Parcourir les modèles"
+    "browse_templates": "Parcourir les modèles",
+    "builder_subheading": "Définissez votre signal déclencheur et l action à effectuer.",
+    "rule_name_label": "Nom de la règle",
+    "rule_name_placeholder": "ex. Visiteurs récurrents à haute intention",
+    "trigger_conditions": "Conditions de déclenchement",
+    "add_condition": "Ajouter une condition",
+    "actions": "Actions",
+    "add_action": "Ajouter une action",
+    "no_actions_yet": "Aucune action ajoutée. Cliquez sur Ajouter une action pour définir ce qui se passe.",
+    "save_rule": "Enregistrer la règle"
   }
 }
