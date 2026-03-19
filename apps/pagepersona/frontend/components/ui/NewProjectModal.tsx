@@ -356,7 +356,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
               onClick={handleClose}
               className="flex items-center gap-1.5 px-7 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
-              <Icon name="check" className="text-sm" />
+              <Icon name="rocket_launch" className="text-sm" />
               {t('wizard.done')}
             </button>
           )}
