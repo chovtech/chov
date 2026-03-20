@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
-import { projectApi } from '@/lib/api/client'
+import { projectApi, apiClient } from '@/lib/api/client'
 
 interface Props {
   isOpen: boolean
@@ -39,6 +39,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
   const [scriptId, setScriptId] = useState<string>('')
   const [error, setError] = useState('')
+  const [verifyError, setVerifyError] = useState('')
 
   if (!isOpen) return null
 
@@ -51,7 +52,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
     setPageUrl(val)
   }
 
-  const scriptTag = `<script src="https://cdn.pagepersona.com/js/sdk.js?id=${scriptId}"></script>`
+  const scriptTag = `<script async src="https://cdn.usepagepersona.com/pp.js?id=${scriptId}"></script>`
 
   const handleCopy = () => {
     navigator.clipboard.writeText(scriptTag)
@@ -76,18 +77,28 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
     }
   }
 
-  // Stub verify — will poll real URL once tracking script is built
-  const handleVerify = () => {
-    setVerifying(true)
-    setTimeout(() => {
-      setVerifying(false)
-      setVerified(true)
-      // Update script_verified in DB
-      if (createdProjectId) {
-        projectApi.update(createdProjectId, { script_verified: true }).catch(() => {})
+    const handleVerify = async () => {
+      if (!createdProjectId) return
+      setVerifying(true)
+      setVerifyError('')
+      try {
+        const res = await apiClient.post('/api/sdk/verify/' + createdProjectId)
+        if (res.data.verified || res.data.already_verified) {
+          setVerified(true)
+        } else {
+          setVerifyError('Script tag not found on your page. Make sure you pasted it before the </body> tag and the page is publicly accessible.')
+        }
+      } catch (e: any) {
+        const detail = e.response?.data?.detail || ''
+        if (detail.includes('Could not fetch page')) {
+          setVerifyError('Could not reach your page. Make sure the URL is publicly accessible.')
+        } else {
+          setVerifyError('Verification failed. Please try again.')
+        }
+      } finally {
+        setVerifying(false)
       }
-    }, 2000)
-  }
+    }
 
   // Launch Project → update status to active, route to project dashboard
   const handleLaunch = async () => {
@@ -115,6 +126,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
     setCreatedProjectId(null)
     setScriptId('')
     setError('')
+      setVerifyError('')
     onClose()
   }
 
@@ -319,6 +331,13 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                   </div>
                 )}
               </div>
+
+                {verifyError && (
+                  <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+                    <Icon name="error" className="text-red-500 text-sm shrink-0 mt-0.5" />
+                    <p className="text-xs text-red-600">{verifyError}</p>
+                  </div>
+                )}
 
               {/* Tip */}
               <div className="flex gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100 text-blue-800">
