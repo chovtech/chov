@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { authApi } from '@/lib/api/client'
@@ -13,19 +13,19 @@ function SignUpForm() {
   const { language } = useLanguage()
   const searchParams = useSearchParams()
 
-  useEffect(() => {
-    const err = searchParams.get('error')
-    if (err === 'google_account_exists') {
-      setError(t('errors.googleAccountExists'))
-    } else if (err === 'google_failed') {
-      setError(t('errors.googleFailed'))
-    }
-  }, [searchParams, t])
-
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const errorSetRef = useRef(false)
+
+  useEffect(() => {
+    if (errorSetRef.current) return
+    errorSetRef.current = true
+    const err = searchParams.get('error')
+    if (err === 'google_account_exists') setError(t('errors.googleAccountExists'))
+    else if (err === 'google_failed') setError(t('errors.googleFailed'))
+  }, [])
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   function validate() {

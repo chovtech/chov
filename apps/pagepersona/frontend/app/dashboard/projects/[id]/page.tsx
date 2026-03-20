@@ -20,6 +20,7 @@ interface Project {
 }
 
 function InstallModal({ project, onClose, onVerified }: { project: Project; onClose: () => void; onVerified: () => void }) {
+  const { t } = useTranslation('common')
   const [copied, setCopied] = useState(false)
   const [verifying, setVerifying] = useState(false)
   const [verified, setVerified] = useState(project.script_verified)
@@ -39,14 +40,14 @@ function InstallModal({ project, onClose, onVerified }: { project: Project; onCl
         setVerified(true)
         onVerified()
       } else {
-        setVerifyError('Script tag not found on your page. Make sure you pasted it before the </body> tag and the page is publicly accessible.')
+        setVerifyError(t('project.installation_error_not_found'))
       }
     } catch (e: any) {
       const detail = e.response?.data?.detail || ''
       if (detail.includes('Could not fetch page')) {
-        setVerifyError('Could not reach your page. Make sure the URL is publicly accessible.')
+        setVerifyError(t('project.installation_error_unreachable'))
       } else {
-        setVerifyError('Verification failed. Please try again.')
+        setVerifyError(t('project.installation_error_failed'))
       }
     } finally { setVerifying(false) }
   }
@@ -55,8 +56,8 @@ function InstallModal({ project, onClose, onVerified }: { project: Project; onCl
       <div className="w-full max-w-[560px] rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Installation</h2>
-            <p className="text-sm text-slate-500 mt-0.5">Your unique script tag for <span className="font-semibold">{project.name}</span></p>
+            <h2 className="text-lg font-bold text-slate-900">{t('project.installation')}</h2>
+            <p className="text-sm text-slate-500 mt-0.5">{t('project.installation_subtitle')} <span className="font-semibold">{project.name}</span></p>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
             <Icon name="close" />
@@ -64,7 +65,7 @@ function InstallModal({ project, onClose, onVerified }: { project: Project; onCl
         </div>
         <div className="px-6 py-6 flex flex-col gap-5">
           <div>
-            <p className="text-xs text-slate-500 mb-2">Paste this tag before the <code className="bg-slate-100 px-1 rounded">&lt;/body&gt;</code> tag on your page:</p>
+            <p className="text-xs text-slate-500 mb-2">{t('project.installation_paste_hint')}</p>
             <div className="rounded-xl bg-[#0F172A] p-5">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex gap-1.5">
@@ -74,7 +75,7 @@ function InstallModal({ project, onClose, onVerified }: { project: Project; onCl
                 </div>
                 <button onClick={handleCopy} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold rounded-lg transition-colors">
                   <Icon name={copied ? 'check' : 'content_copy'} className="text-sm" />
-                  {copied ? 'Copied!' : 'Copy'}
+                  {copied ? t('project.installation_copied') : t('project.installation_copy')}
                 </button>
               </div>
               <pre className="text-blue-400 font-mono text-xs leading-relaxed whitespace-pre-wrap break-all">
@@ -85,17 +86,17 @@ function InstallModal({ project, onClose, onVerified }: { project: Project; onCl
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
             <button onClick={handleVerify} disabled={verifying} className="flex items-center gap-2 bg-[#1A56DB] hover:bg-[#1A56DB]/90 disabled:opacity-60 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm">
               <Icon name={verifying ? 'sync' : 'refresh'} className={verifying ? 'animate-spin text-sm' : 'text-sm'} />
-              {verifying ? 'Verifying...' : 'Verify Installation'}
+              {verifying ? t('project.installation_verifying') : t('project.installation_verify')}
             </button>
             {verified ? (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold border border-emerald-200">
                 <Icon name="check_circle" className="text-base" />
-                Script detected
+                {t('project.installation_detected')}
               </div>
             ) : (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-500 rounded-full text-sm font-medium border border-slate-200">
                 <Icon name="radio_button_unchecked" className="text-base" />
-                Not verified
+                {t('project.installation_not_verified')}
               </div>
             )}
           </div>
@@ -107,7 +108,7 @@ function InstallModal({ project, onClose, onVerified }: { project: Project; onCl
           )}
           <div className="flex gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100 text-blue-800">
             <Icon name="lightbulb" className="text-xl shrink-0 mt-0.5" />
-            <p className="text-xs leading-relaxed">The script loads asynchronously so it won't slow down your page. It only activates when a visitor matches one of your rules.</p>
+            <p className="text-xs leading-relaxed">{t('project.installation_tip')}</p>
           </div>
         </div>
       </div>
@@ -116,6 +117,7 @@ function InstallModal({ project, onClose, onVerified }: { project: Project; onCl
 }
 
 function DeleteProjectModal({ project, onClose, onDeleted }: { project: Project; onClose: () => void; onDeleted: () => void }) {
+  const { t } = useTranslation('common')
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
   const handleDelete = async () => {
@@ -124,7 +126,7 @@ function DeleteProjectModal({ project, onClose, onDeleted }: { project: Project;
       await projectApi.delete(project.id)
       onDeleted()
     } catch {
-      setError('Failed to delete project. Please try again.')
+      setError(t('project.delete_project_failed'))
       setDeleting(false)
     }
   }
@@ -132,7 +134,7 @@ function DeleteProjectModal({ project, onClose, onDeleted }: { project: Project;
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
       <div className="w-full max-w-[420px] rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900">Delete Project</h2>
+          <h2 className="text-lg font-bold text-slate-900">{t('project.delete_project')}</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
             <Icon name="close" />
           </button>
@@ -141,16 +143,16 @@ function DeleteProjectModal({ project, onClose, onDeleted }: { project: Project;
           <div className="flex items-start gap-3 p-4 bg-red-50 rounded-xl border border-red-200">
             <Icon name="warning" className="text-red-500 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-red-800">This action cannot be undone</p>
-              <p className="text-xs text-red-600 mt-1">Deleting <span className="font-bold">{project.name}</span> will permanently remove the project and all its rules. The script tag will stop working immediately.</p>
+              <p className="text-sm font-semibold text-red-800">{t('project.delete_project_warning')}</p>
+              <p className="text-xs text-red-600 mt-1">{project.name} {t('project.delete_project_desc')}</p>
             </div>
           </div>
           {error && <p className="text-xs text-red-500">{error}</p>}
           <div className="flex gap-3 justify-end pt-2">
-            <button onClick={onClose} className="px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
+            <button onClick={onClose} className="px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors">{t('project.delete_rule_cancel')}</button>
             <button onClick={handleDelete} disabled={deleting} className="flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white text-sm font-bold rounded-xl transition-colors">
               <Icon name="delete" className="text-sm" />
-              {deleting ? 'Deleting...' : 'Delete Project'}
+              {deleting ? t('project.delete_project_deleting') : t('project.delete_project')}
             </button>
           </div>
         </div>
@@ -250,7 +252,7 @@ export default function ProjectDashboardPage() {
           </div>
           <div className="flex items-center gap-3">
             <button onClick={() => setShowDelete(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-200 text-slate-500 bg-white hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all">
-              <Icon name="delete" className="text-base" />Delete
+              <Icon name="delete" className="text-base" />{t('project.delete_project')}
             </button>
             <button onClick={handlePublishToggle} disabled={publishing} className={project.status === 'active' ? 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 disabled:opacity-50 transition-all' : 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-[#1A56DB]/30 text-[#1A56DB] bg-[#1A56DB]/5 hover:bg-[#1A56DB]/10 disabled:opacity-50 transition-all'}>
               <Icon name={project.status === 'active' ? 'cloud_off' : 'cloud_upload'} className="text-base" />

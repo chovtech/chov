@@ -359,12 +359,12 @@ export default function RulesPage() {
                                 onClick={() => handleDelete(rule.id)}
                                 disabled={deletingId === rule.id}
                                 className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-60">
-                                {deletingId === rule.id ? '...' : 'Delete'}
+                                {deletingId === rule.id ? t('project.delete_project_deleting') : t('project.delete_rule_confirm')}
                               </button>
                               <button
                                 onClick={() => setDeleteConfirmId(null)}
                                 className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg transition-colors">
-                                Cancel
+                                {t('project.delete_rule_cancel')}
                               </button>
                             </div>
                           ) : (
