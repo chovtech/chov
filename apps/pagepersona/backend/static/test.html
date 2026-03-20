@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PagePersona SDK Test Page</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 60px auto; padding: 0 20px; }
+    h1 { color: #0F172A; }
+    .section { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin: 20px 0; }
+    .label { font-size: 11px; font-weight: bold; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    #pp-debug {
+      position: fixed; bottom: 20px; left: 20px;
+      background: #0F172A; color: #fff;
+      padding: 16px; border-radius: 12px;
+      font-size: 12px; font-family: monospace;
+      max-width: 360px; max-height: 300px;
+      overflow-y: auto; z-index: 999998;
+    }
+    #pp-debug .title { color: #14B8A6; font-weight: bold; margin-bottom: 8px; display: block; }
+    #pp-debug .row { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; border-bottom: 1px solid #1e293b; }
+    #pp-debug .key { color: #94a3b8; }
+    #pp-debug .val { color: #fff; text-align: right; }
+  </style>
+</head>
+<body>
+
+  <h1>PagePersona SDK Test Page</h1>
+  <p>The debug panel (bottom left) shows detected signals in real time.</p>
+
+  <div class="section">
+    <div class="label">swap_text → id="pp-headline"</div>
+    <h2 id="pp-headline">Default Headline — Welcome to our page</h2>
+  </div>
+
+  <div class="section">
+    <div class="label">swap_image → id="pp-hero-image"</div>
+    <img id="pp-hero-image" src="https://placehold.co/600x200?text=Default+Image" style="width:100%;border-radius:8px;" />
+  </div>
+
+  <div class="section">
+    <div class="label">hide_section → id="pp-promo-banner"</div>
+    <div id="pp-promo-banner" style="background:#1A56DB;color:#fff;padding:16px;border-radius:8px;">
+      Special offer — visible by default, can be hidden by a rule
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">inject_token → id="pp-greeting"</div>
+    <p id="pp-greeting">Hello, visitor!</p>
+  </div>
+
+  <div class="section">
+    <div class="label">data-pp-block="alt-cta"</div>
+    <p data-pp-block="alt-cta">Buy now — default CTA copy</p>
+  </div>
+
+  <!-- Debug panel — updated by SDK via window.__pp.signals -->
+  <div id="pp-debug"><span class="title">PP Signals</span><div id="pp-debug-rows">Waiting for SDK...</div></div>
+
+  <script>
+    // Poll for signals once SDK has booted
+    var _ppPoll = setInterval(function() {
+      if (window.__pp && window.__pp.signals) {
+        clearInterval(_ppPoll);
+        var signals = window.__pp.signals;
+        var rows = document.getElementById('pp-debug-rows');
+        if (!rows) return;
+        rows.innerHTML = Object.keys(signals).map(function(k) {
+          var v = signals[k];
+          if (v === '' || v === null || v === undefined) return '';
+          return '<div class="row"><span class="key">' + k + '</span><span class="val">' + v + '</span></div>';
+        }).filter(Boolean).join('');
+      }
+    }, 500);
+  </script>
+
+  <script async src="http://localhost:8000/static/pp.js?id=PP-UGRXLP"></script>
+
+</body>
+</html>
