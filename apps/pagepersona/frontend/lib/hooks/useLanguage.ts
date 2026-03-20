@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type Language } from '@/locales/languages'
 
 const STORAGE_KEY = 'pp_language'
@@ -15,11 +15,10 @@ function getStoredLanguage(): string {
 }
 
 export function useLanguage() {
-  const [language, setLanguageState] = useState<string>(DEFAULT_LANGUAGE)
-
-  useEffect(() => {
-    setLanguageState(getStoredLanguage())
-  }, [])
+  const [language, setLanguageState] = useState<string>(() => {
+    if (typeof window === 'undefined') return DEFAULT_LANGUAGE
+    return getStoredLanguage()
+  })
 
   const setLanguage = useCallback((code: string) => {
     if (!SUPPORTED_LANGUAGES.find(l => l.code === code)) return

@@ -25,7 +25,9 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
+      const url = error.config?.url || ''
+      const isAuthEndpoint = url.includes('/api/auth/login') || url.includes('/api/auth/signup')
+      if (!isAuthEndpoint && typeof window !== 'undefined') {
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         document.cookie = 'access_token=; path=/; max-age=0'

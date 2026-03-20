@@ -1,29 +1,31 @@
 'use client'
 
-import { useState, useEffect, useRef, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { authApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 
-function LoginForm() {
+export default function LoginPage() {
   const router = useRouter()
   const { t } = useTranslation('auth')
   const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const err = searchParams.get('error')
+    if (err === 'google_no_account') {
+      setError(t('errors.googleNoAccount'))
+    } else if (err === 'google_failed') {
+      setError(t('errors.googleFailed'))
+    } else if (err === 'google_cancelled') {
+      setError('')
+    }
+  }, [searchParams, t])
 
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const errorSetRef = useRef(false)
-
-  useEffect(() => {
-    if (errorSetRef.current) return
-    errorSetRef.current = true
-    const err = searchParams.get('error')
-    if (err === 'google_no_account') setError(t('errors.googleNoAccount'))
-    else if (err === 'google_failed') setError(t('errors.googleFailed'))
-  }, [])
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   function validate() {
@@ -38,6 +40,10 @@ function LoginForm() {
     e.preventDefault()
     setError('')
     setFieldErrors({})
+    // Clear stale cookies before attempting login
+    document.cookie = 'access_token=; path=/; max-age=0'
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
     const errors = validate()
     if (Object.keys(errors).length > 0) { setFieldErrors(errors); return }
     setLoading(true)
@@ -51,6 +57,10 @@ function LoginForm() {
     } catch (err: unknown) {
       const message = (err as { response?: { data?: { detail?: string } } })
         ?.response?.data?.detail || t('errors.invalidCredentials')
+      // Clear any stale auth cookie so middleware doesn't redirect away
+      document.cookie = 'access_token=; path=/; max-age=0'
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
       setError(message)
     } finally {
       setLoading(false)
@@ -162,13 +172,5 @@ function LoginForm() {
         </p>
       </footer>
     </>
-  )
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div className="p-8 text-center text-gray-400">Loading...</div>}>
-      <LoginForm />
-    </Suspense>
   )
 }

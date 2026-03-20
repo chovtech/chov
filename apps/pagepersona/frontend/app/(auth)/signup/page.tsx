@@ -16,12 +16,16 @@ function SignUpForm() {
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const errorSetRef = useRef(false)
+  const errorRef = useRef<string>('')
+  const [errorTick, setErrorTick] = useState(0)
+  const error = errorRef.current
+
+  const setError = (msg: string) => {
+    errorRef.current = msg
+    setErrorTick(t => t + 1)
+  }
 
   useEffect(() => {
-    if (errorSetRef.current) return
-    errorSetRef.current = true
     const err = searchParams.get('error')
     if (err === 'google_account_exists') setError(t('errors.googleAccountExists'))
     else if (err === 'google_failed') setError(t('errors.googleFailed'))
