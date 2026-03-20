@@ -38,7 +38,7 @@ apiClient.interceptors.response.use(
 
 // Auth API calls
 export const authApi = {
-  signup: (data: { email: string; password: string; name: string }) =>
+  signup: (data: { email: string; password: string; name: string; language?: string }) =>
     apiClient.post('/api/auth/signup', data),
 
   login: (data: { email: string; password: string }) =>

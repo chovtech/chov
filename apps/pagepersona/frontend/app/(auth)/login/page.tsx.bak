@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { authApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 
-function LoginForm() {
+export default function LoginPage() {
   const router = useRouter()
   const { t } = useTranslation('auth')
   const searchParams = useSearchParams()
@@ -164,13 +164,5 @@ function LoginForm() {
         </p>
       </footer>
     </>
-  )
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div className="p-8 text-center text-gray-400">Loading...</div>}>
-      <LoginForm />
-    </Suspense>
   )
 }

@@ -7,7 +7,7 @@ import { authApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { useLanguage } from '@/lib/hooks/useLanguage'
 
-export default function SignUpPage() {
+function SignUpForm() {
   const router = useRouter()
   const { t } = useTranslation('auth')
   const { language } = useLanguage()
@@ -174,5 +174,13 @@ export default function SignUpPage() {
         </p>
       </footer>
     </>
+  )
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-gray-400">Loading...</div>}>
+      <SignUpForm />
+    </Suspense>
   )
 }
