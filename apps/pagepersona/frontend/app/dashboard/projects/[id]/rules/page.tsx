@@ -7,6 +7,73 @@ import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { projectApi, rulesApi } from '@/lib/api/client'
 
+// --- Formatters ---
+const SIGNAL_LABELS: Record<string, string> = {
+  visit_count: "Visit count",
+  time_on_page: "Time on page",
+  scroll_depth: "Scroll depth",
+  exit_intent: "Exit intent",
+  visitor_type: "Visitor type",
+  utm_source: "UTM source",
+  utm_medium: "UTM medium",
+  utm_campaign: "UTM campaign",
+  referrer_url: "Referrer URL",
+  query_param: "Query param",
+  device_type: "Device type",
+  operating_system: "OS",
+  browser: "Browser",
+  geo_country: "Country",
+  geo_city: "City",
+  day_time: "Time of day",
+  company_name: "Company",
+  industry: "Industry",
+  company_size: "Company size",
+}
+
+const OPERATOR_LABELS: Record<string, string> = {
+  "is greater than": "\u2265",
+  "is less than": "\u2264",
+  "equals": "=",
+  "is": "is",
+  "is not": "is not",
+  "contains": "contains",
+  "is between": "between",
+  "is detected": "detected",
+}
+
+const ACTION_LABELS: Record<string, string> = {
+  swap_text: "Swap text",
+  swap_image: "Swap image",
+  hide_section: "Hide section",
+  inject_token: "Inject token",
+  show_popup: "Show popup",
+  send_webhook: "Send webhook",
+}
+
+const ACTION_ICONS: Record<string, string> = {
+  swap_text: "text_fields",
+  swap_image: "image",
+  hide_section: "visibility_off",
+  inject_token: "data_object",
+  show_popup: "web_asset",
+  send_webhook: "webhook",
+}
+
+function formatCondition(c: { signal: string; operator: string; value: string }) {
+  const sig = SIGNAL_LABELS[c.signal] || c.signal
+  const op = OPERATOR_LABELS[c.operator] || c.operator
+  const val = c.value ? c.value : ""
+  if (c.operator === "is detected") return sig + " " + op
+  return sig + " " + op + " " + val
+}
+
+function formatAction(a: { type: string; target_block?: string; value?: string }) {
+  const label = ACTION_LABELS[a.type] || a.type
+  if (a.target_block) return label + " \u2192 " + a.target_block
+  if (a.value) return label + ": " + a.value.slice(0, 24) + (a.value.length > 24 ? "\u2026" : "")
+  return label
+}
+
 interface Rule {
   id: string
   name: string
@@ -33,7 +100,7 @@ export default function RulesPage() {
   const [project, setProject] = useState<Project | null>(null)
   const [rules, setRules] = useState<Rule[]>([])
   const [loading, setLoading] = useState(true)
-
+  const [togglingId, setTogglingId] = useState<string | null>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -49,6 +116,20 @@ export default function RulesPage() {
     }
     if (projectId) load()
   }, [projectId])
+
+  const handleToggle = async (ruleId: string, currentActive: boolean) => {
+    // Optimistic update
+    setRules(prev => prev.map(r => r.id === ruleId ? { ...r, is_active: !currentActive } : r))
+    setTogglingId(ruleId)
+    try {
+      await rulesApi.update(projectId, ruleId, { is_active: !currentActive })
+    } catch {
+      // Revert on failure
+      setRules(prev => prev.map(r => r.id === ruleId ? { ...r, is_active: currentActive } : r))
+    } finally {
+      setTogglingId(null)
+    }
+  }
 
   const hasRules = rules.length > 0
 
@@ -120,20 +201,47 @@ export default function RulesPage() {
                     </td>
                     <td className="px-6 py-4 text-sm font-semibold text-slate-900">{rule.name}</td>
                     <td className="px-6 py-4">
-                      <code className="text-xs bg-slate-100 px-2 py-1 rounded text-slate-700">
-                        {rule.conditions.length > 0 ? rule.conditions[0].signal + " " + rule.conditions[0].operator + " " + rule.conditions[0].value : "—"}
-                      </code>
+                      {rule.conditions.length > 0 ? (
+                        <div className="flex flex-col gap-1">
+                          {rule.conditions.slice(0, 2).map((c, ci) => (
+                            <code key={ci} className="text-xs bg-slate-100 px-2 py-1 rounded text-slate-700 block">
+                              {formatCondition(c)}
+                            </code>
+                          ))}
+                          {rule.conditions.length > 2 && (
+                            <span className="text-xs text-slate-400">+{rule.conditions.length - 2} more</span>
+                          )}
+                        </div>
+                      ) : <span className="text-slate-400">\u2014</span>}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">
-                      {rule.actions.length > 0 ? rule.actions[0].type : "—"}
+                      {rule.actions.length > 0 ? (
+                        <div className="flex flex-col gap-1">
+                          {rule.actions.slice(0, 2).map((a, ai) => (
+                            <div key={ai} className="flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-sm text-[#14B8A6]">{ACTION_ICONS[a.type] || "bolt"}</span>
+                              <span className="text-xs text-slate-700">{formatAction(a)}</span>
+                            </div>
+                          ))}
+                          {rule.actions.length > 2 && (
+                            <span className="text-xs text-slate-400">+{rule.actions.length - 2} more</span>
+                          )}
+                        </div>
+                      ) : <span className="text-slate-400">\u2014</span>}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-500">—</span>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-500">\u2014</span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" defaultChecked={rule.is_active} className="sr-only peer" />
-                        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1A56DB]"></div>
+                        <input
+                          type="checkbox"
+                          checked={rule.is_active}
+                          disabled={togglingId === rule.id}
+                          onChange={() => handleToggle(rule.id, rule.is_active)}
+                          className="sr-only peer"
+                        />
+                        <div className={(togglingId === rule.id ? "opacity-50 " : "") + "w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1A56DB]"}></div>
                       </label>
                     </td>
                     <td className="px-6 py-4 text-right">
