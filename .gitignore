@@ -25,3 +25,7 @@ Thumbs.db
 *.log
 apps/pagepersona/backend/.env
 apps/pagepersona/backend/venv/
+
+# Keep static SDK files
+!apps/pagepersona/backend/static/
+!apps/pagepersona/backend/static/**
