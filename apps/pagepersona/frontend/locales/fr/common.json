@@ -286,6 +286,9 @@
     "actions": "Actions",
     "add_action": "Ajouter une action",
     "no_actions_yet": "Aucune action ajoutée. Cliquez sur Ajouter une action pour définir ce qui se passe.",
-    "save_rule": "Enregistrer la règle"
+    "save_rule": "Enregistrer la règle",
+    "show_more": "+{count} de plus",
+    "show_less": "Voir moins",
+    "lift_pending": "Pas encore de données"
   }
 }

@@ -101,6 +101,10 @@ export default function RulesPage() {
   const [rules, setRules] = useState<Rule[]>([])
   const [loading, setLoading] = useState(true)
   const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -130,6 +134,61 @@ export default function RulesPage() {
       setTogglingId(null)
     }
   }
+
+  const toggleExpand = (ruleId: string) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev)
+      next.has(ruleId) ? next.delete(ruleId) : next.add(ruleId)
+      return next
+    })
+  }
+
+  const handleDuplicate = async (rule: Rule) => {
+    setDuplicatingId(rule.id)
+    try {
+      const res = await rulesApi.create(projectId, {
+        name: rule.name + " (copy)",
+        conditions: rule.conditions,
+        condition_operator: rule.condition_operator,
+        actions: rule.actions,
+        priority: rules.length,
+      })
+      setRules(prev => [...prev, res.data])
+    } catch (err) {
+      console.error("Duplicate rule error:", err)
+    } finally {
+      setDuplicatingId(null)
+    }
+  }
+
+  const handleDragStart = (ruleId: string) => setDraggingId(ruleId)
+  const handleDragOver = (e: React.DragEvent, ruleId: string) => {
+    e.preventDefault()
+    setDragOverId(ruleId)
+  }
+  const handleDrop = async (e: React.DragEvent, targetId: string) => {
+    e.preventDefault()
+    setDragOverId(null)
+    if (!draggingId || draggingId === targetId) { setDraggingId(null); return }
+    const fromIndex = rules.findIndex(r => r.id === draggingId)
+    const toIndex = rules.findIndex(r => r.id === targetId)
+    if (fromIndex === -1 || toIndex === -1) { setDraggingId(null); return }
+    // Reorder locally
+    const reordered = [...rules]
+    const [moved] = reordered.splice(fromIndex, 1)
+    reordered.splice(toIndex, 0, moved)
+    // Assign new priorities based on position
+    const withPriority = reordered.map((r, i) => ({ ...r, priority: i }))
+    setRules(withPriority)
+    setDraggingId(null)
+    // Persist new priorities
+    try {
+      await Promise.all(withPriority.map(r => rulesApi.update(projectId, r.id, { priority: r.priority })))
+    } catch (err) {
+      console.error("Reorder error:", err)
+    }
+  }
+  const handleDragEnd = () => { setDraggingId(null); setDragOverId(null) }
 
   const hasRules = rules.length > 0
 
@@ -195,7 +254,19 @@ export default function RulesPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {rules.map((rule, i) => (
-                  <tr key={rule.id} className={(i % 2 === 0 ? "bg-white" : "bg-slate-50/50") + " hover:bg-slate-50 transition-colors"}>
+                  <tr
+                    key={rule.id}
+                    draggable
+                    onDragStart={() => handleDragStart(rule.id)}
+                    onDragOver={e => handleDragOver(e, rule.id)}
+                    onDrop={e => handleDrop(e, rule.id)}
+                    onDragEnd={handleDragEnd}
+                    className={
+                      (draggingId === rule.id ? "opacity-40 " : "") +
+                      (dragOverId === rule.id && draggingId !== rule.id ? "border-t-2 border-[#1A56DB] " : "") +
+                      (i % 2 === 0 ? "bg-white" : "bg-slate-50/50") +
+                      " hover:bg-slate-50 transition-colors cursor-default"
+                    }>
                     <td className="px-4 py-4 text-slate-300 cursor-grab">
                       <Icon name="drag_indicator" className="text-xl" />
                     </td>
@@ -203,29 +274,37 @@ export default function RulesPage() {
                     <td className="px-6 py-4">
                       {rule.conditions.length > 0 ? (
                         <div className="flex flex-col gap-1">
-                          {rule.conditions.slice(0, 2).map((c, ci) => (
+                          {rule.conditions.slice(0, expandedRows.has(rule.id) ? undefined : 2).map((c, ci) => (
                             <code key={ci} className="text-xs bg-slate-100 px-2 py-1 rounded text-slate-700 block">
                               {formatCondition(c)}
                             </code>
                           ))}
-                          {rule.conditions.length > 2 && (
-                            <span className="text-xs text-slate-400">+{rule.conditions.length - 2} more</span>
-                          )}
+                            {rule.conditions.length > 2 && (
+                              <button
+                                onClick={() => toggleExpand(rule.id)}
+                                className="text-xs text-[#1A56DB] font-semibold hover:underline text-left">
+                                {expandedRows.has(rule.id) ? t("rules.show_less") : t("rules.show_more").replace("{count}", String(rule.conditions.length - 2))}
+                              </button>
+                            )}
                         </div>
                       ) : <span className="text-slate-400">\u2014</span>}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-600">
                       {rule.actions.length > 0 ? (
                         <div className="flex flex-col gap-1">
-                          {rule.actions.slice(0, 2).map((a, ai) => (
+                          {rule.actions.slice(0, expandedRows.has(rule.id) ? undefined : 2).map((a, ai) => (
                             <div key={ai} className="flex items-center gap-1.5">
                               <span className="material-symbols-outlined text-sm text-[#14B8A6]">{ACTION_ICONS[a.type] || "bolt"}</span>
                               <span className="text-xs text-slate-700">{formatAction(a)}</span>
                             </div>
                           ))}
-                          {rule.actions.length > 2 && (
-                            <span className="text-xs text-slate-400">+{rule.actions.length - 2} more</span>
-                          )}
+                            {rule.actions.length > 2 && (
+                              <button
+                                onClick={() => toggleExpand(rule.id)}
+                                className="text-xs text-[#1A56DB] font-semibold hover:underline text-left">
+                                {expandedRows.has(rule.id) ? t("rules.show_less") : t("rules.show_more").replace("{count}", String(rule.actions.length - 2))}
+                              </button>
+                            )}
                         </div>
                       ) : <span className="text-slate-400">\u2014</span>}
                     </td>
@@ -251,9 +330,14 @@ export default function RulesPage() {
                           className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:text-[#1A56DB]">
                           <Icon name="edit" className="text-xl" />
                         </button>
-                        <button className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:text-[#1A56DB]">
-                          <Icon name="content_copy" className="text-xl" />
-                        </button>
+                          <button
+                            onClick={() => handleDuplicate(rule)}
+                            disabled={duplicatingId === rule.id}
+                            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:text-[#1A56DB] disabled:opacity-40">
+                            {duplicatingId === rule.id
+                              ? <span className="material-symbols-outlined text-xl animate-spin">sync</span>
+                              : <Icon name="content_copy" className="text-xl" />}
+                          </button>
                       </div>
                     </td>
                   </tr>

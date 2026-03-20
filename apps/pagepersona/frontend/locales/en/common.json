@@ -286,6 +286,9 @@
     "actions": "Actions",
     "add_action": "Add Action",
     "no_actions_yet": "No actions added yet. Click Add Action to define what happens when this rule fires.",
-    "save_rule": "Save Rule"
+    "save_rule": "Save Rule",
+    "show_more": "+{count} more",
+    "show_less": "Show less",
+    "lift_pending": "No data yet"
   }
 }
