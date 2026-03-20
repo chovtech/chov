@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
-import { projectApi } from '@/lib/api/client'
+import { projectApi, rulesApi } from '@/lib/api/client'
 
 interface Rule {
   id: string
@@ -38,8 +38,12 @@ export default function RulesPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await projectApi.get(projectId)
-        setProject(res.data)
+        const [projRes, rulesRes] = await Promise.all([
+          projectApi.get(projectId),
+          rulesApi.list(projectId)
+        ])
+        setProject(projRes.data)
+        setRules(rulesRes.data)
       } catch { }
       finally { setLoading(false) }
     }

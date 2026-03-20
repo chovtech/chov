@@ -94,3 +94,17 @@ export const projectApi = {
   delete: (id: string) =>
     apiClient.delete(`/api/projects/${id}`),
 }
+
+// Rules API
+export const rulesApi = {
+  create: (projectId: string, data: { name: string; conditions: any[]; condition_operator: string; actions: any[]; priority?: number }) =>
+    apiClient.post(`/api/projects/${projectId}/rules`, data),
+  list: (projectId: string) =>
+    apiClient.get(`/api/projects/${projectId}/rules`),
+  get: (projectId: string, ruleId: string) =>
+    apiClient.get(`/api/projects/${projectId}/rules/${ruleId}`),
+  update: (projectId: string, ruleId: string, data: any) =>
+    apiClient.put(`/api/projects/${projectId}/rules/${ruleId}`, data),
+  delete: (projectId: string, ruleId: string) =>
+    apiClient.delete(`/api/projects/${projectId}/rules/${ruleId}`),
+}

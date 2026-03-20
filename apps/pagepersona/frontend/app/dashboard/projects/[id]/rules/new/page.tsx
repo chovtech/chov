@@ -6,6 +6,7 @@ import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
+import { rulesApi } from '@/lib/api/client'
 
 const ACTION_TYPES = [
   { key: "swap_text", label: "Swap text block", icon: "text_fields", needsElement: true },
@@ -113,10 +114,19 @@ export default function NewRulePage() {
   const handleSave = async () => {
     if (!canSave) return
     setSaving(true)
-    setTimeout(() => {
-      setSaving(false)
+    try {
+      await rulesApi.create(projectId, {
+        name: ruleName,
+        conditions: conditions.map(c => ({ signal: c.signal, operator: c.operator, value: c.value })),
+        condition_operator: conditionOperator,
+        actions: actions.map(a => ({ type: a.type, target_block: a.target_block, value: a.value })),
+        priority: 0
+      })
       router.push("/dashboard/projects/" + projectId + "/rules")
-    }, 800)
+    } catch (err) {
+      console.error("Save rule error:", err)
+      setSaving(false)
+    }
   }
 
   return (
