@@ -1,26 +1,29 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { authApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 
+function SearchParamReader({ onError }: { onError: (msg: string) => void }) {
+  const searchParams = useSearchParams()
+  const { t } = useTranslation('auth')
+  const didRun = useRef(false)
+  useEffect(() => {
+    if (didRun.current) return
+    didRun.current = true
+    const err = searchParams.get('error')
+    if (err === 'google_no_account') onError(t('errors.googleNoAccount'))
+    else if (err === 'google_failed') onError(t('errors.googleFailed'))
+  }, [])
+  return null
+}
+
 export default function LoginPage() {
   const router = useRouter()
   const { t } = useTranslation('auth')
-  const searchParams = useSearchParams()
 
-  useEffect(() => {
-    const err = searchParams.get('error')
-    if (err === 'google_no_account') {
-      setError(t('errors.googleNoAccount'))
-    } else if (err === 'google_failed') {
-      setError(t('errors.googleFailed'))
-    } else if (err === 'google_cancelled') {
-      setError('')
-    }
-  }, [searchParams, t])
 
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
@@ -80,6 +83,9 @@ export default function LoginPage() {
 
   return (
     <>
+      <Suspense fallback={null}>
+        <SearchParamReader onError={setError} />
+      </Suspense>
       <section className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('login.title')}</h1>
         <p className="text-sm text-gray-500 mb-6">{t('login.subtitle')}</p>
