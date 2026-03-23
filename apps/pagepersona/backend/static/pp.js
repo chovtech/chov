@@ -390,6 +390,36 @@
     if (pickerActive) return;
     pickerActive = true;
 
+    // Fetch active rules and badge elements that already have rules
+    var scriptId = getScriptId();
+    if (scriptId) {
+      get(API_BASE + '/api/sdk/rules?script_id=' + scriptId, function(data) {
+        if (!data || !data.rules) return;
+        var rules = data.rules;
+        rules.forEach(function(rule) {
+          (rule.actions || []).forEach(function(action) {
+            if (!action.target_block) return;
+            var el = findElement(action.target_block);
+            if (!el) return;
+            // Don't badge twice
+            if (el.querySelector('.pp-badge')) return;
+            el.style.position = el.style.position || 'relative';
+            var badge = document.createElement('div');
+            badge.className = 'pp-badge';
+            badge.textContent = 'PP';
+            badge.style.cssText = [
+              'position:absolute', 'top:4px', 'left:4px', 'z-index:2147483646',
+              'background:#1A56DB', 'color:#fff', 'font-family:sans-serif',
+              'font-size:9px', 'font-weight:700', 'padding:2px 6px',
+              'border-radius:3px', 'letter-spacing:0.05em', 'pointer-events:none',
+              'line-height:1.6', 'text-transform:uppercase'
+            ].join(';');
+            el.appendChild(badge);
+          });
+        });
+      });
+    }
+
     // Inject hover styles
     pickerStyleTag = document.createElement('style');
     pickerStyleTag.id = 'pp-picker-styles';
@@ -420,6 +450,8 @@
   function destroyPicker() {
     if (!pickerActive) return;
     pickerActive = false;
+    // Remove all PP badges
+    document.querySelectorAll('.pp-badge').forEach(function(b) { b.remove(); });
 
     document.removeEventListener('mouseover', onPickerHover, true);
     document.removeEventListener('mouseout',  onPickerOut,   true);
