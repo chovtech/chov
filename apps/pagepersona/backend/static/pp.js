@@ -427,7 +427,7 @@
       '.pp-picker-hover{outline:2px solid #14B8A6 !important;outline-offset:3px !important;cursor:crosshair !important;position:relative !important;}',
       '.pp-picker-hover .pp-brand-tag{display:block !important;}',
       '.pp-brand-tag{display:none;position:absolute;top:-22px;left:-2px;z-index:2147483646;',
-      'background:#14B8A6;color:#fff;font-family:sans-serif;font-size:9px;font-weight:700;',
+      'background:#14B8A6;color:#fff;font-family:\'Public Sans\',\'DM Sans\',sans-serif;font-size:9px;font-weight:700;',
       'padding:2px 8px;border-radius:3px 3px 0 0;letter-spacing:0.08em;text-transform:uppercase;',
       'pointer-events:none;white-space:nowrap;line-height:1.8;}',
       '#pp-picker-tooltip{position:fixed;z-index:2147483647;background:#0F172A;color:#fff;',
