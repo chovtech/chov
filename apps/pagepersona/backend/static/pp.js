@@ -424,7 +424,12 @@
     pickerStyleTag = document.createElement('style');
     pickerStyleTag.id = 'pp-picker-styles';
     pickerStyleTag.textContent = [
-      '.pp-picker-hover{outline:2px solid #14B8A6 !important;outline-offset:2px !important;cursor:crosshair !important;}',
+      '.pp-picker-hover{outline:2px solid #14B8A6 !important;outline-offset:3px !important;cursor:crosshair !important;position:relative !important;}',
+      '.pp-picker-hover .pp-brand-tag{display:block !important;}',
+      '.pp-brand-tag{display:none;position:absolute;top:-22px;left:-2px;z-index:2147483646;',
+      'background:#14B8A6;color:#fff;font-family:sans-serif;font-size:9px;font-weight:700;',
+      'padding:2px 8px;border-radius:3px 3px 0 0;letter-spacing:0.08em;text-transform:uppercase;',
+      'pointer-events:none;white-space:nowrap;line-height:1.8;}',
       '#pp-picker-tooltip{position:fixed;z-index:2147483647;background:#0F172A;color:#fff;',
       'font-family:sans-serif;font-size:12px;padding:5px 10px;border-radius:6px;',
       'pointer-events:none;white-space:nowrap;border:1px solid #14B8A6;}'
@@ -450,8 +455,9 @@
   function destroyPicker() {
     if (!pickerActive) return;
     pickerActive = false;
-    // Remove all PP badges
+    // Remove all PP badges and brand tags
     document.querySelectorAll('.pp-badge').forEach(function(b) { b.remove(); });
+    document.querySelectorAll('.pp-brand-tag').forEach(function(t) { t.remove(); });
 
     document.removeEventListener('mouseover', onPickerHover, true);
     document.removeEventListener('mouseout',  onPickerOut,   true);
@@ -468,15 +474,31 @@
 
   function onPickerHover(e) {
     if (!pickerActive) return;
-    if (pickerHighlighted) pickerHighlighted.classList.remove('pp-picker-hover');
+    // Remove from previous
+    if (pickerHighlighted) {
+      pickerHighlighted.classList.remove('pp-picker-hover');
+      var oldTag = pickerHighlighted.querySelector('.pp-brand-tag');
+      if (oldTag) oldTag.remove();
+    }
     pickerHighlighted = e.target;
     pickerHighlighted.classList.add('pp-picker-hover');
+    // Inject brand tag if not already there
+    if (!pickerHighlighted.querySelector('.pp-brand-tag')) {
+      var tag = document.createElement('span');
+      tag.className = 'pp-brand-tag';
+      tag.textContent = 'PagePersona';
+      pickerHighlighted.appendChild(tag);
+    }
     if (pickerTooltip) pickerTooltip.style.display = 'block';
   }
 
   function onPickerOut(e) {
     if (!pickerActive) return;
-    if (e.target && e.target.classList) e.target.classList.remove('pp-picker-hover');
+    if (e.target && e.target.classList) {
+      e.target.classList.remove('pp-picker-hover');
+      var tag = e.target.querySelector('.pp-brand-tag');
+      if (tag) tag.remove();
+    }
     if (pickerTooltip) pickerTooltip.style.display = 'none';
   }
 
