@@ -1,0 +1,994 @@
+'use client'
+
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { rulesApi, projectApi } from '@/lib/api/client'
+import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
+import Icon from '@/components/ui/Icon'
+
+interface SelectedElement {
+  selector: string
+  tagName: string
+  textContent: string
+}
+
+interface ExistingRule {
+  id: string
+  name: string
+  is_active: boolean
+  conditions: any[]
+  actions: any[]
+  condition_operator: string
+}
+
+interface Condition {
+  id: string
+  signal: string
+  signal_label: string
+  operator: string
+  value: string
+  operators: string[]
+  valueType: string
+  options?: string[]
+}
+
+interface Action {
+  id: string
+  type: string
+  type_label: string
+  target_block: string
+  value: string
+  needsElement: boolean
+}
+
+const ACTION_TYPES = [
+  { key: 'swap_text',    label: 'Swap text block', icon: 'text_fields',    needsElement: true  },
+  { key: 'swap_image',   label: 'Swap image',       icon: 'image',          needsElement: true  },
+  { key: 'hide_section', label: 'Hide section',     icon: 'visibility_off', needsElement: true  },
+  { key: 'inject_token', label: 'Inject token',     icon: 'data_object',    needsElement: true  },
+  { key: 'show_popup',   label: 'Show popup',       icon: 'web_asset',      needsElement: false },
+  { key: 'send_webhook', label: 'Send webhook',     icon: 'webhook',        needsElement: false },
+]
+
+const TOKENS = ['{city}', '{first_name}', '{company}', '{affiliate_name}']
+
+type SidebarView = 'home' | 'block' | 'rule_editor' | 'rule_edit'
+type PreviewMode = 'desktop' | 'tablet' | 'mobile'
+
+function PickerPageInner() {
+  const params       = useParams()
+  const router       = useRouter()
+  const searchParams = useSearchParams()
+  const projectId    = params.id as string
+  const pageUrl      = searchParams.get('url') || ''
+
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+
+  const [projectName,  setProjectName]  = useState('Loading...')
+  const [activeRules,  setActiveRules]  = useState(0)
+  const [iframeReady,  setIframeReady]  = useState(false)
+  const [previewMode,  setPreviewMode]  = useState<PreviewMode>('desktop')
+  const [selectedEl,   setSelectedEl]   = useState<SelectedElement | null>(null)
+  const [existingRules,setExistingRules]= useState<ExistingRule[]>([])
+  const [loadingRules, setLoadingRules] = useState(false)
+  const [view,         setView]         = useState<SidebarView>('home')
+
+  const [ruleName,          setRuleName]          = useState('')
+  const [conditionOperator, setConditionOperator] = useState<'AND'|'OR'>('AND')
+  const [conditions,        setConditions]        = useState<Condition[]>([])
+  const [actions,           setActions]           = useState<Action[]>([])
+  const [signalModalOpen,   setSignalModalOpen]   = useState(false)
+  const [editingCondId,     setEditingCondId]     = useState<string|null>(null)
+  const [actionMenuOpen,    setActionMenuOpen]    = useState(false)
+  const [saving,            setSaving]            = useState(false)
+  const [saveError,         setSaveError]         = useState('')
+  const [successToast,      setSuccessToast]      = useState(false)
+  const [editingRule,      setEditingRule]       = useState<ExistingRule | null>(null)
+  const [updating,         setUpdating]          = useState(false)
+
+  useEffect(() => {
+    projectApi.get(projectId).then((res: any) => setProjectName(res.data.name || 'Project')).catch(() => {})
+    rulesApi.list(projectId).then((res: any) => {
+      setActiveRules((res.data || []).filter((r: any) => r.is_active).length)
+    }).catch(() => {})
+  }, [projectId])
+
+  useEffect(() => {
+    function handleMessage(e: MessageEvent) {
+      if (!e.data?.type) return
+      if (e.data.type === 'PP_READY') setIframeReady(true)
+      if (e.data.type === 'PP_ELEMENT_SELECTED') {
+        setSelectedEl({ selector: e.data.selector, tagName: e.data.tagName, textContent: e.data.textContent })
+        setView('block')
+        fetchRulesForElement(e.data.selector)
+      }
+    }
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [projectId])
+
+  const onIframeLoad = useCallback(() => {
+    setIframeReady(true)
+    setTimeout(() => {
+      iframeRef.current?.contentWindow?.postMessage({ type: 'PP_PICKER_INIT' }, '*')
+    }, 300)
+  }, [])
+
+  const fetchRulesForElement = async (selector: string) => {
+    setLoadingRules(true)
+    try {
+      const res = await rulesApi.list(projectId)
+      const all: ExistingRule[] = res.data || []
+      setExistingRules(all.filter((r: ExistingRule) =>
+        r.actions?.some((a: any) => a.target_block === selector)
+      ))
+    } catch {} finally { setLoadingRules(false) }
+  }
+
+  const openRuleEditor = () => {
+    setRuleName('')
+    setConditionOperator('AND')
+    setConditions([])
+    setActions([{ id: Date.now().toString(), type: 'swap_text', type_label: 'Swap text block', target_block: selectedEl?.selector || '', value: '', needsElement: true }])
+    setSaveError('')
+    setView('rule_editor')
+  }
+
+  const openEditRule = (rule: ExistingRule) => {
+    setEditingRule(rule)
+    setRuleName(rule.name)
+    setConditionOperator((rule.condition_operator as 'AND' | 'OR') || 'AND')
+    setConditions((rule.conditions || []).map((c: any, i: number) => ({
+      id: i.toString(),
+      signal: c.signal,
+      signal_label: c.signal,
+      operator: c.operator,
+      value: c.value || '',
+      operators: [c.operator],
+      valueType: typeof c.value === 'number' ? 'number' : 'text',
+    })))
+    setActions((rule.actions || []).map((a: any, i: number) => ({
+      id: i.toString(),
+      type: a.type,
+      type_label: ACTION_TYPES.find(at => at.key === a.type)?.label || a.type,
+      target_block: a.target_block || '',
+      value: a.value || '',
+      needsElement: ACTION_TYPES.find(at => at.key === a.type)?.needsElement ?? true,
+    })))
+    setSaveError('')
+    setView('rule_edit')
+  }
+
+  const openSignalModal = (id?: string) => { setEditingCondId(id || null); setSignalModalOpen(true) }
+
+  const handleSignalSelect = (signal: any) => {
+    const newCond = { id: Date.now().toString(), signal: signal.key, signal_label: signal.label, operator: signal.operators[0], value: '', operators: signal.operators, valueType: signal.valueType, options: signal.options }
+    if (editingCondId) {
+      setConditions(prev => prev.map(c => c.id === editingCondId ? { ...c, ...newCond, id: c.id } : c))
+    } else {
+      setConditions(prev => [...prev, newCond])
+    }
+  }
+
+  const removeCondition = (id: string) => setConditions(prev => prev.filter(c => c.id !== id))
+  const updateCondition  = (id: string, f: string, v: string) => setConditions(prev => prev.map(c => c.id === id ? { ...c, [f]: v } : c))
+  const addAction        = (at: any) => { setActions(prev => [...prev, { id: Date.now().toString(), type: at.key, type_label: at.label, target_block: at.needsElement ? (selectedEl?.selector || '') : '', value: '', needsElement: at.needsElement }]); setActionMenuOpen(false) }
+  const removeAction     = (id: string) => setActions(prev => prev.filter(a => a.id !== id))
+  const updateAction     = (id: string, f: string, v: string) => setActions(prev => prev.map(a => a.id === id ? { ...a, [f]: v } : a))
+  const injectToken      = (id: string, t: string) => setActions(prev => prev.map(a => a.id === id ? { ...a, value: a.value + ' ' + t } : a))
+
+  const canSave = ruleName.trim().length > 0 && conditions.length > 0 && actions.length > 0
+
+  const handleSave = async () => {
+    if (!canSave) return
+    setSaving(true); setSaveError('')
+    try {
+      await rulesApi.create(projectId, {
+        name: ruleName,
+        conditions: conditions.map(c => ({ signal: c.signal, operator: c.operator, value: c.value })),
+        condition_operator: conditionOperator,
+        actions: actions.map(a => ({ type: a.type, target_block: a.target_block, value: a.value })),
+        priority: 0,
+      })
+      const res = await rulesApi.list(projectId)
+      const all: ExistingRule[] = res.data || []
+      setActiveRules(all.filter((r: any) => r.is_active).length)
+      if (selectedEl) setExistingRules(all.filter((r: ExistingRule) => r.actions?.some((a: any) => a.target_block === selectedEl.selector)))
+      setSuccessToast(true); setTimeout(() => setSuccessToast(false), 3000)
+      setView('block')
+    } catch { setSaveError('Failed to save. Please try again.') }
+    finally { setSaving(false) }
+  }
+
+  const handleUpdate = async () => {
+    if (!canSave || !editingRule) return
+    setUpdating(true); setSaveError('')
+    try {
+      await rulesApi.update(projectId, editingRule.id, {
+        name: ruleName,
+        conditions: conditions.map(c => ({ signal: c.signal, operator: c.operator, value: c.value })),
+        condition_operator: conditionOperator,
+        actions: actions.map(a => ({ type: a.type, target_block: a.target_block, value: a.value })),
+      })
+      const res = await rulesApi.list(projectId)
+      const all: ExistingRule[] = res.data || []
+      setActiveRules(all.filter((r: any) => r.is_active).length)
+      if (selectedEl) setExistingRules(all.filter((r: ExistingRule) => r.actions?.some((a: any) => a.target_block === selectedEl.selector)))
+      setSuccessToast(true); setTimeout(() => setSuccessToast(false), 3000)
+      setEditingRule(null)
+      setView('block')
+    } catch { setSaveError('Failed to update. Please try again.') }
+    finally { setUpdating(false) }
+  }
+
+  const closePicker = () => {
+    iframeRef.current?.contentWindow?.postMessage({ type: 'PP_PICKER_DESTROY' }, '*')
+    router.push(`/dashboard/projects/${projectId}/rules`)
+  }
+
+  const goHome = () => {
+    setView('home'); setSelectedEl(null)
+    setTimeout(() => iframeRef.current?.contentWindow?.postMessage({ type: 'PP_PICKER_INIT' }, '*'), 100)
+  }
+
+  const previewWidth: Record<PreviewMode, string> = { desktop: '100%', tablet: '768px', mobile: '390px' }
+
+  if (!pageUrl) return (
+    <div className="flex items-center justify-center h-screen bg-slate-50">
+      <div className="text-center">
+        <Icon name="error" className="text-5xl text-red-400 mb-4 block" />
+        <p className="text-lg font-medium text-slate-700">No page URL provided.</p>
+        <button onClick={() => router.back()} className="mt-4 px-4 py-2 bg-[#1A56DB] text-white rounded-lg text-sm font-semibold">Go Back</button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="fixed inset-0 flex flex-col bg-[#F8FAFC]" style={{ zIndex: 9999 }}>
+
+      <SignalLibraryModal isOpen={signalModalOpen} onClose={() => setSignalModalOpen(false)} onSelect={handleSignalSelect} />
+
+      {/* Success Toast */}
+      {successToast && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-emerald-500 text-white text-sm font-bold px-5 py-2.5 rounded-full shadow-lg shadow-emerald-500/30">
+          <Icon name="check_circle" className="text-base" />
+          Rule saved successfully
+        </div>
+      )}
+
+      {/* ── TOP BAR ── */}
+      <div className="flex items-center justify-between px-5 py-2.5 bg-white border-b border-slate-200 shrink-0 shadow-md h-14">
+        <div className="flex items-center gap-3">
+          <button onClick={closePicker} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 font-semibold transition-colors">
+            <Icon name="arrow_back" className="text-base" />
+            Rules
+          </button>
+          <span className="text-slate-200">|</span>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-[#1A56DB] rounded flex items-center justify-center shrink-0">
+              <Icon name="layers" className="text-white text-xs" />
+            </div>
+            <span className="text-sm font-bold text-slate-900 truncate max-w-[180px]">{projectName}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {selectedEl ? (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-[#14B8A6]/10 border border-[#14B8A6]/30 rounded-full">
+              <span className="text-[10px] font-bold text-[#14B8A6] uppercase tracking-wider">{selectedEl.tagName}</span>
+              <span className="w-px h-3 bg-[#14B8A6]/30" />
+              <span className="text-[11px] font-mono text-slate-600 max-w-[180px] truncate">{selectedEl.selector}</span>
+              <button onClick={goHome} className="ml-1 text-slate-400 hover:text-slate-700 transition-colors">
+                <Icon name="close" className="text-xs" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full">
+              <span className="w-2 h-2 rounded-full bg-[#14B8A6] animate-pulse inline-block" />
+              <span className="text-xs text-slate-500 font-medium">Click any element to personalise</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-full">
+            <Icon name="bolt" className="text-[#1A56DB] text-sm" />
+            <span className="text-xs font-bold text-slate-700">{activeRules} rule{activeRules !== 1 ? 's' : ''}</span>
+          </div>
+          <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
+            {([{ mode: 'desktop', icon: 'desktop_windows' }, { mode: 'tablet', icon: 'tablet_mac' }, { mode: 'mobile', icon: 'smartphone' }] as { mode: PreviewMode; icon: string }[]).map(({ mode, icon }) => (
+              <button key={mode} onClick={() => setPreviewMode(mode)} title={mode}
+                className={`p-1.5 rounded-md transition-all ${previewMode === mode ? 'bg-white shadow text-[#1A56DB]' : 'text-slate-400 hover:text-slate-600'}`}
+              >
+                <Icon name={icon} className="text-base" />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── MAIN ── */}
+      <div className="flex flex-1 overflow-hidden">
+
+        {/* Canvas */}
+        <div className="flex-1 flex flex-col items-center bg-[#E8EDF2] overflow-hidden">
+          <div className="flex-1 w-full flex justify-center overflow-hidden transition-all duration-300"
+            style={{ paddingTop: previewMode !== 'desktop' ? '20px' : '0' }}
+          >
+            <div className="relative h-full bg-white transition-all duration-300 overflow-hidden"
+              style={{
+                width: previewWidth[previewMode],
+                boxShadow: previewMode !== 'desktop' ? '0 8px 40px rgba(0,0,0,0.15)' : 'none',
+                borderRadius: previewMode !== 'desktop' ? '16px 16px 0 0' : '0',
+              }}
+            >
+              {!iframeReady && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white z-10">
+                  <div className="text-center">
+                    <div className="w-10 h-10 border-2 border-[#14B8A6] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                    <p className="text-sm text-slate-500 font-medium">Loading your page...</p>
+                  </div>
+                </div>
+              )}
+              <iframe ref={iframeRef} src={pageUrl} onLoad={onIframeLoad} className="w-full h-full border-0" title="Page Picker" />
+            </div>
+          </div>
+        </div>
+
+        {/* ── SIDEBAR ── */}
+        <div className="w-96 bg-white border-l border-slate-200 flex flex-col shrink-0 shadow-xl">
+
+          {/* ═══ HOME ═══ */}
+          {view === 'home' && (
+            <>
+              <div className="px-5 py-5 border-b border-slate-100">
+                <div className="flex items-center gap-2.5 mb-1">
+                  <div className="w-8 h-8 bg-[#1A56DB]/10 rounded-lg flex items-center justify-center">
+                    <Icon name="ads_click" className="text-[#1A56DB] text-lg" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">Element Picker</p>
+                    <p className="text-xs text-slate-400">Active on {projectName}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-5 py-4 border-b border-slate-100">
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm text-slate-500">Active Rules</span>
+                  <span className="text-sm font-bold text-[#1A56DB]">{activeRules}</span>
+                </div>
+              </div>
+
+              <div className="px-5 py-4 space-y-2.5">
+                <button onClick={() => router.push(`/dashboard/projects/${projectId}/rules`)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all text-left"
+                >
+                  <Icon name="rule" className="text-slate-400 text-xl" />
+                  View All Rules
+                  <Icon name="chevron_right" className="text-slate-300 text-base ml-auto" />
+                </button>
+                <button onClick={() => router.push(`/dashboard/projects/${projectId}`)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all text-left"
+                >
+                  <Icon name="dashboard" className="text-slate-400 text-xl" />
+                  Project Dashboard
+                  <Icon name="chevron_right" className="text-slate-300 text-base ml-auto" />
+                </button>
+              </div>
+
+              <div className="mt-auto px-5 py-5 border-t border-slate-100">
+                <div className="flex items-start gap-3 p-4 bg-[#14B8A6]/8 rounded-xl border border-[#14B8A6]/20">
+                  <span className="w-2 h-2 rounded-full bg-[#14B8A6] animate-pulse shrink-0 mt-1.5" />
+                  <p className="text-xs text-slate-600 leading-relaxed">Hover over any element on the page, then click to start personalising it.</p>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ═══ BLOCK PANEL (S16) ═══ */}
+          {view === 'block' && selectedEl && (
+            <>
+              {/* Header */}
+              <div className="px-5 py-4 border-b border-slate-100">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{selectedEl.tagName} · {selectedEl.selector}</span>
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold border border-emerald-200 uppercase">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                      Active
+                    </span>
+                  </div>
+                  <button onClick={closePicker} className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors">
+                    <Icon name="close" className="text-slate-400 text-base" />
+                  </button>
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 mb-0.5">
+                  {selectedEl.tagName.charAt(0).toUpperCase() + selectedEl.tagName.slice(1).toLowerCase()} Personalisation
+                </h2>
+              </div>
+
+              {/* Default content preview */}
+              <div className="px-5 py-4 border-b border-slate-100">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-semibold text-slate-900">Default Content</p>
+                  <button onClick={openRuleEditor} className="text-xs font-semibold text-[#1A56DB] hover:underline">+ Start Personalising</button>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-900 truncate">
+                      {selectedEl.textContent || selectedEl.tagName + ' element'}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">This is what every visitor sees by default.</p>
+                  </div>
+                  <div className="w-16 h-12 rounded-lg bg-gradient-to-br from-slate-200 to-slate-300 shrink-0 flex items-center justify-center">
+                    <Icon name={selectedEl.tagName === 'IMG' ? 'image' : 'text_fields'} className="text-slate-400 text-lg" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Rules list */}
+              <div className="flex-1 overflow-y-auto px-5 py-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    Personalisation Rules
+                  </p>
+                  <span className="text-xs font-semibold text-slate-400">
+                    {existingRules.length} active
+                  </span>
+                </div>
+
+                {loadingRules ? (
+                  <div className="flex justify-center py-10">
+                    <div className="w-6 h-6 border-2 border-[#1A56DB] border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : existingRules.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 border-2 border-dashed border-slate-200 rounded-xl text-center">
+                    <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-3">
+                      <Icon name="auto_awesome" className="text-2xl text-slate-400" />
+                    </div>
+                    <p className="text-sm font-semibold text-slate-600 mb-1">No rules yet</p>
+                    <p className="text-xs text-slate-400 leading-relaxed px-4">
+                      Everyone sees the same content on this element. Add a rule to personalise it.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {existingRules.map((rule, i) => (
+                      <div key={rule.id}
+                        className={`group p-4 rounded-xl border bg-white hover:shadow-sm transition-all ${rule.is_active ? 'border-slate-200 hover:border-slate-300' : 'border-slate-100 opacity-50'}`}
+                      >
+                        <div className="flex items-start gap-3">
+                          {/* Drag handle */}
+                          <div className="text-slate-300 shrink-0 cursor-grab pt-0.5">
+                            <Icon name="drag_indicator" className="text-base" />
+                          </div>
+                          {/* Content */}
+                          <div className="flex-1 min-w-0 space-y-1">
+                            {/* Priority + name row */}
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-[10px] font-bold text-[#1A56DB]/60 uppercase tracking-wider shrink-0">Priority {i + 1}</span>
+                              <span className="text-xs font-bold text-slate-800 truncate">{rule.name}</span>
+                            </div>
+                            {/* Condition summary */}
+                            {rule.conditions?.[0] && (
+                              <p className="text-xs text-slate-500 truncate">
+                                IF {rule.conditions.map((c: any) => [c.signal, c.operator, c.value].filter(Boolean).join(' ')).join(` ${rule.condition_operator} `)}
+                              </p>
+                            )}
+                            {/* Variant preview */}
+                            {rule.actions?.[0]?.value && (
+                              <p className="text-xs text-slate-400 italic truncate">
+                                "{rule.actions[0].value}"
+                              </p>
+                            )}
+                          </div>
+                          {/* Edit + Toggle */}
+                          <div className="flex items-center gap-2 shrink-0 pt-0.5">
+                            <button
+                              onClick={() => openEditRule(rule)}
+                              className="p-1.5 text-slate-300 hover:text-[#1A56DB] hover:bg-[#1A56DB]/5 rounded-lg transition-colors"
+                            >
+                              <Icon name="edit" className="text-sm" />
+                            </button>
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await rulesApi.update(projectId, rule.id, { is_active: !rule.is_active })
+                                  setExistingRules(prev => prev.map(r => r.id === rule.id ? { ...r, is_active: !r.is_active } : r))
+                                } catch {}
+                              }}
+                              className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${rule.is_active ? 'bg-[#1A56DB]' : 'bg-slate-200'}`}
+                            >
+                              <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${rule.is_active ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* CTA */}
+              <div className="px-5 py-5 border-t border-slate-100 shrink-0">
+                <button onClick={openRuleEditor}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#1A56DB] hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-[#1A56DB]/25 transition-all"
+                >
+                  <Icon name="add" className="text-lg" />
+                  Add Personalisation
+                </button>
+                <p className="text-center text-[11px] text-slate-400 mt-2.5">Changes are saved automatically to your draft.</p>
+              </div>
+            </>
+          )}
+
+          {/* ═══ RULE EDIT (S18 — existing rule) ═══ */}
+          {view === 'rule_edit' && editingRule && (
+            <>
+              <div className="px-5 py-4 border-b border-slate-100 shrink-0">
+                <div className="flex items-center justify-between">
+                  <button onClick={() => setView('block')} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 font-semibold transition-colors">
+                    <Icon name="arrow_back" className="text-base" />
+                    Back
+                  </button>
+                  <span className="text-sm font-bold text-slate-900">Edit Rule</span>
+                  <button onClick={closePicker} className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors">
+                    <Icon name="close" className="text-slate-400 text-base" />
+                  </button>
+                </div>
+                {selectedEl && (
+                  <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
+                    <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wider">{selectedEl.tagName}</span>
+                    <span className="text-slate-300">·</span>
+                    <span className="text-[11px] font-mono text-slate-500 truncate">{selectedEl.selector}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 overflow-y-auto">
+                <div className="px-5 py-5 border-b border-slate-100">
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Rule Name</label>
+                  <input type="text" value={ruleName} onChange={e => setRuleName(e.target.value)}
+                    placeholder="Rule name..."
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+                  />
+                </div>
+
+                <div className="px-5 py-5 border-b border-slate-100">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 flex items-center justify-center bg-[#1A56DB] text-white text-[10px] font-black rounded-full shrink-0">IF</span>
+                      <span className="text-xs font-black text-slate-900 uppercase tracking-wide">Trigger Conditions</span>
+                    </div>
+                    {conditions.length > 1 && (
+                      <div className="flex bg-slate-100 p-0.5 rounded-lg gap-0.5">
+                        {['AND','OR'].map(op => (
+                          <button key={op} onClick={() => setConditionOperator(op as any)}
+                            className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${conditionOperator === op ? 'bg-white shadow text-[#1A56DB]' : 'text-slate-400'}`}
+                          >{op}</button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-3 mb-4">
+                    {conditions.map((c, i) => (
+                      <div key={c.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                        {i > 0 && <p className="text-xs font-bold text-slate-400">{conditionOperator}</p>}
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Signal</label>
+                          <button onClick={() => openSignalModal(c.id)}
+                            className="w-full flex items-center justify-between px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm hover:border-[#1A56DB] transition-colors"
+                          >
+                            <span className={c.signal ? 'text-slate-900 font-medium' : 'text-slate-400'}>{c.signal_label || c.signal || 'Pick a signal...'}</span>
+                            <Icon name="unfold_more" className="text-slate-400 text-sm" />
+                          </button>
+                        </div>
+                        {c.signal && (
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Operator</label>
+                              <select value={c.operator} onChange={e => updateCondition(c.id, 'operator', e.target.value)}
+                                className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm appearance-none focus:outline-none focus:border-[#1A56DB] transition-all"
+                              >
+                                {c.operators.map(op => <option key={op} value={op}>{op}</option>)}
+                              </select>
+                            </div>
+                            {c.valueType !== 'none' && (
+                              <div>
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Value</label>
+                                <input type={c.valueType === 'number' ? 'number' : 'text'} value={c.value}
+                                  onChange={e => updateCondition(c.id, 'value', e.target.value)}
+                                  placeholder="Value..."
+                                  className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        <div className="flex justify-end">
+                          <button onClick={() => removeCondition(c.id)} className="flex items-center gap-1 text-xs text-slate-400 hover:text-red-500 transition-colors">
+                            <Icon name="delete" className="text-sm" /> Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={() => openSignalModal()} className="flex items-center gap-1.5 text-[#1A56DB] text-sm font-semibold hover:underline">
+                    <Icon name="add" className="text-base" /> Add condition
+                  </button>
+                </div>
+
+                <div className="px-5 py-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 flex items-center justify-center bg-emerald-500 text-white text-[9px] font-black rounded-full shrink-0">THEN</span>
+                      <span className="text-xs font-black text-slate-900 uppercase tracking-wide">Actions</span>
+                    </div>
+                    <div className="relative">
+                      <button onClick={() => setActionMenuOpen(!actionMenuOpen)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1A56DB]/10 text-[#1A56DB] text-xs font-bold rounded-lg hover:bg-[#1A56DB]/20 transition-colors border border-[#1A56DB]/20"
+                      >
+                        <Icon name="add" className="text-sm" /> Add action
+                      </button>
+                      {actionMenuOpen && (
+                        <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50">
+                          {ACTION_TYPES.map(at => (
+                            <button key={at.key} onClick={() => addAction(at)}
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 font-medium text-left"
+                            >
+                              <Icon name={at.icon} className="text-slate-400 text-lg" />{at.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    {actions.map(action => (
+                      <div key={action.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Icon name={ACTION_TYPES.find(a => a.key === action.type)?.icon || 'bolt'} className="text-[#1A56DB] text-lg" />
+                            <span className="text-sm font-bold text-slate-800">{action.type_label}</span>
+                          </div>
+                          <button onClick={() => removeAction(action.id)} className="p-1.5 hover:bg-red-50 hover:text-red-500 text-slate-300 rounded-lg transition-colors">
+                            <Icon name="delete" className="text-base" />
+                          </button>
+                        </div>
+                        {action.needsElement && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Target Element</label>
+                            <input type="text" value={action.target_block} onChange={e => updateAction(action.id, 'target_block', e.target.value)}
+                              placeholder="CSS selector" className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-mono focus:outline-none focus:border-[#1A56DB] transition-all" />
+                          </div>
+                        )}
+                        {(action.type === 'swap_text' || action.type === 'inject_token') && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Show this instead:</label>
+                            <textarea value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
+                              placeholder="Content for this visitor segment..." rows={3}
+                              className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:border-[#1A56DB] transition-all" />
+                            <div className="mt-2">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Insert Token:</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {TOKENS.map(token => (
+                                  <button key={token} onClick={() => injectToken(action.id, token)}
+                                    className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-colors"
+                                  >
+                                    <span className="text-[#1A56DB]/60">{'{'}</span>{token.slice(1,-1)}<span className="text-[#1A56DB]/60">{'}'}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {action.type === 'swap_image' && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">New Image URL</label>
+                            <input type="url" value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
+                              placeholder="https://..." className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all" />
+                          </div>
+                        )}
+                        {action.type === 'show_popup' && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Popup Message</label>
+                            <textarea value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
+                              placeholder="Popup message..." rows={3}
+                              className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:border-[#1A56DB] transition-all" />
+                          </div>
+                        )}
+                        {action.type === 'send_webhook' && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Webhook URL</label>
+                            <input type="url" value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
+                              placeholder="https://hooks.zapier.com/..." className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {saveError && (
+                    <div className="mt-4 flex items-center gap-2 p-3 bg-red-50 rounded-xl border border-red-200">
+                      <Icon name="error" className="text-red-500 text-sm shrink-0" />
+                      <p className="text-xs text-red-600">{saveError}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="px-5 py-5 border-t border-slate-100 shrink-0 bg-white">
+                <button onClick={handleUpdate} disabled={!canSave || updating}
+                  className="w-full py-3.5 bg-[#1A56DB] hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl shadow-lg shadow-[#1A56DB]/25 transition-all"
+                >
+                  {updating ? 'Saving...' : 'Save Rule'}
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* ═══ RULE EDITOR (S18) ═══ */}
+          {view === 'rule_editor' && (
+            <>
+              {/* Header */}
+              <div className="px-5 py-4 border-b border-slate-200 shrink-0 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <button onClick={() => setView('block')} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 font-semibold transition-colors">
+                    <Icon name="arrow_back" className="text-base" />
+                    Back
+                  </button>
+                  <span className="text-sm font-bold text-slate-900">New Rule</span>
+                  <button onClick={closePicker} className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors">
+                    <Icon name="close" className="text-slate-400 text-base" />
+                  </button>
+                </div>
+                {/* Block context */}
+                {selectedEl && (
+                  <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-200">
+                    <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wider">{selectedEl.tagName}</span>
+                    <span className="text-slate-300">·</span>
+                    <span className="text-[11px] font-mono text-slate-500 truncate">{selectedEl.selector}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 overflow-y-auto">
+
+                {/* Rule Name */}
+                <div className="px-5 py-5 border-b border-slate-100">
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Rule Name</label>
+                  <input
+                    type="text"
+                    value={ruleName}
+                    onChange={e => setRuleName(e.target.value)}
+                    placeholder="e.g. Show offer to returning visitors"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+                  />
+                </div>
+
+                {/* IF Section */}
+                <div className="px-5 py-5 border-b border-slate-100">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 flex items-center justify-center bg-[#1A56DB] text-white text-[10px] font-black rounded-full shrink-0">IF</span>
+                      <span className="text-xs font-black text-slate-900 uppercase tracking-wide">Trigger Conditions</span>
+                    </div>
+                    {conditions.length > 1 && (
+                      <div className="flex bg-slate-100 p-0.5 rounded-lg gap-0.5">
+                        {['AND','OR'].map(op => (
+                          <button key={op} onClick={() => setConditionOperator(op as any)}
+                            className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${conditionOperator === op ? 'bg-white shadow text-[#1A56DB]' : 'text-slate-400'}`}
+                          >{op}</button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-3 mb-4">
+                    {conditions.map((c, i) => (
+                      <div key={c.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                        {i > 0 && <p className="text-xs font-bold text-slate-400">{conditionOperator}</p>}
+                        {/* Signal picker */}
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Signal</label>
+                          <button onClick={() => openSignalModal(c.id)}
+                            className="w-full flex items-center justify-between px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm hover:border-[#1A56DB] transition-colors"
+                          >
+                            <span className={c.signal ? 'text-slate-900 font-medium' : 'text-slate-400'}>
+                              {c.signal_label || 'Pick a signal...'}
+                            </span>
+                            <Icon name="unfold_more" className="text-slate-400 text-sm" />
+                          </button>
+                        </div>
+                        {c.signal && (
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Operator</label>
+                              <select value={c.operator} onChange={e => updateCondition(c.id, 'operator', e.target.value)}
+                                className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm appearance-none focus:outline-none focus:border-[#1A56DB] transition-all"
+                              >
+                                {c.operators.map(op => <option key={op} value={op}>{op}</option>)}
+                              </select>
+                            </div>
+                            {c.valueType !== 'none' && (
+                              <div>
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Value</label>
+                                {c.valueType === 'select' ? (
+                                  <select value={c.value} onChange={e => updateCondition(c.id, 'value', e.target.value)}
+                                    className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm appearance-none focus:outline-none focus:border-[#1A56DB] transition-all"
+                                  >
+                                    <option value="">Select...</option>
+                                    {(c.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                  </select>
+                                ) : (
+                                  <input type={c.valueType === 'number' ? 'number' : 'text'} value={c.value}
+                                    onChange={e => updateCondition(c.id, 'value', e.target.value)}
+                                    placeholder="Value..."
+                                    className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all"
+                                  />
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        <div className="flex justify-end">
+                          <button onClick={() => removeCondition(c.id)} className="flex items-center gap-1 text-xs text-slate-400 hover:text-red-500 transition-colors">
+                            <Icon name="delete" className="text-sm" /> Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button onClick={() => openSignalModal()} className="flex items-center gap-1.5 text-[#1A56DB] text-sm font-semibold hover:underline">
+                    <Icon name="add" className="text-base" /> Add condition
+                  </button>
+                </div>
+
+                {/* THEN Section */}
+                <div className="px-5 py-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 flex items-center justify-center bg-emerald-500 text-white text-[9px] font-black rounded-full shrink-0">THEN</span>
+                      <span className="text-xs font-black text-slate-900 uppercase tracking-wide">Actions</span>
+                    </div>
+                    <div className="relative">
+                      <button onClick={() => setActionMenuOpen(!actionMenuOpen)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1A56DB]/10 text-[#1A56DB] text-xs font-bold rounded-lg hover:bg-[#1A56DB]/20 transition-colors border border-[#1A56DB]/20"
+                      >
+                        <Icon name="add" className="text-sm" /> Add action
+                      </button>
+                      {actionMenuOpen && (
+                        <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50">
+                          {ACTION_TYPES.map(at => (
+                            <button key={at.key} onClick={() => addAction(at)}
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 font-medium text-left transition-colors"
+                            >
+                              <Icon name={at.icon} className="text-slate-400 text-lg" />
+                              {at.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {actions.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-slate-200 rounded-xl text-center">
+                      <Icon name="add_circle" className="text-3xl text-slate-300 mb-2" />
+                      <p className="text-sm text-slate-400">No actions yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {actions.map(action => (
+                        <div key={action.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Icon name={ACTION_TYPES.find(a => a.key === action.type)?.icon || 'bolt'} className="text-[#1A56DB] text-lg" />
+                              <span className="text-sm font-bold text-slate-800">{action.type_label}</span>
+                            </div>
+                            <button onClick={() => removeAction(action.id)} className="p-1.5 hover:bg-red-50 hover:text-red-500 text-slate-300 rounded-lg transition-colors">
+                              <Icon name="delete" className="text-base" />
+                            </button>
+                          </div>
+
+                          {action.needsElement && (
+                            <div>
+                              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Target Element</label>
+                              <input type="text" value={action.target_block}
+                                onChange={e => updateAction(action.id, 'target_block', e.target.value)}
+                                placeholder="CSS selector e.g. #headline"
+                                className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-mono focus:outline-none focus:border-[#1A56DB] transition-all"
+                              />
+                            </div>
+                          )}
+
+                          {(action.type === 'swap_text' || action.type === 'inject_token') && (
+                            <div>
+                              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Show this instead:</label>
+                              <textarea value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
+                                placeholder="Enter the content to show this visitor segment..."
+                                rows={3}
+                                className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:border-[#1A56DB] transition-all"
+                              />
+                              <div className="mt-2">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Insert Token:</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {TOKENS.map(token => (
+                                    <button key={token} onClick={() => injectToken(action.id, token)}
+                                      className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-colors"
+                                    >
+                                      <span className="text-[#1A56DB]/60">{'{'}</span>{token.slice(1,-1)}<span className="text-[#1A56DB]/60">{'}'}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {action.type === 'swap_image' && (
+                            <div>
+                              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">New Image URL</label>
+                              <input type="url" value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
+                                placeholder="https://..." className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all" />
+                            </div>
+                          )}
+
+                          {action.type === 'show_popup' && (
+                            <div>
+                              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Popup Message</label>
+                              <textarea value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
+                                placeholder="Popup message..." rows={3}
+                                className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:border-[#1A56DB] transition-all" />
+                            </div>
+                          )}
+
+                          {action.type === 'send_webhook' && (
+                            <div>
+                              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Webhook URL</label>
+                              <input type="url" value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
+                                placeholder="https://hooks.zapier.com/..." className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all" />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {saveError && (
+                    <div className="mt-4 flex items-center gap-2 p-3 bg-red-50 rounded-xl border border-red-200">
+                      <Icon name="error" className="text-red-500 text-sm shrink-0" />
+                      <p className="text-xs text-red-600">{saveError}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Save footer */}
+              <div className="px-5 py-5 border-t border-slate-100 shrink-0 bg-white">
+                <button onClick={handleSave} disabled={!canSave || saving}
+                  className="w-full py-3.5 bg-[#1A56DB] hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl shadow-lg shadow-[#1A56DB]/25 transition-all"
+                >
+                  {saving ? 'Saving...' : 'Save Rule'}
+                </button>
+              </div>
+            </>
+          )}
+
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function PickerPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen bg-[#F8FAFC]">
+        <div className="w-8 h-8 border-2 border-[#14B8A6] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <PickerPageInner />
+    </Suspense>
+  )
+}

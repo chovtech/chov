@@ -16,7 +16,6 @@
     loadRules(scriptId, function (rules) {
       if (!rules || rules.length === 0) return;
       var signals = detectSignals();
-      // Expose on window for debugging and external access
       window.__pp = window.__pp || {};
       window.__pp.signals = signals;
       window.__pp.rules = rules;
@@ -61,28 +60,21 @@
   }
 
   // ─── LOAD RULES ────────────────────────────────────────────────────────────
-  // Strategy: stale-while-revalidate
-  // 1. If cache exists and is fresh → use cache, revalidate in background
-  // 2. If cache is stale or missing → fetch fresh, then apply
   function loadRules(scriptId, callback) {
     var cached = getCached(scriptId);
 
     if (cached) {
-      // Serve from cache immediately
       callback(cached.rules);
-      // Revalidate in background — check hash first
       pingHash(scriptId, function (serverHash) {
         if (serverHash && serverHash !== cached.rules_hash) {
           fetchRules(scriptId, function (data) {
             if (data) setCache(scriptId, data.rules_hash, data.rules);
-            // Note: we do NOT re-apply rules mid-visit to avoid flicker
           });
         }
       });
       return;
     }
 
-    // No cache — fetch fresh and apply
     fetchRules(scriptId, function (data) {
       if (!data) return;
       setCache(scriptId, data.rules_hash, data.rules);
@@ -106,7 +98,6 @@
   function detectSignals() {
     var signals = {};
 
-    // UTM params
     var params = parseQueryString(window.location.search);
     signals.utm_source   = params.utm_source   || '';
     signals.utm_medium   = params.utm_medium   || '';
@@ -114,7 +105,6 @@
     signals.query_param  = window.location.search;
     signals.referrer_url = document.referrer || '';
 
-    // Device type
     var ua = navigator.userAgent;
     if (/Mobi|Android/i.test(ua)) {
       signals.device_type = 'mobile';
@@ -124,7 +114,6 @@
       signals.device_type = 'desktop';
     }
 
-    // Operating system
     if (/iPhone|iPad|Mac/i.test(ua)) {
       signals.operating_system = /iPhone|iPad/.test(ua) ? 'iOS' : 'macOS';
     } else if (/Android/i.test(ua)) {
@@ -137,7 +126,6 @@
       signals.operating_system = 'unknown';
     }
 
-    // Browser
     if (/Edg\//i.test(ua)) {
       signals.browser = 'Edge';
     } else if (/Firefox/i.test(ua)) {
@@ -150,16 +138,12 @@
       signals.browser = 'unknown';
     }
 
-    // Visit count (per script_id stored in localStorage)
     var visitKey = 'pp_visits_' + (params.id || '');
     var visits = parseInt(localStorage.getItem(visitKey) || '0', 10) + 1;
     localStorage.setItem(visitKey, String(visits));
     signals.visit_count = visits;
-
-    // Visitor type
     signals.visitor_type = visits === 1 ? 'new' : 'returning';
 
-    // Scroll depth (updated as user scrolls — snapshot at rule eval time is 0)
     signals.scroll_depth = 0;
     window.addEventListener('scroll', function () {
       var scrolled = window.scrollY + window.innerHeight;
@@ -167,25 +151,20 @@
       signals.scroll_depth = Math.round((scrolled / total) * 100);
     }, { passive: true });
 
-    // Time on page (seconds since load)
     var loadTime = Date.now();
     signals.time_on_page = 0;
     setInterval(function () {
       signals.time_on_page = Math.round((Date.now() - loadTime) / 1000);
     }, 1000);
 
-    // Exit intent
     signals.exit_intent = false;
     document.addEventListener('mouseleave', function (e) {
       if (e.clientY <= 0) signals.exit_intent = true;
     });
 
-    // Day / time
     var now = new Date();
     signals.day_time = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
 
-    // Geo — not available client-side without an IP API
-    // Will be populated server-side in a future version
     signals.geo_country = '';
     signals.geo_city = '';
 
@@ -197,9 +176,7 @@
     var matched = [];
     for (var i = 0; i < rules.length; i++) {
       var rule = rules[i];
-      if (ruleMatches(rule, signals)) {
-        matched.push(rule);
-      }
+      if (ruleMatches(rule, signals)) matched.push(rule);
     }
     return matched;
   }
@@ -213,43 +190,33 @@
       return conditionMatches(c, signals);
     });
 
-    if (operator === 'OR') {
-      return results.some(function (r) { return r; });
-    }
+    if (operator === 'OR') return results.some(function (r) { return r; });
     return results.every(function (r) { return r; });
   }
 
   function conditionMatches(condition, signals) {
-    var signal = condition.signal;
+    var signal   = condition.signal;
     var operator = condition.operator;
     var expected = condition.value;
-    var actual = signals[signal];
+    var actual   = signals[signal];
 
     if (actual === undefined || actual === null) return false;
 
     switch (operator) {
-      case 'is detected':
-        return actual === true;
-      case 'is':
-        return String(actual).toLowerCase() === String(expected).toLowerCase();
-      case 'is not':
-        return String(actual).toLowerCase() !== String(expected).toLowerCase();
-      case 'contains':
-        return String(actual).toLowerCase().indexOf(String(expected).toLowerCase()) !== -1;
-      case 'equals':
-        return String(actual) === String(expected);
-      case 'is greater than':
-        return parseFloat(actual) > parseFloat(expected);
-      case 'is less than':
-        return parseFloat(actual) < parseFloat(expected);
+      case 'is detected':    return actual === true;
+      case 'is':             return String(actual).toLowerCase() === String(expected).toLowerCase();
+      case 'is not':         return String(actual).toLowerCase() !== String(expected).toLowerCase();
+      case 'contains':       return String(actual).toLowerCase().indexOf(String(expected).toLowerCase()) !== -1;
+      case 'equals':         return String(actual) === String(expected);
+      case 'is greater than':return parseFloat(actual) > parseFloat(expected);
+      case 'is less than':   return parseFloat(actual) < parseFloat(expected);
       case 'is between': {
         var parts = String(expected).split(',');
         if (parts.length !== 2) return false;
         var val = parseFloat(actual);
         return val >= parseFloat(parts[0]) && val <= parseFloat(parts[1]);
       }
-      default:
-        return false;
+      default: return false;
     }
   }
 
@@ -265,26 +232,13 @@
 
   function fireAction(action) {
     switch (action.type) {
-      case 'swap_text':
-        swapText(action.target_block, action.value);
-        break;
-      case 'swap_image':
-        swapImage(action.target_block, action.value);
-        break;
-      case 'hide_section':
-        hideSection(action.target_block);
-        break;
-      case 'inject_token':
-        injectToken(action.target_block, action.value);
-        break;
-      case 'show_popup':
-        showPopup(action.value);
-        break;
-      case 'send_webhook':
-        sendWebhook(action.value);
-        break;
-      default:
-        warn('Unknown action type: ' + action.type);
+      case 'swap_text':    swapText(action.target_block, action.value);    break;
+      case 'swap_image':   swapImage(action.target_block, action.value);   break;
+      case 'hide_section': hideSection(action.target_block);               break;
+      case 'inject_token': injectToken(action.target_block, action.value); break;
+      case 'show_popup':   showPopup(action.value);                        break;
+      case 'send_webhook': sendWebhook(action.value);                      break;
+      default: warn('Unknown action type: ' + action.type);
     }
   }
 
@@ -368,7 +322,6 @@
   }
 
   function getAffiliateName() {
-    // JVZoo passes affiliate as 'aff' query param
     var params = parseQueryString(window.location.search);
     return params.aff || params.affiliate || '';
   }
@@ -380,7 +333,6 @@
   // ─── DOM HELPERS ───────────────────────────────────────────────────────────
   function findElement(blockId) {
     if (!blockId) return null;
-    // Try id first, then data-pp-block, then CSS selector
     var el = document.getElementById(blockId)
       || document.querySelector('[data-pp-block="' + blockId + '"]')
       || document.querySelector(blockId);
@@ -395,11 +347,8 @@
     xhr.onreadystatechange = function () {
       if (xhr.readyState === 4) {
         if (xhr.status === 200) {
-          try {
-            callback(JSON.parse(xhr.responseText));
-          } catch (e) {
-            callback(null);
-          }
+          try { callback(JSON.parse(xhr.responseText)); }
+          catch (e) { callback(null); }
         } else {
           callback(null);
         }
@@ -428,8 +377,154 @@
     if (window.console && console.warn) console.warn('[PagePersona]', msg);
   }
 
+  // ─── PICKER MODE ───────────────────────────────────────────────────────────
+  // Activated only when the PagePersona dashboard loads this page in an iframe.
+  // Normal visitors are never affected — this block is completely dormant otherwise.
+
+  var pickerActive = false;
+  var pickerHighlighted = null;
+  var pickerTooltip = null;
+  var pickerStyleTag = null;
+
+  function initPicker() {
+    if (pickerActive) return;
+    pickerActive = true;
+
+    // Inject hover styles
+    pickerStyleTag = document.createElement('style');
+    pickerStyleTag.id = 'pp-picker-styles';
+    pickerStyleTag.textContent = [
+      '.pp-picker-hover{outline:2px solid #14B8A6 !important;outline-offset:2px !important;cursor:crosshair !important;}',
+      '#pp-picker-tooltip{position:fixed;z-index:2147483647;background:#0F172A;color:#fff;',
+      'font-family:sans-serif;font-size:12px;padding:5px 10px;border-radius:6px;',
+      'pointer-events:none;white-space:nowrap;border:1px solid #14B8A6;}'
+    ].join('');
+    document.head.appendChild(pickerStyleTag);
+
+    // Tooltip element
+    pickerTooltip = document.createElement('div');
+    pickerTooltip.id = 'pp-picker-tooltip';
+    pickerTooltip.textContent = 'Click to personalise this element';
+    pickerTooltip.style.display = 'none';
+    document.body.appendChild(pickerTooltip);
+
+    document.addEventListener('mouseover', onPickerHover, true);
+    document.addEventListener('mouseout',  onPickerOut,   true);
+    document.addEventListener('mousemove', onPickerMove,  true);
+    document.addEventListener('click',     onPickerClick, true);
+
+    // Tell dashboard we are ready
+    window.parent.postMessage({ type: 'PP_READY' }, '*');
+  }
+
+  function destroyPicker() {
+    if (!pickerActive) return;
+    pickerActive = false;
+
+    document.removeEventListener('mouseover', onPickerHover, true);
+    document.removeEventListener('mouseout',  onPickerOut,   true);
+    document.removeEventListener('mousemove', onPickerMove,  true);
+    document.removeEventListener('click',     onPickerClick, true);
+
+    if (pickerHighlighted) {
+      pickerHighlighted.classList.remove('pp-picker-hover');
+      pickerHighlighted = null;
+    }
+    if (pickerTooltip)   { pickerTooltip.remove();   pickerTooltip = null; }
+    if (pickerStyleTag)  { pickerStyleTag.remove();  pickerStyleTag = null; }
+  }
+
+  function onPickerHover(e) {
+    if (!pickerActive) return;
+    if (pickerHighlighted) pickerHighlighted.classList.remove('pp-picker-hover');
+    pickerHighlighted = e.target;
+    pickerHighlighted.classList.add('pp-picker-hover');
+    if (pickerTooltip) pickerTooltip.style.display = 'block';
+  }
+
+  function onPickerOut(e) {
+    if (!pickerActive) return;
+    if (e.target && e.target.classList) e.target.classList.remove('pp-picker-hover');
+    if (pickerTooltip) pickerTooltip.style.display = 'none';
+  }
+
+  function onPickerMove(e) {
+    if (!pickerActive || !pickerTooltip) return;
+    pickerTooltip.style.left = (e.clientX + 14) + 'px';
+    pickerTooltip.style.top  = (e.clientY + 14) + 'px';
+  }
+
+  function onPickerClick(e) {
+    if (!pickerActive) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    var el = e.target;
+    var selector = buildSelector(el);
+    var payload = {
+      type:        'PP_ELEMENT_SELECTED',
+      selector:    selector,
+      tagName:     el.tagName,
+      textContent: (el.textContent || '').trim().slice(0, 120),
+      id:          el.id || '',
+      classes:     el.className || ''
+    };
+    window.parent.postMessage(payload, '*');
+  }
+
+  // Build the most specific stable CSS selector for a given element
+  function buildSelector(el) {
+    // 1. data-pp-block attribute — most stable
+    if (el.getAttribute('data-pp-block')) {
+      return '[data-pp-block="' + el.getAttribute('data-pp-block') + '"]';
+    }
+    // 2. id attribute — very stable
+    if (el.id) {
+      return '#' + el.id;
+    }
+    // 3. tag + meaningful classes (skip utility/layout classes)
+    if (el.className && typeof el.className === 'string') {
+      var classes = el.className.trim().split(/\s+/).slice(0, 2).join('.');
+      if (classes) return el.tagName.toLowerCase() + '.' + classes;
+    }
+    // 4. tag + nth-child fallback
+    var parent = el.parentElement;
+    if (parent) {
+      var siblings = Array.prototype.slice.call(parent.children);
+      var index = siblings.indexOf(el) + 1;
+      var parentSelector = parent.id ? '#' + parent.id : parent.tagName.toLowerCase();
+      return parentSelector + ' > ' + el.tagName.toLowerCase() + ':nth-child(' + index + ')';
+    }
+    // 5. bare tag as last resort
+    return el.tagName.toLowerCase();
+  }
+
+  // Listen for messages from the dashboard
+  window.addEventListener('message', function (e) {
+    if (!e.data || !e.data.type) return;
+    if (e.data.type === 'PP_PICKER_INIT')    initPicker();
+    if (e.data.type === 'PP_PICKER_DESTROY') destroyPicker();
+  });
+
+  // Auto-activate picker if loaded inside the PagePersona dashboard iframe
+  // This fires when postMessage is blocked by cross-origin port differences
+  (function autoInitPicker() {
+    try {
+      var inIframe = window.self !== window.top;
+      var referrer = document.referrer || '';
+      var isPPDashboard = referrer.indexOf('localhost:3000') !== -1
+        || referrer.indexOf('app.usepagepersona.com') !== -1;
+      if (inIframe && isPPDashboard) {
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initPicker);
+        } else {
+          initPicker();
+        }
+      }
+    } catch(e) {}
+  })();
+
   // ─── INIT ──────────────────────────────────────────────────────────────────
-  // Run after DOM is ready — but don't block page render
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else {

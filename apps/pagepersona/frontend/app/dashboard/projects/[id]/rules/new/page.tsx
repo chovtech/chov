@@ -1,20 +1,20 @@
 'use client'
 
-import { useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
-import { rulesApi } from '@/lib/api/client'
+import { rulesApi, projectApi } from '@/lib/api/client'
 
 const ACTION_TYPES = [
-  { key: "swap_text", label: "Swap text block", icon: "text_fields", needsElement: true },
-  { key: "swap_image", label: "Swap image", icon: "image", needsElement: true },
-  { key: "hide_section", label: "Hide section", icon: "visibility_off", needsElement: true },
-  { key: "inject_token", label: "Inject token", icon: "data_object", needsElement: true },
-  { key: "show_popup", label: "Show popup", icon: "web_asset", needsElement: false },
-  { key: "send_webhook", label: "Send webhook", icon: "webhook", needsElement: false },
+  { key: "swap_text",    label: "Swap text block", icon: "text_fields",    needsElement: true  },
+  { key: "swap_image",   label: "Swap image",       icon: "image",          needsElement: true  },
+  { key: "hide_section", label: "Hide section",     icon: "visibility_off", needsElement: true  },
+  { key: "inject_token", label: "Inject token",     icon: "data_object",    needsElement: true  },
+  { key: "show_popup",   label: "Show popup",       icon: "web_asset",      needsElement: false },
+  { key: "send_webhook", label: "Send webhook",     icon: "webhook",        needsElement: false },
 ]
 
 const TOKENS = ["{city}", "{first_name}", "{company}", "{affiliate_name}"]
@@ -39,10 +39,11 @@ interface Action {
   needsElement: boolean
 }
 
-export default function NewRulePage() {
+function NewRulePageInner() {
   const { t } = useTranslation('common')
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const projectId = params.id as string
 
   const [ruleName, setRuleName] = useState("")
@@ -53,6 +54,23 @@ export default function NewRulePage() {
   const [editingConditionId, setEditingConditionId] = useState<string | null>(null)
   const [actionMenuOpen, setActionMenuOpen] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [projectPageUrl, setProjectPageUrl] = useState('')
+
+  // ── Receive selector back from picker page ──────────────────────────────
+  useEffect(() => {
+    const pickedSelector = searchParams.get('pickedSelector')
+    const actionIndex    = searchParams.get('actionIndex')
+    if (!pickedSelector || actionIndex === null) return
+
+    const index = parseInt(actionIndex, 10)
+    setActions(prev => prev.map((a, i) =>
+      i === index ? { ...a, target_block: decodeURIComponent(pickedSelector) } : a
+    ))
+
+    // Clean query params from URL without re-render
+    const clean = `/dashboard/projects/${projectId}/rules/new`
+    window.history.replaceState(null, '', clean)
+  }, [searchParams, projectId])
 
   const openSignalModal = (conditionId?: string) => {
     setEditingConditionId(conditionId || null)
@@ -108,6 +126,48 @@ export default function NewRulePage() {
   const injectToken = (actionId: string, token: string) => {
     setActions(prev => prev.map(a => a.id === actionId ? { ...a, value: a.value + " " + token } : a))
   }
+
+  // ── Open picker for a specific action ───────────────────────────────────
+  const openPicker = (actionIndex: number) => {
+    if (!projectPageUrl) {
+      alert('Project page URL not loaded yet. Please wait a moment and try again.')
+      return
+    }
+    // Persist current form state to sessionStorage so it survives navigation
+    sessionStorage.setItem('pp_rule_draft', JSON.stringify({
+      ruleName, conditionOperator, conditions, actions
+    }))
+    const pageUrl = encodeURIComponent(projectPageUrl)
+    router.push(
+      `/dashboard/projects/${projectId}/picker` +
+      `?returnTo=/dashboard/projects/${projectId}/rules/new` +
+      `&actionIndex=${actionIndex}` +
+      `&url=${pageUrl}`
+    )
+  }
+
+  // ── Restore draft from sessionStorage on mount ──────────────────────────
+  useEffect(() => {
+    const draft = sessionStorage.getItem('pp_rule_draft')
+    if (!draft) return
+    // Only restore if we're returning from picker (pickedSelector present)
+    if (!searchParams.get('pickedSelector')) return
+    try {
+      const parsed = JSON.parse(draft)
+      setRuleName(parsed.ruleName || "")
+      setConditionOperator(parsed.conditionOperator || "AND")
+      setConditions(parsed.conditions || [])
+      setActions(parsed.actions || [])
+      sessionStorage.removeItem('pp_rule_draft')
+    } catch (e) {}
+  }, [])
+
+  // Fetch project to get real page_url for picker
+  useEffect(() => {
+    projectApi.get(projectId).then((res: any) => {
+      setProjectPageUrl(res.data.page_url || '')
+    }).catch(() => {})
+  }, [projectId])
 
   const canSave = ruleName.trim().length > 0 && conditions.length > 0 && actions.length > 0
 
@@ -172,9 +232,9 @@ export default function NewRulePage() {
         {/* IF Section */}
         <div className="bg-white border border-slate-200 rounded-xl p-6 mb-6">
           <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <span className="px-3 py-1 bg-[#1A56DB]/10 text-[#1A56DB] text-xs font-bold rounded-full uppercase tracking-wider">IF</span>
-              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">{t("rules.trigger_conditions")}</h3>
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 flex items-center justify-center bg-[#1A56DB] text-white text-xs font-black rounded-full">IF</span>
+              <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide">{t("rules.trigger_conditions")}</h3>
             </div>
             {conditions.length > 1 && (
               <div className="flex bg-slate-100 p-1 rounded-lg gap-1">
@@ -191,7 +251,6 @@ export default function NewRulePage() {
             )}
           </div>
 
-          {/* Condition rows */}
           <div className="space-y-3 mb-4">
             {conditions.map((condition, i) => (
               <div key={condition.id} className="flex items-start gap-3">
@@ -200,7 +259,6 @@ export default function NewRulePage() {
                 )}
                 {i === 0 && <div className="w-8 shrink-0" />}
                 <div className="flex-1 grid grid-cols-12 gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                  {/* Signal */}
                   <div className="col-span-4">
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Signal</label>
                     <button
@@ -213,7 +271,6 @@ export default function NewRulePage() {
                       <Icon name="unfold_more" className="text-slate-400 text-sm" />
                     </button>
                   </div>
-                  {/* Operator */}
                   <div className="col-span-4">
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Operator</label>
                     <div className="relative">
@@ -230,7 +287,6 @@ export default function NewRulePage() {
                       <Icon name="expand_more" className="absolute right-2 top-3 text-slate-400 pointer-events-none text-sm" />
                     </div>
                   </div>
-                  {/* Value */}
                   <div className="col-span-3">
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Value</label>
                     {condition.valueType === "none" ? (
@@ -260,7 +316,6 @@ export default function NewRulePage() {
                       />
                     )}
                   </div>
-                  {/* Remove */}
                   <div className="col-span-1 flex items-end justify-center pb-1">
                     <button onClick={() => removeCondition(condition.id)} className="p-1.5 hover:bg-red-50 hover:text-red-500 text-slate-300 rounded-lg transition-colors">
                       <Icon name="delete" className="text-base" />
@@ -283,14 +338,14 @@ export default function NewRulePage() {
         {/* THEN Section */}
         <div className="bg-white border border-slate-200 rounded-xl p-6 mb-6">
           <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full uppercase tracking-wider">THEN</span>
-              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">{t("rules.actions")}</h3>
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 flex items-center justify-center bg-emerald-500 text-white text-[10px] font-black rounded-full">THEN</span>
+              <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide">{t("rules.actions")}</h3>
             </div>
             <div className="relative">
               <button
                 onClick={() => setActionMenuOpen(!actionMenuOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1A56DB]/10 text-[#1A56DB] text-xs font-bold rounded-lg hover:bg-[#1A56DB]/20 transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#1A56DB]/10 text-[#1A56DB] text-xs font-bold rounded-lg hover:bg-[#1A56DB]/20 transition-colors border border-[#1A56DB]/20"
               >
                 <Icon name="add" className="text-base" />
                 {t("rules.add_action")}
@@ -319,7 +374,7 @@ export default function NewRulePage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {actions.map(action => (
+              {actions.map((action, actionIndex) => (
                 <div key={action.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-sm font-bold text-slate-700 flex items-center gap-2">
@@ -330,25 +385,38 @@ export default function NewRulePage() {
                       <Icon name="delete" className="text-base" />
                     </button>
                   </div>
+
                   {action.needsElement && (
                     <div className="mb-4">
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Target Block ID</label>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Target Element</label>
                       <div className="flex gap-2">
                         <input
                           type="text"
                           value={action.target_block}
                           onChange={e => updateAction(action.id, "target_block", e.target.value)}
-                          placeholder="e.g. headline-01"
-                          className="flex-1 px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+                          placeholder="e.g. #headline or .hero h1"
+                          className="flex-1 px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
                         />
-                        <button className="flex items-center gap-1.5 px-3 py-2.5 border border-[#1A56DB]/30 text-[#1A56DB] text-xs font-bold rounded-lg hover:bg-[#1A56DB]/5 transition-colors">
-                          <Icon name="open_in_new" className="text-sm" />
+                        <button
+                          onClick={() => openPicker(actionIndex)}
+                          className="flex items-center gap-1.5 px-3 py-2.5 border border-[#1A56DB]/30 bg-[#1A56DB]/5 text-[#1A56DB] text-xs font-bold rounded-lg hover:bg-[#1A56DB]/10 transition-colors whitespace-nowrap"
+                        >
+                          <Icon name="ads_click" className="text-sm" />
                           Pick from page
                         </button>
                       </div>
-                      <p className="text-xs text-slate-400 mt-1">Enter the block ID manually or use Pick from page to select it visually</p>
+                      {action.target_block && (
+                        <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
+                          <Icon name="check_circle" className="text-sm" />
+                          Element selected: <span className="font-mono">{action.target_block}</span>
+                        </p>
+                      )}
+                      {!action.target_block && (
+                        <p className="text-xs text-slate-400 mt-1">Type a CSS selector or click "Pick from page" to select visually</p>
+                      )}
                     </div>
                   )}
+
                   {(action.type === "swap_text" || action.type === "inject_token") && (
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Replacement Content</label>
@@ -375,6 +443,20 @@ export default function NewRulePage() {
                       </div>
                     </div>
                   )}
+
+                  {action.type === "swap_image" && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">New Image URL</label>
+                      <input
+                        type="url"
+                        value={action.value}
+                        onChange={e => updateAction(action.id, "value", e.target.value)}
+                        placeholder="https://example.com/image.jpg"
+                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+                      />
+                    </div>
+                  )}
+
                   {action.type === "show_popup" && (
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Popup Message</label>
@@ -387,6 +469,7 @@ export default function NewRulePage() {
                       />
                     </div>
                   )}
+
                   {action.type === "send_webhook" && (
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Webhook URL</label>
@@ -426,5 +509,17 @@ export default function NewRulePage() {
 
       </div>
     </div>
+  )
+}
+
+export default function NewRulePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen bg-slate-50">
+        <div className="w-8 h-8 border-2 border-[#1A56DB] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <NewRulePageInner />
+    </Suspense>
   )
 }

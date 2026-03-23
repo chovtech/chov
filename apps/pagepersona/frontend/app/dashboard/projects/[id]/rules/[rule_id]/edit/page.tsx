@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
@@ -62,7 +62,7 @@ interface Action {
   needsElement: boolean
 }
 
-export default function EditRulePage() {
+function EditRulePageInner() {
   const { t } = useTranslation('common')
   const params = useParams()
   const router = useRouter()
@@ -79,6 +79,8 @@ export default function EditRulePage() {
   const [editingConditionId, setEditingConditionId] = useState<string | null>(null)
   const [actionMenuOpen, setActionMenuOpen] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [projectPageUrl, setProjectPageUrl] = useState('')
+  const searchParams = useSearchParams()
 
   // Load rule and project on mount
   useEffect(() => {
@@ -89,6 +91,7 @@ export default function EditRulePage() {
           rulesApi.get(projectId, ruleId)
         ])
         setProjectName(projRes.data.name)
+        setProjectPageUrl(projRes.data.page_url || '')
         const rule = ruleRes.data
         setRuleName(rule.name)
         setConditionOperator(rule.condition_operator || 'AND')
@@ -173,6 +176,31 @@ export default function EditRulePage() {
     setActions(prev => prev.map(a => a.id === id ? { ...a, [field]: value } : a))
   const injectToken = (actionId: string, token: string) =>
     setActions(prev => prev.map(a => a.id === actionId ? { ...a, value: a.value + ' ' + token } : a))
+
+  // Receive selector back from picker
+  useEffect(() => {
+    const pickedSelector = searchParams.get('pickedSelector')
+    const actionIndex = searchParams.get('actionIndex')
+    if (!pickedSelector || actionIndex === null) return
+    const index = parseInt(actionIndex, 10)
+    setActions(prev => prev.map((a, i) =>
+      i === index ? { ...a, target_block: decodeURIComponent(pickedSelector) } : a
+    ))
+    window.history.replaceState(null, '', window.location.pathname)
+  }, [searchParams])
+
+  const openPicker = (actionIndex: number) => {
+    if (!projectPageUrl) return
+    sessionStorage.setItem('pp_edit_rule_draft', JSON.stringify({
+      ruleName, conditionOperator, conditions, actions
+    }))
+    router.push(
+      `/dashboard/projects/${projectId}/picker` +
+      `?returnTo=/dashboard/projects/${projectId}/rules/${ruleId}/edit` +
+      `&actionIndex=${actionIndex}` +
+      `&url=${encodeURIComponent(projectPageUrl)}`
+    )
+  }
 
   const canSave = ruleName.trim().length > 0 && conditions.length > 0 && actions.length > 0
 
@@ -408,8 +436,10 @@ export default function EditRulePage() {
                           placeholder="e.g. headline-01"
                           className="flex-1 px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
                         />
-                        <button className="flex items-center gap-1.5 px-3 py-2.5 border border-[#1A56DB]/30 text-[#1A56DB] text-xs font-bold rounded-lg hover:bg-[#1A56DB]/5 transition-colors">
-                          <Icon name="open_in_new" className="text-sm" />
+                        <button
+                          onClick={() => openPicker(actions.findIndex(a => a.id === action.id))}
+                          className="flex items-center gap-1.5 px-3 py-2.5 border border-[#1A56DB]/30 bg-[#1A56DB]/5 text-[#1A56DB] text-xs font-bold rounded-lg hover:bg-[#1A56DB]/10 transition-colors whitespace-nowrap">
+                          <Icon name="ads_click" className="text-sm" />
                           Pick from page
                         </button>
                       </div>
@@ -493,5 +523,17 @@ export default function EditRulePage() {
 
       </div>
     </div>
+  )
+}
+
+export default function EditRulePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen bg-slate-50">
+        <div className="w-8 h-8 border-2 border-[#1A56DB] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <EditRulePageInner />
+    </Suspense>
   )
 }
