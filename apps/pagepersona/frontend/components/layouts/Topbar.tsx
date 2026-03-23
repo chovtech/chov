@@ -116,7 +116,9 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
 
         <Link href="/dashboard/settings">
           <div className="w-8 h-8 rounded-full bg-[#1A56DB]/10 border-2 border-[#1A56DB]/20 flex items-center justify-center text-[#1A56DB] font-bold text-xs hover:border-[#1A56DB]/50 transition-colors cursor-pointer">
-            {initials}
+{user?.avatar_url ? (
+                <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover rounded-full" />
+              ) : initials}
           </div>
         </Link>
 

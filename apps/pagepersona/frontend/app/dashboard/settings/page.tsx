@@ -6,6 +6,7 @@ import Icon from '@/components/ui/Icon'
 import { authApi, userApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { useLanguage } from '@/lib/hooks/useLanguage'
+import ImageUploader from '@/components/ui/ImageUploader'
 
 interface User {
   id: string; name: string; email: string
@@ -17,7 +18,7 @@ export default function SettingsPage() {
   const { language } = useLanguage()
   const [activeTab, setActiveTab] = useState('general')
   const [user, setUser] = useState<User | null>(null)
-  const [profileForm, setProfileForm] = useState({ name: '', email: '' })
+  const [profileForm, setProfileForm] = useState({ name: '', email: '', avatar_url: '' })
   const [passwordForm, setPasswordForm] = useState({ current_password: '', new_password: '', confirm: '' })
   const [profileLoading, setProfileLoading] = useState(false)
   const [passwordLoading, setPasswordLoading] = useState(false)
@@ -34,7 +35,7 @@ export default function SettingsPage() {
   useEffect(() => {
     authApi.me().then(res => {
       setUser(res.data)
-      setProfileForm({ name: res.data.name || '', email: res.data.email })
+      setProfileForm({ name: res.data.name || '', email: res.data.email, avatar_url: res.data.avatar_url || '' })
     }).catch(() => null)
   }, [])
 
@@ -43,7 +44,7 @@ export default function SettingsPage() {
     setProfileMsg(null)
     setProfileLoading(true)
     try {
-      const res = await userApi.updateProfile({ name: profileForm.name, email: profileForm.email, language })
+      const res = await userApi.updateProfile({ name: profileForm.name, email: profileForm.email, language, avatar_url: profileForm.avatar_url })
       setUser(res.data)
       setProfileMsg({ type: 'success', text: t('toast.profileUpdated') })
     } catch (err: unknown) {
@@ -108,7 +109,51 @@ export default function SettingsPage() {
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
                 <h2 className="text-base font-bold text-slate-900 dark:text-white mb-4">{t('settings.profile.title')}</h2>
                 <div className="flex items-center gap-5">
-                  <div className="size-16 rounded-full bg-[#1A56DB]/10 border-2 border-[#1A56DB]/20 flex items-center justify-center text-[#1A56DB] font-bold text-xl flex-shrink-0">{initials}</div>
+                  <div className="relative size-16 flex-shrink-0 group cursor-pointer" onClick={() => document.getElementById('avatar-upload')?.click()}>
+                    {profileForm.avatar_url ? (
+                      <img src={profileForm.avatar_url} alt="Avatar" className="size-16 rounded-full object-cover border-2 border-[#1A56DB]/20" />
+                    ) : (
+                      <div className="size-16 rounded-full bg-[#1A56DB]/10 border-2 border-[#1A56DB]/20 flex items-center justify-center text-[#1A56DB] font-bold text-xl">{initials}</div>
+                    )}
+                    {/* Pencil overlay */}
+                    <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Icon name="edit" className="text-white text-base" />
+                    </div>
+                    {/* Hidden uploader */}
+                    <div className="hidden">
+                      <ImageUploader
+                        value={profileForm.avatar_url}
+                        onChange={url => setProfileForm(prev => ({ ...prev, avatar_url: url }))}
+                        placeholder="Photo URL"
+                      />
+                    </div>
+                    <input
+                      id="avatar-upload"
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      className="hidden"
+                      onChange={async e => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        const formData = new FormData()
+                        formData.append('file', file)
+                        try {
+                          const { apiClient, userApi } = await import('@/lib/api/client')
+                          // Upload to R2
+                          const uploadRes = await apiClient.post('/api/upload/image', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+                          const url = uploadRes.data.url
+                          // Auto-save avatar immediately
+                          await userApi.updateProfile({ avatar_url: url })
+                          setProfileForm(prev => ({ ...prev, avatar_url: url }))
+                          setUser(prev => prev ? { ...prev, avatar_url: url } : prev)
+                          setProfileMsg({ type: 'success', text: 'Profile photo updated' })
+                          setTimeout(() => setProfileMsg(null), 3000)
+                        } catch {
+                          setProfileMsg({ type: 'error', text: 'Photo upload failed. Please try again.' })
+                        }
+                      }}
+                    />
+                  </div>
                   <div>
                     <p className="font-bold text-slate-900 dark:text-white">{user?.name || '—'}</p>
                     <p className="text-sm text-slate-500">{user?.email}</p>

@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { rulesApi, projectApi } from '@/lib/api/client'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
 import Icon from '@/components/ui/Icon'
+import ImageUploader from '@/components/ui/ImageUploader'
 
 interface SelectedElement {
   selector: string
@@ -96,7 +97,14 @@ function PickerPageInner() {
   useEffect(() => {
     function handleMessage(e: MessageEvent) {
       if (!e.data?.type) return
-      if (e.data.type === 'PP_READY') setIframeReady(true)
+      if (e.data.type === 'PP_READY') {
+        setIframeReady(true)
+        // Clear retry interval
+        if ((window as any).__ppInitInterval) {
+          clearInterval((window as any).__ppInitInterval)
+          delete (window as any).__ppInitInterval
+        }
+      }
       if (e.data.type === 'PP_ELEMENT_SELECTED') {
         setSelectedEl({ selector: e.data.selector, tagName: e.data.tagName, textContent: e.data.textContent })
         setView('block')
@@ -109,9 +117,16 @@ function PickerPageInner() {
 
   const onIframeLoad = useCallback(() => {
     setIframeReady(true)
-    setTimeout(() => {
+    // Retry sending PP_PICKER_INIT until pp.js acknowledges with PP_READY
+    let attempts = 0
+    const maxAttempts = 10
+    const interval = setInterval(() => {
+      attempts++
       iframeRef.current?.contentWindow?.postMessage({ type: 'PP_PICKER_INIT' }, '*')
-    }, 300)
+      if (attempts >= maxAttempts) clearInterval(interval)
+    }, 500)
+    // Store interval ref to clear on PP_READY
+    ;(window as any).__ppInitInterval = interval
   }, [])
 
   const fetchRulesForElement = async (selector: string) => {
@@ -685,9 +700,8 @@ function PickerPageInner() {
                         )}
                         {action.type === 'swap_image' && (
                           <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">New Image URL</label>
-                            <input type="url" value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
-                              placeholder="https://..." className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all" />
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">New Image</label>
+                            <ImageUploader value={action.value} onChange={url => updateAction(action.id, 'value', url)} />
                           </div>
                         )}
                         {action.type === 'show_popup' && (
@@ -927,12 +941,11 @@ function PickerPageInner() {
                           )}
 
                           {action.type === 'swap_image' && (
-                            <div>
-                              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">New Image URL</label>
-                              <input type="url" value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
-                                placeholder="https://..." className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all" />
-                            </div>
-                          )}
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">New Image</label>
+                            <ImageUploader value={action.value} onChange={url => updateAction(action.id, 'value', url)} />
+                          </div>
+                        )}
 
                           {action.type === 'show_popup' && (
                             <div>

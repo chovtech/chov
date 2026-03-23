@@ -34,7 +34,10 @@
     .hero { min-height: 100vh; display: flex; align-items: center; padding: 140px 60px 100px; position: relative; overflow: hidden; }
     .hero-glow { position: absolute; top: -200px; right: -200px; width: 700px; height: 700px; background: radial-gradient(circle, rgba(212,168,67,0.08) 0%, transparent 70%); pointer-events: none; }
     .hero-glow-2 { position: absolute; bottom: -300px; left: -100px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(16,185,129,0.05) 0%, transparent 70%); pointer-events: none; }
-    .hero-content { max-width: 760px; position: relative; z-index: 1; }
+    .hero-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; width: 100%; max-width: 1200px; position: relative; z-index: 1; }
+    .hero-content { max-width: 600px; }
+    .hero-image-wrap img { width: 100%; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); display: block; }
+    @media (max-width: 900px) { .hero-inner { grid-template-columns: 1fr; } .hero-image-wrap { display: none; } }
     .hero-badge { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(212,168,67,0.3); background: rgba(212,168,67,0.06); color: var(--gold); font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; padding: 6px 14px; border-radius: 2px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 36px; }
     .hero-badge::before { content: ''; width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
     @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
@@ -167,13 +170,18 @@
   <section class="hero" id="hero">
     <div class="hero-glow"></div>
     <div class="hero-glow-2"></div>
-    <div class="hero-content">
-      <div class="hero-badge">Now accepting Q3 clients — 2 spots remaining</div>
-      <h1 id="pp-headline">We Build AI Systems That <em>Replace</em> Your Entire Growth Team</h1>
-      <p class="hero-sub" id="pp-subheadline">Vektor installs <strong>autonomous revenue systems</strong> into your business — AI that prospects, qualifies, follows up, and closes while you sleep. Most clients see <strong>3–7× pipeline growth</strong> within 90 days.</p>
-      <div class="hero-actions">
-        <a href="#cta" class="btn-primary" id="pp-hero-cta">See If You Qualify →</a>
-        <a href="#results" class="btn-ghost" id="pp-hero-secondary">↓ View client results</a>
+    <div class="hero-inner">
+      <div class="hero-content">
+        <div class="hero-badge">Now accepting Q3 clients — 2 spots remaining</div>
+        <h1 id="pp-headline">We Build AI Systems That <em>Replace</em> Your Entire Growth Team</h1>
+        <p class="hero-sub" id="pp-subheadline">Vektor installs <strong>autonomous revenue systems</strong> into your business — AI that prospects, qualifies, follows up, and closes while you sleep. Most clients see <strong>3–7× pipeline growth</strong> within 90 days.</p>
+        <div class="hero-actions">
+          <a href="#cta" class="btn-primary" id="pp-hero-cta">See If You Qualify →</a>
+          <a href="#results" class="btn-ghost" id="pp-hero-secondary">↓ View client results</a>
+        </div>
+      </div>
+      <div class="hero-image-wrap">
+        <img id="pp-hero-image" src="https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=800&q=80" alt="AI Automation" />
       </div>
     </div>
   </section>

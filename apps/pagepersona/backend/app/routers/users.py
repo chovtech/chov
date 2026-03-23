@@ -16,6 +16,7 @@ class UpdateProfileRequest(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
     language: Optional[str] = None
+    avatar_url: Optional[str] = None
 
 class ChangePasswordRequest(BaseModel):
     current_password: str
@@ -61,10 +62,10 @@ async def update_profile(
     language = data.language or user.get('language', 'en')
     updated = await db.fetchrow(
         """
-        UPDATE users SET name = $1, email = $2, language = $3, updated_at = NOW()
-        WHERE id = $4 RETURNING *
+        UPDATE users SET name = $1, email = $2, language = $3, avatar_url = COALESCE($4, avatar_url), updated_at = NOW()
+        WHERE id = $5 RETURNING *
         """,
-        name, email, language, user['id']
+        name, email, language, data.avatar_url, user['id']
     )
 
     # Sync to Mautic

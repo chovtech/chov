@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
+import ImageUploader from '@/components/ui/ImageUploader'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
 import { rulesApi, projectApi } from '@/lib/api/client'
 
@@ -446,14 +447,8 @@ function NewRulePageInner() {
 
                   {action.type === "swap_image" && (
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">New Image URL</label>
-                      <input
-                        type="url"
-                        value={action.value}
-                        onChange={e => updateAction(action.id, "value", e.target.value)}
-                        placeholder="https://example.com/image.jpg"
-                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
-                      />
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">New Image</label>
+                      <ImageUploader value={action.value} onChange={url => updateAction(action.id, "value", url)} />
                     </div>
                   )}
 

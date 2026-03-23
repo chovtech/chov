@@ -8,6 +8,18 @@
 
   // ─── BOOT ──────────────────────────────────────────────────────────────────
   function boot() {
+    // Never fire actions in picker mode — iframe loaded by PagePersona dashboard
+    try {
+      var inIframe = window.self !== window.top;
+      var referrer = document.referrer || '';
+      var isPPDashboard = referrer.indexOf('localhost:3000') !== -1
+        || referrer.indexOf('app.usepagepersona.com') !== -1;
+      if (inIframe && isPPDashboard) {
+        warn('Picker mode detected — skipping rule execution.');
+        return;
+      }
+    } catch(e) {}
+
     var scriptId = getScriptId();
     if (!scriptId) {
       warn('No ?id= param found on pp.js script tag. Aborting.');
@@ -401,20 +413,29 @@
             if (!action.target_block) return;
             var el = findElement(action.target_block);
             if (!el) return;
-            // Don't badge twice
-            if (el.querySelector('.pp-badge')) return;
-            el.style.position = el.style.position || 'relative';
+
+            // For void elements (img, input etc), use parent or wrap
+            var badgeTarget = el;
+            if (el.tagName === 'IMG' || el.tagName === 'INPUT' || el.tagName === 'BR') {
+              // Wrap in a span if parent doesn't already have position
+              var parent = el.parentElement;
+              if (parent && parent.querySelector('.pp-badge')) return;
+              badgeTarget = parent;
+            }
+
+            if (!badgeTarget || badgeTarget.querySelector('.pp-badge')) return;
+            badgeTarget.style.position = badgeTarget.style.position || 'relative';
             var badge = document.createElement('div');
             badge.className = 'pp-badge';
             badge.textContent = 'PP';
             badge.style.cssText = [
               'position:absolute', 'top:4px', 'left:4px', 'z-index:2147483646',
-              'background:#1A56DB', 'color:#fff', 'font-family:sans-serif',
+              'background:#1A56DB', 'color:#fff', 'font-family:\'Public Sans\',sans-serif',
               'font-size:9px', 'font-weight:700', 'padding:2px 6px',
               'border-radius:3px', 'letter-spacing:0.05em', 'pointer-events:none',
               'line-height:1.6', 'text-transform:uppercase'
             ].join(';');
-            el.appendChild(badge);
+            badgeTarget.appendChild(badge);
           });
         });
       });
@@ -482,12 +503,16 @@
     }
     pickerHighlighted = e.target;
     pickerHighlighted.classList.add('pp-picker-hover');
-    // Inject brand tag if not already there
-    if (!pickerHighlighted.querySelector('.pp-brand-tag')) {
+    // For void elements, inject brand tag into parent instead
+    var tagTarget = pickerHighlighted;
+    if (['IMG','INPUT','BR','HR'].indexOf(pickerHighlighted.tagName) !== -1) {
+      tagTarget = pickerHighlighted.parentElement || pickerHighlighted;
+    }
+    if (tagTarget && !tagTarget.querySelector('.pp-brand-tag')) {
       var tag = document.createElement('span');
       tag.className = 'pp-brand-tag';
       tag.textContent = 'PagePersona';
-      pickerHighlighted.appendChild(tag);
+      tagTarget.appendChild(tag);
     }
     if (pickerTooltip) pickerTooltip.style.display = 'block';
   }
@@ -561,18 +586,32 @@
   });
 
   // Auto-activate picker if loaded inside the PagePersona dashboard iframe
-  // This fires when postMessage is blocked by cross-origin port differences
+  // Works on both normal load AND hard reload (referrer may be empty on reload)
   (function autoInitPicker() {
     try {
-      var inIframe = window.self !== window.top;
+      var inIframe = false;
+      try { inIframe = window.self !== window.top; } catch(e) { inIframe = true; }
+      if (!inIframe) return;
+
+      // Check referrer OR parent origin
       var referrer = document.referrer || '';
       var isPPDashboard = referrer.indexOf('localhost:3000') !== -1
         || referrer.indexOf('app.usepagepersona.com') !== -1;
-      if (inIframe && isPPDashboard) {
+
+      // Also check if parent URL contains /picker — handles hard reload case
+      var parentHref = '';
+      try { parentHref = window.parent.location.href; } catch(e) {}
+      var isPickerPage = parentHref.indexOf('/picker') !== -1;
+
+      if (isPPDashboard || isPickerPage) {
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', initPicker);
+          document.addEventListener('DOMContentLoaded', function() {
+            initPicker();
+            window.parent.postMessage({ type: 'PP_READY' }, '*');
+          });
         } else {
           initPicker();
+          window.parent.postMessage({ type: 'PP_READY' }, '*');
         }
       }
     } catch(e) {}

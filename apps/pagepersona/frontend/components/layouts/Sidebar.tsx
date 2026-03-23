@@ -14,7 +14,7 @@ const navigation = [
   { key: 'settings', href: '/dashboard/settings', icon: 'settings', exact: false },
 ]
 
-interface User { name?: string; email: string }
+interface User { name?: string; email: string; avatar_url?: string }
 
 export default function Sidebar() {
   const pathname = usePathname()
@@ -142,8 +142,10 @@ export default function Sidebar() {
       {/* User footer */}
       <div className="px-3 pb-4 border-t border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-3 px-3 py-3">
-          <div className="size-8 rounded-full bg-[#1A56DB]/10 border-2 border-[#1A56DB]/20 flex items-center justify-center text-[#1A56DB] font-bold text-xs flex-shrink-0">
-            {initials}
+          <div className="size-8 rounded-full bg-[#1A56DB]/10 border-2 border-[#1A56DB]/20 flex items-center justify-center text-[#1A56DB] font-bold text-xs flex-shrink-0 overflow-hidden">
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display="none"; }} />
+            ) : initials}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{user?.name || '...'}</p>
