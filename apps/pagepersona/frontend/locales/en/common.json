@@ -280,7 +280,17 @@
     "delete_project_deleting": "Deleting...",
     "delete_project_failed": "Failed to delete project. Please try again.",
     "delete_rule_confirm": "Delete",
-    "delete_rule_cancel": "Cancel"
+    "delete_rule_cancel": "Cancel",
+    "edit_project": "Edit Project",
+    "edit_project_subtitle": "Update your project name and page URL.",
+    "project_name_label": "Project name",
+    "project_url_label": "Page URL",
+    "project_url_hint": "Changing the URL will require re-verification of the script.",
+    "save_changes": "Save Changes",
+    "saving": "Saving...",
+    "edit_failed": "Failed to update project. Please try again.",
+    "url_changed_warning": "You changed the page URL. Please re-verify the script after saving.",
+    "edit_success": "Project updated successfully"
   },
   "rules": {
     "heading": "Personalisation Rules",

@@ -116,6 +116,92 @@ function InstallModal({ project, onClose, onVerified }: { project: Project; onCl
   )
 }
 
+
+function EditProjectModal({ project, onClose, onSaved }: { project: Project; onClose: () => void; onSaved: (updated: Project) => void }) {
+  const { t } = useTranslation('common')
+  const [name, setName] = useState(project.name)
+  const [pageUrl, setPageUrl] = useState(project.page_url)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const urlChanged = pageUrl.trim() !== project.page_url
+
+  const handleSave = async () => {
+    if (!name.trim() || !pageUrl.trim()) return
+    setSaving(true); setError('')
+    try {
+      const res = await projectApi.update(project.id, {
+        name: name.trim(),
+        page_url: pageUrl.trim(),
+        ...(urlChanged ? { script_verified: false } : {})
+      })
+      onSaved(res.data)
+    } catch {
+      setError(t('project.edit_failed'))
+    } finally { setSaving(false) }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div className="w-full max-w-[480px] rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
+        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">{t('project.edit_project')}</h2>
+            <p className="text-sm text-slate-500 mt-0.5">{t('project.edit_project_subtitle')}</p>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+            <Icon name="close" />
+          </button>
+        </div>
+        <div className="px-6 py-6 flex flex-col gap-5">
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('project.project_name_label')}</label>
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('project.project_url_label')}</label>
+            <input
+              type="url"
+              value={pageUrl}
+              onChange={e => setPageUrl(e.target.value)}
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+            />
+            <p className="text-xs text-slate-400 mt-1.5">{t('project.project_url_hint')}</p>
+          </div>
+          {urlChanged && (
+            <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+              <Icon name="warning" className="text-amber-500 text-sm shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-700">{t('project.url_changed_warning')}</p>
+            </div>
+          )}
+          {error && (
+            <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+              <Icon name="error" className="text-red-500 text-sm shrink-0 mt-0.5" />
+              <p className="text-xs text-red-600">{error}</p>
+            </div>
+          )}
+          <div className="flex gap-3 justify-end pt-2">
+            <button onClick={onClose} className="px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+              {t('actions.cancel')}
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving || !name.trim() || !pageUrl.trim()}
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] hover:bg-blue-700 disabled:opacity-40 text-white text-sm font-bold rounded-xl transition-colors"
+            >
+              {saving ? t('project.saving') : t('project.save_changes')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function DeleteProjectModal({ project, onClose, onDeleted }: { project: Project; onClose: () => void; onDeleted: () => void }) {
   const { t } = useTranslation('common')
   const [deleting, setDeleting] = useState(false)
@@ -172,6 +258,7 @@ export default function ProjectDashboardPage() {
   const [publishing, setPublishing] = useState(false)
   const [showInstall, setShowInstall] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
+  const [showEdit, setShowEdit] = useState(false)
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -225,6 +312,7 @@ export default function ProjectDashboardPage() {
     <div className="flex flex-col min-h-screen bg-slate-50">
       <Topbar workspaceName="Marketing Team Workspace" />
       {showInstall && <InstallModal project={project} onClose={() => setShowInstall(false)} onVerified={() => setProject(p => p ? { ...p, script_verified: true } : p)} />}
+      {showEdit && <EditProjectModal project={project} onClose={() => setShowEdit(false)} onSaved={(updated) => { setProject(updated); setShowEdit(false) }} />}
       {showDelete && <DeleteProjectModal project={project} onClose={() => setShowDelete(false)} onDeleted={() => router.push('/dashboard')} />}
       <div className="p-8 max-w-7xl mx-auto w-full">
         <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
@@ -236,6 +324,7 @@ export default function ProjectDashboardPage() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-2xl font-black tracking-tight text-slate-900">{project.name}</h1>
+              <button onClick={() => setShowEdit(true)} className="p-1.5 text-slate-400 hover:text-[#1A56DB] hover:bg-[#1A56DB]/5 rounded-lg transition-colors" title={t('project.edit_project')}><Icon name="edit" className="text-base" /></button>
               {project.status === 'active' ? (
                 <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase tracking-wider border border-green-200">{t('status.active')}</span>
               ) : (

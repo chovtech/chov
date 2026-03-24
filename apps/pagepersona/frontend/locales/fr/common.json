@@ -280,7 +280,17 @@
     "delete_project_deleting": "Suppression...",
     "delete_project_failed": "Échec de la suppression du projet. Veuillez réessayer.",
     "delete_rule_confirm": "Supprimer",
-    "delete_rule_cancel": "Annuler"
+    "delete_rule_cancel": "Annuler",
+    "edit_project": "Modifier le projet",
+    "edit_project_subtitle": "Mettez à jour le nom et l'URL de votre projet.",
+    "project_name_label": "Nom du projet",
+    "project_url_label": "URL de la page",
+    "project_url_hint": "Changer l'URL nécessitera une nouvelle vérification du script.",
+    "save_changes": "Enregistrer",
+    "saving": "Enregistrement...",
+    "edit_failed": "Échec de la mise à jour du projet. Veuillez réessayer.",
+    "url_changed_warning": "Vous avez modifié l'URL. Veuillez re-vérifier le script après l'enregistrement.",
+    "edit_success": "Projet mis à jour avec succès"
   },
   "rules": {
     "heading": "Règles de personnalisation",
