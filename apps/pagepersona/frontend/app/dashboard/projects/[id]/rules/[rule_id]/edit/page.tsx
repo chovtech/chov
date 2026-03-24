@@ -115,7 +115,7 @@ function EditRulePageInner() {
           return {
             id: Date.now().toString() + 'a' + i,
             type: a.type,
-            type_label: actionDef?.label || a.type,
+            type_label: actionDef?.labelKey ? t(actionDef.labelKey) : a.type,
             target_block: a.target_block || '',
             value: a.value || '',
             needsElement: actionDef?.needsElement ?? true,
@@ -163,7 +163,7 @@ function EditRulePageInner() {
     setActions(prev => [...prev, {
       id: Date.now().toString(),
       type: actionType.key,
-      type_label: actionType.label,
+      type_label: actionType.labelKey ? t(actionType.labelKey) : actionType.key,
       target_block: '',
       value: '',
       needsElement: actionType.needsElement,
