@@ -88,7 +88,9 @@ async def update(
         db, project_id, str(workspace['id']),
         name=body.name,
         status=body.status,
-        script_verified=body.script_verified
+        script_verified=body.script_verified,
+        page_url=body.page_url,
+        thumbnail_url=body.thumbnail_url
     )
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
