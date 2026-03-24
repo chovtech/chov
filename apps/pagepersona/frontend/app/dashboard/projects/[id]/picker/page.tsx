@@ -281,7 +281,7 @@ function PickerPageInner() {
         <div className="flex items-center gap-3">
           <button onClick={closePicker} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 font-semibold transition-colors">
             <Icon name="arrow_back" className="text-base" />
-            Rules
+            {t('picker.back_to_rules')}
           </button>
           <span className="text-slate-200">|</span>
           <div className="flex items-center gap-2">
@@ -376,7 +376,7 @@ function PickerPageInner() {
                     <Icon name="ads_click" className="text-[#1A56DB] text-lg" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-900">Element Picker</p>
+                    <p className="text-sm font-bold text-slate-900">{t('picker.element_picker')}</p>
                     <p className="text-xs text-slate-400">{`${t('picker.active_on')} ${projectName}`}</p>
                   </div>
                 </div>
@@ -384,7 +384,7 @@ function PickerPageInner() {
 
               <div className="px-5 py-4 border-b border-slate-100">
                 <div className="flex items-center justify-between py-2">
-                  <span className="text-sm text-slate-500">Active Rules</span>
+                  <span className="text-sm text-slate-500">{t('picker.active_rules')}</span>
                   <span className="text-sm font-bold text-[#1A56DB]">{activeRules}</span>
                 </div>
               </div>
@@ -440,7 +440,7 @@ function PickerPageInner() {
               {/* Default content preview */}
               <div className="px-5 py-4 border-b border-slate-100">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-semibold text-slate-900">Default Content</p>
+                  <p className="text-sm font-semibold text-slate-900">{t('picker.default_content')}</p>
                   <button onClick={openRuleEditor} className="text-xs font-semibold text-[#1A56DB] hover:underline">+ Start Personalising</button>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-3">
@@ -559,9 +559,9 @@ function PickerPageInner() {
                 <div className="flex items-center justify-between">
                   <button onClick={() => setView('block')} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 font-semibold transition-colors">
                     <Icon name="arrow_back" className="text-base" />
-                    Back
+                    {t('actions.back')}
                   </button>
-                  <span className="text-sm font-bold text-slate-900">Edit Rule</span>
+                  <span className="text-sm font-bold text-slate-900">{t('picker.edit_rule')}</span>
                   <button onClick={closePicker} className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors">
                     <Icon name="close" className="text-slate-400 text-base" />
                   </button>
@@ -577,7 +577,7 @@ function PickerPageInner() {
 
               <div className="flex-1 overflow-y-auto">
                 <div className="px-5 py-5 border-b border-slate-100">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Rule Name</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('picker.rule_name_label')}</label>
                   <input type="text" value={ruleName} onChange={e => setRuleName(e.target.value)}
                     placeholder={t('picker.rule_name_placeholder')}
                     className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
@@ -588,7 +588,7 @@ function PickerPageInner() {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <span className="w-6 h-6 flex items-center justify-center bg-[#1A56DB] text-white text-[10px] font-black rounded-full shrink-0">IF</span>
-                      <span className="text-xs font-black text-slate-900 uppercase tracking-wide">Trigger Conditions</span>
+                      <span className="text-xs font-black text-slate-900 uppercase tracking-wide">{t('picker.trigger_conditions')}</span>
                     </div>
                     {conditions.length > 1 && (
                       <div className="flex bg-slate-100 p-0.5 rounded-lg gap-0.5">
@@ -605,7 +605,7 @@ function PickerPageInner() {
                       <div key={c.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
                         {i > 0 && <p className="text-xs font-bold text-slate-400">{conditionOperator}</p>}
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Signal</label>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('picker.signal_label')}</label>
                           <button onClick={() => openSignalModal(c.id)}
                             className="w-full flex items-center justify-between px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm hover:border-[#1A56DB] transition-colors"
                           >
@@ -616,7 +616,7 @@ function PickerPageInner() {
                         {c.signal && (
                           <div className="grid grid-cols-2 gap-2">
                             <div>
-                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Operator</label>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('picker.operator_label')}</label>
                               <select value={c.operator} onChange={e => updateCondition(c.id, 'operator', e.target.value)}
                                 className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm appearance-none focus:outline-none focus:border-[#1A56DB] transition-all"
                               >
@@ -625,7 +625,7 @@ function PickerPageInner() {
                             </div>
                             {c.valueType !== 'none' && (
                               <div>
-                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Value</label>
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('picker.value_label')}</label>
                                 <input type={c.valueType === 'number' ? 'number' : 'text'} value={c.value}
                                   onChange={e => updateCondition(c.id, 'value', e.target.value)}
                                   placeholder={t('picker.value_placeholder')}
@@ -644,7 +644,7 @@ function PickerPageInner() {
                     ))}
                   </div>
                   <button onClick={() => openSignalModal()} className="flex items-center gap-1.5 text-[#1A56DB] text-sm font-semibold hover:underline">
-                    <Icon name="add" className="text-base" /> Add condition
+                    <Icon name="add" className="text-base" />{t('picker.add_condition')}
                   </button>
                 </div>
 
@@ -652,7 +652,7 @@ function PickerPageInner() {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <span className="w-6 h-6 flex items-center justify-center bg-emerald-500 text-white text-[9px] font-black rounded-full shrink-0">THEN</span>
-                      <span className="text-xs font-black text-slate-900 uppercase tracking-wide">Actions</span>
+                      <span className="text-xs font-black text-slate-900 uppercase tracking-wide">{t('picker.actions')}</span>
                     </div>
                     <div className="relative">
                       <button onClick={() => setActionMenuOpen(!actionMenuOpen)}
@@ -763,9 +763,9 @@ function PickerPageInner() {
                 <div className="flex items-center justify-between">
                   <button onClick={() => setView('block')} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 font-semibold transition-colors">
                     <Icon name="arrow_back" className="text-base" />
-                    Back
+                    {t('actions.back')}
                   </button>
-                  <span className="text-sm font-bold text-slate-900">New Rule</span>
+                  <span className="text-sm font-bold text-slate-900">{t('picker.new_rule')}</span>
                   <button onClick={closePicker} className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors">
                     <Icon name="close" className="text-slate-400 text-base" />
                   </button>
@@ -784,7 +784,7 @@ function PickerPageInner() {
 
                 {/* Rule Name */}
                 <div className="px-5 py-5 border-b border-slate-100">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Rule Name</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('picker.rule_name_label')}</label>
                   <input
                     type="text"
                     value={ruleName}
@@ -799,7 +799,7 @@ function PickerPageInner() {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <span className="w-6 h-6 flex items-center justify-center bg-[#1A56DB] text-white text-[10px] font-black rounded-full shrink-0">IF</span>
-                      <span className="text-xs font-black text-slate-900 uppercase tracking-wide">Trigger Conditions</span>
+                      <span className="text-xs font-black text-slate-900 uppercase tracking-wide">{t('picker.trigger_conditions')}</span>
                     </div>
                     {conditions.length > 1 && (
                       <div className="flex bg-slate-100 p-0.5 rounded-lg gap-0.5">
@@ -818,7 +818,7 @@ function PickerPageInner() {
                         {i > 0 && <p className="text-xs font-bold text-slate-400">{conditionOperator}</p>}
                         {/* Signal picker */}
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Signal</label>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('picker.signal_label')}</label>
                           <button onClick={() => openSignalModal(c.id)}
                             className="w-full flex items-center justify-between px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm hover:border-[#1A56DB] transition-colors"
                           >
@@ -831,7 +831,7 @@ function PickerPageInner() {
                         {c.signal && (
                           <div className="grid grid-cols-2 gap-2">
                             <div>
-                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Operator</label>
+                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('picker.operator_label')}</label>
                               <select value={c.operator} onChange={e => updateCondition(c.id, 'operator', e.target.value)}
                                 className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm appearance-none focus:outline-none focus:border-[#1A56DB] transition-all"
                               >
@@ -840,7 +840,7 @@ function PickerPageInner() {
                             </div>
                             {c.valueType !== 'none' && (
                               <div>
-                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Value</label>
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('picker.value_label')}</label>
                                 {c.valueType === 'select' ? (
                                   <select value={c.value} onChange={e => updateCondition(c.id, 'value', e.target.value)}
                                     className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm appearance-none focus:outline-none focus:border-[#1A56DB] transition-all"
@@ -869,7 +869,7 @@ function PickerPageInner() {
                   </div>
 
                   <button onClick={() => openSignalModal()} className="flex items-center gap-1.5 text-[#1A56DB] text-sm font-semibold hover:underline">
-                    <Icon name="add" className="text-base" /> Add condition
+                    <Icon name="add" className="text-base" />{t('picker.add_condition')}
                   </button>
                 </div>
 
@@ -878,7 +878,7 @@ function PickerPageInner() {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <span className="w-6 h-6 flex items-center justify-center bg-emerald-500 text-white text-[9px] font-black rounded-full shrink-0">THEN</span>
-                      <span className="text-xs font-black text-slate-900 uppercase tracking-wide">Actions</span>
+                      <span className="text-xs font-black text-slate-900 uppercase tracking-wide">{t('picker.actions')}</span>
                     </div>
                     <div className="relative">
                       <button onClick={() => setActionMenuOpen(!actionMenuOpen)}
