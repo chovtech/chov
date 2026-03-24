@@ -258,7 +258,7 @@ function PickerPageInner() {
       <div className="text-center">
         <Icon name="error" className="text-5xl text-red-400 mb-4 block" />
         <p className="text-lg font-medium text-slate-700">No page URL provided.</p>
-        <button onClick={() => router.back()} className="mt-4 px-4 py-2 bg-[#1A56DB] text-white rounded-lg text-sm font-semibold">Go Back</button>
+        <button onClick={() => router.back()} className="mt-4 px-4 py-2 bg-[#1A56DB] text-white rounded-lg text-sm font-semibold">{t('picker.go_back')}</button>
       </div>
     </div>
   )
@@ -305,7 +305,7 @@ function PickerPageInner() {
           ) : (
             <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full">
               <span className="w-2 h-2 rounded-full bg-[#14B8A6] animate-pulse inline-block" />
-              <span className="text-xs text-slate-500 font-medium">Click any element to personalise</span>
+              <span className="text-xs text-slate-500 font-medium">{t('picker.click_to_personalise')}</span>
             </div>
           )}
         </div>
@@ -441,7 +441,7 @@ function PickerPageInner() {
               <div className="px-5 py-4 border-b border-slate-100">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm font-semibold text-slate-900">{t('picker.default_content')}</p>
-                  <button onClick={openRuleEditor} className="text-xs font-semibold text-[#1A56DB] hover:underline">+ Start Personalising</button>
+                  <button onClick={openRuleEditor} className="text-xs font-semibold text-[#1A56DB] hover:underline">{t('picker.start_personalising')}</button>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-3">
                   <div className="flex-1 min-w-0">
@@ -547,7 +547,7 @@ function PickerPageInner() {
                   <Icon name="add" className="text-lg" />
                   {t('picker.add_personalisation')}
                 </button>
-                <p className="text-center text-[11px] text-slate-400 mt-2.5">Changes are saved automatically to your draft.</p>
+                <p className="text-center text-[11px] text-slate-400 mt-2.5">{t('picker.changes_saved_note')}</p>
               </div>
             </>
           )}
@@ -658,7 +658,7 @@ function PickerPageInner() {
                       <button onClick={() => setActionMenuOpen(!actionMenuOpen)}
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1A56DB]/10 text-[#1A56DB] text-xs font-bold rounded-lg hover:bg-[#1A56DB]/20 transition-colors border border-[#1A56DB]/20"
                       >
-                        <Icon name="add" className="text-sm" /> Add action
+                        <Icon name="add" className="text-sm" /> {t('picker.add_action')}
                       </button>
                       {actionMenuOpen && (
                         <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50">
@@ -884,7 +884,7 @@ function PickerPageInner() {
                       <button onClick={() => setActionMenuOpen(!actionMenuOpen)}
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1A56DB]/10 text-[#1A56DB] text-xs font-bold rounded-lg hover:bg-[#1A56DB]/20 transition-colors border border-[#1A56DB]/20"
                       >
-                        <Icon name="add" className="text-sm" /> Add action
+                        <Icon name="add" className="text-sm" /> {t('picker.add_action')}
                       </button>
                       {actionMenuOpen && (
                         <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50">
@@ -904,7 +904,7 @@ function PickerPageInner() {
                   {actions.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-slate-200 rounded-xl text-center">
                       <Icon name="add_circle" className="text-3xl text-slate-300 mb-2" />
-                      <p className="text-sm text-slate-400">No actions yet</p>
+                      <p className="text-sm text-slate-400">{t('picker.no_actions_yet')}</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
