@@ -313,7 +313,7 @@ function EditRulePageInner() {
                     </button>
                   </div>
                   <div className="col-span-4">
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Operator</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('rules.operator')}</label>
                     <div className="relative">
                       <select
                         value={condition.operator}
@@ -329,7 +329,7 @@ function EditRulePageInner() {
                     </div>
                   </div>
                   <div className="col-span-3">
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Value</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('rules.value')}</label>
                     {condition.valueType === 'none' ? (
                       <div className="px-3 py-2.5 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-400">Auto-detected</div>
                     ) : condition.valueType === 'select' ? (
@@ -352,7 +352,7 @@ function EditRulePageInner() {
                         value={condition.value}
                         onChange={e => updateCondition(condition.id, 'value', e.target.value)}
                         disabled={!condition.signal}
-                        placeholder="Value..."
+                        placeholder={t('rules.value_placeholder')}
                         className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] disabled:opacity-40 transition-all"
                       />
                     )}
@@ -440,15 +440,15 @@ function EditRulePageInner() {
                           onClick={() => openPicker(actions.findIndex(a => a.id === action.id))}
                           className="flex items-center gap-1.5 px-3 py-2.5 border border-[#1A56DB]/30 bg-[#1A56DB]/5 text-[#1A56DB] text-xs font-bold rounded-lg hover:bg-[#1A56DB]/10 transition-colors whitespace-nowrap">
                           <Icon name="ads_click" className="text-sm" />
-                          Pick from page
+                          {t('rules.pick_from_page')}
                         </button>
                       </div>
-                      <p className="text-xs text-slate-400 mt-1">Enter the block ID manually or use Pick from page to select it visually</p>
+                      <p className="text-xs text-slate-400 mt-1">{t('rules.target_hint_edit')}</p>
                     </div>
                   )}
                   {(action.type === 'swap_text' || action.type === 'inject_token') && (
                     <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Replacement Content</label>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('rules.replacement_content')}</label>
                       <textarea
                         value={action.value}
                         onChange={e => updateAction(action.id, 'value', e.target.value)}

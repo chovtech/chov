@@ -310,7 +310,15 @@
     "save_rule": "Enregistrer la règle",
     "show_more": "+{count} de plus",
     "show_less": "Voir moins",
-    "lift_pending": "Pas encore de données"
+    "lift_pending": "Pas encore de données",
+    "operator": "Opérateur",
+    "value": "Valeur",
+    "value_placeholder": "Valeur...",
+    "target_element": "Élément cible",
+    "pick_from_page": "Choisir sur la page",
+    "target_hint": "Entrez un sélecteur CSS ou cliquez sur \"Choisir sur la page\" pour sélectionner visuellement",
+    "target_hint_edit": "Entrez l'ID du bloc manuellement ou utilisez Choisir sur la page pour le sélectionner visuellement",
+    "replacement_content": "Contenu de remplacement"
   },
   "picker": {
     "loading_page": "Chargement de votre page...",

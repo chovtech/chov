@@ -310,7 +310,15 @@
     "save_rule": "Save Rule",
     "show_more": "+{count} more",
     "show_less": "Show less",
-    "lift_pending": "No data yet"
+    "lift_pending": "No data yet",
+    "operator": "Operator",
+    "value": "Value",
+    "value_placeholder": "Value...",
+    "target_element": "Target Element",
+    "pick_from_page": "Pick from page",
+    "target_hint": "Type a CSS selector or click \"Pick from page\" to select visually",
+    "target_hint_edit": "Enter the block ID manually or use Pick from page to select it visually",
+    "replacement_content": "Replacement Content"
   },
   "picker": {
     "loading_page": "Loading your page...",
