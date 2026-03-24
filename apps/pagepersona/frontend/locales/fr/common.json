@@ -290,7 +290,11 @@
     "saving": "Enregistrement...",
     "edit_failed": "Échec de la mise à jour du projet. Veuillez réessayer.",
     "url_changed_warning": "Vous avez modifié l'URL. Veuillez re-vérifier le script après l'enregistrement.",
-    "edit_success": "Projet mis à jour avec succès"
+    "edit_success": "Projet mis à jour avec succès",
+    "url_locked": "URL verrouillée après vérification",
+    "url_editable_hint": "Vous pouvez modifier l'URL jusqu'à la vérification du script.",
+    "verify_first": "Vérifiez l'installation de votre script avant de créer des règles",
+    "verify_first_picker": "Vérifiez l'installation de votre script pour utiliser le sélecteur en direct"
   },
   "rules": {
     "heading": "Règles de personnalisation",

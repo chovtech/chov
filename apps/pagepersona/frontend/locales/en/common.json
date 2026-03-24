@@ -290,7 +290,11 @@
     "saving": "Saving...",
     "edit_failed": "Failed to update project. Please try again.",
     "url_changed_warning": "You changed the page URL. Please re-verify the script after saving.",
-    "edit_success": "Project updated successfully"
+    "edit_success": "Project updated successfully",
+    "url_locked": "URL locked after verification",
+    "url_editable_hint": "You can edit the URL until the script is verified.",
+    "verify_first": "Verify your script installation before creating rules",
+    "verify_first_picker": "Verify your script installation to use the live picker"
   },
   "rules": {
     "heading": "Personalisation Rules",

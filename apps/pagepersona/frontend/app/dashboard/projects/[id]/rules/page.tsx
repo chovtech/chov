@@ -241,23 +241,40 @@ export default function RulesPage() {
             <p className="text-sm text-slate-500 mt-1">{t("rules.subheading")}</p>
           </div>
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                if (project?.page_url) {
-                  router.push("/dashboard/projects/" + projectId + "/picker?url=" + encodeURIComponent(project.page_url))
-                }
-              }}
-              disabled={!project?.page_url}
-              className="flex items-center gap-2 px-5 py-2.5 border-2 border-[#14B8A6] text-[#14B8A6] text-sm font-bold rounded-xl hover:bg-[#14B8A6]/5 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
-              <Icon name="ads_click" className="text-base" />
-              {t('picker.on_page_personalisation')}
-            </button>
-            <button
-              onClick={() => router.push("/dashboard/projects/" + projectId + "/rules/new")}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 transition-all">
-              <Icon name="add" className="text-base" />
-              {t("rules.new_rule")}
-            </button>
+            <div className="relative group">
+              <button
+                onClick={() => {
+                  if (project?.script_verified && project?.page_url) {
+                    router.push("/dashboard/projects/" + projectId + "/picker?url=" + encodeURIComponent(project.page_url))
+                  }
+                }}
+                disabled={!project?.script_verified}
+                className="flex items-center gap-2 px-5 py-2.5 border-2 border-[#14B8A6] text-[#14B8A6] text-sm font-bold rounded-xl hover:bg-[#14B8A6]/5 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                <Icon name="ads_click" className="text-base" />
+                {t('picker.on_page_personalisation')}
+              </button>
+              {!project?.script_verified && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 text-center">
+                  {t('project.verify_first_picker')}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
+                </div>
+              )}
+            </div>
+            <div className="relative group">
+              <button
+                onClick={() => { if (project?.script_verified) router.push("/dashboard/projects/" + projectId + "/rules/new") }}
+                disabled={!project?.script_verified}
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                <Icon name="add" className="text-base" />
+                {t("rules.new_rule")}
+              </button>
+              {!project?.script_verified && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 text-center">
+                  {t('project.verify_first')}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

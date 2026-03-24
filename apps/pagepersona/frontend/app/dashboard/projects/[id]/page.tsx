@@ -164,13 +164,22 @@ function EditProjectModal({ project, onClose, onSaved }: { project: Project; onC
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('project.project_url_label')}</label>
-            <input
-              type="url"
-              value={pageUrl}
-              onChange={e => setPageUrl(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
-            />
-            <p className="text-xs text-slate-400 mt-1.5">{t('project.project_url_hint')}</p>
+            {project.script_verified ? (
+              <div className="flex items-center gap-2 px-4 py-3 border border-slate-200 rounded-xl bg-slate-50">
+                <Icon name="lock" className="text-slate-400 text-sm shrink-0" />
+                <span className="text-sm text-slate-500 truncate">{pageUrl}</span>
+              </div>
+            ) : (
+              <input
+                type="url"
+                value={pageUrl}
+                onChange={e => setPageUrl(e.target.value)}
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+              />
+            )}
+            <p className="text-xs text-slate-400 mt-1.5">
+              {project.script_verified ? t('project.url_locked') : t('project.url_editable_hint')}
+            </p>
           </div>
           {urlChanged && (
             <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
@@ -347,9 +356,20 @@ export default function ProjectDashboardPage() {
               <Icon name={project.status === 'active' ? 'cloud_off' : 'cloud_upload'} className="text-base" />
               {publishing ? '...' : project.status === 'active' ? t('project.unpublish') : t('project.publish')}
             </button>
-            <a href={'/dashboard/projects/' + project.id + '/rules'} className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 transition-all">
-              <Icon name="add" className="text-base" />{t('project.cta_rules_btn')}
-            </a>
+            <div className="relative group">
+              <button
+                onClick={() => { if (project.script_verified) router.push('/dashboard/projects/' + project.id + '/rules') }}
+                disabled={!project.script_verified}
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                <Icon name="add" className="text-base" />{t('project.cta_rules_btn')}
+              </button>
+              {!project.script_verified && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 text-center">
+                  {t('project.verify_first')}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
