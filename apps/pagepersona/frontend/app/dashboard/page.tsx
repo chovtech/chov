@@ -105,11 +105,17 @@ export default function DashboardPage() {
                 className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 transition-all group"
               >
                 <div className="h-40 bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
-                  <div className={`absolute inset-0 ${
-                    project.status === 'active'
-                      ? 'bg-gradient-to-br from-[#1A56DB]/5 to-[#1A56DB]/20'
-                      : 'bg-gradient-to-tr from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800'
-                  }`} />
+                  {project.thumbnail_url ? (
+                    <img src={project.thumbnail_url} alt={project.name} className="absolute inset-0 w-full h-full object-cover" />
+                  ) : (
+                    <div className={`absolute inset-0 flex items-center justify-center ${
+                      project.status === 'active'
+                        ? 'bg-gradient-to-br from-[#1A56DB]/5 to-[#1A56DB]/20'
+                        : 'bg-gradient-to-tr from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800'
+                    }`}>
+                      <Icon name="web" className="text-5xl text-slate-300" />
+                    </div>
+                  )}
                   <div className="absolute top-3 right-3">
                     {project.status === 'active' ? (
                       <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase tracking-wider">

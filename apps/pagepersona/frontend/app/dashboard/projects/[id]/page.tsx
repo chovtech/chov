@@ -6,6 +6,7 @@ import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { projectApi, apiClient } from '@/lib/api/client'
+import { useRef } from 'react'
 
 interface Project {
   id: string
@@ -268,6 +269,8 @@ export default function ProjectDashboardPage() {
   const [showInstall, setShowInstall] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
+  const [thumbnailUploading, setThumbnailUploading] = useState(false)
+  const thumbnailInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -306,6 +309,20 @@ export default function ProjectDashboardPage() {
     } catch { } finally { setPublishing(false) }
   }
 
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setThumbnailUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const uploadRes = await apiClient.post('/api/upload/image', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+      const url = uploadRes.data.url
+      const res = await projectApi.update(project.id, { thumbnail_url: url })
+      setProject(res.data)
+    } catch {} finally { setThumbnailUploading(false) }
+  }
+
   const activityItems = [
     { bg: 'bg-blue-100', color: 'text-blue-600', icon: 'bolt', title: 'No rules fired yet', desc: 'Rules will appear here once active and visitors arrive', time: '' },
     { bg: 'bg-emerald-100', color: 'text-emerald-600', icon: 'check_circle', title: 'Script installed', desc: 'PagePersona script was verified on your page', time: 'Just now' },
@@ -330,7 +347,29 @@ export default function ProjectDashboardPage() {
           <span className="text-slate-900 font-semibold">{project.name}</span>
         </div>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
+          <div className="flex items-center gap-4">
+            {/* Thumbnail */}
+            <div className="relative group shrink-0">
+              <div className="w-16 h-16 rounded-xl border-2 border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center cursor-pointer"
+                onClick={() => thumbnailInputRef.current?.click()}>
+                {project.thumbnail_url ? (
+                  <img src={project.thumbnail_url} alt={project.name} className="w-full h-full object-cover" />
+                ) : (
+                  <Icon name="web" className="text-3xl text-slate-300" />
+                )}
+                {thumbnailUploading && (
+                  <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+                    <Icon name="sync" className="text-[#1A56DB] animate-spin" />
+                  </div>
+                )}
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#1A56DB] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                onClick={() => thumbnailInputRef.current?.click()}>
+                <Icon name="edit" className="text-white text-xs" />
+              </div>
+              <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
+            </div>
+            <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-2xl font-black tracking-tight text-slate-900">{project.name}</h1>
               <button onClick={() => setShowEdit(true)} className="p-1.5 text-slate-400 hover:text-[#1A56DB] hover:bg-[#1A56DB]/5 rounded-lg transition-colors" title={t('project.edit_project')}><Icon name="edit" className="text-base" /></button>
@@ -347,6 +386,7 @@ export default function ProjectDashboardPage() {
             <a href={project.page_url} target="_blank" rel="noopener noreferrer" className="text-sm text-slate-500 hover:text-[#1A56DB] flex items-center gap-1 transition-colors">
               <Icon name="link" className="text-sm" />{project.page_url}<Icon name="open_in_new" className="text-xs" />
             </a>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <button onClick={() => setShowDelete(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-200 text-slate-500 bg-white hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all">

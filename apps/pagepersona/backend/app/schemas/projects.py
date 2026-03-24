@@ -3,12 +3,10 @@ from typing import Optional
 from datetime import datetime
 import uuid
 
-
 class ProjectCreate(BaseModel):
     name: str
     page_url: str
     platform: str = 'html'
-
 
 class ProjectResponse(BaseModel):
     id: uuid.UUID
@@ -19,14 +17,15 @@ class ProjectResponse(BaseModel):
     script_id: str
     script_verified: bool
     status: str
+    thumbnail_url: Optional[str] = None
     created_at: datetime
     updated_at: datetime
-
     class Config:
         from_attributes = True
-
 
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     status: Optional[str] = None
     script_verified: Optional[bool] = None
+    page_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None

@@ -294,7 +294,10 @@
     "url_locked": "URL verrouillée après vérification",
     "url_editable_hint": "Vous pouvez modifier l'URL jusqu'à la vérification du script.",
     "verify_first": "Vérifiez l'installation de votre script avant de créer des règles",
-    "verify_first_picker": "Vérifiez l'installation de votre script pour utiliser le sélecteur en direct"
+    "verify_first_picker": "Vérifiez l'installation de votre script pour utiliser le sélecteur en direct",
+    "thumbnail": "Photo du projet",
+    "thumbnail_upload": "Télécharger une photo du projet",
+    "thumbnail_hint": "Cliquez pour télécharger une photo représentant ce projet"
   },
   "rules": {
     "heading": "Règles de personnalisation",

@@ -294,7 +294,10 @@
     "url_locked": "URL locked after verification",
     "url_editable_hint": "You can edit the URL until the script is verified.",
     "verify_first": "Verify your script installation before creating rules",
-    "verify_first_picker": "Verify your script installation to use the live picker"
+    "verify_first_picker": "Verify your script installation to use the live picker",
+    "thumbnail": "Project Photo",
+    "thumbnail_upload": "Upload project photo",
+    "thumbnail_hint": "Click to upload a photo that represents this project"
   },
   "rules": {
     "heading": "Personalisation Rules",
