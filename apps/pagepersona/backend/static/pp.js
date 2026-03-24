@@ -563,7 +563,7 @@
     }
     // 3. tag + meaningful classes (skip utility/layout classes)
     if (el.className && typeof el.className === 'string') {
-      var classes = el.className.trim().split(/\s+/).slice(0, 2).join('.');
+      var classes = el.className.trim().split(/\s+/).filter(function(c) { return c !== 'pp-picker-hover' && c !== 'pp-has-rules'; }).slice(0, 2).join('.');
       if (classes) return el.tagName.toLowerCase() + '.' + classes;
     }
     // 4. tag + nth-child fallback
