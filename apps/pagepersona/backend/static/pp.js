@@ -641,6 +641,32 @@
     } catch(e) {}
   })();
 
+  // ─── FOUC PREVENTION — runs immediately before DOM is ready ───────────────
+  // If we have cached rules, inject visibility:hidden on swap targets right now
+  // so the browser never paints the default content before the swap fires.
+  (function injectFoucShield() {
+    try {
+      var scriptId = getScriptId();
+      if (!scriptId) return;
+      var cached = getCached(scriptId);
+      if (!cached || !cached.rules || cached.rules.length === 0) return;
+      var selectors = [];
+      for (var i = 0; i < cached.rules.length; i++) {
+        var actions = cached.rules[i].actions || [];
+        for (var j = 0; j < actions.length; j++) {
+          var a = actions[j];
+          if ((a.type === 'swap_text' || a.type === 'swap_image') && a.target_block) {
+            selectors.push(a.target_block);
+          }
+        }
+      }
+      if (selectors.length === 0) return;
+      var style = document.createElement('style');
+      style.id = 'pp-fouc-shield';
+      style.textContent = selectors.join(',') + '{visibility:hidden !important;}';
+      document.head.appendChild(style);
+    } catch(e) {}
+  })();
   // ─── INIT ──────────────────────────────────────────────────────────────────
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
