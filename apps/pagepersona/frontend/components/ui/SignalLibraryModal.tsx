@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Icon from '@/components/ui/Icon'
+import { useTranslation } from '@/lib/hooks/useTranslation'
 
 export interface Signal {
   key: string
@@ -13,52 +14,56 @@ export interface Signal {
   valueType: string
 }
 
+const ALL_COUNTRIES = ["Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda","Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada","Central African Republic","Chad","Chile","China","Colombia","Comoros","Congo","Costa Rica","Croatia","Cuba","Cyprus","Czech Republic","Denmark","Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji","Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece","Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras","Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kuwait","Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya","Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia","Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius","Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco","Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand","Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway","Oman","Pakistan","Palau","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines","Samoa","San Marino","Sao Tome and Principe","Saudi Arabia","Senegal","Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia","Solomon Islands","Somalia","South Africa","South Korea","South Sudan","Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen","Zambia","Zimbabwe"]
+
+const ALL_CITIES = ["Abidjan","Abu Dhabi","Abuja","Accra","Addis Ababa","Adelaide","Ahmedabad","Alexandria","Algiers","Almaty","Amsterdam","Ankara","Atlanta","Auckland","Austin","Baghdad","Baku","Baltimore","Bangkok","Barcelona","Beijing","Beirut","Belgrade","Berlin","Bogota","Boston","Brasilia","Brisbane","Brussels","Bucharest","Budapest","Buenos Aires","Cairo","Calgary","Cape Town","Casablanca","Charlotte","Chennai","Chicago","Chongqing","Colombo","Copenhagen","Dakar","Dallas","Damascus","Dar es Salaam","Delhi","Denver","Detroit","Dhaka","Doha","Dubai","Dublin","Durban","Edinburgh","Frankfurt","Guadalajara","Guangzhou","Guatemala City","Hanoi","Havana","Helsinki","Ho Chi Minh City","Hong Kong","Honolulu","Houston","Hyderabad","Islamabad","Istanbul","Jakarta","Jeddah","Johannesburg","Kabul","Kampala","Karachi","Kathmandu","Khartoum","Kiev","Kinshasa","Kuala Lumpur","Kuwait City","Lagos","Lahore","Lima","Lisbon","London","Los Angeles","Luanda","Lusaka","Madrid","Managua","Manila","Maputo","Melbourne","Mexico City","Miami","Milan","Minneapolis","Mogadishu","Montreal","Moscow","Mumbai","Nairobi","New York","Osaka","Oslo","Ottawa","Panama City","Paris","Perth","Philadelphia","Phoenix","Port-au-Prince","Prague","Pune","Pyongyang","Quito","Rabat","Riyadh","Rome","San Francisco","Santiago","Santo Domingo","Sao Paulo","Seattle","Seoul","Shanghai","Shenzhen","Singapore","Sofia","Stockholm","Sydney","Taipei","Tashkent","Tehran","Tel Aviv","Tokyo","Toronto","Tripoli","Tunis","Vancouver","Vienna","Warsaw","Washington DC","Wuhan","Yangon","Yaounde","Yerevan","Johannesburg","Zagreb","Zurich"]
+
 export const SIGNAL_GROUPS = [
   {
     key: "visitor_behaviour",
-    label: "Visitor Behaviour",
+    labelKey: "signal_modal.group_visitor_behaviour",
     icon: "person_search",
     signals: [
-      { key: "visit_count", label: "Visit count", description: "Number of times this visitor has visited the page", icon: "analytics", operators: ["is greater than", "is less than", "equals"], valueType: "number" },
-      { key: "time_on_page", label: "Time on page", description: "Seconds the visitor has spent on the page", icon: "timer", operators: ["is greater than", "is less than"], valueType: "number" },
-      { key: "scroll_depth", label: "Scroll depth", description: "Percentage of the page the visitor has scrolled", icon: "swap_vert", operators: ["is greater than", "is less than"], valueType: "number" },
-      { key: "exit_intent", label: "Exit intent", description: "Triggers when the cursor moves toward leaving the page", icon: "exit_to_app", operators: ["is detected"], valueType: "none" },
-      { key: "visitor_type", label: "New vs returning", description: "Whether this is the visitor first time or a return visit", icon: "restart_alt", operators: ["is"], valueType: "select", options: ["new", "returning"] },
+      { key: "visit_count", labelKey: "signal_modal.signal_visit_count", descKey: "signal_modal.signal_visit_count_desc", icon: "analytics", operators: ["is greater than", "is less than", "equals"], valueType: "number" },
+      { key: "time_on_page", labelKey: "signal_modal.signal_time_on_page", descKey: "signal_modal.signal_time_on_page_desc", icon: "timer", operators: ["is greater than", "is less than"], valueType: "number" },
+      { key: "scroll_depth", labelKey: "signal_modal.signal_scroll_depth", descKey: "signal_modal.signal_scroll_depth_desc", icon: "swap_vert", operators: ["is greater than", "is less than"], valueType: "number" },
+      { key: "exit_intent", labelKey: "signal_modal.signal_exit_intent", descKey: "signal_modal.signal_exit_intent_desc", icon: "exit_to_app", operators: ["is detected"], valueType: "none" },
+      { key: "visitor_type", labelKey: "signal_modal.signal_visitor_type", descKey: "signal_modal.signal_visitor_type_desc", icon: "restart_alt", operators: ["is"], valueType: "select", options: ["new", "returning"] },
     ]
   },
   {
     key: "traffic_source",
-    label: "Traffic Source",
+    labelKey: "signal_modal.group_traffic_source",
     icon: "campaign",
     signals: [
-      { key: "utm_source", label: "UTM source", description: "The source parameter from the URL e.g. email, google, facebook", icon: "link", operators: ["is", "is not", "contains"], valueType: "text" },
-      { key: "utm_medium", label: "UTM medium", description: "The medium parameter e.g. cpc, email, organic", icon: "link", operators: ["is", "is not", "contains"], valueType: "text" },
-      { key: "utm_campaign", label: "UTM campaign", description: "The campaign name parameter from the URL", icon: "link", operators: ["is", "is not", "contains"], valueType: "text" },
-      { key: "referrer_url", label: "Referrer URL", description: "The website the visitor came from", icon: "travel_explore", operators: ["contains", "is", "is not"], valueType: "text" },
-      { key: "query_param", label: "Query parameter", description: "Any custom URL parameter e.g. ?ref=affiliate123", icon: "data_object", operators: ["contains", "equals"], valueType: "text" },
+      { key: "utm_source", labelKey: "signal_modal.signal_utm_source", descKey: "signal_modal.signal_utm_source_desc", icon: "link", operators: ["is", "is not", "contains"], valueType: "text" },
+      { key: "utm_medium", labelKey: "signal_modal.signal_utm_medium", descKey: "signal_modal.signal_utm_medium_desc", icon: "link", operators: ["is", "is not", "contains"], valueType: "text" },
+      { key: "utm_campaign", labelKey: "signal_modal.signal_utm_campaign", descKey: "signal_modal.signal_utm_campaign_desc", icon: "link", operators: ["is", "is not", "contains"], valueType: "text" },
+      { key: "referrer_url", labelKey: "signal_modal.signal_referrer_url", descKey: "signal_modal.signal_referrer_url_desc", icon: "travel_explore", operators: ["contains", "is", "is not"], valueType: "text" },
+      { key: "query_param", labelKey: "signal_modal.signal_query_param", descKey: "signal_modal.signal_query_param_desc", icon: "data_object", operators: ["contains", "equals"], valueType: "text" },
     ]
   },
   {
     key: "context",
-    label: "Context",
+    labelKey: "signal_modal.group_context",
     icon: "devices",
     signals: [
-      { key: "device_type", label: "Device type", description: "The device the visitor is using", icon: "devices", operators: ["is"], valueType: "select", options: ["mobile", "tablet", "desktop"] },
-      { key: "operating_system", label: "Operating system", description: "The OS the visitor is running", icon: "computer", operators: ["is"], valueType: "select", options: ["iOS", "Android", "Windows", "macOS", "Linux"] },
-      { key: "browser", label: "Browser", description: "The browser the visitor is using", icon: "language", operators: ["is"], valueType: "select", options: ["Chrome", "Firefox", "Safari", "Edge"] },
-      { key: "geo_country", label: "Geo country", description: "The country the visitor is located in", icon: "public", operators: ["is", "is not"], valueType: "select", options: ["Afghanistan","Albania","Algeria","Argentina","Australia","Austria","Bangladesh","Belgium","Bolivia","Brazil","Cambodia","Canada","Chile","China","Colombia","Croatia","Czech Republic","Denmark","Ecuador","Egypt","Ethiopia","Finland","France","Germany","Ghana","Greece","Guatemala","Honduras","Hungary","India","Indonesia","Iran","Iraq","Ireland","Israel","Italy","Japan","Jordan","Kenya","Kuwait","Malaysia","Mexico","Morocco","Netherlands","New Zealand","Nigeria","Norway","Pakistan","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Saudi Arabia","Senegal","Singapore","South Africa","South Korea","Spain","Sri Lanka","Sweden","Switzerland","Taiwan","Tanzania","Thailand","Turkey","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay","Venezuela","Vietnam","Zimbabwe"] },
-      { key: "geo_city", label: "Geo city", description: "The city the visitor is located in", icon: "location_on", operators: ["is", "contains"], valueType: "select", options: ["Abuja","Accra","Amsterdam","Atlanta","Austin","Bangkok","Barcelona","Beijing","Berlin","Boston","Brussels","Buenos Aires","Cairo","Cape Town","Chicago","Copenhagen","Dallas","Denver","Dubai","Dublin","Guangzhou","Helsinki","Hong Kong","Houston","Istanbul","Jakarta","Johannesburg","Karachi","Kuala Lumpur","Lagos","Lahore","Lima","Lisbon","London","Los Angeles","Madrid","Manila","Melbourne","Mexico City","Miami","Milan","Montreal","Moscow","Mumbai","Nairobi","New York","Oslo","Paris","Prague","Rome","San Francisco","Santiago","São Paulo","Seattle","Seoul","Shanghai","Singapore","Stockholm","Sydney","Taipei","Tehran","Tel Aviv","Tokyo","Toronto","Vienna","Warsaw","Washington DC","Zurich"] },
-      { key: "day_time", label: "Day / time of visit", description: "The day or time when the visitor arrives", icon: "schedule", operators: ["is", "is between"], valueType: "text" },
+      { key: "device_type", labelKey: "signal_modal.signal_device_type", descKey: "signal_modal.signal_device_type_desc", icon: "devices", operators: ["is"], valueType: "select", options: ["mobile", "tablet", "desktop"] },
+      { key: "operating_system", labelKey: "signal_modal.signal_operating_system", descKey: "signal_modal.signal_operating_system_desc", icon: "computer", operators: ["is"], valueType: "select", options: ["iOS", "Android", "Windows", "macOS", "Linux"] },
+      { key: "browser", labelKey: "signal_modal.signal_browser", descKey: "signal_modal.signal_browser_desc", icon: "language", operators: ["is"], valueType: "select", options: ["Chrome", "Firefox", "Safari", "Edge"] },
+      { key: "geo_country", labelKey: "signal_modal.signal_geo_country", descKey: "signal_modal.signal_geo_country_desc", icon: "public", operators: ["is", "is not"], valueType: "select", options: ALL_COUNTRIES },
+      { key: "geo_city", labelKey: "signal_modal.signal_geo_city", descKey: "signal_modal.signal_geo_city_desc", icon: "location_on", operators: ["is", "contains"], valueType: "select", options: ALL_CITIES },
+      { key: "day_time", labelKey: "signal_modal.signal_day_time", descKey: "signal_modal.signal_day_time_desc", icon: "schedule", operators: ["is", "is between"], valueType: "text" },
     ]
   },
   {
     key: "firmographics",
-    label: "Firmographics",
+    labelKey: "signal_modal.group_firmographics",
     icon: "domain",
     signals: [
-      { key: "company_name", label: "Company name", description: "Identify visitors by their company domain via IP registry", icon: "apartment", operators: ["is", "contains"], valueType: "text" },
-      { key: "industry", label: "Industry", description: "The industry vertical of the visitor company", icon: "factory", operators: ["is"], valueType: "text" },
-      { key: "company_size", label: "Company size", description: "Number of employees at the visitor company", icon: "groups", operators: ["is greater than", "is less than"], valueType: "number" },
+      { key: "company_name", labelKey: "signal_modal.signal_company_name", descKey: "signal_modal.signal_company_name_desc", icon: "apartment", operators: ["is", "contains"], valueType: "text" },
+      { key: "industry", labelKey: "signal_modal.signal_industry", descKey: "signal_modal.signal_industry_desc", icon: "factory", operators: ["is"], valueType: "text" },
+      { key: "company_size", labelKey: "signal_modal.signal_company_size", descKey: "signal_modal.signal_company_size_desc", icon: "groups", operators: ["is greater than", "is less than"], valueType: "number" },
     ]
   },
 ]
@@ -70,6 +75,7 @@ interface Props {
 }
 
 export default function SignalLibraryModal({ isOpen, onClose, onSelect }: Props) {
+  const { t } = useTranslation()
   const [search, setSearch] = useState("")
   const [selected, setSelected] = useState<any>(null)
   const [openGroups, setOpenGroups] = useState<string[]>(["visitor_behaviour"])
@@ -83,14 +89,14 @@ export default function SignalLibraryModal({ isOpen, onClose, onSelect }: Props)
   const filteredGroups = SIGNAL_GROUPS.map(group => ({
     ...group,
     signals: group.signals.filter(s =>
-      s.label.toLowerCase().includes(search.toLowerCase()) ||
-      s.description.toLowerCase().includes(search.toLowerCase())
+      t(s.labelKey).toLowerCase().includes(search.toLowerCase()) ||
+      t(s.descKey).toLowerCase().includes(search.toLowerCase())
     )
   })).filter(group => group.signals.length > 0)
 
   const handleConfirm = () => {
     if (selected) {
-      onSelect(selected)
+      onSelect({ ...selected, label: t(selected.labelKey) })
       setSelected(null)
       setSearch("")
       onClose()
@@ -103,7 +109,7 @@ export default function SignalLibraryModal({ isOpen, onClose, onSelect }: Props)
 
         {/* Header */}
         <header className="px-6 py-4 flex items-center justify-between border-b border-slate-100">
-          <h2 className="text-xl font-bold text-slate-900">Choose a Trigger Signal</h2>
+          <h2 className="text-xl font-bold text-slate-900">{t('signal_modal.title')}</h2>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
             <Icon name="close" />
           </button>
@@ -117,7 +123,7 @@ export default function SignalLibraryModal({ isOpen, onClose, onSelect }: Props)
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search signals (e.g. UTM source, device, country)..."
+              placeholder={t('signal_modal.search_placeholder')}
               className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
             />
           </div>
@@ -133,8 +139,8 @@ export default function SignalLibraryModal({ isOpen, onClose, onSelect }: Props)
               >
                 <div className="flex items-center gap-3">
                   <Icon name={group.icon} className="text-[#1A56DB]" />
-                  <span className="font-semibold text-slate-900">{group.label}</span>
-                  <span className="text-xs text-slate-400">{group.signals.length} signals</span>
+                  <span className="font-semibold text-slate-900">{t(group.labelKey)}</span>
+                  <span className="text-xs text-slate-400">{group.signals.length} {t('signal_modal.signals_count')}</span>
                 </div>
                 <Icon name={openGroups.includes(group.key) ? "expand_less" : "expand_more"} className="text-slate-400" />
               </button>
@@ -150,8 +156,8 @@ export default function SignalLibraryModal({ isOpen, onClose, onSelect }: Props)
                         <Icon name={signal.icon} className="text-xl" />
                       </div>
                       <div className="flex-1">
-                        <p className={"font-bold text-sm " + (selected?.key === signal.key ? "text-[#1A56DB]" : "text-slate-900")}>{signal.label}</p>
-                        <p className="text-xs text-slate-500 mt-0.5">{signal.description}</p>
+                        <p className={"font-bold text-sm " + (selected?.key === signal.key ? "text-[#1A56DB]" : "text-slate-900")}>{t(signal.labelKey)}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{t(signal.descKey)}</p>
                       </div>
                       {selected?.key === signal.key && (
                         <Icon name="check_circle" className="text-[#1A56DB] text-xl shrink-0" />
@@ -167,18 +173,18 @@ export default function SignalLibraryModal({ isOpen, onClose, onSelect }: Props)
         {/* Footer */}
         <footer className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-white">
           <span className="text-sm text-slate-500">
-            {selected ? "1 signal selected: " + selected.label : "No signal selected"}
+            {selected ? `1 ${t('signal_modal.signal_selected')} ${t(selected.labelKey)}` : t('signal_modal.no_signal_selected')}
           </span>
           <div className="flex gap-3">
             <button onClick={onClose} className="px-5 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
-              Cancel
+              {t('signal_modal.cancel')}
             </button>
             <button
               onClick={handleConfirm}
               disabled={!selected}
               className="px-6 py-2 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
-              Confirm Selection
+              {t('signal_modal.confirm')}
             </button>
           </div>
         </footer>
