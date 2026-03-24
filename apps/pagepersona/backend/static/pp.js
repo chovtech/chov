@@ -312,22 +312,133 @@
     el.textContent = resolveTokens(template);
   }
 
-  function showPopup(message) {
-    var existing = document.getElementById('pp-popup');
+  function showPopup(value) {
+    var cfg;
+    try { cfg = typeof value === 'string' ? JSON.parse(value) : value; } catch(e) { cfg = null; }
+    // Legacy plain-text fallback
+    if (!cfg || !cfg.config) {
+      var existing = document.getElementById('pp-popup');
+      if (existing) existing.remove();
+      var popup = document.createElement('div');
+      popup.id = 'pp-popup';
+      popup.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:999999;background:#1A56DB;color:#fff;padding:16px 20px;border-radius:12px;max-width:320px;font-family:sans-serif;font-size:14px;cursor:pointer';
+      popup.textContent = resolveTokens(typeof value === 'string' ? value : '');
+      popup.addEventListener('click', function () { popup.remove(); });
+      document.body.appendChild(popup);
+      return;
+    }
+    var c = cfg.config;
+    var freq = c.frequency || 'once';
+    var storageKey = 'pp_popup_' + (cfg.popup_id || 'x');
+    if (freq === 'once') {
+      if (localStorage.getItem(storageKey)) return;
+      localStorage.setItem(storageKey, '1');
+    } else if (freq === 'session') {
+      if (sessionStorage.getItem(storageKey)) return;
+      sessionStorage.setItem(storageKey, '1');
+    }
+    var delay = parseInt(c.delay) || 0;
+    setTimeout(function() { _renderPopup(c, storageKey); }, delay * 1000);
+  }
+
+  function _renderPopup(c, storageKey) {
+    var existing = document.getElementById('pp-popup-overlay');
     if (existing) existing.remove();
-    var popup = document.createElement('div');
-    popup.id = 'pp-popup';
-    popup.style.cssText = [
-      'position:fixed', 'bottom:24px', 'right:24px', 'z-index:999999',
-      'background:#1A56DB', 'color:#fff', 'padding:16px 20px',
-      'border-radius:12px', 'max-width:320px', 'font-family:sans-serif',
-      'font-size:14px', 'line-height:1.5', 'box-shadow:0 8px 32px rgba(26,86,219,0.3)',
-      'cursor:pointer'
-    ].join(';');
-    popup.textContent = resolveTokens(message);
-    popup.addEventListener('click', function () { popup.remove(); });
-    document.body.appendChild(popup);
-    setTimeout(function () { if (popup.parentNode) popup.remove(); }, 8000);
+
+    var isBar = c.position === 'top_bar' || c.position === 'bottom_bar';
+    var isFullscreen = c.position === 'fullscreen';
+    var br = isBar || isFullscreen ? 0 : (c.border_radius || 12);
+
+    // Overlay
+    var container = document.createElement('div');
+    container.id = 'pp-popup-overlay';
+    container.style.cssText = 'position:fixed;inset:0;z-index:999998;pointer-events:none';
+
+    if (c.overlay && !isBar && !isFullscreen) {
+      container.style.background = 'rgba(0,0,0,' + ((c.overlay_opacity || 50) / 100) + ')';
+      container.style.pointerEvents = 'auto';
+      if (c.close_on_overlay) {
+        container.addEventListener('click', function(e) {
+          if (e.target === container) container.remove();
+        });
+      }
+    }
+
+    // Popup box
+    var box = document.createElement('div');
+    var posStyles = {
+      center:        'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);max-width:380px;width:90%',
+      top_center:    'position:absolute;top:24px;left:50%;transform:translateX(-50%);max-width:380px;width:90%',
+      top_left:      'position:absolute;top:24px;left:24px;max-width:320px;width:80%',
+      top_right:     'position:absolute;top:24px;right:24px;max-width:320px;width:80%',
+      bottom_center: 'position:absolute;bottom:24px;left:50%;transform:translateX(-50%);max-width:380px;width:90%',
+      bottom_left:   'position:absolute;bottom:24px;left:24px;max-width:320px;width:80%',
+      bottom_right:  'position:absolute;bottom:24px;right:24px;max-width:320px;width:80%',
+      top_bar:       'position:absolute;top:0;left:0;right:0;width:100%',
+      bottom_bar:    'position:absolute;bottom:0;left:0;right:0;width:100%',
+      fullscreen:    'position:absolute;inset:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center',
+    };
+    box.style.cssText = (posStyles[c.position] || posStyles.center) +
+      ';background:' + (c.bg_color || '#1A56DB') +
+      ';color:' + (c.text_color || '#fff') +
+      ';border-radius:' + br + 'px' +
+      ';padding:' + (isBar ? '10px 20px' : '24px') +
+      ';font-family:sans-serif;box-shadow:0 8px 40px rgba(0,0,0,0.18);pointer-events:auto';
+
+    // Close button
+    if (c.close_button) {
+      var closeBtn = document.createElement('button');
+      closeBtn.textContent = '✕';
+      closeBtn.style.cssText = 'position:absolute;top:8px;right:12px;background:none;border:none;color:' + (c.text_color || '#fff') + ';opacity:0.7;font-size:16px;cursor:pointer;line-height:1;padding:0';
+      closeBtn.addEventListener('click', function() { container.remove(); });
+      box.style.position = box.style.position || 'relative';
+      box.appendChild(closeBtn);
+    }
+
+    if (isBar) {
+      box.style.display = 'flex';
+      box.style.alignItems = 'center';
+      box.style.justifyContent = 'center';
+      box.style.gap = '12px';
+      box.style.flexWrap = 'wrap';
+      if (c.headline) {
+        var hl = document.createElement('span');
+        hl.style.cssText = 'font-weight:700;font-size:13px';
+        hl.textContent = resolveTokens(c.headline);
+        box.appendChild(hl);
+      }
+    } else {
+      box.style.display = 'flex';
+      box.style.flexDirection = 'column';
+      box.style.gap = '10px';
+      if (isFullscreen) { box.style.alignItems = 'center'; box.style.textAlign = 'center'; }
+      if (c.headline) {
+        var hl = document.createElement('p');
+        hl.style.cssText = 'font-weight:800;font-size:16px;margin:0';
+        hl.textContent = resolveTokens(c.headline);
+        box.appendChild(hl);
+      }
+      if (c.body) {
+        var bd = document.createElement('p');
+        bd.style.cssText = 'font-size:13px;opacity:0.85;margin:0';
+        bd.textContent = resolveTokens(c.body);
+        box.appendChild(bd);
+      }
+    }
+
+    if (c.cta_label) {
+      var cta = document.createElement('a');
+      cta.href = c.cta_url || '#';
+      if (c.cta_url) cta.target = '_blank';
+      cta.style.cssText = 'display:inline-block;background:' + (c.cta_color || '#fff') +
+        ';color:' + (c.cta_text_color || '#1A56DB') +
+        ';padding:9px 20px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;cursor:pointer;margin-top:4px';
+      cta.textContent = resolveTokens(c.cta_label);
+      box.appendChild(cta);
+    }
+
+    container.appendChild(box);
+    document.body.appendChild(container);
   }
 
   function sendWebhook(url) {

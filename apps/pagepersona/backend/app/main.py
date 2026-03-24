@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.database import get_pool, close_pool
-from app.routers import auth, users, webhooks, google_auth, projects, rules, sdk, upload
+from app.routers import auth, users, webhooks, google_auth, projects, rules, sdk, upload, popups
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -44,6 +44,7 @@ app.include_router(projects.router)
 app.include_router(rules.router)
 app.include_router(sdk.router)
 app.include_router(upload.router)
+app.include_router(popups.router)
 
 @app.get("/")
 async def root():

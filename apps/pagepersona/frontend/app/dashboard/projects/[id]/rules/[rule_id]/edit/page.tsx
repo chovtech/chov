@@ -6,7 +6,7 @@ import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
-import { rulesApi, projectApi } from '@/lib/api/client'
+import { rulesApi, projectApi, apiClient } from '@/lib/api/client'
 
 // Full signal config map — needed to reconstruct form state from saved rule data
 const SIGNAL_CONFIGS: Record<string, { label: string; operators: string[]; valueType: string; options?: string[] }> = {
@@ -60,6 +60,64 @@ interface Action {
   target_block: string
   value: string
   needsElement: boolean
+}
+
+
+function PopupPicker({ value, onChange, projectId }: { value: string; onChange: (v: string) => void; projectId: string }) {
+  const { t } = useTranslation('common')
+  const [popups, setPopups] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    apiClient.get('/api/popups')
+      .then(res => setPopups(res.data))
+      .catch(() => null)
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return (
+    <div className="flex items-center gap-2 py-2 text-slate-400 text-xs">
+      <Icon name="sync" className="animate-spin text-sm" />
+      Loading popups...
+    </div>
+  )
+
+  if (popups.length === 0) return (
+    <div className="flex flex-col gap-2 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+      <p className="text-xs font-bold text-slate-500">{t('rules.popup_none')}</p>
+      <p className="text-xs text-slate-400">{t('rules.popup_none_desc')}</p>
+      <a href="/dashboard/elements/popups/new" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline">{t('rules.popup_go_create')}</a>
+    </div>
+  )
+
+  const selected = popups.find(p => {
+    try { return JSON.parse(value)?.popup_id === p.id } catch { return false }
+  })
+
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">{t('rules.popup_select')}</label>
+      <div className="flex flex-col gap-2">
+        {popups.map(popup => (
+          <button
+            key={popup.id}
+            onClick={() => onChange(JSON.stringify({ popup_id: popup.id, config: popup.config }))}
+            className={"flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all " + (selected?.id === popup.id ? 'border-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-100 hover:border-slate-300')}
+          >
+            <div className="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ background: popup.config?.bg_color || '#1A56DB' }}>
+              <Icon name="web_asset" className="text-white text-base" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={"text-sm font-bold truncate " + (selected?.id === popup.id ? 'text-[#1A56DB]' : 'text-slate-700')}>{popup.name}</p>
+              <p className="text-[11px] text-slate-400">{popup.config?.position || 'center'}</p>
+            </div>
+            {selected?.id === popup.id && <Icon name="check_circle" className="text-[#1A56DB] text-base flex-shrink-0" />}
+          </button>
+        ))}
+      </div>
+      <a href="/dashboard/elements/popups/new" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline mt-1">{t('rules.popup_go_create')}</a>
+    </div>
+  )
 }
 
 function EditRulePageInner() {
@@ -473,16 +531,11 @@ function EditRulePageInner() {
                     </div>
                   )}
                   {action.type === 'show_popup' && (
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Popup Message</label>
-                      <textarea
-                        value={action.value}
-                        onChange={e => updateAction(action.id, 'value', e.target.value)}
-                        placeholder="Enter the popup message..."
-                        rows={3}
-                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
-                      />
-                    </div>
+                    <PopupPicker
+                      value={action.value}
+                      onChange={val => updateAction(action.id, 'value', val)}
+                      projectId={projectId as string}
+                    />
                   )}
                   {action.type === 'send_webhook' && (
                     <div>
