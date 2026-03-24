@@ -448,7 +448,7 @@ function PickerPageInner() {
                     <p className="text-sm font-medium text-slate-900 truncate">
                       {selectedEl.textContent || selectedEl.tagName + ' element'}
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5">This is what every visitor sees by default.</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{t('picker.default_content_desc')}</p>
                   </div>
                   <div className="w-16 h-12 rounded-lg bg-gradient-to-br from-slate-200 to-slate-300 shrink-0 flex items-center justify-center">
                     <Icon name={selectedEl.tagName === 'IMG' ? 'image' : 'text_fields'} className="text-slate-400 text-lg" />
@@ -476,9 +476,9 @@ function PickerPageInner() {
                     <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-3">
                       <Icon name="auto_awesome" className="text-2xl text-slate-400" />
                     </div>
-                    <p className="text-sm font-semibold text-slate-600 mb-1">No rules yet</p>
+                    <p className="text-sm font-semibold text-slate-600 mb-1">{t('picker.no_rules_yet')}</p>
                     <p className="text-xs text-slate-400 leading-relaxed px-4">
-                      Everyone sees the same content on this element. Add a rule to personalise it.
+                      {t('picker.no_rules_desc')}
                     </p>
                   </div>
                 ) : (
