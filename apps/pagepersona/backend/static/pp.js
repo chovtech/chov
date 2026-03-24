@@ -234,11 +234,35 @@
 
   // ─── ACTION EXECUTION ──────────────────────────────────────────────────────
   function fireActions(rules) {
+    // Collect all target selectors that need visual changes to hide before paint
+    var selectorsToHide = [];
+    for (var i = 0; i < rules.length; i++) {
+      var actions = rules[i].actions || [];
+      for (var j = 0; j < actions.length; j++) {
+        var a = actions[j];
+        if ((a.type === 'swap_text' || a.type === 'swap_image') && a.target_block) {
+          selectorsToHide.push(a.target_block);
+        }
+      }
+    }
+    // Inject hide style before paint to prevent FOUC
+    var hideStyle = null;
+    if (selectorsToHide.length > 0) {
+      hideStyle = document.createElement('style');
+      hideStyle.id = 'pp-fouc-shield';
+      hideStyle.textContent = selectorsToHide.join(',') + '{visibility:hidden !important;}';
+      document.head.appendChild(hideStyle);
+    }
+    // Fire all actions
     for (var i = 0; i < rules.length; i++) {
       var actions = rules[i].actions || [];
       for (var j = 0; j < actions.length; j++) {
         fireAction(actions[j]);
       }
+    }
+    // Remove hide style — elements now have correct content
+    if (hideStyle && hideStyle.parentNode) {
+      hideStyle.parentNode.removeChild(hideStyle);
     }
   }
 
