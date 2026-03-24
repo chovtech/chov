@@ -316,11 +316,13 @@ export default function ProjectDashboardPage() {
     try {
       const formData = new FormData()
       formData.append('file', file)
-      const uploadRes = await apiClient.post('/api/upload/image', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+      const uploadRes = await apiClient.post('/api/upload/image', formData)
       const url = uploadRes.data.url
       const res = await projectApi.update(project.id, { thumbnail_url: url })
       setProject(res.data)
-    } catch {} finally { setThumbnailUploading(false) }
+    } catch (err: any) {
+      console.error('Thumbnail upload error:', err?.response?.data || err?.message || err)
+    } finally { setThumbnailUploading(false) }
   }
 
   const activityItems = [
