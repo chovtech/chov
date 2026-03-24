@@ -170,7 +170,7 @@ function PickerPageInner() {
     setActions((rule.actions || []).map((a: any, i: number) => ({
       id: i.toString(),
       type: a.type,
-      type_label: ACTION_TYPE_DEFS.find(at => at.key === a.type)?.label || a.type,
+      type_label: (() => { const found = ACTION_TYPE_DEFS.find(at => at.key === a.type); return found ? t(found.labelKey) : a.type; })(),
       target_block: a.target_block || '',
       value: a.value || '',
       needsElement: ACTION_TYPE_DEFS.find(at => at.key === a.type)?.needsElement ?? true,
