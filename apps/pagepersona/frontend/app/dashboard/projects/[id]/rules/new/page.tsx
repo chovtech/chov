@@ -10,12 +10,12 @@ import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
 import { rulesApi, projectApi } from '@/lib/api/client'
 
 const ACTION_TYPES = [
-  { key: "swap_text",    label: "Swap text block", icon: "text_fields",    needsElement: true  },
-  { key: "swap_image",   label: "Swap image",       icon: "image",          needsElement: true  },
-  { key: "hide_section", label: "Hide section",     icon: "visibility_off", needsElement: true  },
-  { key: "inject_token", label: "Inject token",     icon: "data_object",    needsElement: true  },
-  { key: "show_popup",   label: "Show popup",       icon: "web_asset",      needsElement: false },
-  { key: "send_webhook", label: "Send webhook",     icon: "webhook",        needsElement: false },
+  { key: "swap_text",    labelKey: "picker.action_swap_text",    icon: "text_fields",    needsElement: true  },
+  { key: "swap_image",   labelKey: "picker.action_swap_image",   icon: "image",          needsElement: true  },
+  { key: "hide_section", labelKey: "picker.action_hide_section", icon: "visibility_off", needsElement: true  },
+  { key: "inject_token", labelKey: "picker.action_inject_token", icon: "data_object",    needsElement: true  },
+  { key: "show_popup",   labelKey: "picker.action_show_popup",   icon: "web_asset",      needsElement: false },
+  { key: "send_webhook", labelKey: "picker.action_send_webhook", icon: "webhook",        needsElement: false },
 ]
 
 const TOKENS = ["{city}", "{first_name}", "{company}", "{affiliate_name}"]
@@ -360,7 +360,7 @@ function NewRulePageInner() {
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 font-medium text-left transition-colors"
                     >
                       <Icon name={action.icon} className="text-lg text-slate-400" />
-                      {action.label}
+                      {t(action.labelKey)}
                     </button>
                   ))}
                 </div>

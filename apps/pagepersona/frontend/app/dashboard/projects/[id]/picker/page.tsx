@@ -666,7 +666,7 @@ function PickerPageInner() {
                             <button key={at.key} onClick={() => addAction(at)}
                               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 font-medium text-left"
                             >
-                              <Icon name={at.icon} className="text-slate-400 text-lg" />{at.label}
+                              <Icon name={at.icon} className="text-slate-400 text-lg" />{t(at.labelKey)}
                             </button>
                           ))}
                         </div>
@@ -893,7 +893,7 @@ function PickerPageInner() {
                               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 font-medium text-left transition-colors"
                             >
                               <Icon name={at.icon} className="text-slate-400 text-lg" />
-                              {at.label}
+                              {t(at.labelKey)}
                             </button>
                           ))}
                         </div>
