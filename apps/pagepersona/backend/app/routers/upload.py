@@ -20,6 +20,20 @@ def get_r2_client():
         region_name="auto",
     )
 
+def delete_r2_image(url: str):
+    """Delete an image from R2 by its public URL. Silently ignores errors."""
+    if not url:
+        return
+    prefix = settings.R2_PUBLIC_URL.rstrip("/") + "/"
+    if not url.startswith(prefix):
+        return
+    key = url[len(prefix):]
+    try:
+        s3 = get_r2_client()
+        s3.delete_object(Bucket=settings.R2_BUCKET_NAME, Key=key)
+    except Exception:
+        pass
+
 @router.post("/api/upload/image")
 async def upload_image(
     file: UploadFile = File(...),

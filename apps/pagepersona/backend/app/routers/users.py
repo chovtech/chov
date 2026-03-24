@@ -8,6 +8,7 @@ from app.core.security import decode_token, hash_password, verify_password
 from app.services.auth_service import get_user_by_id, get_user_by_email
 from app.services.mautic_service import update_contact
 from app.schemas.auth import UserResponse, MessageResponse
+from app.routers.upload import delete_r2_image
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 security = HTTPBearer()
@@ -55,6 +56,9 @@ async def update_profile(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="That email is already in use"
             )
+
+    if data.avatar_url and user.get('avatar_url'):
+        delete_r2_image(user['avatar_url'])
 
     name = data.name or user.get('name')
     email = data.email or user['email']

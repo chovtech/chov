@@ -3,6 +3,7 @@ import asyncpg
 from app.database import get_db
 from app.core.security import get_current_user
 from app.schemas.projects import ProjectCreate, ProjectResponse, ProjectUpdate
+from app.routers.upload import delete_r2_image
 from app.services.project_service import (
     create_project, get_projects, get_project,
     update_project, delete_project
@@ -83,6 +84,11 @@ async def update(
     )
     if not workspace:
         raise HTTPException(status_code=404, detail="Workspace not found")
+
+    if body.thumbnail_url:
+        existing = await get_project(db, project_id, str(workspace['id']))
+        if existing and existing['thumbnail_url']:
+            delete_r2_image(existing['thumbnail_url'])
 
     project = await update_project(
         db, project_id, str(workspace['id']),
