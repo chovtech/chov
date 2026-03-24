@@ -250,7 +250,7 @@ export default function RulesPage() {
               disabled={!project?.page_url}
               className="flex items-center gap-2 px-5 py-2.5 border-2 border-[#14B8A6] text-[#14B8A6] text-sm font-bold rounded-xl hover:bg-[#14B8A6]/5 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
               <Icon name="ads_click" className="text-base" />
-              On-Page Personalisation
+              {t('picker.on_page_personalisation')}
             </button>
             <button
               onClick={() => router.push("/dashboard/projects/" + projectId + "/rules/new")}

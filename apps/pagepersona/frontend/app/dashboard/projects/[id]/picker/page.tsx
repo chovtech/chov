@@ -394,14 +394,14 @@ function PickerPageInner() {
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all text-left"
                 >
                   <Icon name="rule" className="text-slate-400 text-xl" />
-                  View All Rules
+                  {t('picker.view_all_rules')}
                   <Icon name="chevron_right" className="text-slate-300 text-base ml-auto" />
                 </button>
                 <button onClick={() => router.push(`/dashboard/projects/${projectId}`)}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all text-left"
                 >
                   <Icon name="dashboard" className="text-slate-400 text-xl" />
-                  Project Dashboard
+                  {t('picker.project_dashboard')}
                   <Icon name="chevron_right" className="text-slate-300 text-base ml-auto" />
                 </button>
               </div>
@@ -460,10 +460,10 @@ function PickerPageInner() {
               <div className="flex-1 overflow-y-auto px-5 py-4">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Personalisation Rules
+                    {t('picker.personalisation_rules')}
                   </p>
                   <span className="text-xs font-semibold text-slate-400">
-                    {existingRules.length} active
+                    {existingRules.length} {t('picker.active')}
                   </span>
                 </div>
 
@@ -545,7 +545,7 @@ function PickerPageInner() {
                   className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#1A56DB] hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-[#1A56DB]/25 transition-all"
                 >
                   <Icon name="add" className="text-lg" />
-                  Add Personalisation
+                  {t('picker.add_personalisation')}
                 </button>
                 <p className="text-center text-[11px] text-slate-400 mt-2.5">Changes are saved automatically to your draft.</p>
               </div>

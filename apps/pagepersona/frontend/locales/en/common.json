@@ -372,6 +372,7 @@
     "action_hide_section": "Hide section",
     "action_inject_token": "Inject token",
     "action_show_popup": "Show popup",
-    "action_send_webhook": "Send webhook"
+    "action_send_webhook": "Send webhook",
+    "on_page_personalisation": "On-Page Personalisation"
   }
 }
