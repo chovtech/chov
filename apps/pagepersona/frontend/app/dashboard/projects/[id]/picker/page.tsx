@@ -6,6 +6,8 @@ import { rulesApi, projectApi } from '@/lib/api/client'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
 import Icon from '@/components/ui/Icon'
 import ImageUploader from '@/components/ui/ImageUploader'
+import { useTranslation } from '@/lib/hooks/useTranslation'
+import { useLanguage } from '@/lib/hooks/useLanguage'
 
 interface SelectedElement {
   selector: string
@@ -42,13 +44,13 @@ interface Action {
   needsElement: boolean
 }
 
-const ACTION_TYPES = [
-  { key: 'swap_text',    label: 'Swap text block', icon: 'text_fields',    needsElement: true  },
-  { key: 'swap_image',   label: 'Swap image',       icon: 'image',          needsElement: true  },
-  { key: 'hide_section', label: 'Hide section',     icon: 'visibility_off', needsElement: true  },
-  { key: 'inject_token', label: 'Inject token',     icon: 'data_object',    needsElement: true  },
-  { key: 'show_popup',   label: 'Show popup',       icon: 'web_asset',      needsElement: false },
-  { key: 'send_webhook', label: 'Send webhook',     icon: 'webhook',        needsElement: false },
+const ACTION_TYPE_DEFS = [
+  { key: 'swap_text',    labelKey: 'picker.action_swap_text',    icon: 'text_fields',    needsElement: true  },
+  { key: 'swap_image',   labelKey: 'picker.action_swap_image',   icon: 'image',          needsElement: true  },
+  { key: 'hide_section', labelKey: 'picker.action_hide_section', icon: 'visibility_off', needsElement: true  },
+  { key: 'inject_token', labelKey: 'picker.action_inject_token', icon: 'data_object',    needsElement: true  },
+  { key: 'show_popup',   labelKey: 'picker.action_show_popup',   icon: 'web_asset',      needsElement: false },
+  { key: 'send_webhook', labelKey: 'picker.action_send_webhook', icon: 'webhook',        needsElement: false },
 ]
 
 const TOKENS = ['{city}', '{first_name}', '{company}', '{affiliate_name}']
@@ -63,9 +65,12 @@ function PickerPageInner() {
   const projectId    = params.id as string
   const pageUrl      = searchParams.get('url') || ''
 
+  const { t } = useTranslation()
+  const { language, setLanguage } = useLanguage()
+
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
-  const [projectName,  setProjectName]  = useState('Loading...')
+  const [projectName,  setProjectName]  = useState(t('actions.loading'))
   const [activeRules,  setActiveRules]  = useState(0)
   const [iframeReady,  setIframeReady]  = useState(false)
   const [previewMode,  setPreviewMode]  = useState<PreviewMode>('desktop')
@@ -144,7 +149,7 @@ function PickerPageInner() {
     setRuleName('')
     setConditionOperator('AND')
     setConditions([])
-    setActions([{ id: Date.now().toString(), type: 'swap_text', type_label: 'Swap text block', target_block: selectedEl?.selector || '', value: '', needsElement: true }])
+    setActions([{ id: Date.now().toString(), type: 'swap_text', type_label: t('picker.action_swap_text'), target_block: selectedEl?.selector || '', value: '', needsElement: true }])
     setSaveError('')
     setView('rule_editor')
   }
@@ -165,10 +170,10 @@ function PickerPageInner() {
     setActions((rule.actions || []).map((a: any, i: number) => ({
       id: i.toString(),
       type: a.type,
-      type_label: ACTION_TYPES.find(at => at.key === a.type)?.label || a.type,
+      type_label: ACTION_TYPE_DEFS.find(at => at.key === a.type)?.label || a.type,
       target_block: a.target_block || '',
       value: a.value || '',
-      needsElement: ACTION_TYPES.find(at => at.key === a.type)?.needsElement ?? true,
+      needsElement: ACTION_TYPE_DEFS.find(at => at.key === a.type)?.needsElement ?? true,
     })))
     setSaveError('')
     setView('rule_edit')
@@ -187,7 +192,7 @@ function PickerPageInner() {
 
   const removeCondition = (id: string) => setConditions(prev => prev.filter(c => c.id !== id))
   const updateCondition  = (id: string, f: string, v: string) => setConditions(prev => prev.map(c => c.id === id ? { ...c, [f]: v } : c))
-  const addAction        = (at: any) => { setActions(prev => [...prev, { id: Date.now().toString(), type: at.key, type_label: at.label, target_block: at.needsElement ? (selectedEl?.selector || '') : '', value: '', needsElement: at.needsElement }]); setActionMenuOpen(false) }
+  const addAction        = (at: any) => { setActions(prev => [...prev, { id: Date.now().toString(), type: at.key, type_label: t(at.labelKey), target_block: at.needsElement ? (selectedEl?.selector || '') : '', value: '', needsElement: at.needsElement }]); setActionMenuOpen(false) }
   const removeAction     = (id: string) => setActions(prev => prev.filter(a => a.id !== id))
   const updateAction     = (id: string, f: string, v: string) => setActions(prev => prev.map(a => a.id === id ? { ...a, [f]: v } : a))
   const injectToken      = (id: string, t: string) => setActions(prev => prev.map(a => a.id === id ? { ...a, value: a.value + ' ' + t } : a))
@@ -211,7 +216,7 @@ function PickerPageInner() {
       if (selectedEl) setExistingRules(all.filter((r: ExistingRule) => r.actions?.some((a: any) => a.target_block === selectedEl.selector)))
       setSuccessToast(true); setTimeout(() => setSuccessToast(false), 3000)
       setView('block')
-    } catch { setSaveError('Failed to save. Please try again.') }
+    } catch { setSaveError(t('picker.failed_save')) }
     finally { setSaving(false) }
   }
 
@@ -232,7 +237,7 @@ function PickerPageInner() {
       setSuccessToast(true); setTimeout(() => setSuccessToast(false), 3000)
       setEditingRule(null)
       setView('block')
-    } catch { setSaveError('Failed to update. Please try again.') }
+    } catch { setSaveError(t('picker.failed_update')) }
     finally { setUpdating(false) }
   }
 
@@ -308,7 +313,7 @@ function PickerPageInner() {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-full">
             <Icon name="bolt" className="text-[#1A56DB] text-sm" />
-            <span className="text-xs font-bold text-slate-700">{activeRules} rule{activeRules !== 1 ? 's' : ''}</span>
+            <span className="text-xs font-bold text-slate-700">{activeRules} {activeRules !== 1 ? t('picker.rules_count_many') : t('picker.rules_count_one')}</span>
           </div>
           <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
             {([{ mode: 'desktop', icon: 'desktop_windows' }, { mode: 'tablet', icon: 'tablet_mac' }, { mode: 'mobile', icon: 'smartphone' }] as { mode: PreviewMode; icon: string }[]).map(({ mode, icon }) => (
@@ -319,6 +324,15 @@ function PickerPageInner() {
               </button>
             ))}
           </div>
+          {/* Language switcher */}
+          <select
+            value={language}
+            onChange={e => setLanguage(e.target.value as 'en' | 'fr')}
+            className="text-xs font-semibold text-slate-600 bg-slate-100 border-0 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 cursor-pointer"
+          >
+            <option value="en">EN</option>
+            <option value="fr">FR</option>
+          </select>
         </div>
       </div>
 
@@ -363,7 +377,7 @@ function PickerPageInner() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-slate-900">Element Picker</p>
-                    <p className="text-xs text-slate-400">Active on {projectName}</p>
+                    <p className="text-xs text-slate-400">{`${t('picker.active_on')} ${projectName}`}</p>
                   </div>
                 </div>
               </div>
@@ -395,7 +409,7 @@ function PickerPageInner() {
               <div className="mt-auto px-5 py-5 border-t border-slate-100">
                 <div className="flex items-start gap-3 p-4 bg-[#14B8A6]/8 rounded-xl border border-[#14B8A6]/20">
                   <span className="w-2 h-2 rounded-full bg-[#14B8A6] animate-pulse shrink-0 mt-1.5" />
-                  <p className="text-xs text-slate-600 leading-relaxed">Hover over any element on the page, then click to start personalising it.</p>
+                  <p className="text-xs text-slate-600 leading-relaxed">{t('picker.hover_hint')}</p>
                 </div>
               </div>
             </>
@@ -419,7 +433,7 @@ function PickerPageInner() {
                   </button>
                 </div>
                 <h2 className="text-xl font-bold text-slate-900 mb-0.5">
-                  {selectedEl.tagName.charAt(0).toUpperCase() + selectedEl.tagName.slice(1).toLowerCase()} Personalisation
+                  {selectedEl.tagName.charAt(0).toUpperCase() + selectedEl.tagName.slice(1).toLowerCase()} {t('picker.personalisation')}
                 </h2>
               </div>
 
@@ -565,7 +579,7 @@ function PickerPageInner() {
                 <div className="px-5 py-5 border-b border-slate-100">
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Rule Name</label>
                   <input type="text" value={ruleName} onChange={e => setRuleName(e.target.value)}
-                    placeholder="Rule name..."
+                    placeholder={t('picker.rule_name_placeholder')}
                     className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
                   />
                 </div>
@@ -595,7 +609,7 @@ function PickerPageInner() {
                           <button onClick={() => openSignalModal(c.id)}
                             className="w-full flex items-center justify-between px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm hover:border-[#1A56DB] transition-colors"
                           >
-                            <span className={c.signal ? 'text-slate-900 font-medium' : 'text-slate-400'}>{c.signal_label || c.signal || 'Pick a signal...'}</span>
+                            <span className={c.signal ? 'text-slate-900 font-medium' : 'text-slate-400'}>{c.signal_label || c.signal || t('picker.pick_signal')}</span>
                             <Icon name="unfold_more" className="text-slate-400 text-sm" />
                           </button>
                         </div>
@@ -614,7 +628,7 @@ function PickerPageInner() {
                                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Value</label>
                                 <input type={c.valueType === 'number' ? 'number' : 'text'} value={c.value}
                                   onChange={e => updateCondition(c.id, 'value', e.target.value)}
-                                  placeholder="Value..."
+                                  placeholder={t('picker.value_placeholder')}
                                   className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all"
                                 />
                               </div>
@@ -648,7 +662,7 @@ function PickerPageInner() {
                       </button>
                       {actionMenuOpen && (
                         <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50">
-                          {ACTION_TYPES.map(at => (
+                          {ACTION_TYPE_DEFS.map(at => (
                             <button key={at.key} onClick={() => addAction(at)}
                               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 font-medium text-left"
                             >
@@ -664,7 +678,7 @@ function PickerPageInner() {
                       <div key={action.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Icon name={ACTION_TYPES.find(a => a.key === action.type)?.icon || 'bolt'} className="text-[#1A56DB] text-lg" />
+                            <Icon name={ACTION_TYPE_DEFS.find(a => a.key === action.type)?.icon || 'bolt'} className="text-[#1A56DB] text-lg" />
                             <span className="text-sm font-bold text-slate-800">{action.type_label}</span>
                           </div>
                           <button onClick={() => removeAction(action.id)} className="p-1.5 hover:bg-red-50 hover:text-red-500 text-slate-300 rounded-lg transition-colors">
@@ -675,14 +689,14 @@ function PickerPageInner() {
                           <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Target Element</label>
                             <input type="text" value={action.target_block} onChange={e => updateAction(action.id, 'target_block', e.target.value)}
-                              placeholder="CSS selector" className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-mono focus:outline-none focus:border-[#1A56DB] transition-all" />
+                              placeholder={t('picker.target_placeholder')} className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-mono focus:outline-none focus:border-[#1A56DB] transition-all" />
                           </div>
                         )}
                         {(action.type === 'swap_text' || action.type === 'inject_token') && (
                           <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Show this instead:</label>
                             <textarea value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
-                              placeholder="Content for this visitor segment..." rows={3}
+                              placeholder={t('picker.content_placeholder')} rows={3}
                               className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:border-[#1A56DB] transition-all" />
                             <div className="mt-2">
                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Insert Token:</p>
@@ -708,7 +722,7 @@ function PickerPageInner() {
                           <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Popup Message</label>
                             <textarea value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
-                              placeholder="Popup message..." rows={3}
+                              placeholder={t('picker.popup_placeholder')} rows={3}
                               className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:border-[#1A56DB] transition-all" />
                           </div>
                         )}
@@ -716,7 +730,7 @@ function PickerPageInner() {
                           <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Webhook URL</label>
                             <input type="url" value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
-                              placeholder="https://hooks.zapier.com/..." className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all" />
+                              placeholder={t('picker.webhook_placeholder')} className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all" />
                           </div>
                         )}
                       </div>
@@ -735,7 +749,7 @@ function PickerPageInner() {
                 <button onClick={handleUpdate} disabled={!canSave || updating}
                   className="w-full py-3.5 bg-[#1A56DB] hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl shadow-lg shadow-[#1A56DB]/25 transition-all"
                 >
-                  {updating ? 'Saving...' : 'Save Rule'}
+                  {updating ? t('picker.saving') : t('picker.save_rule')}
                 </button>
               </div>
             </>
@@ -775,7 +789,7 @@ function PickerPageInner() {
                     type="text"
                     value={ruleName}
                     onChange={e => setRuleName(e.target.value)}
-                    placeholder="e.g. Show offer to returning visitors"
+                    placeholder={t('picker.rule_name_placeholder_new')}
                     className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
                   />
                 </div>
@@ -809,7 +823,7 @@ function PickerPageInner() {
                             className="w-full flex items-center justify-between px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm hover:border-[#1A56DB] transition-colors"
                           >
                             <span className={c.signal ? 'text-slate-900 font-medium' : 'text-slate-400'}>
-                              {c.signal_label || 'Pick a signal...'}
+                              {c.signal_label || t('picker.pick_signal')}
                             </span>
                             <Icon name="unfold_more" className="text-slate-400 text-sm" />
                           </button>
@@ -837,7 +851,7 @@ function PickerPageInner() {
                                 ) : (
                                   <input type={c.valueType === 'number' ? 'number' : 'text'} value={c.value}
                                     onChange={e => updateCondition(c.id, 'value', e.target.value)}
-                                    placeholder="Value..."
+                                    placeholder={t('picker.value_placeholder')}
                                     className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all"
                                   />
                                 )}
@@ -874,7 +888,7 @@ function PickerPageInner() {
                       </button>
                       {actionMenuOpen && (
                         <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50">
-                          {ACTION_TYPES.map(at => (
+                          {ACTION_TYPE_DEFS.map(at => (
                             <button key={at.key} onClick={() => addAction(at)}
                               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 font-medium text-left transition-colors"
                             >
@@ -898,7 +912,7 @@ function PickerPageInner() {
                         <div key={action.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <Icon name={ACTION_TYPES.find(a => a.key === action.type)?.icon || 'bolt'} className="text-[#1A56DB] text-lg" />
+                              <Icon name={ACTION_TYPE_DEFS.find(a => a.key === action.type)?.icon || 'bolt'} className="text-[#1A56DB] text-lg" />
                               <span className="text-sm font-bold text-slate-800">{action.type_label}</span>
                             </div>
                             <button onClick={() => removeAction(action.id)} className="p-1.5 hover:bg-red-50 hover:text-red-500 text-slate-300 rounded-lg transition-colors">
@@ -911,7 +925,7 @@ function PickerPageInner() {
                               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Target Element</label>
                               <input type="text" value={action.target_block}
                                 onChange={e => updateAction(action.id, 'target_block', e.target.value)}
-                                placeholder="CSS selector e.g. #headline"
+                                placeholder={t('picker.target_placeholder')}
                                 className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-mono focus:outline-none focus:border-[#1A56DB] transition-all"
                               />
                             </div>
@@ -921,7 +935,7 @@ function PickerPageInner() {
                             <div>
                               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Show this instead:</label>
                               <textarea value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
-                                placeholder="Enter the content to show this visitor segment..."
+                                placeholder={t('picker.content_placeholder')}
                                 rows={3}
                                 className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:border-[#1A56DB] transition-all"
                               />
@@ -951,7 +965,7 @@ function PickerPageInner() {
                             <div>
                               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Popup Message</label>
                               <textarea value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
-                                placeholder="Popup message..." rows={3}
+                                placeholder={t('picker.popup_placeholder')} rows={3}
                                 className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:border-[#1A56DB] transition-all" />
                             </div>
                           )}
@@ -960,7 +974,7 @@ function PickerPageInner() {
                             <div>
                               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Webhook URL</label>
                               <input type="url" value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
-                                placeholder="https://hooks.zapier.com/..." className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all" />
+                                placeholder={t('picker.webhook_placeholder')} className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all" />
                             </div>
                           )}
                         </div>
@@ -982,7 +996,7 @@ function PickerPageInner() {
                 <button onClick={handleSave} disabled={!canSave || saving}
                   className="w-full py-3.5 bg-[#1A56DB] hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl shadow-lg shadow-[#1A56DB]/25 transition-all"
                 >
-                  {saving ? 'Saving...' : 'Save Rule'}
+                  {saving ? t('picker.saving') : t('picker.save_rule')}
                 </button>
               </div>
             </>
