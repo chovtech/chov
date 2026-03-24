@@ -316,7 +316,7 @@ export default function ProjectDashboardPage() {
     try {
       const formData = new FormData()
       formData.append('file', file)
-      const uploadRes = await apiClient.post('/api/upload/image', formData)
+      const uploadRes = await apiClient.post('/api/upload/image', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
       const url = uploadRes.data.url
       const res = await projectApi.update(project.id, { thumbnail_url: url })
       setProject(res.data)
