@@ -103,20 +103,21 @@ def send_install_email(to_email: str, script_tag: str, project_name: str, lang: 
         "fr": "Installer PagePersona sur votre page",
     }
     intros = {
-        "en": f"You've been asked to install the PagePersona script on <strong>{project_name}</strong>. Paste the tag below before the <code>&lt;/body&gt;</code> tag on your page:",
-        "fr": f"Vous avez été invité à installer le script PagePersona sur <strong>{project_name}</strong>. Collez la balise ci-dessous avant la balise <code>&lt;/body&gt;</code> de votre page :",
+        "en": f"You've been asked to install the PagePersona script on <strong>{project_name}</strong>. Paste the tag below before the <code>&lt;/body&gt;</code> tag or inside the <code>&lt;head&gt;</code> of your page:",
+        "fr": f"Vous avez été invité à installer le script PagePersona sur <strong>{project_name}</strong>. Collez la balise ci-dessous avant la balise <code>&lt;/body&gt;</code> ou dans le <code>&lt;head&gt;</code> de votre page :",
     }
     footers = {
         "en": "The script loads asynchronously and won't slow down your page. Once installed, reply to whoever sent this email to let them know.",
         "fr": "Le script se charge de manière asynchrone et ne ralentira pas votre page. Une fois installé, répondez à la personne qui vous a envoyé cet e-mail pour la prévenir.",
     }
     subject = subjects.get(lang, subjects["en"])
+    script_tag_escaped = script_tag.replace('<', '&lt;').replace('>', '&gt;')
     html = f"""
     <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
       <h2 style="color:#1A56DB">{headings.get(lang, headings['en'])}</h2>
       <p style="color:#334155">{intros.get(lang, intros['en'])}</p>
       <div style="background:#0F172A;border-radius:10px;padding:20px;margin:20px 0">
-        <code style="color:#93c5fd;font-size:13px;word-break:break-all">{script_tag}</code>
+        <code style="color:#93c5fd;font-size:13px;word-break:break-all">{script_tag_escaped}</code>
       </div>
       <p style="color:#64748b;font-size:14px">{footers.get(lang, footers['en'])}</p>
       <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
