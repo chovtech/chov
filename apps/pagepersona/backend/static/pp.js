@@ -264,6 +264,11 @@
     if (hideStyle && hideStyle.parentNode) {
       hideStyle.parentNode.removeChild(hideStyle);
     }
+    // Also remove early-injected FOUC shield from cache (separate instance)
+    var earlyShield = document.getElementById('pp-fouc-shield');
+    if (earlyShield && earlyShield.parentNode) {
+      earlyShield.parentNode.removeChild(earlyShield);
+    }
   }
 
   function fireAction(action) {
