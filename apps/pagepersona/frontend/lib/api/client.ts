@@ -91,7 +91,7 @@ export const projectApi = {
     apiClient.get('/api/projects'),
   get: (id: string) =>
     apiClient.get(`/api/projects/${id}`),
-  update: (id: string, data: { name?: string; status?: string; script_verified?: boolean }) =>
+  update: (id: string, data: { name?: string; status?: string; script_verified?: boolean; page_url?: string; thumbnail_url?: string }) =>
     apiClient.put(`/api/projects/${id}`, data),
   delete: (id: string) =>
     apiClient.delete(`/api/projects/${id}`),
