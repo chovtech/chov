@@ -297,7 +297,13 @@
     "verify_first_picker": "Verify your script installation to use the live picker",
     "thumbnail": "Project Photo",
     "thumbnail_upload": "Upload project photo",
-    "thumbnail_hint": "Click to upload a photo that represents this project"
+    "thumbnail_hint": "Click to upload a photo that represents this project",
+    "installation_send_to_dev": "Send to Developer",
+    "installation_send_to_dev_placeholder": "Developer's email address",
+    "installation_sending": "Sending...",
+    "installation_sent": "Email sent!",
+    "installation_send_error": "Failed to send email. Please try again.",
+    "installation_send_hint": "Don't have access to the code? Send the script tag directly to your developer."
   },
   "rules": {
     "heading": "Personalisation Rules",

@@ -297,7 +297,13 @@
     "verify_first_picker": "Vérifiez l'installation de votre script pour utiliser le sélecteur en direct",
     "thumbnail": "Photo du projet",
     "thumbnail_upload": "Télécharger une photo du projet",
-    "thumbnail_hint": "Cliquez pour télécharger une photo représentant ce projet"
+    "thumbnail_hint": "Cliquez pour télécharger une photo représentant ce projet",
+    "installation_send_to_dev": "Envoyer au développeur",
+    "installation_send_to_dev_placeholder": "Adresse e-mail du développeur",
+    "installation_sending": "Envoi en cours...",
+    "installation_sent": "E-mail envoyé !",
+    "installation_send_error": "Échec de l'envoi. Veuillez réessayer.",
+    "installation_send_hint": "Vous n'avez pas accès au code ? Envoyez le tag directement à votre développeur."
   },
   "rules": {
     "heading": "Règles de personnalisation",

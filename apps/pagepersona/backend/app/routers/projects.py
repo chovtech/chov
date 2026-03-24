@@ -4,6 +4,8 @@ from app.database import get_db
 from app.core.security import get_current_user
 from app.schemas.projects import ProjectCreate, ProjectResponse, ProjectUpdate
 from app.routers.upload import delete_r2_image
+from app.services.email_service import send_install_email
+from pydantic import BaseModel, EmailStr
 from app.services.project_service import (
     create_project, get_projects, get_project,
     update_project, delete_project
@@ -120,3 +122,30 @@ async def delete(
     if not deleted:
         raise HTTPException(status_code=404, detail="Project not found")
     return {"message": "Project deleted"}
+
+
+class SendInstallEmailRequest(BaseModel):
+    developer_email: EmailStr
+
+@router.post("/{project_id}/send-install-email")
+async def send_install_email_endpoint(
+    project_id: str,
+    body: SendInstallEmailRequest,
+    db: asyncpg.Connection = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    workspace = await db.fetchrow(
+        "SELECT id FROM workspaces WHERE owner_id = $1",
+        current_user['id']
+    )
+    if not workspace:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+    project = await get_project(db, project_id, str(workspace['id']))
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    script_tag = f'<script async src="https://cdn.usepagepersona.com/pp.js?id={project["script_id"]}"></script>'
+    lang = current_user.get('language', 'en')
+    sent = send_install_email(body.developer_email, script_tag, project['name'], lang)
+    if not sent:
+        raise HTTPException(status_code=500, detail="Failed to send email")
+    return {"message": "Installation email sent"}

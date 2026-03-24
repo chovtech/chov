@@ -26,6 +26,10 @@ function InstallModal({ project, onClose, onVerified }: { project: Project; onCl
   const [verifying, setVerifying] = useState(false)
   const [verified, setVerified] = useState(project.script_verified)
   const [verifyError, setVerifyError] = useState('')
+  const [devEmail, setDevEmail] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [sendError, setSendError] = useState('')
   const scriptTag = `<script async src="https://cdn.usepagepersona.com/pp.js?id=${project.script_id}"></script>`
   const handleCopy = () => {
     navigator.clipboard.writeText(scriptTag)
@@ -52,6 +56,21 @@ function InstallModal({ project, onClose, onVerified }: { project: Project; onCl
       }
     } finally { setVerifying(false) }
   }
+  const handleSendToDev = async () => {
+    if (!devEmail) return
+    setSending(true)
+    setSendError('')
+    setSent(false)
+    try {
+      await apiClient.post('/api/projects/' + project.id + '/send-install-email', { developer_email: devEmail })
+      setSent(true)
+      setDevEmail('')
+      setTimeout(() => setSent(false), 4000)
+    } catch {
+      setSendError(t('project.installation_send_error'))
+    } finally { setSending(false) }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
       <div className="w-full max-w-[560px] rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
@@ -110,6 +129,38 @@ function InstallModal({ project, onClose, onVerified }: { project: Project; onCl
           <div className="flex gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100 text-blue-800">
             <Icon name="lightbulb" className="text-xl shrink-0 mt-0.5" />
             <p className="text-xs leading-relaxed">{t('project.installation_tip')}</p>
+          </div>
+          <div className="border-t border-slate-100 pt-4 flex flex-col gap-3">
+            <p className="text-xs text-slate-500">{t('project.installation_send_hint')}</p>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={devEmail}
+                onChange={e => setDevEmail(e.target.value)}
+                placeholder={t('project.installation_send_to_dev_placeholder')}
+                className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/30 focus:border-[#1A56DB]"
+              />
+              <button
+                onClick={handleSendToDev}
+                disabled={sending || !devEmail}
+                className="flex items-center gap-1.5 px-4 py-2 bg-[#1A56DB] hover:bg-[#1A56DB]/90 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-all"
+              >
+                <Icon name={sending ? 'sync' : 'send'} className={sending ? 'animate-spin text-sm' : 'text-sm'} />
+                {sending ? t('project.installation_sending') : t('project.installation_send_to_dev')}
+              </button>
+            </div>
+            {sent && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-xl">
+                <Icon name="check_circle" className="text-emerald-500 text-sm" />
+                <p className="text-xs text-emerald-700 font-medium">{t('project.installation_sent')}</p>
+              </div>
+            )}
+            {sendError && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-xl">
+                <Icon name="error" className="text-red-500 text-sm" />
+                <p className="text-xs text-red-600">{sendError}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
