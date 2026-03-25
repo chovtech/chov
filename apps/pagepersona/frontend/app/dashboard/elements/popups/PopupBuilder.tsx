@@ -8,9 +8,9 @@ import { useTranslation } from '@/lib/hooks/useTranslation'
 import { apiClient } from '@/lib/api/client'
 import ImageUploader from '@/components/ui/ImageUploader'
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────
 
-type BlockType = 'image' | 'text' | 'button' | 'embed'
+type BlockType = 'image' | 'text' | 'button' | 'embed' | 'no_thanks' | 'columns'
 
 interface Block {
   id: string
@@ -19,12 +19,15 @@ interface Block {
   image_url?: string
   image_height?: number
   image_fit?: 'cover' | 'contain'
+  image_link?: string
   // text
   text?: string
   font_size?: number
   font_weight?: string
   text_align?: string
   text_color?: string
+  text_italic?: boolean
+  text_underline?: boolean
   // button
   btn_label?: string
   btn_url?: string
@@ -32,103 +35,280 @@ interface Block {
   btn_color?: string
   btn_text_color?: string
   btn_radius?: number
+  btn_bold?: boolean
+  btn_italic?: boolean
+  // no_thanks
+  no_thanks_label?: string
+  no_thanks_color?: string
+  no_thanks_dont_show?: boolean
   // embed
   embed_code?: string
+  // columns
+  col_left?: Block[]
+  col_right?: Block[]
 }
 
 interface PopupConfig {
+  // Layout
+  layout: 'single' | 'two-column'
+  col_split: '50-50' | '40-60' | '60-40'
   position: string
+  // Container
   bg_color: string
+  bg_image: string
+  bg_image_opacity: number
   border_radius: number
   overlay: boolean
   overlay_opacity: number
   padding: number
-  width: number
+  width: number | string
+  height: number | string
+  popup_url: string
+  // Behaviour
   close_button: boolean
   close_on_overlay: boolean
   delay: number
   frequency: string
   animation: string
+  // Blocks
   blocks: Block[]
 }
 
-// ── Constants ────────────────────────────────────────────────────────────────
+// ── Constants ─────────────────────────────────────────────────────────────
 
 const POSITIONS = [
-  { key: 'center',        label: 'Center',         icon: 'filter_center_focus' },
-  { key: 'top_center',    label: 'Top Center',     icon: 'vertical_align_top' },
-  { key: 'top_left',      label: 'Top Left',       icon: 'north_west' },
-  { key: 'top_right',     label: 'Top Right',      icon: 'north_east' },
-  { key: 'bottom_center', label: 'Bottom Center',  icon: 'vertical_align_bottom' },
-  { key: 'bottom_left',   label: 'Bottom Left',    icon: 'south_west' },
-  { key: 'bottom_right',  label: 'Bottom Right',   icon: 'south_east' },
-  { key: 'top_bar',       label: 'Top Bar',        icon: 'border_top' },
-  { key: 'bottom_bar',    label: 'Bottom Bar',     icon: 'border_bottom' },
-  { key: 'fullscreen',    label: 'Full Screen',    icon: 'fullscreen' },
+  { key: 'center',        label: 'Center',        icon: 'filter_center_focus' },
+  { key: 'top_center',    label: 'Top Center',    icon: 'vertical_align_top' },
+  { key: 'top_left',      label: 'Top Left',      icon: 'north_west' },
+  { key: 'top_right',     label: 'Top Right',     icon: 'north_east' },
+  { key: 'bottom_center', label: 'Bottom Center', icon: 'vertical_align_bottom' },
+  { key: 'bottom_left',   label: 'Bottom Left',   icon: 'south_west' },
+  { key: 'bottom_right',  label: 'Bottom Right',  icon: 'south_east' },
+  { key: 'top_bar',       label: 'Top Bar',       icon: 'border_top' },
+  { key: 'bottom_bar',    label: 'Bottom Bar',    icon: 'border_bottom' },
+  { key: 'fullscreen',    label: 'Full Screen',   icon: 'fullscreen' },
 ]
 
 const ELEMENT_TYPES: { type: BlockType; icon: string; label: string }[] = [
-  { type: 'text',   icon: 'title',        label: 'Text' },
-  { type: 'image',  icon: 'image',        label: 'Image' },
-  { type: 'button', icon: 'smart_button', label: 'Button' },
-  { type: 'embed',  icon: 'code',         label: 'Embed' },
+  { type: 'text',      icon: 'title',        label: 'Text' },
+  { type: 'image',     icon: 'image',        label: 'Image' },
+  { type: 'button',    icon: 'smart_button', label: 'Button' },
+  { type: 'embed',     icon: 'code',         label: 'Embed' },
+  { type: 'no_thanks', icon: 'do_not_disturb', label: 'No Thanks' },
+  { type: 'columns',   icon: 'view_column',  label: 'Columns' },
 ]
-
-const TEMPLATES = [
-  {
-    key: 'offer', label: 'Exit Offer',
-    config: {
-      position: 'center', bg_color: '#1A56DB', border_radius: 16,
-      overlay: true, overlay_opacity: 50, padding: 32, width: 420,
-      close_button: true, close_on_overlay: true, delay: 0, frequency: 'once', animation: 'fade',
-      blocks: [
-        { id: 'b1', type: 'text' as BlockType, text: "Wait! Don't leave yet...", font_size: 24, font_weight: '800', text_align: 'center', text_color: '#ffffff' },
-        { id: 'b2', type: 'text' as BlockType, text: 'Grab our exclusive offer before you go.', font_size: 14, font_weight: '400', text_align: 'center', text_color: 'rgba(255,255,255,0.85)' },
-        { id: 'b3', type: 'button' as BlockType, btn_label: 'Claim Offer', btn_url: '', btn_action: 'link' as const, btn_color: '#ffffff', btn_text_color: '#1A56DB', btn_radius: 12 },
-      ]
-    }
-  },
-  {
-    key: 'capture', label: 'Lead Capture',
-    config: {
-      position: 'center', bg_color: '#ffffff', border_radius: 20,
-      overlay: true, overlay_opacity: 55, padding: 36, width: 440,
-      close_button: true, close_on_overlay: true, delay: 3, frequency: 'once', animation: 'zoom',
-      blocks: [
-        { id: 'b1', type: 'image' as BlockType, image_url: '', image_height: 180, image_fit: 'cover' as const },
-        { id: 'b2', type: 'text' as BlockType, text: 'GET 20% OFF', font_size: 28, font_weight: '800', text_align: 'center', text_color: '#0F172A' },
-        { id: 'b3', type: 'text' as BlockType, text: 'Join our newsletter to receive your exclusive discount code.', font_size: 14, font_weight: '400', text_align: 'center', text_color: '#64748b' },
-        { id: 'b4', type: 'button' as BlockType, btn_label: 'Claim Discount', btn_url: '', btn_action: 'link' as const, btn_color: '#1A56DB', btn_text_color: '#ffffff', btn_radius: 12 },
-      ]
-    }
-  },
-  {
-    key: 'announcement', label: 'Announcement Bar',
-    config: {
-      position: 'top_bar', bg_color: '#0F172A', border_radius: 0,
-      overlay: false, overlay_opacity: 0, padding: 12, width: 100,
-      close_button: true, close_on_overlay: false, delay: 0, frequency: 'session', animation: 'slide',
-      blocks: [
-        { id: 'b1', type: 'text' as BlockType, text: '🎉 Special offer — 20% off today only!', font_size: 13, font_weight: '700', text_align: 'center', text_color: '#ffffff' },
-        { id: 'b2', type: 'button' as BlockType, btn_label: 'Shop Now', btn_url: '', btn_action: 'link' as const, btn_color: '#1A56DB', btn_text_color: '#ffffff', btn_radius: 6 },
-      ]
-    }
-  },
-]
-
-const DEFAULT_CONFIG: PopupConfig = {
-  position: 'center', bg_color: '#1A56DB', border_radius: 16,
-  overlay: true, overlay_opacity: 50, padding: 32, width: 420,
-  close_button: true, close_on_overlay: true, delay: 0, frequency: 'once', animation: 'fade',
-  blocks: [
-    { id: 'b1', type: 'text', text: 'Your headline here', font_size: 22, font_weight: '700', text_align: 'center', text_color: '#ffffff' },
-    { id: 'b2', type: 'button', btn_label: 'Click Here', btn_url: '', btn_action: 'link', btn_color: '#ffffff', btn_text_color: '#1A56DB', btn_radius: 10 },
-  ]
-}
 
 function uid() { return Math.random().toString(36).slice(2, 8) }
 
-// ── Main Component ────────────────────────────────────────────────────────────
+const DEFAULT_CONFIG: PopupConfig = {
+  layout: 'single',
+  col_split: '50-50',
+  position: 'center',
+  bg_color: '#1A56DB',
+  bg_image: '',
+  bg_image_opacity: 40,
+  border_radius: 16,
+  overlay: true,
+  overlay_opacity: 50,
+  padding: 32,
+  width: 480,
+  height: 'auto',
+  popup_url: '',
+  close_button: true,
+  close_on_overlay: true,
+  delay: 0,
+  frequency: 'once',
+  animation: 'fade',
+  blocks: [
+    { id: 'b1', type: 'text', text: 'Your headline here', font_size: 24, font_weight: '800', text_align: 'center', text_color: '#ffffff' },
+    { id: 'b2', type: 'button', btn_label: 'Click Here', btn_url: '', btn_action: 'link', btn_color: '#ffffff', btn_text_color: '#1A56DB', btn_radius: 10, btn_bold: true },
+  ]
+}
+
+const TEMPLATES: { key: string; label: string; config: Partial<PopupConfig> }[] = [
+  {
+    key: 'exit_offer',
+    label: 'Exit Offer',
+    config: {
+      layout: 'two-column', col_split: '50-50', position: 'center',
+      bg_color: '#ffffff', bg_image: '', border_radius: 20,
+      overlay: true, overlay_opacity: 60, padding: 0, width: 640, height: 'auto',
+      close_button: true, close_on_overlay: true, delay: 0, frequency: 'once', animation: 'zoom',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'columns', col_left: [
+          { id: uid(), type: 'image', image_url: '', image_height: 340, image_fit: 'cover', image_link: '' },
+        ], col_right: [
+          { id: uid(), type: 'text', text: 'Before You Go!', font_size: 26, font_weight: '800', text_align: 'center', text_color: '#0F172A' },
+          { id: uid(), type: 'text', text: 'Get 15% Off Your Purchase.', font_size: 15, font_weight: '400', text_align: 'center', text_color: '#64748b' },
+          { id: uid(), type: 'button', btn_label: 'Get My Discount', btn_url: '', btn_action: 'link', btn_color: '#14B8A6', btn_text_color: '#ffffff', btn_radius: 10, btn_bold: true },
+          { id: uid(), type: 'no_thanks', no_thanks_label: 'No thanks', no_thanks_color: '#94a3b8', no_thanks_dont_show: false },
+        ]},
+      ]
+    }
+  },
+  {
+    key: 'countdown_offer',
+    label: 'Countdown Offer',
+    config: {
+      layout: 'two-column', col_split: '40-60', position: 'bottom_left',
+      bg_color: '#1e3a6e', bg_image: '', border_radius: 16,
+      overlay: false, overlay_opacity: 0, padding: 0, width: 480, height: 'auto',
+      close_button: true, close_on_overlay: false, delay: 2, frequency: 'session', animation: 'slide',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'columns', col_left: [
+          { id: uid(), type: 'image', image_url: '', image_height: 200, image_fit: 'cover', image_link: '' },
+        ], col_right: [
+          { id: uid(), type: 'text', text: 'Limited Time Offer', font_size: 16, font_weight: '700', text_align: 'left', text_color: '#ffffff' },
+          { id: uid(), type: 'text', text: '01:14:31:01', font_size: 28, font_weight: '800', text_align: 'left', text_color: '#ffffff' },
+          { id: uid(), type: 'text', text: '25% OFF — Today Only', font_size: 13, font_weight: '600', text_align: 'left', text_color: 'rgba(255,255,255,0.7)' },
+          { id: uid(), type: 'button', btn_label: 'Shop Now', btn_url: '', btn_action: 'link', btn_color: '#ffffff', btn_text_color: '#1e3a6e', btn_radius: 8, btn_bold: true },
+          { id: uid(), type: 'no_thanks', no_thanks_label: 'No Thanks', no_thanks_color: 'rgba(255,255,255,0.5)', no_thanks_dont_show: false },
+        ]},
+      ]
+    }
+  },
+  {
+    key: 'announcement',
+    label: 'Announcement Bar',
+    config: {
+      layout: 'single', col_split: '50-50', position: 'top_bar',
+      bg_color: '#0F172A', bg_image: '', border_radius: 0,
+      overlay: false, overlay_opacity: 0, padding: 12, width: '100%', height: 'auto',
+      close_button: true, close_on_overlay: false, delay: 0, frequency: 'session', animation: 'slide',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'text', text: '🎉 Special offer — 20% off today only!', font_size: 13, font_weight: '700', text_align: 'center', text_color: '#ffffff' },
+        { id: uid(), type: 'button', btn_label: 'Shop Now', btn_url: '', btn_action: 'link', btn_color: '#1A56DB', btn_text_color: '#ffffff', btn_radius: 6, btn_bold: true },
+      ]
+    }
+  },
+  {
+    key: 'lead_capture',
+    label: 'Lead Capture',
+    config: {
+      layout: 'single', col_split: '50-50', position: 'center',
+      bg_color: '#ffffff', bg_image: '', border_radius: 20,
+      overlay: true, overlay_opacity: 55, padding: 36, width: 440, height: 'auto',
+      close_button: true, close_on_overlay: true, delay: 3, frequency: 'once', animation: 'zoom',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'image', image_url: '', image_height: 180, image_fit: 'cover', image_link: '' },
+        { id: uid(), type: 'text', text: 'GET 20% OFF', font_size: 28, font_weight: '800', text_align: 'center', text_color: '#0F172A' },
+        { id: uid(), type: 'text', text: 'Join our newsletter and receive your exclusive discount code.', font_size: 14, font_weight: '400', text_align: 'center', text_color: '#64748b' },
+        { id: uid(), type: 'embed', embed_code: '<input type="email" placeholder="Enter your email" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:8px"/>' },
+        { id: uid(), type: 'button', btn_label: 'Claim Discount', btn_url: '', btn_action: 'link', btn_color: '#1A56DB', btn_text_color: '#ffffff', btn_radius: 12, btn_bold: true },
+        { id: uid(), type: 'no_thanks', no_thanks_label: 'No thanks', no_thanks_color: '#94a3b8', no_thanks_dont_show: true },
+      ]
+    }
+  },
+  {
+    key: 'fullscreen_promo',
+    label: 'Fullscreen Promo',
+    config: {
+      layout: 'single', col_split: '50-50', position: 'fullscreen',
+      bg_color: '#1A56DB', bg_image: '', bg_image_opacity: 30, border_radius: 0,
+      overlay: false, overlay_opacity: 0, padding: 48, width: '100%', height: '100%',
+      close_button: true, close_on_overlay: false, delay: 0, frequency: 'once', animation: 'fade',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'text', text: 'EXCLUSIVE OFFER', font_size: 13, font_weight: '700', text_align: 'center', text_color: 'rgba(255,255,255,0.7)' },
+        { id: uid(), type: 'text', text: 'Get 30% Off Everything', font_size: 36, font_weight: '900', text_align: 'center', text_color: '#ffffff' },
+        { id: uid(), type: 'text', text: 'This weekend only. No code needed.', font_size: 16, font_weight: '400', text_align: 'center', text_color: 'rgba(255,255,255,0.8)' },
+        { id: uid(), type: 'button', btn_label: 'Shop The Sale', btn_url: '', btn_action: 'link', btn_color: '#ffffff', btn_text_color: '#1A56DB', btn_radius: 14, btn_bold: true },
+        { id: uid(), type: 'no_thanks', no_thanks_label: 'No thanks, I'll pay full price', no_thanks_color: 'rgba(255,255,255,0.5)', no_thanks_dont_show: false },
+      ]
+    }
+  },
+  {
+    key: 'bottom_bar_cta',
+    label: 'Bottom Bar CTA',
+    config: {
+      layout: 'single', col_split: '50-50', position: 'bottom_bar',
+      bg_color: '#1A56DB', bg_image: '', border_radius: 0,
+      overlay: false, overlay_opacity: 0, padding: 14, width: '100%', height: 'auto',
+      close_button: true, close_on_overlay: false, delay: 5, frequency: 'session', animation: 'slide',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'text', text: '🔥 Flash Sale — Ends in 2 hours!', font_size: 14, font_weight: '700', text_align: 'center', text_color: '#ffffff' },
+        { id: uid(), type: 'button', btn_label: 'Grab the Deal', btn_url: '', btn_action: 'link', btn_color: '#ffffff', btn_text_color: '#1A56DB', btn_radius: 8, btn_bold: true },
+      ]
+    }
+  },
+  {
+    key: 'dark_offer',
+    label: 'Dark Offer',
+    config: {
+      layout: 'single', col_split: '50-50', position: 'center',
+      bg_color: '#0F172A', bg_image: '', border_radius: 20,
+      overlay: true, overlay_opacity: 70, padding: 40, width: 440, height: 'auto',
+      close_button: true, close_on_overlay: true, delay: 0, frequency: 'once', animation: 'fade',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'text', text: '⚡ Limited Offer', font_size: 12, font_weight: '700', text_align: 'center', text_color: '#14B8A6' },
+        { id: uid(), type: 'text', text: 'Save 40% Today', font_size: 32, font_weight: '900', text_align: 'center', text_color: '#ffffff' },
+        { id: uid(), type: 'text', text: 'Use code SAVE40 at checkout. Expires midnight.', font_size: 14, font_weight: '400', text_align: 'center', text_color: 'rgba(255,255,255,0.6)' },
+        { id: uid(), type: 'button', btn_label: 'Claim Offer Now', btn_url: '', btn_action: 'link', btn_color: '#14B8A6', btn_text_color: '#ffffff', btn_radius: 12, btn_bold: true },
+        { id: uid(), type: 'no_thanks', no_thanks_label: 'No thanks', no_thanks_color: 'rgba(255,255,255,0.3)', no_thanks_dont_show: false },
+      ]
+    }
+  },
+  {
+    key: 'slide_in_promo',
+    label: 'Slide-in Promo',
+    config: {
+      layout: 'single', col_split: '50-50', position: 'bottom_right',
+      bg_color: '#ffffff', bg_image: '', border_radius: 16,
+      overlay: false, overlay_opacity: 0, padding: 28, width: 340, height: 'auto',
+      close_button: true, close_on_overlay: false, delay: 4, frequency: 'once', animation: 'slide',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'text', text: '👋 Hey there!', font_size: 18, font_weight: '800', text_align: 'left', text_color: '#0F172A' },
+        { id: uid(), type: 'text', text: 'Before you leave, grab 10% off your first order.', font_size: 14, font_weight: '400', text_align: 'left', text_color: '#64748b' },
+        { id: uid(), type: 'button', btn_label: 'Get 10% Off', btn_url: '', btn_action: 'link', btn_color: '#1A56DB', btn_text_color: '#ffffff', btn_radius: 10, btn_bold: true },
+        { id: uid(), type: 'no_thanks', no_thanks_label: 'No thanks', no_thanks_color: '#94a3b8', no_thanks_dont_show: false },
+      ]
+    }
+  },
+  {
+    key: 'image_only',
+    label: 'Image Banner',
+    config: {
+      layout: 'single', col_split: '50-50', position: 'center',
+      bg_color: '#000000', bg_image: '', border_radius: 12,
+      overlay: true, overlay_opacity: 60, padding: 0, width: 560, height: 'auto',
+      close_button: true, close_on_overlay: true, delay: 0, frequency: 'once', animation: 'zoom',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'image', image_url: '', image_height: 400, image_fit: 'cover', image_link: '' },
+      ]
+    }
+  },
+  {
+    key: 'welcome_back',
+    label: 'Welcome Back',
+    config: {
+      layout: 'two-column', col_split: '60-40', position: 'center',
+      bg_color: '#ffffff', bg_image: '', border_radius: 20,
+      overlay: true, overlay_opacity: 50, padding: 0, width: 600, height: 'auto',
+      close_button: true, close_on_overlay: true, delay: 0, frequency: 'session', animation: 'fade',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'columns', col_left: [
+          { id: uid(), type: 'image', image_url: '', image_height: 360, image_fit: 'cover', image_link: '' },
+        ], col_right: [
+          { id: uid(), type: 'text', text: 'Welcome Back! 👋', font_size: 22, font_weight: '800', text_align: 'left', text_color: '#0F172A' },
+          { id: uid(), type: 'text', text: 'We saved your cart. Complete your purchase today and get free shipping.', font_size: 13, font_weight: '400', text_align: 'left', text_color: '#64748b' },
+          { id: uid(), type: 'button', btn_label: 'Complete Purchase', btn_url: '', btn_action: 'link', btn_color: '#1A56DB', btn_text_color: '#ffffff', btn_radius: 10, btn_bold: true },
+          { id: uid(), type: 'no_thanks', no_thanks_label: 'Maybe later', no_thanks_color: '#94a3b8', no_thanks_dont_show: false },
+        ]},
+      ]
+    }
+  },
+]
+
+// ── Main Component ─────────────────────────────────────────────────────────
 
 interface PopupBuilderProps { popupId?: string }
 
@@ -137,8 +317,9 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
   const router = useRouter()
   const isEdit = !!popupId
   const [name, setName] = useState('')
-  const [config, setConfig] = useState<PopupConfig>({ ...DEFAULT_CONFIG, blocks: [...DEFAULT_CONFIG.blocks] })
+  const [config, setConfig] = useState<PopupConfig>({ ...DEFAULT_CONFIG, blocks: DEFAULT_CONFIG.blocks.map(b => ({...b})) })
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null)
+  const [selectedColSide, setSelectedColSide] = useState<'left' | 'right' | null>(null)
   const [rightPanel, setRightPanel] = useState<'global' | 'behaviour' | 'block'>('global')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -146,7 +327,6 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
   const [loading, setLoading] = useState(isEdit)
   const [showTemplates, setShowTemplates] = useState(!isEdit)
   const [editingName, setEditingName] = useState(false)
-  const nameRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!isEdit) return
@@ -165,35 +345,96 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
   const setC = (key: keyof PopupConfig, value: any) =>
     setConfig(prev => ({ ...prev, [key]: value }))
 
-  const selectedBlock = config.blocks.find(b => b.id === selectedBlockId) || null
-
-  const updateBlock = (id: string, updates: Partial<Block>) =>
-    setConfig(prev => ({ ...prev, blocks: prev.blocks.map(b => b.id === id ? { ...b, ...updates } : b) }))
-
-  const addBlock = (type: BlockType) => {
-    const defaults: Record<BlockType, Partial<Block>> = {
-      text:   { text: 'New text block', font_size: 14, font_weight: '400', text_align: 'left', text_color: config.bg_color === '#ffffff' ? '#0F172A' : '#ffffff' },
-      image:  { image_url: '', image_height: 160, image_fit: 'cover' },
-      button: { btn_label: 'Click Here', btn_url: '', btn_action: 'link', btn_color: '#ffffff', btn_text_color: '#1A56DB', btn_radius: 10 },
-      embed:  { embed_code: '' },
+  // Find selected block (could be nested in columns)
+  const findBlock = (blocks: Block[], id: string): Block | null => {
+    for (const b of blocks) {
+      if (b.id === id) return b
+      if (b.type === 'columns') {
+        const l = findBlock(b.col_left || [], id)
+        if (l) return l
+        const r = findBlock(b.col_right || [], id)
+        if (r) return r
+      }
     }
-    const newBlock: Block = { id: uid(), type, ...defaults[type] }
-    setConfig(prev => ({ ...prev, blocks: [...prev.blocks, newBlock] }))
-    setSelectedBlockId(newBlock.id)
-    setRightPanel('block')
+    return null
   }
 
-  const removeBlock = (id: string) => {
-    setConfig(prev => ({ ...prev, blocks: prev.blocks.filter(b => b.id !== id) }))
-    if (selectedBlockId === id) { setSelectedBlockId(null); setRightPanel('global') }
+  const selectedBlock = selectedBlockId ? findBlock(config.blocks, selectedBlockId) : null
+
+  const updateBlock = (id: string, updates: Partial<Block>, blocks?: Block[]): Block[] => {
+    const src = blocks || config.blocks
+    const updated = src.map(b => {
+      if (b.id === id) return { ...b, ...updates }
+      if (b.type === 'columns') {
+        return {
+          ...b,
+          col_left: updateBlock(id, updates, b.col_left || []),
+          col_right: updateBlock(id, updates, b.col_right || []),
+        }
+      }
+      return b
+    })
+    if (!blocks) setConfig(prev => ({ ...prev, blocks: updated }))
+    return updated
+  }
+
+  const removeBlock = (id: string, blocks?: Block[]): Block[] => {
+    const src = blocks || config.blocks
+    const filtered = src.filter(b => b.id !== id).map(b => {
+      if (b.type === 'columns') {
+        return {
+          ...b,
+          col_left: removeBlock(id, b.col_left || []),
+          col_right: removeBlock(id, b.col_right || []),
+        }
+      }
+      return b
+    })
+    if (!blocks) {
+      setConfig(prev => ({ ...prev, blocks: filtered }))
+      if (selectedBlockId === id) { setSelectedBlockId(null); setRightPanel('global') }
+    }
+    return filtered
+  }
+
+  const addBlock = (type: BlockType, colSide?: 'left' | 'right', colId?: string) => {
+    const defaults: Record<BlockType, Partial<Block>> = {
+      text:      { text: 'New text block', font_size: 14, font_weight: '400', text_align: 'left', text_color: config.bg_color === '#ffffff' ? '#0F172A' : '#ffffff' },
+      image:     { image_url: '', image_height: 200, image_fit: 'cover', image_link: '' },
+      button:    { btn_label: 'Click Here', btn_url: '', btn_action: 'link', btn_color: '#ffffff', btn_text_color: '#1A56DB', btn_radius: 10, btn_bold: true },
+      embed:     { embed_code: '' },
+      no_thanks: { no_thanks_label: 'No thanks', no_thanks_color: '#94a3b8', no_thanks_dont_show: false },
+      columns:   { col_left: [{ id: uid(), type: 'image', image_url: '', image_height: 280, image_fit: 'cover', image_link: '' }], col_right: [{ id: uid(), type: 'text', text: 'Add content here', font_size: 16, font_weight: '700', text_align: 'left', text_color: '#0F172A' }] },
+    }
+    const newBlock: Block = { id: uid(), type, ...defaults[type] }
+
+    if (colSide && colId) {
+      setConfig(prev => ({
+        ...prev,
+        blocks: prev.blocks.map(b => {
+          if (b.id === colId) {
+            return {
+              ...b,
+              [colSide === 'left' ? 'col_left' : 'col_right']: [...(colSide === 'left' ? b.col_left || [] : b.col_right || []), newBlock]
+            }
+          }
+          return b
+        })
+      }))
+    } else {
+      setConfig(prev => ({ ...prev, blocks: [...prev.blocks, newBlock] }))
+    }
+    setSelectedBlockId(newBlock.id)
+    setRightPanel('block')
   }
 
   const moveBlock = (id: string, dir: 'up' | 'down') => {
     setConfig(prev => {
       const blocks = [...prev.blocks]
       const idx = blocks.findIndex(b => b.id === id)
+      if (idx === -1) return prev
       if (dir === 'up' && idx > 0) [blocks[idx-1], blocks[idx]] = [blocks[idx], blocks[idx-1]]
-      if (dir === 'down' && idx < blocks.length - 1) [blocks[idx], blocks[idx+1]] = [blocks[idx+1], blocks[idx]]
+      if (dir === 'down' && idx < blocks.length-1) [blocks[idx], blocks[idx+1]] = [blocks[idx+1], blocks[idx]]
       return { ...prev, blocks }
     })
   }
@@ -216,7 +457,8 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
   }
 
   const applyTemplate = (tpl: typeof TEMPLATES[0]) => {
-    setConfig({ ...DEFAULT_CONFIG, ...tpl.config, blocks: tpl.config.blocks.map(b => ({ ...b })) })
+    const merged = { ...DEFAULT_CONFIG, ...tpl.config }
+    setConfig(merged as PopupConfig)
     if (!name) setName(tpl.label)
     setShowTemplates(false)
     setSelectedBlockId(null)
@@ -234,18 +476,15 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
   return (
     <div className="h-screen bg-slate-100 flex flex-col overflow-hidden">
 
-      {/* ── Top bar ─────────────────────────────────────────────────────── */}
+      {/* Top bar */}
       <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-5 flex-shrink-0 z-50">
         <div className="flex items-center gap-4">
-          {/* Back */}
           <button onClick={() => router.push('/dashboard/elements')} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
             <Icon name="arrow_back" className="text-base" />
           </button>
-          {/* Inline name edit */}
           <div className="flex items-center gap-2">
             {editingName ? (
               <input
-                ref={nameRef}
                 value={name}
                 onChange={e => setName(e.target.value)}
                 onBlur={() => setEditingName(false)}
@@ -278,28 +517,26 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
 
       <div className="flex flex-1 overflow-hidden">
 
-        {/* ── Left — Elements panel ────────────────────────────────────── */}
-        <aside className="w-20 bg-white border-r border-slate-200 flex flex-col items-center py-5 gap-1 flex-shrink-0">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-3">Elements</p>
+        {/* Left — Elements panel */}
+        <aside className="w-20 bg-white border-r border-slate-200 flex flex-col items-center py-4 gap-1 flex-shrink-0">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-2">Elements</p>
           {ELEMENT_TYPES.map(el => (
             <button key={el.type} onClick={() => addBlock(el.type)}
-              className="flex flex-col items-center gap-1 w-14 h-14 rounded-xl hover:bg-[#1A56DB]/5 hover:border-[#1A56DB]/20 border-2 border-transparent text-slate-500 hover:text-[#1A56DB] transition-all justify-center"
+              className="flex flex-col items-center gap-1 w-14 h-14 rounded-xl hover:bg-[#1A56DB]/5 border-2 border-transparent hover:border-[#1A56DB]/20 text-slate-500 hover:text-[#1A56DB] transition-all justify-center"
             >
               <Icon name={el.icon} className="text-xl" />
-              <span className="text-[9px] font-bold uppercase">{el.label}</span>
+              <span className="text-[9px] font-bold uppercase leading-tight text-center">{el.label}</span>
             </button>
           ))}
           <div className="mt-auto flex flex-col items-center gap-1">
-            <button
-              onClick={() => { setSelectedBlockId(null); setRightPanel('global') }}
-              className={"flex flex-col items-center gap-1 w-14 h-14 rounded-xl border-2 transition-all justify-center text-xs font-bold " + (rightPanel === 'global' && !selectedBlockId ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-transparent text-slate-400 hover:text-slate-600')}
+            <button onClick={() => { setSelectedBlockId(null); setRightPanel('global') }}
+              className={"flex flex-col items-center gap-1 w-14 h-14 rounded-xl border-2 transition-all justify-center " + (rightPanel === 'global' ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-transparent text-slate-400 hover:text-slate-600')}
             >
               <Icon name="tune" className="text-xl" />
               <span className="text-[9px] font-bold uppercase">Style</span>
             </button>
-            <button
-              onClick={() => { setSelectedBlockId(null); setRightPanel('behaviour') }}
-              className={"flex flex-col items-center gap-1 w-14 h-14 rounded-xl border-2 transition-all justify-center text-xs font-bold " + (rightPanel === 'behaviour' ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-transparent text-slate-400 hover:text-slate-600')}
+            <button onClick={() => { setSelectedBlockId(null); setRightPanel('behaviour') }}
+              className={"flex flex-col items-center gap-1 w-14 h-14 rounded-xl border-2 transition-all justify-center " + (rightPanel === 'behaviour' ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-transparent text-slate-400 hover:text-slate-600')}
             >
               <Icon name="settings" className="text-xl" />
               <span className="text-[9px] font-bold uppercase">Behav.</span>
@@ -307,31 +544,33 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
           </div>
         </aside>
 
-        {/* ── Center — Canvas ──────────────────────────────────────────── */}
+        {/* Center — Canvas */}
         <main className="flex-1 flex items-center justify-center overflow-auto p-8 relative">
-          {/* grid bg */}
           <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#1A56DB 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
-          {/* Template picker overlay */}
+          {/* Template picker */}
           {showTemplates && (
-            <div className="absolute inset-0 z-40 bg-slate-100/95 flex items-center justify-center p-8">
-              <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 w-full max-w-lg">
+            <div className="absolute inset-0 z-40 bg-slate-100/97 flex items-center justify-center p-8 overflow-auto">
+              <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 w-full max-w-3xl">
                 <div className="flex items-center justify-between mb-5">
                   <div>
-                    <h2 className="text-base font-bold text-slate-900">Start from a template</h2>
-                    <p className="text-xs text-slate-500 mt-0.5">Pick one and customise it, or start blank</p>
+                    <h2 className="text-base font-bold text-slate-900">Choose a template</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">Pick one to customise, or start blank</p>
                   </div>
                   <button onClick={() => setShowTemplates(false)} className="text-xs font-bold text-slate-400 hover:text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors">Start blank</button>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-4 gap-3">
                   {TEMPLATES.map(tpl => (
                     <button key={tpl.key} onClick={() => applyTemplate(tpl)}
                       className="group p-1 rounded-xl border-2 border-slate-100 hover:border-[#1A56DB] transition-all text-left overflow-hidden"
                     >
-                      <div className="h-20 rounded-lg flex items-center justify-center px-2 mb-2" style={{ background: tpl.config.bg_color }}>
-                        <p className="text-white text-[10px] font-bold text-center leading-tight truncate w-full">
-                          {tpl.config.blocks.find(b => b.type === 'text')?.text || tpl.label}
+                      <div className="h-20 rounded-lg flex items-center justify-center px-2 mb-2 relative overflow-hidden" style={{ background: tpl.config.bg_color as string }}>
+                        <p className="text-white text-[10px] font-bold text-center leading-tight w-full truncate px-1">
+                          {(tpl.config.blocks || []).find((b: any) => b.type === 'text')?.text || tpl.label}
                         </p>
+                        {tpl.config.layout === 'two-column' && (
+                          <div className="absolute bottom-1 right-1 px-1 py-0.5 bg-white/20 rounded text-[8px] text-white font-bold">2-col</div>
+                        )}
                       </div>
                       <p className="text-xs font-bold text-slate-700 group-hover:text-[#1A56DB] px-1 pb-1">{tpl.label}</p>
                     </button>
@@ -343,324 +582,97 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
 
           {/* Canvas popup */}
           <div
-            className="relative shadow-2xl"
+            className="relative shadow-2xl overflow-hidden"
             style={{
               background: config.bg_color,
+              backgroundImage: config.bg_image ? `url(${config.bg_image})` : undefined,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
               borderRadius: isBar || isFullscreen ? 0 : config.border_radius,
               padding: isBar ? '10px 20px' : config.padding,
               width: isBar || isFullscreen ? '100%' : config.width,
-              maxWidth: isBar || isFullscreen ? '100%' : config.width,
-              minHeight: isFullscreen ? '480px' : undefined,
+              maxWidth: isBar || isFullscreen ? '100%' : '95vw',
+              minHeight: isFullscreen ? 480 : undefined,
+              height: config.height === 'auto' ? undefined : config.height,
               display: 'flex',
               flexDirection: isBar ? 'row' : 'column',
               alignItems: isBar ? 'center' : 'stretch',
-              gap: isBar ? 12 : 8,
-              flexWrap: isBar ? 'wrap' : undefined,
+              gap: isBar ? 12 : 0,
+              flexWrap: isBar ? 'wrap' as any : undefined,
+              cursor: config.popup_url ? 'pointer' : 'default',
             }}
             onClick={() => { setSelectedBlockId(null); setRightPanel('global') }}
           >
+            {/* bg image overlay */}
+            {config.bg_image && (
+              <div className="absolute inset-0 pointer-events-none" style={{ background: config.bg_color, opacity: config.bg_image_opacity / 100 }} />
+            )}
+
             {/* Close button preview */}
             {config.close_button && (
-              <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/20 flex items-center justify-center">
+              <div className="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-black/20 flex items-center justify-center">
                 <Icon name="close" className="text-white text-sm" />
               </div>
             )}
 
-            {/* Blocks */}
-            {config.blocks.map((block, idx) => (
-              <div
-                key={block.id}
-                onClick={e => { e.stopPropagation(); setSelectedBlockId(block.id); setRightPanel('block') }}
-                className={"relative group cursor-pointer rounded-lg transition-all " + (selectedBlockId === block.id ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent' : 'hover:ring-1 hover:ring-white/50')}
-                style={{ flexShrink: isBar ? 0 : undefined }}
-              >
-                {/* Block controls */}
-                <div className={"absolute -top-3 right-0 flex gap-0.5 z-10 " + (selectedBlockId === block.id ? 'flex' : 'hidden group-hover:flex')}>
-                  <button onClick={e => { e.stopPropagation(); moveBlock(block.id, 'up') }} disabled={idx === 0} className="w-5 h-5 bg-white rounded text-slate-600 text-[10px] flex items-center justify-center disabled:opacity-30 hover:bg-slate-100">↑</button>
-                  <button onClick={e => { e.stopPropagation(); moveBlock(block.id, 'down') }} disabled={idx === config.blocks.length - 1} className="w-5 h-5 bg-white rounded text-slate-600 text-[10px] flex items-center justify-center disabled:opacity-30 hover:bg-slate-100">↓</button>
-                  <button onClick={e => { e.stopPropagation(); removeBlock(block.id) }} className="w-5 h-5 bg-red-500 rounded text-white text-[10px] flex items-center justify-center hover:bg-red-600">✕</button>
-                </div>
-
-                <BlockPreview block={block} isBar={isBar} />
-              </div>
-            ))}
-
-            {/* Add block hint */}
-            {config.blocks.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-10 opacity-50">
-                <Icon name="add_circle" className="text-3xl text-white mb-2" />
-                <p className="text-white text-xs font-medium">Add elements from the left panel</p>
-              </div>
+            {/* Popup URL hint */}
+            {config.popup_url && (
+              <div className="absolute top-3 left-3 z-10 px-2 py-0.5 bg-[#1A56DB]/80 rounded text-white text-[9px] font-bold">Clickable</div>
             )}
+
+            {/* Blocks */}
+            <div className="relative z-10 flex flex-col gap-2" style={{ padding: isBar ? 0 : undefined }}>
+              {config.blocks.map((block, idx) => (
+                <CanvasBlock
+                  key={block.id}
+                  block={block}
+                  idx={idx}
+                  total={config.blocks.length}
+                  isBar={isBar}
+                  selectedBlockId={selectedBlockId}
+                  onSelect={(id) => { setSelectedBlockId(id); setRightPanel('block') }}
+                  onDeselect={() => { setSelectedBlockId(null); setRightPanel('global') }}
+                  onMove={moveBlock}
+                  onRemove={(id) => removeBlock(id)}
+                  onAddToCol={addBlock}
+                  colSplit={config.col_split}
+                />
+              ))}
+              {config.blocks.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-10 opacity-50">
+                  <Icon name="add_circle" className="text-3xl text-white mb-2" />
+                  <p className="text-white text-xs font-medium">Add elements from the left panel</p>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Viewport hint */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur shadow-sm rounded-full border border-slate-100">
             <Icon name="visibility" className="text-slate-400 text-sm" />
-            <span className="text-[11px] font-semibold text-slate-500">Live Preview</span>
-            <span className="text-[11px] text-slate-400">· Click any element to edit</span>
+            <span className="text-[11px] font-semibold text-slate-500">Live Preview · Click any element to edit</span>
           </div>
         </main>
 
-        {/* ── Right — Properties panel ─────────────────────────────────── */}
+        {/* Right — Properties panel */}
         <aside className="w-72 bg-white border-l border-slate-200 flex flex-col flex-shrink-0 overflow-y-auto">
 
           {/* Block properties */}
           {rightPanel === 'block' && selectedBlock && (
-            <div className="p-5 flex flex-col gap-5">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  {selectedBlock.type === 'text' ? 'Text Settings' : selectedBlock.type === 'image' ? 'Image Settings' : selectedBlock.type === 'button' ? 'Button Settings' : 'Embed Settings'}
-                </h3>
-                <button onClick={() => { setSelectedBlockId(null); setRightPanel('global') }} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600">
-                  <Icon name="close" className="text-sm" />
-                </button>
-              </div>
-
-              {/* TEXT */}
-              {selectedBlock.type === 'text' && (
-                <>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Content</label>
-                    <textarea value={selectedBlock.text || ''} onChange={e => updateBlock(selectedBlock.id, { text: e.target.value })} rows={3} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB]" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Size</label>
-                      <input type="number" min={10} max={64} value={selectedBlock.font_size || 14} onChange={e => updateBlock(selectedBlock.id, { font_size: parseInt(e.target.value) })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Weight</label>
-                      <select value={selectedBlock.font_weight || '400'} onChange={e => updateBlock(selectedBlock.id, { font_weight: e.target.value })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20">
-                        <option value="300">Light</option>
-                        <option value="400">Regular</option>
-                        <option value="600">Semibold</option>
-                        <option value="700">Bold</option>
-                        <option value="800">ExtraBold</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Alignment</label>
-                    <div className="flex gap-1">
-                      {['left','center','right'].map(a => (
-                        <button key={a} onClick={() => updateBlock(selectedBlock.id, { text_align: a })}
-                          className={"flex-1 py-2 rounded-lg border-2 text-xs font-bold transition-all " + (selectedBlock.text_align === a ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}
-                        >
-                          <Icon name={'format_align_' + a} className="text-base" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Colour</label>
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-md border border-slate-200" style={{ background: selectedBlock.text_color }} />
-                      <input type="color" value={selectedBlock.text_color || '#ffffff'} onChange={e => updateBlock(selectedBlock.id, { text_color: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* IMAGE */}
-              {selectedBlock.type === 'image' && (
-                <>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Image</label>
-                    <ImageUploader value={selectedBlock.image_url || ''} onChange={url => updateBlock(selectedBlock.id, { image_url: url })} />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Height — {selectedBlock.image_height || 160}px</label>
-                    <input type="range" min={60} max={400} value={selectedBlock.image_height || 160} onChange={e => updateBlock(selectedBlock.id, { image_height: parseInt(e.target.value) })} className="w-full accent-[#1A56DB]" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Fit</label>
-                    <div className="flex gap-2">
-                      {(['cover','contain'] as const).map(f => (
-                        <button key={f} onClick={() => updateBlock(selectedBlock.id, { image_fit: f })}
-                          className={"flex-1 py-2 rounded-lg border-2 text-xs font-bold capitalize transition-all " + (selectedBlock.image_fit === f ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}
-                        >{f}</button>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* BUTTON */}
-              {selectedBlock.type === 'button' && (
-                <>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Label</label>
-                    <input type="text" value={selectedBlock.btn_label || ''} onChange={e => updateBlock(selectedBlock.id, { btn_label: e.target.value })} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Action</label>
-                    <div className="flex gap-2">
-                      {(['link','close'] as const).map(a => (
-                        <button key={a} onClick={() => updateBlock(selectedBlock.id, { btn_action: a })}
-                          className={"flex-1 py-2 rounded-lg border-2 text-xs font-bold capitalize transition-all " + (selectedBlock.btn_action === a ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}
-                        >{a === 'link' ? 'Open URL' : 'Close popup'}</button>
-                      ))}
-                    </div>
-                  </div>
-                  {selectedBlock.btn_action === 'link' && (
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">URL</label>
-                      <input type="url" value={selectedBlock.btn_url || ''} onChange={e => updateBlock(selectedBlock.id, { btn_url: e.target.value })} placeholder="https://..." className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Bg Colour</label>
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-md border border-slate-200" style={{ background: selectedBlock.btn_color }} />
-                      <input type="color" value={selectedBlock.btn_color || '#ffffff'} onChange={e => updateBlock(selectedBlock.id, { btn_color: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Text Colour</label>
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-md border border-slate-200" style={{ background: selectedBlock.btn_text_color }} />
-                      <input type="color" value={selectedBlock.btn_text_color || '#1A56DB'} onChange={e => updateBlock(selectedBlock.id, { btn_text_color: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Border Radius — {selectedBlock.btn_radius || 10}px</label>
-                    <input type="range" min={0} max={32} value={selectedBlock.btn_radius || 10} onChange={e => updateBlock(selectedBlock.id, { btn_radius: parseInt(e.target.value) })} className="w-full accent-[#1A56DB]" />
-                  </div>
-                </>
-              )}
-
-              {/* EMBED */}
-              {selectedBlock.type === 'embed' && (
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">HTML / Embed Code</label>
-                  <textarea value={selectedBlock.embed_code || ''} onChange={e => updateBlock(selectedBlock.id, { embed_code: e.target.value })} rows={6} placeholder="<form>...</form>" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono resize-none focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB]" />
-                  <p className="text-[10px] text-slate-400 mt-1">Paste Mailchimp, ConvertKit, or any HTML form here.</p>
-                </div>
-              )}
-            </div>
+            <BlockProperties
+              block={selectedBlock}
+              onUpdate={(updates) => updateBlock(selectedBlock.id, updates)}
+              onClose={() => { setSelectedBlockId(null); setRightPanel('global') }}
+            />
           )}
 
-          {/* Global — Popup Style */}
-          {(rightPanel === 'global' || !selectedBlock) && rightPanel !== 'behaviour' && (
-            <div className="p-5 flex flex-col gap-5">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Global Settings</h3>
-
-              <div className="flex items-center justify-between">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Background</label>
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-md border border-slate-200" style={{ background: config.bg_color }} />
-                  <input type="color" value={config.bg_color} onChange={e => setC('bg_color', e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-                </div>
-              </div>
-
-              {!isBar && !isFullscreen && (
-                <>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Width — {config.width}px</label>
-                    <input type="range" min={280} max={640} value={config.width} onChange={e => setC('width', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Padding — {config.padding}px</label>
-                    <input type="range" min={8} max={64} value={config.padding} onChange={e => setC('padding', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Border Radius — {config.border_radius}px</label>
-                    <input type="range" min={0} max={40} value={config.border_radius} onChange={e => setC('border_radius', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Overlay</label>
-                    <button onClick={() => setC('overlay', !config.overlay)} className={"w-10 h-5 rounded-full transition-colors relative " + (config.overlay ? 'bg-[#1A56DB]' : 'bg-slate-200')}>
-                      <span className={"absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all " + (config.overlay ? 'left-5' : 'left-0.5')} />
-                    </button>
-                  </div>
-                  {config.overlay && (
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Overlay Opacity — {config.overlay_opacity}%</label>
-                      <input type="range" min={10} max={90} value={config.overlay_opacity} onChange={e => setC('overlay_opacity', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
-                    </div>
-                  )}
-                </>
-              )}
-
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Position</label>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {POSITIONS.map(pos => (
-                    <button key={pos.key} onClick={() => setC('position', pos.key)}
-                      className={"flex items-center gap-2 px-2.5 py-2 rounded-lg border-2 text-xs font-medium transition-all " + (config.position === pos.key ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}
-                    >
-                      <Icon name={pos.icon} className="text-sm" />
-                      <span className="text-[10px]">{pos.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Animation</label>
-                <div className="flex flex-col gap-1.5">
-                  {[{k:'fade',l:'Fade In'},{k:'slide',l:'Slide Up'},{k:'zoom',l:'Zoom In'}].map(a => (
-                    <button key={a.k} onClick={() => setC('animation', a.k)}
-                      className={"flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-xs font-medium transition-all " + (config.animation === a.k ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}
-                    >
-                      <Icon name={config.animation === a.k ? 'radio_button_checked' : 'radio_button_unchecked'} className="text-sm" />
-                      {a.l}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+          {/* Global style */}
+          {rightPanel === 'global' && (
+            <GlobalProperties config={config} setC={setC} isBar={isBar} isFullscreen={isFullscreen} />
           )}
 
-          {/* Behaviour panel */}
+          {/* Behaviour */}
           {rightPanel === 'behaviour' && (
-            <div className="p-5 flex flex-col gap-5">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Behaviour</h3>
-
-              <div className="flex items-center justify-between">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Close Button</label>
-                <button onClick={() => setC('close_button', !config.close_button)} className={"w-10 h-5 rounded-full transition-colors relative " + (config.close_button ? 'bg-[#1A56DB]' : 'bg-slate-200')}>
-                  <span className={"absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all " + (config.close_button ? 'left-5' : 'left-0.5')} />
-                </button>
-              </div>
-              {!isBar && (
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Close on Overlay</label>
-                  <button onClick={() => setC('close_on_overlay', !config.close_on_overlay)} className={"w-10 h-5 rounded-full transition-colors relative " + (config.close_on_overlay ? 'bg-[#1A56DB]' : 'bg-slate-200')}>
-                    <span className={"absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all " + (config.close_on_overlay ? 'left-5' : 'left-0.5')} />
-                  </button>
-                </div>
-              )}
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Delay — {config.delay}s</label>
-                <input type="range" min={0} max={30} value={config.delay} onChange={e => setC('delay', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Frequency</label>
-                <div className="flex flex-col gap-1.5">
-                  {[{k:'every',l:'Every visit'},{k:'once',l:'Once per browser'},{k:'session',l:'Once per session'}].map(f => (
-                    <button key={f.k} onClick={() => setC('frequency', f.k)}
-                      className={"flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 text-xs font-medium transition-all " + (config.frequency === f.k ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}
-                    >
-                      <Icon name={config.frequency === f.k ? 'radio_button_checked' : 'radio_button_unchecked'} className="text-sm" />
-                      {f.l}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Live status panel */}
-              <div className="mt-4 p-4 bg-[#0F172A] rounded-xl">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Live Status</span>
-                  <div className="w-2 h-2 rounded-full bg-[#14B8A6] animate-pulse" />
-                </div>
-                <p className="text-[11px] text-slate-300 leading-relaxed">
-                  {config.delay > 0 ? `Popup shows after ${config.delay}s delay.` : 'Popup shows immediately.'} Frequency: {config.frequency === 'once' ? 'once per browser' : config.frequency === 'session' ? 'once per session' : 'every visit'}.
-                </p>
-              </div>
-            </div>
+            <BehaviourProperties config={config} setC={setC} isBar={isBar} />
           )}
         </aside>
       </div>
@@ -668,39 +680,509 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
   )
 }
 
-// ── Block Preview ─────────────────────────────────────────────────────────────
+// ── Canvas Block ──────────────────────────────────────────────────────────
+
+function CanvasBlock({ block, idx, total, isBar, selectedBlockId, onSelect, onDeselect, onMove, onRemove, onAddToCol, colSplit }: any) {
+  const isSelected = selectedBlockId === block.id
+
+  if (block.type === 'columns') {
+    const [leftPct, rightPct] = (colSplit || '50-50').split('-').map(Number)
+    return (
+      <div className="flex w-full" style={{ gap: 0 }}>
+        {/* Left column */}
+        <div style={{ width: leftPct + '%' }} className="relative">
+          <div className="absolute top-1 left-1 z-10 text-[9px] font-bold text-white/60 bg-black/20 px-1 rounded">LEFT</div>
+          {(block.col_left || []).map((b: Block) => (
+            <CanvasBlock key={b.id} block={b} idx={0} total={1} isBar={false}
+              selectedBlockId={selectedBlockId} onSelect={onSelect} onDeselect={onDeselect}
+              onMove={() => {}} onRemove={onRemove} onAddToCol={onAddToCol} colSplit={colSplit}
+            />
+          ))}
+          <button onClick={() => onAddToCol('image', 'left', block.id)}
+            className="w-full py-1.5 text-[10px] font-bold text-white/50 hover:text-white/80 border border-dashed border-white/20 hover:border-white/40 rounded transition-all mt-1">
+            + Add to left
+          </button>
+        </div>
+        {/* Right column */}
+        <div style={{ width: rightPct + '%' }} className="relative flex flex-col gap-2 p-4">
+          <div className="absolute top-1 right-1 z-10 text-[9px] font-bold text-slate-400 bg-black/10 px-1 rounded">RIGHT</div>
+          {(block.col_right || []).map((b: Block) => (
+            <CanvasBlock key={b.id} block={b} idx={0} total={1} isBar={false}
+              selectedBlockId={selectedBlockId} onSelect={onSelect} onDeselect={onDeselect}
+              onMove={() => {}} onRemove={onRemove} onAddToCol={onAddToCol} colSplit={colSplit}
+            />
+          ))}
+          <button onClick={() => onAddToCol('text', 'right', block.id)}
+            className="w-full py-1.5 text-[10px] font-bold text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 hover:border-slate-400 rounded transition-all mt-1">
+            + Add to right
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      onClick={e => { e.stopPropagation(); onSelect(block.id) }}
+      className={"relative group cursor-pointer rounded-lg transition-all " + (isSelected ? 'ring-2 ring-white ring-offset-1' : 'hover:ring-1 hover:ring-white/40')}
+    >
+      {isSelected && (
+        <div className="absolute -top-3 right-0 flex gap-0.5 z-20">
+          <button onClick={e => { e.stopPropagation(); onMove(block.id, 'up') }} disabled={idx === 0} className="w-5 h-5 bg-white rounded text-slate-600 text-[10px] flex items-center justify-center disabled:opacity-30 hover:bg-slate-100">↑</button>
+          <button onClick={e => { e.stopPropagation(); onMove(block.id, 'down') }} disabled={idx === total-1} className="w-5 h-5 bg-white rounded text-slate-600 text-[10px] flex items-center justify-center disabled:opacity-30 hover:bg-slate-100">↓</button>
+          <button onClick={e => { e.stopPropagation(); onRemove(block.id) }} className="w-5 h-5 bg-red-500 rounded text-white text-[10px] flex items-center justify-center hover:bg-red-600">✕</button>
+        </div>
+      )}
+      <BlockPreview block={block} isBar={isBar} />
+    </div>
+  )
+}
+
+// ── Block Preview ─────────────────────────────────────────────────────────
 
 function BlockPreview({ block, isBar }: { block: Block; isBar: boolean }) {
   switch (block.type) {
     case 'image':
       return block.image_url ? (
-        <img src={block.image_url} alt="" style={{ width: '100%', height: block.image_height || 160, objectFit: block.image_fit || 'cover', display: 'block', borderRadius: 8 }} />
+        <img src={block.image_url} alt="" style={{ width: '100%', height: block.image_height || 160, objectFit: block.image_fit || 'cover', display: 'block' }} />
       ) : (
-        <div style={{ width: '100%', height: block.image_height || 160, background: 'rgba(255,255,255,0.15)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(255,255,255,0.3)' }}>
-          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600 }}>Click to upload image</span>
+        <div style={{ width: '100%', height: block.image_height || 160, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(255,255,255,0.25)' }}>
+          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 600 }}>Click to upload image</span>
         </div>
       )
     case 'text':
       return (
-        <p style={{ fontSize: block.font_size || 14, fontWeight: block.font_weight || '400', textAlign: (block.text_align as any) || 'left', color: block.text_color || '#ffffff', margin: 0, lineHeight: 1.5 }}>
+        <p style={{
+          fontSize: block.font_size || 14,
+          fontWeight: block.font_weight || '400',
+          textAlign: (block.text_align as any) || 'left',
+          color: block.text_color || '#ffffff',
+          fontStyle: block.text_italic ? 'italic' : 'normal',
+          textDecoration: block.text_underline ? 'underline' : 'none',
+          margin: 0, lineHeight: 1.5, padding: '2px 0',
+        }}>
           {block.text || 'Text block'}
         </p>
       )
     case 'button':
       return (
         <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: 4 }}>
-          <span style={{ display: 'inline-block', background: block.btn_color || '#ffffff', color: block.btn_text_color || '#1A56DB', padding: '10px 24px', borderRadius: block.btn_radius || 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', width: isBar ? 'auto' : '100%', textAlign: 'center' }}>
+          <span style={{
+            display: 'inline-block',
+            background: block.btn_color || '#ffffff',
+            color: block.btn_text_color || '#1A56DB',
+            padding: '10px 24px',
+            borderRadius: block.btn_radius || 10,
+            fontWeight: block.btn_bold ? 700 : 400,
+            fontStyle: block.btn_italic ? 'italic' : 'normal',
+            fontSize: 14,
+            cursor: 'pointer',
+            width: isBar ? 'auto' : '100%',
+            textAlign: 'center',
+          }}>
             {block.btn_label || 'Button'}
+          </span>
+        </div>
+      )
+    case 'no_thanks':
+      return (
+        <div style={{ textAlign: 'center', padding: '4px 0' }}>
+          <span style={{ color: block.no_thanks_color || '#94a3b8', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>
+            {block.no_thanks_label || 'No thanks'}
           </span>
         </div>
       )
     case 'embed':
       return (
-        <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 8, padding: '10px 12px', border: '1px dashed rgba(255,255,255,0.3)' }}>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: 600, margin: 0 }}>{block.embed_code ? 'HTML Embed (rendered on live page)' : 'Paste embed code in the right panel'}</p>
+        <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 8, padding: '10px 12px', border: '1px dashed rgba(255,255,255,0.25)' }}>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: 600, margin: 0 }}>
+            {block.embed_code ? 'HTML Embed' : 'Paste embed code in right panel'}
+          </p>
         </div>
       )
     default:
       return null
   }
+}
+
+// ── Block Properties Panel ────────────────────────────────────────────────
+
+function BlockProperties({ block, onUpdate, onClose }: { block: Block; onUpdate: (u: Partial<Block>) => void; onClose: () => void }) {
+  const labels: Record<string, string> = { text: 'Text Settings', image: 'Image Settings', button: 'Button Settings', embed: 'Embed Settings', no_thanks: 'No Thanks Settings', columns: 'Columns' }
+
+  return (
+    <div className="p-5 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">{labels[block.type] || 'Block'}</h3>
+        <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400"><Icon name="close" className="text-sm" /></button>
+      </div>
+
+      {/* TEXT */}
+      {block.type === 'text' && (
+        <>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Content</label>
+            <textarea value={block.text || ''} onChange={e => onUpdate({ text: e.target.value })} rows={3}
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB]" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Size</label>
+              <input type="number" min={10} max={80} value={block.font_size || 14} onChange={e => onUpdate({ font_size: parseInt(e.target.value) })}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Weight</label>
+              <select value={block.font_weight || '400'} onChange={e => onUpdate({ font_weight: e.target.value })}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20">
+                <option value="300">Light</option>
+                <option value="400">Regular</option>
+                <option value="600">Semibold</option>
+                <option value="700">Bold</option>
+                <option value="800">ExtraBold</option>
+                <option value="900">Black</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Format</label>
+            <div className="flex gap-1">
+              <button onClick={() => onUpdate({ text_italic: !block.text_italic })}
+                className={"flex-1 py-2 rounded-lg border-2 text-sm font-bold transition-all italic " + (block.text_italic ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500')}>I</button>
+              <button onClick={() => onUpdate({ text_underline: !block.text_underline })}
+                className={"flex-1 py-2 rounded-lg border-2 text-sm font-bold transition-all underline " + (block.text_underline ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500')}>U</button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Alignment</label>
+            <div className="flex gap-1">
+              {['left','center','right'].map(a => (
+                <button key={a} onClick={() => onUpdate({ text_align: a })}
+                  className={"flex-1 py-2 rounded-lg border-2 transition-all " + (block.text_align === a ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-400 hover:border-slate-300')}>
+                  <Icon name={'format_align_' + a} className="text-base" />
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Colour</label>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md border border-slate-200" style={{ background: block.text_color }} />
+              <input type="color" value={block.text_color || '#ffffff'} onChange={e => onUpdate({ text_color: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* IMAGE */}
+      {block.type === 'image' && (
+        <>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Image</label>
+            <ImageUploader value={block.image_url || ''} onChange={url => onUpdate({ image_url: url })} />
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Height — {block.image_height || 160}px</label>
+            <input type="range" min={60} max={600} value={block.image_height || 160} onChange={e => onUpdate({ image_height: parseInt(e.target.value) })} className="w-full accent-[#1A56DB]" />
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Fit</label>
+            <div className="flex gap-2">
+              {(['cover','contain'] as const).map(f => (
+                <button key={f} onClick={() => onUpdate({ image_fit: f })}
+                  className={"flex-1 py-2 rounded-lg border-2 text-xs font-bold capitalize transition-all " + (block.image_fit === f ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Link URL (optional)</label>
+            <input type="url" value={block.image_link || ''} onChange={e => onUpdate({ image_link: e.target.value })} placeholder="https://..."
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+          </div>
+        </>
+      )}
+
+      {/* BUTTON */}
+      {block.type === 'button' && (
+        <>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Label</label>
+            <input type="text" value={block.btn_label || ''} onChange={e => onUpdate({ btn_label: e.target.value })}
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Format</label>
+            <div className="flex gap-1">
+              <button onClick={() => onUpdate({ btn_bold: !block.btn_bold })}
+                className={"flex-1 py-2 rounded-lg border-2 text-sm font-black transition-all " + (block.btn_bold ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500')}>B</button>
+              <button onClick={() => onUpdate({ btn_italic: !block.btn_italic })}
+                className={"flex-1 py-2 rounded-lg border-2 text-sm font-bold italic transition-all " + (block.btn_italic ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500')}>I</button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Action</label>
+            <div className="flex gap-2">
+              {(['link','close'] as const).map(a => (
+                <button key={a} onClick={() => onUpdate({ btn_action: a })}
+                  className={"flex-1 py-2 rounded-lg border-2 text-xs font-bold capitalize transition-all " + (block.btn_action === a ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
+                  {a === 'link' ? 'Open URL' : 'Close popup'}
+                </button>
+              ))}
+            </div>
+          </div>
+          {block.btn_action === 'link' && (
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">URL</label>
+              <input type="url" value={block.btn_url || ''} onChange={e => onUpdate({ btn_url: e.target.value })} placeholder="https://..."
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+            </div>
+          )}
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Bg Colour</label>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md border border-slate-200" style={{ background: block.btn_color }} />
+              <input type="color" value={block.btn_color || '#ffffff'} onChange={e => onUpdate({ btn_color: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Text Colour</label>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md border border-slate-200" style={{ background: block.btn_text_color }} />
+              <input type="color" value={block.btn_text_color || '#1A56DB'} onChange={e => onUpdate({ btn_text_color: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Border Radius — {block.btn_radius || 10}px</label>
+            <input type="range" min={0} max={32} value={block.btn_radius || 10} onChange={e => onUpdate({ btn_radius: parseInt(e.target.value) })} className="w-full accent-[#1A56DB]" />
+          </div>
+        </>
+      )}
+
+      {/* NO THANKS */}
+      {block.type === 'no_thanks' && (
+        <>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Label</label>
+            <input type="text" value={block.no_thanks_label || 'No thanks'} onChange={e => onUpdate({ no_thanks_label: e.target.value })}
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+          </div>
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Colour</label>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md border border-slate-200" style={{ background: block.no_thanks_color || '#94a3b8' }} />
+              <input type="color" value={block.no_thanks_color || '#94a3b8'} onChange={e => onUpdate({ no_thanks_color: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Don't show again</label>
+            <button onClick={() => onUpdate({ no_thanks_dont_show: !block.no_thanks_dont_show })}
+              className={"w-10 h-5 rounded-full transition-colors relative " + (block.no_thanks_dont_show ? 'bg-[#1A56DB]' : 'bg-slate-200')}>
+              <span className={"absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all " + (block.no_thanks_dont_show ? 'left-5' : 'left-0.5')} />
+            </button>
+          </div>
+          <p className="text-[10px] text-slate-400">When enabled, clicking this hides the popup permanently for this visitor.</p>
+        </>
+      )}
+
+      {/* EMBED */}
+      {block.type === 'embed' && (
+        <div>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">HTML / Embed Code</label>
+          <textarea value={block.embed_code || ''} onChange={e => onUpdate({ embed_code: e.target.value })} rows={7}
+            placeholder="<form>...</form>" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono resize-none focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB]" />
+          <p className="text-[10px] text-slate-400 mt-1">Paste Mailchimp, ConvertKit, or any HTML here.</p>
+        </div>
+      )}
+
+      {/* COLUMNS */}
+      {block.type === 'columns' && (
+        <p className="text-xs text-slate-500">Click elements inside the columns to edit them. Use the buttons on the canvas to add more blocks to each column.</p>
+      )}
+    </div>
+  )
+}
+
+// ── Global Properties ─────────────────────────────────────────────────────
+
+function GlobalProperties({ config, setC, isBar, isFullscreen }: any) {
+  return (
+    <div className="p-5 flex flex-col gap-4">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Global Settings</h3>
+
+      {/* Layout */}
+      <div>
+        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Layout</label>
+        <div className="flex gap-2">
+          {([{k:'single',l:'Single',i:'view_stream'},{k:'two-column',l:'Two Column',i:'view_column'}]).map(l => (
+            <button key={l.k} onClick={() => setC('layout', l.k)}
+              className={"flex-1 flex items-center gap-1.5 justify-center py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.layout === l.k ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
+              <Icon name={l.i} className="text-sm" />{l.l}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {config.layout === 'two-column' && (
+        <div>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Column Split</label>
+          <div className="flex flex-col gap-1.5">
+            {(['50-50','40-60','60-40'] as const).map(s => (
+              <button key={s} onClick={() => setC('col_split', s)}
+                className={"flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.col_split === s ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
+                <Icon name={config.col_split === s ? 'radio_button_checked' : 'radio_button_unchecked'} className="text-sm" />
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Background</label>
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-md border border-slate-200" style={{ background: config.bg_color }} />
+          <input type="color" value={config.bg_color} onChange={e => setC('bg_color', e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Background Image</label>
+        <ImageUploader value={config.bg_image || ''} onChange={url => setC('bg_image', url)} />
+        {config.bg_image && (
+          <div className="mt-2">
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Colour Overlay — {config.bg_image_opacity || 40}%</label>
+            <input type="range" min={0} max={90} value={config.bg_image_opacity || 40} onChange={e => setC('bg_image_opacity', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
+          </div>
+        )}
+      </div>
+
+      {!isBar && !isFullscreen && (
+        <>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Width</label>
+            <div className="flex gap-2">
+              <input type="number" min={200} max={1200} value={typeof config.width === 'number' ? config.width : 480}
+                onChange={e => setC('width', parseInt(e.target.value))}
+                className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+              <button onClick={() => setC('width', config.width === '100%' ? 480 : '100%')}
+                className={"px-2 py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.width === '100%' ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500')}>100%</button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Height</label>
+            <div className="flex gap-2">
+              <input type="number" min={100} max={1000}
+                value={typeof config.height === 'number' ? config.height : ''}
+                placeholder="Auto"
+                onChange={e => setC('height', e.target.value ? parseInt(e.target.value) : 'auto')}
+                className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+              <button onClick={() => setC('height', config.height === '100%' ? 'auto' : '100%')}
+                className={"px-2 py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.height === '100%' ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500')}>100%</button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Padding — {config.padding}px</label>
+            <input type="range" min={0} max={80} value={config.padding} onChange={e => setC('padding', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Border Radius — {config.border_radius}px</label>
+            <input type="range" min={0} max={40} value={config.border_radius} onChange={e => setC('border_radius', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
+          </div>
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Overlay</label>
+            <button onClick={() => setC('overlay', !config.overlay)} className={"w-10 h-5 rounded-full transition-colors relative " + (config.overlay ? 'bg-[#1A56DB]' : 'bg-slate-200')}>
+              <span className={"absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all " + (config.overlay ? 'left-5' : 'left-0.5')} />
+            </button>
+          </div>
+          {config.overlay && (
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Overlay Opacity — {config.overlay_opacity}%</label>
+              <input type="range" min={10} max={90} value={config.overlay_opacity} onChange={e => setC('overlay_opacity', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
+            </div>
+          )}
+        </>
+      )}
+
+      <div>
+        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Popup Link (click anywhere)</label>
+        <input type="url" value={config.popup_url || ''} onChange={e => setC('popup_url', e.target.value)} placeholder="https://... (optional)"
+          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+      </div>
+
+      <div>
+        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Position</label>
+        <div className="grid grid-cols-2 gap-1.5">
+          {POSITIONS.map(pos => (
+            <button key={pos.key} onClick={() => setC('position', pos.key)}
+              className={"flex items-center gap-2 px-2.5 py-2 rounded-lg border-2 text-xs font-medium transition-all " + (config.position === pos.key ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
+              <Icon name={pos.icon} className="text-sm" />
+              <span className="text-[10px]">{pos.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Animation</label>
+        <div className="flex flex-col gap-1.5">
+          {[{k:'fade',l:'Fade In'},{k:'slide',l:'Slide Up'},{k:'zoom',l:'Zoom In'}].map(a => (
+            <button key={a.k} onClick={() => setC('animation', a.k)}
+              className={"flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-xs font-medium transition-all " + (config.animation === a.k ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
+              <Icon name={config.animation === a.k ? 'radio_button_checked' : 'radio_button_unchecked'} className="text-sm" />{a.l}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Behaviour Properties ──────────────────────────────────────────────────
+
+function BehaviourProperties({ config, setC, isBar }: any) {
+  return (
+    <div className="p-5 flex flex-col gap-4">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Behaviour</h3>
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Close Button</label>
+        <button onClick={() => setC('close_button', !config.close_button)} className={"w-10 h-5 rounded-full transition-colors relative " + (config.close_button ? 'bg-[#1A56DB]' : 'bg-slate-200')}>
+          <span className={"absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all " + (config.close_button ? 'left-5' : 'left-0.5')} />
+        </button>
+      </div>
+      {!isBar && (
+        <div className="flex items-center justify-between">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Close on Overlay</label>
+          <button onClick={() => setC('close_on_overlay', !config.close_on_overlay)} className={"w-10 h-5 rounded-full transition-colors relative " + (config.close_on_overlay ? 'bg-[#1A56DB]' : 'bg-slate-200')}>
+            <span className={"absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all " + (config.close_on_overlay ? 'left-5' : 'left-0.5')} />
+          </button>
+        </div>
+      )}
+      <div>
+        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Delay — {config.delay}s</label>
+        <input type="range" min={0} max={30} value={config.delay} onChange={e => setC('delay', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
+      </div>
+      <div>
+        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Frequency</label>
+        <div className="flex flex-col gap-1.5">
+          {[{k:'every',l:'Every visit'},{k:'once',l:'Once per browser'},{k:'session',l:'Once per session'}].map(f => (
+            <button key={f.k} onClick={() => setC('frequency', f.k)}
+              className={"flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 text-xs font-medium transition-all " + (config.frequency === f.k ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
+              <Icon name={config.frequency === f.k ? 'radio_button_checked' : 'radio_button_unchecked'} className="text-sm" />{f.l}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="mt-2 p-4 bg-[#0F172A] rounded-xl">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Live Status</span>
+          <div className="w-2 h-2 rounded-full bg-[#14B8A6] animate-pulse" />
+        </div>
+        <p className="text-[11px] text-slate-300 leading-relaxed">
+          {config.delay > 0 ? `Shows after ${config.delay}s.` : 'Shows immediately.'} {config.frequency === 'once' ? 'Once per browser.' : config.frequency === 'session' ? 'Once per session.' : 'Every visit.'}
+        </p>
+      </div>
+    </div>
+  )
 }

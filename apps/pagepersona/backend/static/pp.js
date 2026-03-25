@@ -379,6 +379,13 @@
       fullscreen:    'position:absolute;inset:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column',
     };
 
+    // bg image
+    if (c.bg_image) {
+      container.style.backgroundImage = 'url(' + c.bg_image + ')';
+      container.style.backgroundSize = 'cover';
+      container.style.backgroundPosition = 'center';
+    }
+
     var box = document.createElement('div');
     var widthStyle = isBar || isFullscreen ? '' : ';width:' + (c.width || 420) + 'px;max-width:95vw';
     box.style.cssText = (posStyles[c.position] || posStyles.center) + widthStyle +
@@ -433,6 +440,13 @@
       }
     }
 
+    if (c.popup_url) {
+      box.style.cursor = 'pointer';
+      box.addEventListener('click', function(e) {
+        if (e.target === box) window.open(c.popup_url, '_blank');
+      });
+    }
+
     container.appendChild(box);
     document.body.appendChild(container);
   }
@@ -445,18 +459,27 @@
           ';font-weight:' + (block.font_weight || '400') +
           ';text-align:' + (block.text_align || 'left') +
           ';color:' + (block.text_color || '#ffffff') +
-          ';line-height:1.5';
+          ';line-height:1.5' +
+          (block.text_italic ? ';font-style:italic' : '') +
+          (block.text_underline ? ';text-decoration:underline' : '');
         el.textContent = resolveTokens(block.text || '');
         return el;
       }
       case 'image': {
         if (!block.image_url) return null;
-        var el = document.createElement('img');
-        el.src = block.image_url;
-        el.style.cssText = 'width:100%;height:' + (block.image_height || 160) + 'px' +
+        var img = document.createElement('img');
+        img.src = block.image_url;
+        img.style.cssText = 'width:100%;height:' + (block.image_height || 160) + 'px' +
           ';object-fit:' + (block.image_fit || 'cover') +
-          ';display:block;border-radius:8px';
-        return el;
+          ';display:block';
+        if (block.image_link) {
+          var a = document.createElement('a');
+          a.href = block.image_link;
+          a.target = '_blank';
+          a.appendChild(img);
+          return a;
+        }
+        return img;
       }
       case 'button': {
         var el;
@@ -472,7 +495,25 @@
         el.style.cssText = 'display:block;text-align:center;background:' + (block.btn_color || '#ffffff') +
           ';color:' + (block.btn_text_color || '#1A56DB') +
           ';padding:10px 20px;border-radius:' + (block.btn_radius || 10) + 'px' +
-          ';font-weight:700;font-size:14px;text-decoration:none;cursor:pointer;border:none;width:' + (isBar ? 'auto' : '100%');
+          ';font-weight:' + (block.btn_bold ? '700' : '400') +
+          ';font-style:' + (block.btn_italic ? 'italic' : 'normal') +
+          ';font-size:14px;text-decoration:none;cursor:pointer;border:none;width:' + (isBar ? 'auto' : '100%');
+        return el;
+      }
+      case 'no_thanks': {
+        var el = document.createElement('div');
+        el.style.cssText = 'text-align:center;padding:4px 0';
+        var span = document.createElement('span');
+        span.textContent = block.no_thanks_label || 'No thanks';
+        span.style.cssText = 'color:' + (block.no_thanks_color || '#94a3b8') +
+          ';font-size:12px;cursor:pointer;text-decoration:underline';
+        span.addEventListener('click', function() {
+          if (block.no_thanks_dont_show) {
+            localStorage.setItem('pp_popup_dismissed', '1');
+          }
+          container.remove();
+        });
+        el.appendChild(span);
         return el;
       }
       case 'embed': {
@@ -480,6 +521,29 @@
         var el = document.createElement('div');
         el.innerHTML = block.embed_code;
         return el;
+      }
+      case 'columns': {
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;width:100%';
+        var split = (c && c.col_split) ? c.col_split : '50-50';
+        var splitParts = split.split('-');
+        var leftPct = parseInt(splitParts[0]) || 50;
+        var rightPct = parseInt(splitParts[1]) || 50;
+        var left = document.createElement('div');
+        left.style.width = leftPct + '%';
+        (block.col_left || []).forEach(function(b) {
+          var el = _renderBlock(b, false, container);
+          if (el) left.appendChild(el);
+        });
+        var right = document.createElement('div');
+        right.style.cssText = 'width:' + rightPct + '%;display:flex;flex-direction:column;gap:10px;padding:24px';
+        (block.col_right || []).forEach(function(b) {
+          var el = _renderBlock(b, false, container);
+          if (el) right.appendChild(el);
+        });
+        row.appendChild(left);
+        row.appendChild(right);
+        return row;
       }
       default: return null;
     }
