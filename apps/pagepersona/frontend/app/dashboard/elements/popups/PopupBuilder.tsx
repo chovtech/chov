@@ -217,7 +217,7 @@ const TEMPLATES: { key: string; label: string; config: Partial<PopupConfig> }[] 
         { id: uid(), type: 'text', text: 'Get 30% Off Everything', font_size: 36, font_weight: '900', text_align: 'center', text_color: '#ffffff' },
         { id: uid(), type: 'text', text: 'This weekend only. No code needed.', font_size: 16, font_weight: '400', text_align: 'center', text_color: 'rgba(255,255,255,0.8)' },
         { id: uid(), type: 'button', btn_label: 'Shop The Sale', btn_url: '', btn_action: 'link', btn_color: '#ffffff', btn_text_color: '#1A56DB', btn_radius: 14, btn_bold: true },
-        { id: uid(), type: 'no_thanks', no_thanks_label: 'No thanks, I'll pay full price', no_thanks_color: 'rgba(255,255,255,0.5)', no_thanks_dont_show: false },
+        { id: uid(), type: 'no_thanks', no_thanks_label: "No thanks, I'll pay full price", no_thanks_color: 'rgba(255,255,255,0.5)', no_thanks_dont_show: false },
       ]
     }
   },
