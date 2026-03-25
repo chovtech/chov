@@ -160,7 +160,7 @@ function NewRulePageInner() {
     const newAction: Action = {
       id: Date.now().toString(),
       type: actionType.key,
-      type_label: actionType.labelKey ? t(actionType.labelKey) : actionType.key,
+      type_label: actionType.labelKey ? (t(actionType.labelKey) || actionType.key) : actionType.key,
       target_block: "",
       value: "",
       needsElement: actionType.needsElement
