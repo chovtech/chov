@@ -17,6 +17,19 @@ interface Popup {
   updated_at: string
 }
 
+function getPopupPreviewImage(config: any): string | null {
+  if (!config) return null
+  const scan = (blocks: any[]): string | null => {
+    for (const b of (blocks || [])) {
+      if (b.image_url) return b.image_url
+      if (b.col_left) { const r = scan(b.col_left); if (r) return r }
+      if (b.col_right) { const r = scan(b.col_right); if (r) return r }
+    }
+    return null
+  }
+  return scan(config.blocks || [])
+}
+
 export default function ElementsPage() {
   const { t } = useTranslation('common')
   const router = useRouter()
@@ -116,15 +129,28 @@ export default function ElementsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {popups.map(popup => (
                     <div key={popup.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                      <div className="h-32 flex items-center justify-center relative" style={{ background: popup.config?.bg_color || '#1A56DB' }}>
-                        <div className="text-center px-4">
-                          <p className="text-white font-bold text-sm truncate">{popup.config?.headline || popup.name}</p>
-                          {popup.config?.body && <p className="text-white/70 text-xs mt-1 truncate">{popup.config.body}</p>}
-                        </div>
-                        <div className={"absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-bold " + (popup.status === 'published' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500')}>
-                          {popup.status === 'published' ? t('elements.popup_published') : t('elements.popup_draft')}
-                        </div>
-                      </div>
+                      {(() => {
+                        const previewImg = getPopupPreviewImage(popup.config)
+                        return (
+                          <div className="h-36 relative overflow-hidden" style={{ background: popup.config?.bg_color || '#1A56DB' }}>
+                            {previewImg && (
+                              <img src={previewImg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                            )}
+                            {!previewImg && (
+                              <div className="absolute inset-0 flex items-center justify-center px-4">
+                                <p className="text-white font-bold text-sm text-center truncate">{popup.name}</p>
+                              </div>
+                            )}
+                            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 60%)' }} />
+                            <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: popup.status === 'published' ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.15)', color: popup.status === 'published' ? '#10b981' : '#fff' }}>
+                              {popup.status === 'published' ? t('elements.popup_published') : t('elements.popup_draft')}
+                            </div>
+                            <div className="absolute bottom-3 left-4">
+                              <span className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">{popup.config?.position || 'center'}</span>
+                            </div>
+                          </div>
+                        )
+                      })()}
                       <div className="px-4 py-3 flex items-center justify-between">
                         <div className="min-w-0">
                           <p className="text-sm font-bold text-slate-900 truncate">{popup.name}</p>

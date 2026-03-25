@@ -440,7 +440,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
   }
 
   const handleSave = async () => {
-    if (!name.trim()) { setSaveError('Please add a name'); return }
+    if (!name.trim()) { setSaveError(t('popup_builder.name_required')); return }
     setSaving(true); setSaveError(''); setSaved(false)
     try {
       if (isEdit) {
@@ -494,7 +494,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
               />
             ) : (
               <button onClick={() => setEditingName(true)} className="flex items-center gap-1.5 text-sm font-bold text-slate-900 hover:text-[#1A56DB] transition-colors">
-                {name || 'Untitled Popup'}
+                {name || t('popup_builder.untitled')}
                 <Icon name="edit" className="text-sm text-slate-400" />
               </button>
             )}
@@ -519,7 +519,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
 
         {/* Left — Elements panel */}
         <aside className="w-20 bg-white border-r border-slate-200 flex flex-col items-center py-4 gap-1 flex-shrink-0">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-2">Elements</p>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-2">{t('popup_builder.elements_panel')}</p>
           {ELEMENT_TYPES.map(el => (
             <button key={el.type} onClick={() => addBlock(el.type)}
               className="flex flex-col items-center gap-1 w-14 h-14 rounded-xl hover:bg-[#1A56DB]/5 border-2 border-transparent hover:border-[#1A56DB]/20 text-slate-500 hover:text-[#1A56DB] transition-all justify-center"
@@ -533,13 +533,13 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
               className={"flex flex-col items-center gap-1 w-14 h-14 rounded-xl border-2 transition-all justify-center " + (rightPanel === 'global' ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-transparent text-slate-400 hover:text-slate-600')}
             >
               <Icon name="tune" className="text-xl" />
-              <span className="text-[9px] font-bold uppercase">Style</span>
+              <span className="text-[9px] font-bold uppercase">{t('popup_builder.style_panel')}</span>
             </button>
             <button onClick={() => { setSelectedBlockId(null); setRightPanel('behaviour') }}
               className={"flex flex-col items-center gap-1 w-14 h-14 rounded-xl border-2 transition-all justify-center " + (rightPanel === 'behaviour' ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-transparent text-slate-400 hover:text-slate-600')}
             >
               <Icon name="settings" className="text-xl" />
-              <span className="text-[9px] font-bold uppercase">Behav.</span>
+              <span className="text-[9px] font-bold uppercase">{t('popup_builder.behaviour_short')}</span>
             </button>
           </div>
         </aside>
@@ -554,10 +554,10 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
               <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 w-full max-w-3xl">
                 <div className="flex items-center justify-between mb-5">
                   <div>
-                    <h2 className="text-base font-bold text-slate-900">Choose a template</h2>
-                    <p className="text-xs text-slate-500 mt-0.5">Pick one to customise, or start blank</p>
+                    <h2 className="text-base font-bold text-slate-900">{t('popup_builder.template_heading')}</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">{t('popup_builder.template_subheading')}</p>
                   </div>
-                  <button onClick={() => setShowTemplates(false)} className="text-xs font-bold text-slate-400 hover:text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors">Start blank</button>
+                  <button onClick={() => setShowTemplates(false)} className="text-xs font-bold text-slate-400 hover:text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors">{t('popup_builder.start_blank')}</button>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {TEMPLATES.map(tpl => (
@@ -665,7 +665,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
 
             {/* Popup URL hint */}
             {config.popup_url && (
-              <div className="absolute top-3 left-3 z-10 px-2 py-0.5 bg-[#1A56DB]/80 rounded text-white text-[9px] font-bold">Clickable</div>
+              <div className="absolute top-3 left-3 z-10 px-2 py-0.5 bg-[#1A56DB]/80 rounded text-white text-[9px] font-bold">{t('popup_builder.clickable_badge')}</div>
             )}
 
             {/* Blocks */}
@@ -689,7 +689,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
               {config.blocks.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-10 opacity-50">
                   <Icon name="add_circle" className="text-3xl text-white mb-2" />
-                  <p className="text-white text-xs font-medium">Add elements from the left panel</p>
+                  <p className="text-white text-xs font-medium">{t('popup_builder.add_elements_hint')}</p>
                 </div>
               )}
             </div>
@@ -697,7 +697,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
 
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur shadow-sm rounded-full border border-slate-100">
             <Icon name="visibility" className="text-slate-400 text-sm" />
-            <span className="text-[11px] font-semibold text-slate-500">Live Preview · Click any element to edit</span>
+            <span className="text-[11px] font-semibold text-slate-500">{t('popup_builder.live_preview_hint')}</span>
           </div>
         </main>
 
@@ -710,17 +710,18 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
               block={selectedBlock}
               onUpdate={(updates) => updateBlock(selectedBlock.id, updates)}
               onClose={() => { setSelectedBlockId(null); setRightPanel('global') }}
+              t={t}
             />
           )}
 
           {/* Global style */}
           {rightPanel === 'global' && (
-            <GlobalProperties config={config} setC={setC} isBar={isBar} isFullscreen={isFullscreen} />
+            <GlobalProperties config={config} setC={setC} isBar={isBar} isFullscreen={isFullscreen} t={t} />
           )}
 
           {/* Behaviour */}
           {rightPanel === 'behaviour' && (
-            <BehaviourProperties config={config} setC={setC} isBar={isBar} />
+            <BehaviourProperties config={config} setC={setC} isBar={isBar} t={t} />
           )}
         </aside>
       </div>
@@ -795,7 +796,7 @@ function BlockPreview({ block, isBar }: { block: Block; isBar: boolean }) {
         <img src={block.image_url} alt="" style={{ width: '100%', height: block.image_height || 160, objectFit: block.image_fit || 'cover', display: 'block' }} />
       ) : (
         <div style={{ width: '100%', height: block.image_height || 160, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed rgba(255,255,255,0.25)' }}>
-          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 600 }}>Click to upload image</span>
+          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 600 }}>{t('popup_builder.image_placeholder')}</span>
         </div>
       )
     case 'text':
@@ -855,8 +856,8 @@ function BlockPreview({ block, isBar }: { block: Block; isBar: boolean }) {
 
 // ── Block Properties Panel ────────────────────────────────────────────────
 
-function BlockProperties({ block, onUpdate, onClose }: { block: Block; onUpdate: (u: Partial<Block>) => void; onClose: () => void }) {
-  const labels: Record<string, string> = { text: 'Text Settings', image: 'Image Settings', button: 'Button Settings', embed: 'Embed Settings', no_thanks: 'No Thanks Settings', columns: 'Columns' }
+function BlockProperties({ block, onUpdate, onClose, t }: { block: Block; onUpdate: (u: Partial<Block>) => void; onClose: () => void; t: any }) {
+  const labels: Record<string, string> = { text: t('popup_builder.block_text_settings'), image: t('popup_builder.block_image_settings'), button: t('popup_builder.block_button_settings'), embed: t('popup_builder.block_embed_settings'), no_thanks: t('popup_builder.block_no_thanks_settings'), columns: t('popup_builder.block_columns_settings') }
 
   return (
     <div className="p-5 flex flex-col gap-4">
@@ -883,12 +884,12 @@ function BlockProperties({ block, onUpdate, onClose }: { block: Block; onUpdate:
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Weight</label>
               <select value={block.font_weight || '400'} onChange={e => onUpdate({ font_weight: e.target.value })}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20">
-                <option value="300">Light</option>
-                <option value="400">Regular</option>
-                <option value="600">Semibold</option>
-                <option value="700">Bold</option>
-                <option value="800">ExtraBold</option>
-                <option value="900">Black</option>
+                <option value="300">{t('popup_builder.weight_light')}</option>
+                <option value="400">{t('popup_builder.weight_regular')}</option>
+                <option value="600">{t('popup_builder.weight_semibold')}</option>
+                <option value="700">{t('popup_builder.weight_bold')}</option>
+                <option value="800">{t('popup_builder.weight_extrabold')}</option>
+                <option value="900">{t('popup_builder.weight_black')}</option>
               </select>
             </div>
           </div>
@@ -975,7 +976,7 @@ function BlockProperties({ block, onUpdate, onClose }: { block: Block; onUpdate:
               {(['link','close'] as const).map(a => (
                 <button key={a} onClick={() => onUpdate({ btn_action: a })}
                   className={"flex-1 py-2 rounded-lg border-2 text-xs font-bold capitalize transition-all " + (block.btn_action === a ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
-                  {a === 'link' ? 'Open URL' : 'Close popup'}
+                  {a === 'link' ? t('popup_builder.btn_action_link') : t('popup_builder.btn_action_close')}
                 </button>
               ))}
             </div>
@@ -1046,7 +1047,7 @@ function BlockProperties({ block, onUpdate, onClose }: { block: Block; onUpdate:
 
       {/* COLUMNS */}
       {block.type === 'columns' && (
-        <p className="text-xs text-slate-500">Click elements inside the columns to edit them. Use the buttons on the canvas to add more blocks to each column.</p>
+        <p className="text-xs text-slate-500">{t('popup_builder.block_columns_hint')}</p>
       )}
     </div>
   )
@@ -1054,16 +1055,16 @@ function BlockProperties({ block, onUpdate, onClose }: { block: Block; onUpdate:
 
 // ── Global Properties ─────────────────────────────────────────────────────
 
-function GlobalProperties({ config, setC, isBar, isFullscreen }: any) {
+function GlobalProperties({ config, setC, isBar, isFullscreen, t }: any) {
   return (
     <div className="p-5 flex flex-col gap-4">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Global Settings</h3>
+      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('popup_builder.global_settings')}</h3>
 
       {/* Layout */}
       <div>
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Layout</label>
         <div className="flex gap-2">
-          {([{k:'single',l:'Single',i:'view_stream'},{k:'two-column',l:'Two Column',i:'view_column'}]).map(l => (
+          {([{k:'single',l:t('popup_builder.layout_single'),i:'view_stream'},{k:'two-column',l:t('popup_builder.layout_two_column'),i:'view_column'}]).map(l => (
             <button key={l.k} onClick={() => setC('layout', l.k)}
               className={"flex-1 flex items-center gap-1.5 justify-center py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.layout === l.k ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
               <Icon name={l.i} className="text-sm" />{l.l}
@@ -1175,7 +1176,7 @@ function GlobalProperties({ config, setC, isBar, isFullscreen }: any) {
       <div>
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Animation</label>
         <div className="flex flex-col gap-1.5">
-          {[{k:'fade',l:'Fade In'},{k:'slide',l:'Slide Up'},{k:'zoom',l:'Zoom In'}].map(a => (
+          {[{k:'fade',l:t('popup_builder.anim_fade')},{k:'slide',l:t('popup_builder.anim_slide')},{k:'zoom',l:t('popup_builder.anim_zoom')}].map(a => (
             <button key={a.k} onClick={() => setC('animation', a.k)}
               className={"flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-xs font-medium transition-all " + (config.animation === a.k ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
               <Icon name={config.animation === a.k ? 'radio_button_checked' : 'radio_button_unchecked'} className="text-sm" />{a.l}
@@ -1189,10 +1190,10 @@ function GlobalProperties({ config, setC, isBar, isFullscreen }: any) {
 
 // ── Behaviour Properties ──────────────────────────────────────────────────
 
-function BehaviourProperties({ config, setC, isBar }: any) {
+function BehaviourProperties({ config, setC, isBar, t }: any) {
   return (
     <div className="p-5 flex flex-col gap-4">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Behaviour</h3>
+      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('popup_builder.behaviour')}</h3>
       <div className="flex items-center justify-between">
         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Close Button</label>
         <button onClick={() => setC('close_button', !config.close_button)} className={"w-10 h-5 rounded-full transition-colors relative " + (config.close_button ? 'bg-[#1A56DB]' : 'bg-slate-200')}>
@@ -1214,7 +1215,7 @@ function BehaviourProperties({ config, setC, isBar }: any) {
       <div>
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Frequency</label>
         <div className="flex flex-col gap-1.5">
-          {[{k:'every',l:'Every visit'},{k:'once',l:'Once per browser'},{k:'session',l:'Once per session'}].map(f => (
+          {[{k:'every',l:t('popup_builder.freq_every')},{k:'once',l:t('popup_builder.freq_once')},{k:'session',l:t('popup_builder.freq_session')}].map(f => (
             <button key={f.k} onClick={() => setC('frequency', f.k)}
               className={"flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 text-xs font-medium transition-all " + (config.frequency === f.k ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
               <Icon name={config.frequency === f.k ? 'radio_button_checked' : 'radio_button_unchecked'} className="text-sm" />{f.l}
@@ -1224,11 +1225,11 @@ function BehaviourProperties({ config, setC, isBar }: any) {
       </div>
       <div className="mt-2 p-4 bg-[#0F172A] rounded-xl">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Live Status</span>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{t('popup_builder.live_status')}</span>
           <div className="w-2 h-2 rounded-full bg-[#14B8A6] animate-pulse" />
         </div>
         <p className="text-[11px] text-slate-300 leading-relaxed">
-          {config.delay > 0 ? `Shows after ${config.delay}s.` : 'Shows immediately.'} {config.frequency === 'once' ? 'Once per browser.' : config.frequency === 'session' ? 'Once per session.' : 'Every visit.'}
+          {config.delay > 0 ? t('popup_builder.shows_after').replace('{n}', config.delay) : t('popup_builder.shows_immediately')} {config.frequency === 'once' ? t('popup_builder.freq_desc_once') : config.frequency === 'session' ? t('popup_builder.freq_desc_session') : t('popup_builder.freq_desc_every')}
         </p>
       </div>
     </div>
