@@ -127,21 +127,21 @@ const DEFAULT_CONFIG: PopupConfig = {
 
 const TEMPLATES: { key: string; label: string; config: Partial<PopupConfig> }[] = [
   {
-    key: 'exit_offer',
-    label: 'Exit Offer',
+    key: 'before_you_go',
+    label: 'Before You Go',
     config: {
       layout: 'two-column', col_split: '50-50', position: 'center',
-      bg_color: '#ffffff', bg_image: '', border_radius: 20,
-      overlay: true, overlay_opacity: 60, padding: 0, width: 640, height: 'auto',
+      bg_color: '#ffffff', bg_image: '', border_radius: 12,
+      overlay: true, overlay_opacity: 60, padding: 0, width: 660, height: 'auto',
       close_button: true, close_on_overlay: true, delay: 0, frequency: 'once', animation: 'zoom',
       popup_url: '',
       blocks: [
         { id: uid(), type: 'columns', col_left: [
-          { id: uid(), type: 'image', image_url: '', image_height: 340, image_fit: 'cover', image_link: '' },
+          { id: uid(), type: 'image', image_url: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/5ad7fe32111745f1b7528a56f0f9dc9e.jpg', image_height: 360, image_fit: 'cover', image_link: '' },
         ], col_right: [
-          { id: uid(), type: 'text', text: 'Before You Go!', font_size: 26, font_weight: '800', text_align: 'center', text_color: '#0F172A' },
-          { id: uid(), type: 'text', text: 'Get 15% Off Your Purchase.', font_size: 15, font_weight: '400', text_align: 'center', text_color: '#64748b' },
-          { id: uid(), type: 'button', btn_label: 'Get My Discount', btn_url: '', btn_action: 'link', btn_color: '#14B8A6', btn_text_color: '#ffffff', btn_radius: 10, btn_bold: true },
+          { id: uid(), type: 'text', text: 'Before You Go!', font_size: 28, font_weight: '800', text_align: 'center', text_color: '#0F172A' },
+          { id: uid(), type: 'text', text: 'Get 15% Off Your Purchase.', font_size: 16, font_weight: '400', text_align: 'center', text_color: '#475569' },
+          { id: uid(), type: 'button', btn_label: 'Get My Discount', btn_url: '', btn_action: 'link', btn_color: '#14B8A6', btn_text_color: '#ffffff', btn_radius: 30, btn_bold: true },
           { id: uid(), type: 'no_thanks', no_thanks_label: 'No thanks', no_thanks_color: '#94a3b8', no_thanks_dont_show: false },
         ]},
       ]
@@ -559,20 +559,68 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
                   </div>
                   <button onClick={() => setShowTemplates(false)} className="text-xs font-bold text-slate-400 hover:text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors">Start blank</button>
                 </div>
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   {TEMPLATES.map(tpl => (
                     <button key={tpl.key} onClick={() => applyTemplate(tpl)}
-                      className="group p-1 rounded-xl border-2 border-slate-100 hover:border-[#1A56DB] transition-all text-left overflow-hidden"
+                      className="group rounded-xl border-2 border-slate-100 hover:border-[#1A56DB] transition-all text-left overflow-hidden shadow-sm hover:shadow-md"
                     >
-                      <div className="h-20 rounded-lg flex items-center justify-center px-2 mb-2 relative overflow-hidden" style={{ background: tpl.config.bg_color as string }}>
-                        <p className="text-white text-[10px] font-bold text-center leading-tight w-full truncate px-1">
-                          {(tpl.config.blocks || []).find((b: any) => b.type === 'text')?.text || tpl.label}
-                        </p>
-                        {tpl.config.layout === 'two-column' && (
-                          <div className="absolute bottom-1 right-1 px-1 py-0.5 bg-white/20 rounded text-[8px] text-white font-bold">2-col</div>
+                      {/* Preview */}
+                      <div className="relative overflow-hidden" style={{ height: 180, background: tpl.config.bg_color as string }}>
+                        {tpl.config.layout === 'two-column' ? (
+                          <div className="flex h-full">
+                            <div className="w-1/2 h-full overflow-hidden">
+                              {(() => {
+                                const col = (tpl.config.blocks || []).find((b: any) => b.type === 'columns')
+                                const img = col?.col_left?.[0]
+                                return img?.image_url ? (
+                                  <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full bg-black/10 flex items-center justify-center">
+                                    <span className="text-white/40 text-xs">Image</span>
+                                  </div>
+                                )
+                              })()}
+                            </div>
+                            <div className="w-1/2 flex flex-col justify-center gap-2 px-4 py-4">
+                              {(() => {
+                                const col = (tpl.config.blocks || []).find((b: any) => b.type === 'columns')
+                                return (col?.col_right || []).slice(0, 3).map((b: any, i: number) => {
+                                  if (b.type === 'text') return <p key={i} style={{ fontSize: Math.min(b.font_size || 14, 13), fontWeight: b.font_weight, color: b.text_color, textAlign: b.text_align as any, margin: 0, lineHeight: 1.3 }} className="truncate">{b.text}</p>
+                                  if (b.type === 'button') return <div key={i} style={{ background: b.btn_color, color: b.btn_text_color, borderRadius: b.btn_radius, padding: '5px 10px', fontSize: 11, fontWeight: 700, textAlign: 'center' }}>{b.btn_label}</div>
+                                  return null
+                                })
+                              })()}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center h-full gap-2 px-6">
+                            {(() => {
+                              const firstImg = (tpl.config.blocks || []).find((b: any) => b.type === 'image')
+                              const texts = (tpl.config.blocks || []).filter((b: any) => b.type === 'text').slice(0, 2)
+                              const btn = (tpl.config.blocks || []).find((b: any) => b.type === 'button')
+                              return <>
+                                {firstImg?.image_url && <img src={firstImg.image_url} alt="" style={{ width: '100%', height: 70, objectFit: 'cover', borderRadius: 6 }} />}
+                                {texts.map((b: any, i: number) => (
+                                  <p key={i} style={{ fontSize: Math.min(b.font_size || 14, 13), fontWeight: b.font_weight, color: b.text_color, textAlign: b.text_align as any, margin: 0, lineHeight: 1.3 }} className="truncate w-full text-center">{b.text}</p>
+                                ))}
+                                {btn && <div style={{ background: btn.btn_color, color: btn.btn_text_color, borderRadius: btn.btn_radius, padding: '4px 12px', fontSize: 11, fontWeight: 700 }}>{btn.btn_label}</div>}
+                              </>
+                            })()}
+                          </div>
                         )}
+                        {/* Badges */}
+                        <div className="absolute top-2 left-2 flex gap-1">
+                          {tpl.config.layout === 'two-column' && (
+                            <span className="px-1.5 py-0.5 bg-[#1A56DB]/80 text-white text-[9px] font-bold rounded">2-COL</span>
+                          )}
+                          <span className="px-1.5 py-0.5 bg-black/30 text-white text-[9px] font-bold rounded capitalize">{tpl.config.position as string}</span>
+                        </div>
                       </div>
-                      <p className="text-xs font-bold text-slate-700 group-hover:text-[#1A56DB] px-1 pb-1">{tpl.label}</p>
+                      {/* Label */}
+                      <div className="px-3 py-2.5 border-t border-slate-100 flex items-center justify-between">
+                        <p className="text-sm font-bold text-slate-700 group-hover:text-[#1A56DB]">{tpl.label}</p>
+                        <Icon name="arrow_forward" className="text-slate-300 group-hover:text-[#1A56DB] text-sm transition-colors" />
+                      </div>
                     </button>
                   ))}
                 </div>
