@@ -148,23 +148,23 @@ const TEMPLATES: { key: string; label: string; config: Partial<PopupConfig> }[] 
     }
   },
   {
-    key: 'countdown_offer',
-    label: 'Countdown Offer',
+    key: 'lead_capture_2col',
+    label: 'Lead Capture (2-col)',
     config: {
-      layout: 'two-column', col_split: '40-60', position: 'bottom_left',
-      bg_color: '#1e3a6e', bg_image: '', border_radius: 16,
-      overlay: false, overlay_opacity: 0, padding: 0, width: 480, height: 'auto',
-      close_button: true, close_on_overlay: false, delay: 2, frequency: 'session', animation: 'slide',
+      layout: 'two-column', col_split: '40-60', position: 'center',
+      bg_color: '#ffffff', bg_image: '', border_radius: 16,
+      overlay: true, overlay_opacity: 60, padding: 0, width: 660, height: 'auto',
+      close_button: true, close_on_overlay: true, delay: 0, frequency: 'once', animation: 'zoom',
       popup_url: '',
       blocks: [
         { id: uid(), type: 'columns', col_left: [
-          { id: uid(), type: 'image', image_url: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/283c3f916a6b4a859cfd8b4f928276ac.jpg', image_height: 200, image_fit: 'cover', image_link: '' },
+          { id: uid(), type: 'image', image_url: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/283c3f916a6b4a859cfd8b4f928276ac.jpg', image_height: 380, image_fit: 'cover', image_link: '' },
         ], col_right: [
-          { id: uid(), type: 'text', text: 'Limited Time Offer', font_size: 16, font_weight: '700', text_align: 'left', text_color: '#ffffff' },
-          { id: uid(), type: 'text', text: '01:14:31:01', font_size: 28, font_weight: '800', text_align: 'left', text_color: '#ffffff' },
-          { id: uid(), type: 'text', text: '25% OFF — Today Only', font_size: 13, font_weight: '600', text_align: 'left', text_color: 'rgba(255,255,255,0.7)' },
-          { id: uid(), type: 'button', btn_label: 'Shop Now', btn_url: '', btn_action: 'link', btn_color: '#ffffff', btn_text_color: '#1e3a6e', btn_radius: 8, btn_bold: true },
-          { id: uid(), type: 'no_thanks', no_thanks_label: 'No Thanks', no_thanks_color: 'rgba(255,255,255,0.5)', no_thanks_dont_show: false },
+          { id: uid(), type: 'text', text: 'Get 20% OFF', font_size: 28, font_weight: '800', text_align: 'center', text_color: '#0F172A' },
+          { id: uid(), type: 'text', text: 'on your first order', font_size: 20, font_weight: '700', text_align: 'center', text_color: '#0F172A' },
+          { id: uid(), type: 'text', text: '+ Free shipping & Returns', font_size: 13, font_weight: '400', text_align: 'center', text_color: '#64748b' },
+          { id: uid(), type: 'embed', embed_code: '<input type="email" placeholder="Enter Your Email Address" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box"/>' },
+          { id: uid(), type: 'embed', embed_code: '<p style="font-size:11px;color:#94a3b8;text-align:center;margin:4px 0 0">By entering your email, you agree to our <strong>Terms & Conditions</strong> and <strong>Privacy Policy</strong>.</p>' },
         ]},
       ]
     }
@@ -748,10 +748,14 @@ function CanvasBlock({ block, idx, total, isBar, selectedBlockId, onSelect, onDe
               onMove={() => {}} onRemove={onRemove} onAddToCol={onAddToCol} colSplit={colSplit} t={t}
             />
           ))}
-          <button onClick={() => onAddToCol('image', 'left', block.id)}
-            className="w-full py-1.5 text-[10px] font-bold text-white/50 hover:text-white/80 border border-dashed border-white/20 hover:border-white/40 rounded transition-all mt-1">
-            + Add to left
-          </button>
+          <div className="flex gap-1 mt-1">
+            {(['image','text','button','embed','no_thanks'] as const).map(bt => (
+              <button key={bt} onClick={() => onAddToCol(bt, 'left', block.id)}
+                className="flex-1 py-1 text-[9px] font-bold text-white/50 hover:text-white/80 border border-dashed border-white/20 hover:border-white/40 rounded transition-all capitalize">
+                {bt === 'no_thanks' ? 'skip' : bt}
+              </button>
+            ))}
+          </div>
         </div>
         {/* Right column */}
         <div style={{ width: rightPct + '%' }} className="relative flex flex-col gap-2 p-4">
@@ -762,10 +766,14 @@ function CanvasBlock({ block, idx, total, isBar, selectedBlockId, onSelect, onDe
               onMove={() => {}} onRemove={onRemove} onAddToCol={onAddToCol} colSplit={colSplit} t={t}
             />
           ))}
-          <button onClick={() => onAddToCol('text', 'right', block.id)}
-            className="w-full py-1.5 text-[10px] font-bold text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 hover:border-slate-400 rounded transition-all mt-1">
-            + Add to right
-          </button>
+          <div className="flex gap-1 mt-1">
+            {(['image','text','button','embed','no_thanks'] as const).map(bt => (
+              <button key={bt} onClick={() => onAddToCol(bt, 'right', block.id)}
+                className="flex-1 py-1 text-[9px] font-bold text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 hover:border-slate-400 rounded transition-all capitalize">
+                {bt === 'no_thanks' ? 'skip' : bt}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     )
