@@ -35,7 +35,7 @@ export default function Sidebar() {
   }
 
   const initials = user?.name
-    ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+    ? (user.name || '').split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
     : '?'
 
   function isActive(href: string, exact: boolean) {
@@ -43,7 +43,7 @@ export default function Sidebar() {
   }
 
   const workspaceName = user?.name
-    ? `${user.name.split(' ')[0]}'s ${t('nav.workspace')}`
+    ? `${(user.name || '').split(' ')[0]}'s ${t('nav.workspace')}`
     : t('nav.workspace')
 
   return (
