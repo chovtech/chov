@@ -155,26 +155,26 @@ function EditRulePageInner() {
         setRuleName(rule.name)
         setConditionOperator(rule.condition_operator || 'AND')
         // Reconstruct full condition objects from saved minimal shape
-        setConditions(rule.conditions.map((c: any, i: number) => {
-          const cfg = SIGNAL_CONFIGS[c.signal] || { label: c.signal, operators: [c.operator], valueType: 'text' }
+        setConditions((rule.conditions || []).map((c: any, i: number) => {
+          const cfg = SIGNAL_CONFIGS[c.signal] || { label: c.signal || '', operators: [c.operator || 'is'], valueType: 'text' }
           return {
             id: Date.now().toString() + i,
-            signal: c.signal,
-            signal_label: cfg.label,
-            operator: c.operator,
+            signal: c.signal || '',
+            signal_label: cfg.label || c.signal || '',
+            operator: c.operator || (cfg.operators[0] || 'is'),
             value: c.value || '',
-            operators: cfg.operators,
-            valueType: cfg.valueType,
-            options: cfg.options,
+            operators: cfg.operators || [c.operator || 'is'],
+            valueType: cfg.valueType || 'text',
+            options: cfg.options || [],
           }
         }))
         // Reconstruct full action objects
-        setActions(rule.actions.map((a: any, i: number) => {
+        setActions((rule.actions || []).map((a: any, i: number) => {
           const actionDef = ACTION_TYPES.find(t => t.key === a.type)
           return {
             id: Date.now().toString() + 'a' + i,
-            type: a.type,
-            type_label: actionDef?.label || a.type,
+            type: a.type || '',
+            type_label: actionDef?.label || a.type || '',
             target_block: a.target_block || '',
             value: a.value || '',
             needsElement: actionDef?.needsElement ?? true,
