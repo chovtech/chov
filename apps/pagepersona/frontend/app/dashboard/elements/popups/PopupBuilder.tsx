@@ -158,7 +158,7 @@ const TEMPLATES: { key: string; label: string; config: Partial<PopupConfig> }[] 
       popup_url: '',
       blocks: [
         { id: uid(), type: 'columns', col_left: [
-          { id: uid(), type: 'image', image_url: '', image_height: 200, image_fit: 'cover', image_link: '' },
+          { id: uid(), type: 'image', image_url: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/283c3f916a6b4a859cfd8b4f928276ac.jpg', image_height: 200, image_fit: 'cover', image_link: '' },
         ], col_right: [
           { id: uid(), type: 'text', text: 'Limited Time Offer', font_size: 16, font_weight: '700', text_align: 'left', text_color: '#ffffff' },
           { id: uid(), type: 'text', text: '01:14:31:01', font_size: 28, font_weight: '800', text_align: 'left', text_color: '#ffffff' },
@@ -551,7 +551,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
           {/* Template picker */}
           {showTemplates && (
             <div className="absolute inset-0 z-40 bg-slate-100/97 flex items-center justify-center p-8 overflow-auto">
-              <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 w-full max-w-3xl">
+              <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 w-full max-w-3xl max-h-[85vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-5">
                   <div>
                     <h2 className="text-base font-bold text-slate-900">{t('popup_builder.template_heading')}</h2>
