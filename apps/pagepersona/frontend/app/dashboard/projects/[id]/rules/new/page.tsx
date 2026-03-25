@@ -41,19 +41,10 @@ interface Action {
 }
 
 
-function PopupPicker({ value, onChange, projectId }: { value: string; onChange: (v: string) => void; projectId: string }) {
+function PopupPicker({ value, onChange, popups, loadingPopups }: { value: string; onChange: (v: string) => void; popups: any[]; loadingPopups: boolean }) {
   const { t } = useTranslation('common')
-  const [popups, setPopups] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    apiClient.get('/api/popups')
-      .then(res => setPopups(res.data))
-      .catch(() => null)
-      .finally(() => setLoading(false))
-  }, [])
-
-  if (loading) return (
+  if (loadingPopups) return (
     <div className="flex items-center gap-2 py-2 text-slate-400 text-xs">
       <Icon name="sync" className="animate-spin text-sm" />
       Loading popups...
@@ -112,6 +103,8 @@ function NewRulePageInner() {
   const [signalModalOpen, setSignalModalOpen] = useState(false)
   const [editingConditionId, setEditingConditionId] = useState<string | null>(null)
   const [actionMenuOpen, setActionMenuOpen] = useState(false)
+  const [popups, setPopups] = useState<any[]>([])
+  const [loadingPopups, setLoadingPopups] = useState(true)
   const [saving, setSaving] = useState(false)
   const [projectPageUrl, setProjectPageUrl] = useState('')
 
@@ -185,6 +178,14 @@ function NewRulePageInner() {
   const injectToken = (actionId: string, token: string) => {
     setActions(prev => prev.map(a => a.id === actionId ? { ...a, value: a.value + " " + token } : a))
   }
+
+  // Load popups for picker
+  useEffect(() => {
+    apiClient.get('/api/popups')
+      .then(res => setPopups(res.data))
+      .catch(() => null)
+      .finally(() => setLoadingPopups(false))
+  }, [])
 
   // ── Open picker for a specific action ───────────────────────────────────
   const openPicker = (actionIndex: number) => {
@@ -514,7 +515,8 @@ function NewRulePageInner() {
                     <PopupPicker
                       value={action.value}
                       onChange={val => updateAction(action.id, "value", val)}
-                      projectId={projectId as string}
+                      popups={popups}
+                      loadingPopups={loadingPopups}
                     />
                   )}
 
