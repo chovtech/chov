@@ -396,7 +396,7 @@
       ';display:flex;flex-direction:' + (isBar ? 'row' : 'column') +
       ';gap:10px;align-items:' + (isBar ? 'center' : 'stretch') +
       ';flex-wrap:' + (isBar ? 'wrap' : 'nowrap') +
-      ';overflow:hidden';
+      ';position:absolute';
 
     // Close button
     if (c.close_button) {
@@ -524,19 +524,19 @@
       }
       case 'columns': {
         var row = document.createElement('div');
-        row.style.cssText = 'display:flex;width:100%;overflow:hidden';
-        var split = (block.col_split) ? block.col_split : '50-50';
+        row.style.cssText = 'display:flex;width:100%';
+        var split = (c && c.col_split) ? c.col_split : '50-50';
         var splitParts = split.split('-');
         var leftPct = parseInt(splitParts[0]) || 50;
         var rightPct = parseInt(splitParts[1]) || 50;
         var left = document.createElement('div');
-        left.style.cssText = 'width:' + leftPct + '%;overflow:hidden;flex-shrink:0';
+        left.style.width = leftPct + '%';
         (block.col_left || []).forEach(function(b) {
           var el = _renderBlock(b, false, container);
           if (el) left.appendChild(el);
         });
         var right = document.createElement('div');
-        right.style.cssText = 'width:' + rightPct + '%;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:24px;flex-shrink:0';
+        right.style.cssText = 'width:' + rightPct + '%;display:flex;flex-direction:column;gap:10px;padding:24px';
         (block.col_right || []).forEach(function(b) {
           var el = _renderBlock(b, false, container);
           if (el) right.appendChild(el);
