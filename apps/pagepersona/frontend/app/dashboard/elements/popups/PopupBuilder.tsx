@@ -684,6 +684,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
                   onRemove={(id) => removeBlock(id)}
                   onAddToCol={addBlock}
                   colSplit={config.col_split}
+                  t={t}
                 />
               ))}
               {config.blocks.length === 0 && (
@@ -731,7 +732,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
 
 // ── Canvas Block ──────────────────────────────────────────────────────────
 
-function CanvasBlock({ block, idx, total, isBar, selectedBlockId, onSelect, onDeselect, onMove, onRemove, onAddToCol, colSplit }: any) {
+function CanvasBlock({ block, idx, total, isBar, selectedBlockId, onSelect, onDeselect, onMove, onRemove, onAddToCol, colSplit, t }: any) {
   const isSelected = selectedBlockId === block.id
 
   if (block.type === 'columns') {
@@ -744,7 +745,7 @@ function CanvasBlock({ block, idx, total, isBar, selectedBlockId, onSelect, onDe
           {(block.col_left || []).map((b: Block) => (
             <CanvasBlock key={b.id} block={b} idx={0} total={1} isBar={false}
               selectedBlockId={selectedBlockId} onSelect={onSelect} onDeselect={onDeselect}
-              onMove={() => {}} onRemove={onRemove} onAddToCol={onAddToCol} colSplit={colSplit}
+              onMove={() => {}} onRemove={onRemove} onAddToCol={onAddToCol} colSplit={colSplit} t={t}
             />
           ))}
           <button onClick={() => onAddToCol('image', 'left', block.id)}
@@ -758,7 +759,7 @@ function CanvasBlock({ block, idx, total, isBar, selectedBlockId, onSelect, onDe
           {(block.col_right || []).map((b: Block) => (
             <CanvasBlock key={b.id} block={b} idx={0} total={1} isBar={false}
               selectedBlockId={selectedBlockId} onSelect={onSelect} onDeselect={onDeselect}
-              onMove={() => {}} onRemove={onRemove} onAddToCol={onAddToCol} colSplit={colSplit}
+              onMove={() => {}} onRemove={onRemove} onAddToCol={onAddToCol} colSplit={colSplit} t={t}
             />
           ))}
           <button onClick={() => onAddToCol('text', 'right', block.id)}
@@ -782,14 +783,14 @@ function CanvasBlock({ block, idx, total, isBar, selectedBlockId, onSelect, onDe
           <button onClick={e => { e.stopPropagation(); onRemove(block.id) }} className="w-5 h-5 bg-red-500 rounded text-white text-[10px] flex items-center justify-center hover:bg-red-600">✕</button>
         </div>
       )}
-      <BlockPreview block={block} isBar={isBar} />
+      <BlockPreview block={block} isBar={isBar} t={t} />
     </div>
   )
 }
 
 // ── Block Preview ─────────────────────────────────────────────────────────
 
-function BlockPreview({ block, isBar }: { block: Block; isBar: boolean }) {
+function BlockPreview({ block, isBar, t }: { block: Block; isBar: boolean; t: any }) {
   switch (block.type) {
     case 'image':
       return block.image_url ? (
