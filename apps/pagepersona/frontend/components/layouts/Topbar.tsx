@@ -31,7 +31,7 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
   }, [])
 
   const initials = user?.name
-    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    ? (user.name || '').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : '?'
 
   return (
