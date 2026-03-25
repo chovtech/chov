@@ -148,6 +148,28 @@ const TEMPLATES: { key: string; label: string; config: Partial<PopupConfig> }[] 
     }
   },
   {
+    key: 'countdown_offer',
+    label: 'Countdown Offer',
+    config: {
+      layout: 'two-column', col_split: '40-60', position: 'bottom_left',
+      bg_color: '#1e3a6e', bg_image: '', border_radius: 20,
+      overlay: false, overlay_opacity: 0, padding: 0, width: 500, height: 'auto',
+      close_button: true, close_on_overlay: false, delay: 3, frequency: 'session', animation: 'slide',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'columns', col_left: [
+          { id: uid(), type: 'image', image_url: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/963fa1be7e254ddd9e4cfebe38413fcd.png', image_height: 220, image_fit: 'contain', image_link: '' },
+        ], col_right: [
+          { id: uid(), type: 'text', text: 'Limited Time Offer', font_size: 16, font_weight: '700', text_align: 'left', text_color: '#ffffff' },
+          { id: uid(), type: 'text', text: '01 : 14 : 31 : 01', font_size: 28, font_weight: '800', text_align: 'left', text_color: '#ffffff' },
+          { id: uid(), type: 'text', text: 'DAYS        HOURS      MINUTES    SECONDS', font_size: 9, font_weight: '600', text_align: 'left', text_color: 'rgba(255,255,255,0.6)' },
+          { id: uid(), type: 'button', btn_label: 'Shop Now', btn_url: '', btn_action: 'link', btn_color: '#ffffff', btn_text_color: '#1e3a6e', btn_radius: 30, btn_bold: true },
+          { id: uid(), type: 'no_thanks', no_thanks_label: 'No Thanks', no_thanks_color: 'rgba(255,255,255,0.5)', no_thanks_dont_show: false },
+        ]},
+      ]
+    }
+  },
+  {
     key: 'lead_capture_2col',
     label: 'Lead Capture (2-col)',
     config: {
