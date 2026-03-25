@@ -170,6 +170,140 @@ const TEMPLATES: { key: string; label: string; config: Partial<PopupConfig> }[] 
     }
   },
   {
+    key: 'announcement_bar',
+    label: 'Announcement Bar',
+    config: {
+      layout: 'single', col_split: '50-50', position: 'top_bar',
+      bg_color: '#1e1b4b', bg_image: '', border_radius: 0,
+      overlay: false, overlay_opacity: 0, padding: 12, width: '100%', height: 'auto',
+      close_button: true, close_on_overlay: false, delay: 0, frequency: 'session', animation: 'slide',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'text', text: 'Get 20% (up to $100) off your first payment for design and development services! Use code WELCOME20 🎉', font_size: 13, font_weight: '400', text_align: 'center', text_color: '#ffffff' },
+        { id: uid(), type: 'button', btn_label: 'Get Started', btn_url: '', btn_action: 'link', btn_color: '#ffffff', btn_text_color: '#1e1b4b', btn_radius: 30, btn_bold: true },
+      ]
+    }
+  },
+  {
+    key: 'image_banner',
+    label: 'Image Banner',
+    config: {
+      layout: 'single', col_split: '50-50', position: 'top_bar',
+      bg_color: '#000000', bg_image: '', border_radius: 0,
+      overlay: false, overlay_opacity: 0, padding: 0, width: '100%', height: 'auto',
+      close_button: true, close_on_overlay: false, delay: 0, frequency: 'session', animation: 'slide',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'image', image_url: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/521d2130c3294717b42d9782305ea1d0.png', image_height: 80, image_fit: 'cover', image_link: '' },
+      ]
+    }
+  },
+  {
+    key: 'welcome_overlay',
+    label: 'Welcome Overlay',
+    config: {
+      layout: 'single', col_split: '50-50', position: 'center',
+      bg_color: '#000000', bg_image: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/69b2da2a301c47bda4e58b615ebebe06.jpg', bg_image_opacity: 40, border_radius: 16,
+      overlay: true, overlay_opacity: 50, padding: 48, width: 680, height: 420,
+      close_button: true, close_on_overlay: true, delay: 0, frequency: 'once', animation: 'fade',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'text', text: 'Welcome to', font_size: 16, font_weight: '500', text_align: 'center', text_color: '#ffffff' },
+        { id: uid(), type: 'embed', embed_code: '<div style="display:inline-block;background:rgba(255,255,255,0.2);padding:6px 20px;border-radius:999px;font-size:22px;font-weight:800;color:#fff;text-align:center;width:100%;box-sizing:border-box">uniqueclothing.store</div>' },
+        { id: uid(), type: 'text', text: 'Explore our exclusive collection.', font_size: 14, font_weight: '400', text_align: 'center', text_color: 'rgba(255,255,255,0.9)' },
+        { id: uid(), type: 'button', btn_label: 'START SHOPPING', btn_url: '', btn_action: 'link', btn_color: '#22c55e', btn_text_color: '#ffffff', btn_radius: 8, btn_bold: true },
+        { id: uid(), type: 'button', btn_label: 'LEARN MORE', btn_url: '', btn_action: 'link', btn_color: 'transparent', btn_text_color: '#ffffff', btn_radius: 8, btn_bold: false },
+      ]
+    }
+  },
+  {
+    key: 'signup_split',
+    label: 'Signup Split',
+    config: {
+      layout: 'two-column', col_split: '50-50', position: 'center',
+      bg_color: '#ffffff', bg_image: '', border_radius: 20,
+      overlay: true, overlay_opacity: 60, padding: 0, width: 800, height: 'auto',
+      close_button: true, close_on_overlay: true, delay: 0, frequency: 'once', animation: 'zoom',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'columns', col_left: [
+          { id: uid(), type: 'image', image_url: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/93521bae9ea14502b3256f0fd6eefb8f.jpg', image_height: 420, image_fit: 'cover', image_link: '' },
+        ], col_right: [
+          { id: uid(), type: 'text', text: 'Join the Circle of Verified SMI Investors', font_size: 24, font_weight: '800', text_align: 'left', text_color: '#0F172A' },
+          { id: uid(), type: 'text', text: 'Join School Management Institute (SMI) in transforming school leadership across Nigeria.', font_size: 14, font_weight: '400', text_align: 'left', text_color: '#64748b' },
+          { id: uid(), type: 'embed', embed_code: '<input type="text" placeholder="Name:" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:10px;box-sizing:border-box"/><input type="email" placeholder="Email Address:" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box"/>' },
+          { id: uid(), type: 'button', btn_label: 'Submit', btn_url: '', btn_action: 'link', btn_color: '#1A56DB', btn_text_color: '#ffffff', btn_radius: 8, btn_bold: true },
+        ]},
+      ]
+    }
+  },
+  {
+    key: 'exit_intent',
+    label: 'Exit Intent',
+    config: {
+      layout: 'single', col_split: '50-50', position: 'center',
+      bg_color: '#ffffff', bg_image: '', border_radius: 16,
+      overlay: true, overlay_opacity: 50, padding: 40, width: 440, height: 'auto',
+      close_button: true, close_on_overlay: true, delay: 0, frequency: 'once', animation: 'zoom',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'image', image_url: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/141f57c6d92741d7a8bfdb210aa3cc11.png', image_height: 140, image_fit: 'contain', image_link: '' },
+        { id: uid(), type: 'text', text: "Don't Leave Just Yet...", font_size: 26, font_weight: '800', text_align: 'center', text_color: '#0F172A' },
+        { id: uid(), type: 'text', text: 'Get 10% off your order and free shipping!', font_size: 15, font_weight: '400', text_align: 'center', text_color: '#64748b' },
+        { id: uid(), type: 'button', btn_label: 'GET THE DEAL', btn_url: '', btn_action: 'link', btn_color: '#1A56DB', btn_text_color: '#ffffff', btn_radius: 8, btn_bold: true },
+      ]
+    }
+  },
+  {
+    key: 'flash_sale',
+    label: 'Flash Sale',
+    config: {
+      layout: 'two-column', col_split: '60-40', position: 'center',
+      bg_color: '#ffffff', bg_image: '', border_radius: 16,
+      overlay: true, overlay_opacity: 60, padding: 0, width: 700, height: 'auto',
+      close_button: true, close_on_overlay: true, delay: 0, frequency: 'once', animation: 'zoom',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'columns', col_left: [
+          { id: uid(), type: 'text', text: 'Flash Sale', font_size: 16, font_weight: '700', text_align: 'center', text_color: '#0F172A' },
+          { id: uid(), type: 'text', text: '50% OFF', font_size: 48, font_weight: '900', text_align: 'center', text_color: '#ec4899' },
+          { id: uid(), type: 'text', text: 'ON ENTIRE ORDER', font_size: 14, font_weight: '600', text_align: 'center', text_color: '#0F172A' },
+          { id: uid(), type: 'text', text: 'LIMITED-TIME OFFER! SALE ENDS IN', font_size: 11, font_weight: '400', text_align: 'center', text_color: '#94a3b8' },
+          { id: uid(), type: 'embed', embed_code: '<div style="display:flex;gap:8px;justify-content:center;margin:8px 0">' +
+            '<div style="background:#fce7f3;border-radius:8px;padding:8px 12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#0F172A">01</div><div style="font-size:10px;color:#94a3b8">DAYS</div></div>' +
+            '<div style="background:#fce7f3;border-radius:8px;padding:8px 12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#0F172A">14</div><div style="font-size:10px;color:#94a3b8">HRS</div></div>' +
+            '<div style="background:#fce7f3;border-radius:8px;padding:8px 12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#0F172A">30</div><div style="font-size:10px;color:#94a3b8">MIN</div></div>' +
+            '<div style="background:#fce7f3;border-radius:8px;padding:8px 12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#0F172A">29</div><div style="font-size:10px;color:#94a3b8">SEC</div></div>' +
+            '</div>' },
+          { id: uid(), type: 'button', btn_label: 'Shop The Flash Sale Now', btn_url: '', btn_action: 'link', btn_color: '#ec4899', btn_text_color: '#ffffff', btn_radius: 8, btn_bold: true },
+          { id: uid(), type: 'no_thanks', no_thanks_label: 'NO, THANKS!', no_thanks_color: '#94a3b8', no_thanks_dont_show: false },
+        ], col_right: [
+          { id: uid(), type: 'image', image_url: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/9b4183b0d19e451fb1b3ed6352df0dd5.jpg', image_height: 420, image_fit: 'cover', image_link: '' },
+        ]},
+      ]
+    }
+  },
+  {
+    key: 'christmas_discount',
+    label: 'Christmas Discount',
+    config: {
+      layout: 'single', col_split: '50-50', position: 'center',
+      bg_color: '#7c1070', bg_image: '', border_radius: 20,
+      overlay: true, overlay_opacity: 60, padding: 40, width: 480, height: 'auto',
+      close_button: true, close_on_overlay: true, delay: 0, frequency: 'once', animation: 'zoom',
+      popup_url: '',
+      blocks: [
+        { id: uid(), type: 'text', text: 'HAPPY Christmas', font_size: 22, font_weight: '800', text_align: 'center', text_color: '#0F172A' },
+        { id: uid(), type: 'text', text: '50% OFF', font_size: 48, font_weight: '900', text_align: 'center', text_color: '#ffffff' },
+        { id: uid(), type: 'text', text: 'Everything In Store', font_size: 16, font_weight: '400', text_align: 'center', text_color: 'rgba(255,255,255,0.9)' },
+        { id: uid(), type: 'embed', embed_code: '<div style="background:#3b1a5e;border-radius:999px;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px"><span style="color:#fff;font-size:13px;font-weight:600;white-space:nowrap">Limited Time Offer:</span><span style="color:#fff;font-size:20px;font-weight:800;letter-spacing:2px">38 : 12 : 51</span></div>' },
+        { id: uid(), type: 'text', text: 'Submit And Get Your Discount!', font_size: 15, font_weight: '600', text_align: 'center', text_color: '#ffffff' },
+        { id: uid(), type: 'embed', embed_code: '<div style="display:flex;gap:8px"><input type="email" placeholder="Enter Your Email..." style="flex:1;padding:10px 14px;border:1px solid rgba(255,255,255,0.3);border-radius:8px;background:rgba(255,255,255,0.1);color:#fff;font-size:14px"/><button style="padding:10px 18px;background:#0F172A;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">Submit</button></div>' },
+        { id: uid(), type: 'image', image_url: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/16d40bb0f08d4571a94ba22453a96fb9.png', image_height: 120, image_fit: 'contain', image_link: '' },
+      ]
+    }
+  },
+  {
     key: 'lead_capture_2col',
     label: 'Lead Capture (2-col)',
     config: {
@@ -443,7 +577,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
                     <h2 className="text-base font-bold text-slate-900">{t('popup_builder.template_heading')}</h2>
                     <p className="text-xs text-slate-500 mt-0.5">{t('popup_builder.template_subheading')}</p>
                   </div>
-                  <button onClick={() => setShowTemplates(false)} className="text-xs font-bold text-slate-400 hover:text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors">{t('popup_builder.start_blank')}</button>
+                  <button onClick={() => setShowTemplates(false)} className="text-xs font-bold text-white bg-slate-600 hover:bg-slate-700 px-4 py-1.5 rounded-lg transition-colors">{t('popup_builder.start_blank')}</button>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {TEMPLATES.map(tpl => (
