@@ -277,10 +277,110 @@
       case 'swap_image':   swapImage(action.target_block, action.value);   break;
       case 'hide_section': hideSection(action.target_block);               break;
       case 'inject_token': injectToken(action.target_block, action.value); break;
-      case 'show_popup':   showPopup(action.value);                        break;
-      case 'send_webhook': sendWebhook(action.value);                      break;
+      case 'show_popup':        showPopup(action.value);                              break;
+      case 'send_webhook':      sendWebhook(action.value);                            break;
+      case 'insert_countdown':  insertCountdown(action.target_block, action.value);   break;
       default: warn('Unknown action type: ' + action.type);
     }
+  }
+
+  function insertCountdown(blockId, value) {
+    var el = findElement(blockId);
+    if (!el) { warn('insert_countdown: element not found — ' + blockId); return; }
+
+    var cfg;
+    try { cfg = typeof value === 'string' ? JSON.parse(value) : value; } catch(e) { cfg = {}; }
+    var style = cfg.config || {};
+    var type   = style.countdown_type || 'fixed';
+    var endsAt;
+
+    if (type === 'duration') {
+      var durSec = ((style.duration_value || 24) * ({ minutes: 60, hours: 3600, days: 86400 }[style.duration_unit || 'hours'] || 3600));
+      var storKey = 'pp_cd_' + (cfg.countdown_id || 'x') + '_start';
+      var stored  = localStorage.getItem(storKey);
+      if (!stored) { stored = String(Date.now()); localStorage.setItem(storKey, stored); }
+      endsAt = parseInt(stored) + durSec * 1000;
+    } else {
+      endsAt = cfg.ends_at ? new Date(cfg.ends_at).getTime() : null;
+    }
+
+    // Build container
+    var digitBg    = style.digit_bg    || '#1A56DB';
+    var digitColor = style.digit_color || '#ffffff';
+    var labelColor = style.label_color || '#64748b';
+    var bgColor    = style.bg_color    || 'transparent';
+    var pad        = style.padding     != null ? style.padding : 0;
+    var gap        = style.gap         || 10;
+    var digitSize  = style.digit_size  || 32;
+    var radius     = style.digit_radius != null ? style.digit_radius : 6;
+    var showLabels = style.show_labels !== false;
+    var units      = [
+      { key: 'days',    label: 'DAYS', show: style.show_days    !== false },
+      { key: 'hours',   label: 'HRS',  show: style.show_hours   !== false },
+      { key: 'minutes', label: 'MIN',  show: style.show_minutes !== false },
+      { key: 'seconds', label: 'SEC',  show: style.show_seconds !== false },
+    ].filter(function(u) { return u.show; });
+
+    // Inject wrapper
+    el.innerHTML = '';
+    var wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display:flex;align-items:flex-start;justify-content:center;gap:' + gap + 'px;background:' + bgColor + ';padding:' + pad + 'px;box-sizing:border-box;';
+    el.appendChild(wrapper);
+
+    // Digit elements
+    var digitEls = {};
+    units.forEach(function(u, i) {
+      var group = document.createElement('div');
+      group.style.cssText = 'display:flex;align-items:flex-start;gap:' + gap + 'px;';
+      if (i > 0) {
+        var colon = document.createElement('span');
+        colon.style.cssText = 'font-size:' + digitSize + 'px;font-weight:800;color:' + digitBg + ';margin-top:' + Math.round(digitSize * 0.2) + 'px;line-height:1;';
+        colon.textContent = ':';
+        group.appendChild(colon);
+      }
+      var col = document.createElement('div');
+      col.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;';
+      var box = document.createElement('div');
+      box.style.cssText = 'background:' + digitBg + ';color:' + digitColor + ';font-size:' + digitSize + 'px;font-weight:800;padding:' + Math.round(digitSize*0.25) + 'px ' + Math.round(digitSize*0.35) + 'px;border-radius:' + radius + 'px;min-width:' + Math.round(digitSize*1.5) + 'px;text-align:center;line-height:1;font-variant-numeric:tabular-nums;';
+      box.textContent = '00';
+      col.appendChild(box);
+      if (showLabels) {
+        var lbl = document.createElement('span');
+        lbl.style.cssText = 'font-size:9px;font-weight:700;color:' + labelColor + ';letter-spacing:0.05em;';
+        lbl.textContent = u.label;
+        col.appendChild(lbl);
+      }
+      group.appendChild(col);
+      wrapper.appendChild(group);
+      digitEls[u.key] = box;
+    });
+
+    // Tick
+    var expiredFired = false;
+    function tick() {
+      var now  = Date.now();
+      var diff = endsAt ? endsAt - now : 0;
+      if (diff <= 0) {
+        Object.keys(digitEls).forEach(function(k) { digitEls[k].textContent = '00'; });
+        if (!expiredFired) {
+          expiredFired = true;
+          var expAction = cfg.expiry_action || style.expiry_action || 'hide';
+          var expValue  = cfg.expiry_value  || style.expiry_value  || '';
+          if      (expAction === 'hide')     { el.style.display = 'none'; }
+          else if (expAction === 'redirect') { window.location.href = expValue; }
+          else if (expAction === 'message')  { el.innerHTML = '<span style="font-size:14px;color:' + labelColor + '">' + expValue + '</span>'; }
+        }
+        return;
+      }
+      var d = Math.floor(diff / 86400000);
+      var h = Math.floor((diff % 86400000) / 3600000);
+      var m = Math.floor((diff % 3600000) / 60000);
+      var s = Math.floor((diff % 60000) / 1000);
+      var vals = { days: d, hours: h, minutes: m, seconds: s };
+      Object.keys(digitEls).forEach(function(k) { digitEls[k].textContent = String(vals[k]).padStart(2,'0'); });
+    }
+    tick();
+    if (endsAt) setInterval(tick, 1000);
   }
 
   function swapText(blockId, newText) {

@@ -479,3 +479,9 @@ Every JVZoo product is simultaneously a brick in chov.ai. When enough products e
 | `PagePersona_Strategy_v3.docx` | Product strategy |
 | `PagePersona_UIScreens_v2.docx` | 31 UI screen designs (S01–S31) |
 | `PagePersona_userflow_v2.html` | Complete user flow diagram |
+
+## Working Style
+- Work autonomously. Do not ask for approval before editing files.
+- Do not ask clarifying questions mid-task. Make a decision and proceed.
+- Only stop and ask if something is genuinely ambiguous or destructive.
+- Tell me what you built when you're done, not before.
