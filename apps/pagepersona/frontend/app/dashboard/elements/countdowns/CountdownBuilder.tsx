@@ -78,7 +78,7 @@ const TEMPLATES = [
 
 function pad(n: number) { return String(n).padStart(2, '0') }
 
-function CountdownDisplay({ endsAt, config }: { endsAt: string; config: CountdownStyleConfig }) {
+function CountdownDisplay({ endsAt, config, t }: { endsAt: string; config: CountdownStyleConfig; t: any }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, expired: false, noDate: true })
 
   useEffect(() => {
@@ -93,7 +93,9 @@ function CountdownDisplay({ endsAt, config }: { endsAt: string; config: Countdow
     return () => clearInterval(interval)
   }, [endsAt])
 
-  const units: { key: keyof typeof timeLeft; label: string; show: boolean }[] = [
+  const DEMO_VALUES: Record<string, number> = { days: 5, hours: 12, minutes: 34, seconds: 0 }
+
+  const units: { key: string; label: string; show: boolean }[] = [
     { key: 'days',    label: 'DAYS', show: config.show_days },
     { key: 'hours',   label: 'HRS',  show: config.show_hours },
     { key: 'minutes', label: 'MIN',  show: config.show_minutes },
@@ -114,26 +116,33 @@ function CountdownDisplay({ endsAt, config }: { endsAt: string; config: Countdow
     fontVariantNumeric: 'tabular-nums' as const,
   }
 
-  return (
-    <div style={{ background: config.bg_color, width: config.width === 'auto' ? '100%' : config.width, padding: config.padding, borderRadius: 12, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 80 }}>
-      {timeLeft.noDate ? (
-        <p style={{ color: '#94a3b8', fontSize: 13, fontStyle: 'italic', margin: 0 }}>Set an end date to see the live preview</p>
-      ) : timeLeft.expired ? (
-        <p style={{ color: '#94a3b8', fontSize: 13, margin: 0 }}>This countdown has ended</p>
-      ) : (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: config.gap }}>
-          {visibleUnits.map((u, i) => (
-            <div key={u.key} style={{ display: 'flex', alignItems: 'flex-start', gap: config.gap }}>
-              {i > 0 && <span style={{ fontSize: config.digit_size, fontWeight: 800, color: config.digit_bg, marginTop: Math.round(config.digit_size * 0.25), lineHeight: 1 }}>:</span>}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-                <div style={digitStyle}>{pad(timeLeft[u.key] as number)}</div>
-                {config.show_labels && (
-                  <span style={{ fontSize: 10, fontWeight: 700, color: config.label_color, letterSpacing: '0.05em' }}>{u.label}</span>
-                )}
-              </div>
-            </div>
-          ))}
+  const renderDigits = (values: Record<string, number>) => (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: config.gap }}>
+      {visibleUnits.map((u, i) => (
+        <div key={u.key} style={{ display: 'flex', alignItems: 'flex-start', gap: config.gap }}>
+          {i > 0 && <span style={{ fontSize: config.digit_size, fontWeight: 800, color: config.digit_bg, marginTop: Math.round(config.digit_size * 0.25), lineHeight: 1 }}>:</span>}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+            <div style={digitStyle}>{pad(values[u.key] ?? 0)}</div>
+            {config.show_labels && (
+              <span style={{ fontSize: 10, fontWeight: 700, color: config.label_color, letterSpacing: '0.05em' }}>{u.label}</span>
+            )}
+          </div>
         </div>
+      ))}
+    </div>
+  )
+
+  return (
+    <div style={{ background: config.bg_color, width: config.width === 'auto' ? '100%' : config.width, padding: config.padding, borderRadius: 12, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 10, minHeight: 80 }}>
+      {timeLeft.noDate ? (
+        <>
+          {renderDigits(DEMO_VALUES)}
+          <p style={{ color: '#94a3b8', fontSize: 11, margin: 0, fontStyle: 'italic' }}>{t('countdown_builder.preview_demo_badge')}</p>
+        </>
+      ) : timeLeft.expired ? (
+        <p style={{ color: '#94a3b8', fontSize: 13, margin: 0 }}>{t('countdown_builder.preview_expired')}</p>
+      ) : (
+        renderDigits(timeLeft as unknown as Record<string, number>)
       )}
     </div>
   )
@@ -185,7 +194,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
 
   const handleSave = async () => {
     if (!name.trim()) { setSaveError(t('countdown_builder.name_required')); return }
-    if (!endsAt) { setSaveError('Please set an end date and time'); return }
+    if (!endsAt) { setSaveError(t('countdown_builder.date_required')); return }
     setSaving(true); setSaveError(''); setSaved(false)
     try {
       const endsAtISO = new Date(endsAt).toISOString()
@@ -236,7 +245,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
           {!showTemplates && (
             <button onClick={() => setShowTemplates(true)} className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors">
               <Icon name="style" className="text-sm" />
-              Templates
+              {t('countdown_builder.templates_btn')}
             </button>
           )}
           {saved && (
@@ -269,7 +278,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                     <p className="text-xs text-slate-500 mt-0.5">{t('countdown_builder.template_subheading')}</p>
                   </div>
                   {isEdit && (
-                    <button onClick={() => setShowTemplates(false)} className="text-xs font-bold text-slate-600 hover:text-slate-900 px-3 py-1.5 border border-slate-200 rounded-lg transition-colors">Cancel</button>
+                    <button onClick={() => setShowTemplates(false)} className="text-xs font-bold text-slate-600 hover:text-slate-900 px-3 py-1.5 border border-slate-200 rounded-lg transition-colors">{t('countdown_builder.cancel')}</button>
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-4">
@@ -308,10 +317,10 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
             <div className="flex flex-col items-center gap-6">
               <div className="flex items-center gap-2">
                 <Icon name="visibility" className="text-slate-400 text-sm" />
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Live Preview · Updates every second</span>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{t('countdown_builder.preview_heading')} · {t('countdown_builder.preview_live_subheading')}</span>
               </div>
-              <CountdownDisplay endsAt={endsAt} config={config} />
-              <p className="text-[11px] text-slate-400">This is exactly how it will appear on your page</p>
+              <CountdownDisplay endsAt={endsAt} config={config} t={t} />
+              <p className="text-[11px] text-slate-400">{t('countdown_builder.preview_caption')}</p>
             </div>
           )}
         </main>
@@ -364,17 +373,17 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
 
               {/* Container */}
               <div>
-                <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Container</h3>
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">{t('countdown_builder.section_container')}</h3>
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Background</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('countdown_builder.bg_color_label')}</label>
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-md border border-slate-200" style={{ background: config.bg_color }} />
                       <input type="color" value={config.bg_color} onChange={e => setC('bg_color', e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Width (px)</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{t('countdown_builder.width_label')}</label>
                     <div className="flex gap-2">
                       <input type="number" min={200} max={1200} value={typeof config.width === 'number' ? config.width : 480}
                         onChange={e => setC('width', parseInt(e.target.value) || 480)}
@@ -386,7 +395,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Padding — {config.padding}px</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{t('countdown_builder.padding_label')} — {config.padding}px</label>
                     <input type="range" min={0} max={80} value={config.padding} onChange={e => setC('padding', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
                   </div>
                 </div>

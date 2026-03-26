@@ -662,11 +662,21 @@
     "digit_size": "Digit size (px)",
     "digit_radius": "Border radius (px)",
     "preview_heading": "Live Preview",
+    "preview_live_subheading": "Updates every second",
+    "preview_caption": "This is exactly how it will appear on your page",
     "preview_expired": "This countdown has ended",
-    "preview_no_date": "Set an end date to see the preview",
+    "preview_no_date": "Set an end date to see the live preview",
+    "preview_demo_badge": "Demo preview",
     "template_heading": "Choose a template",
     "template_subheading": "Pick a style to customise, or start blank",
+    "templates_btn": "Templates",
     "start_blank": "Start blank",
-    "presets": "Quick Presets"
+    "cancel": "Cancel",
+    "presets": "Quick Presets",
+    "section_container": "Container",
+    "bg_color_label": "Background",
+    "width_label": "Width (px)",
+    "padding_label": "Padding",
+    "date_required": "Please set an end date and time"
   }
 }

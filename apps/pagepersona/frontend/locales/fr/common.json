@@ -662,11 +662,21 @@
     "digit_size": "Taille du chiffre (px)",
     "digit_radius": "Rayon de bordure (px)",
     "preview_heading": "Aperçu en direct",
+    "preview_live_subheading": "Mise à jour chaque seconde",
+    "preview_caption": "C'est exactement ainsi que cela apparaîtra sur votre page",
     "preview_expired": "Ce minuteur est terminé",
     "preview_no_date": "Définissez une date de fin pour voir l'aperçu",
+    "preview_demo_badge": "Aperçu démo",
     "template_heading": "Choisir un modèle",
     "template_subheading": "Choisissez un style ou commencez vide",
+    "templates_btn": "Modèles",
     "start_blank": "Commencer vide",
-    "presets": "Styles rapides"
+    "cancel": "Annuler",
+    "presets": "Styles rapides",
+    "section_container": "Conteneur",
+    "bg_color_label": "Arrière-plan",
+    "width_label": "Largeur (px)",
+    "padding_label": "Espacement",
+    "date_required": "Veuillez définir une date et une heure de fin"
   }
 }
