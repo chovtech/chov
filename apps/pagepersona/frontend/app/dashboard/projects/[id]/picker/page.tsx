@@ -54,8 +54,8 @@ const ACTION_TYPE_DEFS = [
   { key: 'insert_countdown', labelKey: 'picker.action_insert_countdown', icon: 'timer',        needsElement: true  },
 ]
 
-const GEO_TOKENS = ['{country}', '{city}', '{region}']
-const TOKEN_DEFAULTS: Record<string, string> = { country: 'Your Country', city: 'Your City', region: 'Your Region' }
+const GEO_TOKENS = ['{country}', '{city}', '{region}', '{company}']
+const TOKEN_DEFAULTS: Record<string, string> = { country: 'Your Country', city: 'Your City', region: 'Your Region', company: 'Your Company' }
 
 function parseSwapText(val: string): { text: string; fallbacks: Record<string, string> } {
   try {
@@ -111,6 +111,8 @@ function PickerPageInner() {
   const [updating,         setUpdating]          = useState(false)
   const [countdowns,       setCountdowns]        = useState<any[]>([])
   const [loadingCountdowns,setLoadingCountdowns] = useState(true)
+  const [popups,           setPopups]            = useState<any[]>([])
+  const [loadingPopups,    setLoadingPopups]     = useState(true)
 
   useEffect(() => {
     projectApi.get(projectId).then((res: any) => setProjectName(res.data.name || 'Project')).catch(() => {})
@@ -118,6 +120,7 @@ function PickerPageInner() {
       setActiveRules((res.data || []).filter((r: any) => r.is_active).length)
     }).catch(() => {})
     apiClient.get('/api/countdowns').then((res: any) => setCountdowns(res.data || [])).catch(() => {}).finally(() => setLoadingCountdowns(false))
+    apiClient.get('/api/popups').then((res: any) => setPopups(res.data || [])).catch(() => {}).finally(() => setLoadingPopups(false))
   }, [projectId])
 
   useEffect(() => {
@@ -773,10 +776,38 @@ function PickerPageInner() {
                         )}
                         {action.type === 'show_popup' && (
                           <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Popup Message</label>
-                            <textarea value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
-                              placeholder={t('picker.popup_placeholder')} rows={3}
-                              className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:border-[#1A56DB] transition-all" />
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('rules.popup_select')}</label>
+                            {loadingPopups ? (
+                              <div className="flex items-center gap-2 py-2 text-slate-400 text-xs"><Icon name="sync" className="animate-spin text-sm" /> Loading...</div>
+                            ) : popups.length === 0 ? (
+                              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                <p className="text-xs font-bold text-slate-500 mb-1">{t('rules.popup_none')}</p>
+                                <p className="text-xs text-slate-400 mb-1">{t('rules.popup_none_desc')}</p>
+                                <a href="/dashboard/elements/popups/new" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline">{t('rules.popup_go_create')}</a>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col gap-2">
+                                {popups.map((popup: any) => {
+                                  let selected = false
+                                  try { selected = JSON.parse(action.value)?.popup_id === popup.id } catch {}
+                                  return (
+                                    <button key={popup.id} onClick={() => updateAction(action.id, 'value', JSON.stringify({ popup_id: popup.id, config: popup.config }))}
+                                      className={"flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all " + (selected ? 'border-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-100 hover:border-slate-300')}
+                                    >
+                                      <div className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ background: popup.config?.bg_color || '#1A56DB' }}>
+                                        <Icon name="web_asset" className="text-white text-base" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className={"text-sm font-bold truncate " + (selected ? 'text-[#1A56DB]' : 'text-slate-700')}>{popup.name}</p>
+                                        <p className="text-[11px] text-slate-400">{popup.config?.position || 'center'}</p>
+                                      </div>
+                                      {selected && <Icon name="check_circle" className="text-[#1A56DB] text-base flex-shrink-0" />}
+                                    </button>
+                                  )
+                                })}
+                                <a href="/dashboard/elements/popups/new" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline mt-1">{t('rules.popup_go_create')}</a>
+                              </div>
+                            )}
                           </div>
                         )}
                         {action.type === 'insert_countdown' && (
@@ -1070,10 +1101,38 @@ function PickerPageInner() {
 
                           {action.type === 'show_popup' && (
                             <div>
-                              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Popup Message</label>
-                              <textarea value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
-                                placeholder={t('picker.popup_placeholder')} rows={3}
-                                className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:border-[#1A56DB] transition-all" />
+                              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('rules.popup_select')}</label>
+                              {loadingPopups ? (
+                                <div className="flex items-center gap-2 py-2 text-slate-400 text-xs"><Icon name="sync" className="animate-spin text-sm" /> Loading...</div>
+                              ) : popups.length === 0 ? (
+                                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                  <p className="text-xs font-bold text-slate-500 mb-1">{t('rules.popup_none')}</p>
+                                  <p className="text-xs text-slate-400 mb-1">{t('rules.popup_none_desc')}</p>
+                                  <a href="/dashboard/elements/popups/new" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline">{t('rules.popup_go_create')}</a>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col gap-2">
+                                  {popups.map((popup: any) => {
+                                    let selected = false
+                                    try { selected = JSON.parse(action.value)?.popup_id === popup.id } catch {}
+                                    return (
+                                      <button key={popup.id} onClick={() => updateAction(action.id, 'value', JSON.stringify({ popup_id: popup.id, config: popup.config }))}
+                                        className={"flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all " + (selected ? 'border-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-100 hover:border-slate-300')}
+                                      >
+                                        <div className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ background: popup.config?.bg_color || '#1A56DB' }}>
+                                          <Icon name="web_asset" className="text-white text-base" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className={"text-sm font-bold truncate " + (selected ? 'text-[#1A56DB]' : 'text-slate-700')}>{popup.name}</p>
+                                          <p className="text-[11px] text-slate-400">{popup.config?.position || 'center'}</p>
+                                        </div>
+                                        {selected && <Icon name="check_circle" className="text-[#1A56DB] text-base flex-shrink-0" />}
+                                      </button>
+                                    )
+                                  })}
+                                  <a href="/dashboard/elements/popups/new" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline mt-1">{t('rules.popup_go_create')}</a>
+                                </div>
+                              )}
                             </div>
                           )}
 

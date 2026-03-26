@@ -22,6 +22,7 @@ interface Block {
   image_link?: string
   // text
   text?: string
+  text_fallbacks?: Record<string, string>
   font_size?: number
   font_weight?: string
   text_align?: string
@@ -953,12 +954,58 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
       </div>
 
       {/* TEXT */}
-      {block.type === 'text' && (
+      {block.type === 'text' && (() => {
+        const POPUP_TOKENS = ['{country}', '{city}', '{region}', '{company}']
+        const POPUP_TOKEN_DEFAULTS: Record<string, string> = { country: 'Your Country', city: 'Your City', region: 'Your Region', company: 'Your Company' }
+        const detectedTokens = POPUP_TOKENS.filter(tok => (block.text || '').includes(tok)).map(tok => tok.slice(1, -1))
+        const insertToken = (tok: string) => {
+          const newText = (block.text || '') + ' ' + tok
+          const newDetected = POPUP_TOKENS.filter(t => newText.includes(t)).map(t => t.slice(1, -1))
+          const newFallbacks: Record<string, string> = {}
+          newDetected.forEach(k => { newFallbacks[k] = (block.text_fallbacks || {})[k] ?? POPUP_TOKEN_DEFAULTS[k] ?? '' })
+          onUpdate({ text: newText, text_fallbacks: newFallbacks })
+        }
+        const updateFallback = (key: string, val: string) => {
+          onUpdate({ text_fallbacks: { ...(block.text_fallbacks || {}), [key]: val } })
+        }
+        const onTextChange = (newText: string) => {
+          const newDetected = POPUP_TOKENS.filter(t => newText.includes(t)).map(t => t.slice(1, -1))
+          const newFallbacks: Record<string, string> = {}
+          newDetected.forEach(k => { newFallbacks[k] = (block.text_fallbacks || {})[k] ?? POPUP_TOKEN_DEFAULTS[k] ?? '' })
+          onUpdate({ text: newText, text_fallbacks: newDetected.length > 0 ? newFallbacks : undefined })
+        }
+        return (
         <>
           <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Content</label>
-            <textarea value={block.text || ''} onChange={e => onUpdate({ text: e.target.value })} rows={3}
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('popup_builder.label_content')}</label>
+            <textarea value={block.text || ''} onChange={e => onTextChange(e.target.value)} rows={3}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB]" />
+            <div className="mt-2">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('picker.insert_token')}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {POPUP_TOKENS.map(tok => (
+                  <button key={tok} type="button" onClick={() => insertToken(tok)}
+                    className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-colors">
+                    <span className="text-[#1A56DB]/70">{'{'}</span>{tok.slice(1,-1)}<span className="text-[#1A56DB]/70">{'}'}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            {detectedTokens.length > 0 && (
+              <div className="mt-2 p-2.5 bg-amber-50 border border-amber-100 rounded-xl">
+                <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-2">{t('picker.token_fallbacks')}</p>
+                <div className="flex flex-col gap-1.5">
+                  {detectedTokens.map(key => (
+                    <div key={key} className="flex items-center gap-2">
+                      <span className="text-[10px] text-slate-500 w-20 shrink-0 font-mono text-[#1A56DB]">{'{' + key + '}'}</span>
+                      <input type="text" value={(block.text_fallbacks || {})[key] ?? POPUP_TOKEN_DEFAULTS[key] ?? ''}
+                        onChange={e => updateFallback(key, e.target.value)}
+                        className="flex-1 px-2 py-1 bg-white border border-amber-200 rounded-lg text-xs focus:outline-none focus:border-amber-400 transition-all" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -1007,7 +1054,8 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
             </div>
           </div>
         </>
-      )}
+        )
+      })()}
 
       {/* IMAGE */}
       {block.type === 'image' && (

@@ -19,8 +19,8 @@ const ACTION_TYPES = [
   { key: "insert_countdown",  labelKey: "picker.action_insert_countdown",  icon: "timer",          needsElement: true  },
 ]
 
-const GEO_TOKENS = ["{country}", "{city}", "{region}"]
-const TOKEN_DEFAULTS: Record<string, string> = { country: "Your Country", city: "Your City", region: "Your Region" }
+const GEO_TOKENS = ["{country}", "{city}", "{region}", "{company}"]
+const TOKEN_DEFAULTS: Record<string, string> = { country: "Your Country", city: "Your City", region: "Your Region", company: "Your Company" }
 
 function parseSwapText(val: string): { text: string; fallbacks: Record<string, string> } {
   try {

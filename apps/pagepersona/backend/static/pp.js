@@ -587,7 +587,7 @@
           ';line-height:1.5' +
           (block.text_italic ? ';font-style:italic' : '') +
           (block.text_underline ? ';text-decoration:underline' : '');
-        el.textContent = resolveTokens(block.text || '');
+        el.textContent = resolveTokensWithFallbacks(block.text || '', block.text_fallbacks || {});
         return el;
       }
       case 'image': {
@@ -679,13 +679,14 @@
     if (!text) return text;
     var signals = (window.__pp && window.__pp.signals) || {};
     var geo = {
-      '{country}': signals.geo_country || '',
-      '{city}':    signals.geo_city    || '',
-      '{region}':  signals.geo_region  || '',
+      '{country}': signals.geo_country  || '',
+      '{city}':    signals.geo_city     || '',
+      '{region}':  signals.geo_region   || '',
+      '{company}': signals.company_name || '',
     };
     var result = text;
     for (var token in geo) {
-      var key = token.slice(1, -1); // 'country', 'city', 'region'
+      var key = token.slice(1, -1);
       var val = geo[token] || (fallbacks && fallbacks[key]) || '';
       result = result.split(token).join(val);
     }
