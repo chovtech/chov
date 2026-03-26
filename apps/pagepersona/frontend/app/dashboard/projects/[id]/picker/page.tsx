@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { rulesApi, projectApi } from '@/lib/api/client'
+import { rulesApi, projectApi, apiClient } from '@/lib/api/client'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
 import Icon from '@/components/ui/Icon'
 import ImageUploader from '@/components/ui/ImageUploader'
@@ -49,8 +49,9 @@ const ACTION_TYPE_DEFS = [
   { key: 'swap_image',   labelKey: 'picker.action_swap_image',   icon: 'image',          needsElement: true  },
   { key: 'hide_section', labelKey: 'picker.action_hide_section', icon: 'visibility_off', needsElement: true  },
   { key: 'inject_token', labelKey: 'picker.action_inject_token', icon: 'data_object',    needsElement: true  },
-  { key: 'show_popup',   labelKey: 'picker.action_show_popup',   icon: 'web_asset',      needsElement: false },
-  { key: 'send_webhook', labelKey: 'picker.action_send_webhook', icon: 'webhook',        needsElement: false },
+  { key: 'show_popup',        labelKey: 'picker.action_show_popup',        icon: 'web_asset', needsElement: false },
+  { key: 'insert_countdown',  labelKey: 'picker.action_insert_countdown',  icon: 'timer',     needsElement: true  },
+  { key: 'send_webhook',      labelKey: 'picker.action_send_webhook',      icon: 'webhook',   needsElement: false },
 ]
 
 const TOKENS = ['{city}', '{first_name}', '{company}', '{affiliate_name}']
@@ -91,12 +92,15 @@ function PickerPageInner() {
   const [successToast,      setSuccessToast]      = useState(false)
   const [editingRule,      setEditingRule]       = useState<ExistingRule | null>(null)
   const [updating,         setUpdating]          = useState(false)
+  const [countdowns,       setCountdowns]        = useState<any[]>([])
+  const [loadingCountdowns,setLoadingCountdowns] = useState(true)
 
   useEffect(() => {
     projectApi.get(projectId).then((res: any) => setProjectName(res.data.name || 'Project')).catch(() => {})
     rulesApi.list(projectId).then((res: any) => {
       setActiveRules((res.data || []).filter((r: any) => r.is_active).length)
     }).catch(() => {})
+    apiClient.get('/api/countdowns').then((res: any) => setCountdowns(res.data || [])).catch(() => {}).finally(() => setLoadingCountdowns(false))
   }, [projectId])
 
   useEffect(() => {
@@ -733,6 +737,40 @@ function PickerPageInner() {
                               placeholder={t('picker.webhook_placeholder')} className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all" />
                           </div>
                         )}
+                        {action.type === 'insert_countdown' && (
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('rules.countdown_select')}</label>
+                            {loadingCountdowns ? (
+                              <div className="flex items-center gap-2 py-2 text-slate-400 text-xs"><Icon name="sync" className="animate-spin text-sm" /> Loading...</div>
+                            ) : countdowns.length === 0 ? (
+                              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                <p className="text-xs text-slate-500 mb-1">{t('rules.countdown_none')}</p>
+                                <a href="/dashboard/elements?tab=countdown" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline">{t('rules.countdown_go_create')}</a>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col gap-2">
+                                {countdowns.map((cd: any) => {
+                                  let selected = false
+                                  try { selected = JSON.parse(action.value)?.countdown_id === cd.id } catch {}
+                                  return (
+                                    <button key={cd.id} onClick={() => updateAction(action.id, 'value', JSON.stringify({ countdown_id: cd.id, ends_at: cd.ends_at, expiry_action: cd.expiry_action, expiry_value: cd.expiry_value, config: cd.config }))}
+                                      className={"flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all " + (selected ? 'border-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-100 hover:border-slate-300')}
+                                    >
+                                      <div className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ background: cd.config?.digit_bg || '#1A56DB' }}>
+                                        <Icon name="timer" className="text-white text-base" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className={"text-sm font-bold truncate " + (selected ? 'text-[#1A56DB]' : 'text-slate-700')}>{cd.name}</p>
+                                        <p className="text-[11px] text-slate-400">{cd.config?.countdown_type === 'duration' ? `${cd.config.duration_value} ${cd.config.duration_unit}` : (cd.ends_at ? new Date(cd.ends_at).toLocaleDateString() : '—')}</p>
+                                      </div>
+                                      {selected && <Icon name="check_circle" className="text-[#1A56DB] text-base flex-shrink-0" />}
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -975,6 +1013,40 @@ function PickerPageInner() {
                               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Webhook URL</label>
                               <input type="url" value={action.value} onChange={e => updateAction(action.id, 'value', e.target.value)}
                                 placeholder={t('picker.webhook_placeholder')} className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all" />
+                            </div>
+                          )}
+                          {action.type === 'insert_countdown' && (
+                            <div>
+                              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('rules.countdown_select')}</label>
+                              {loadingCountdowns ? (
+                                <div className="flex items-center gap-2 py-2 text-slate-400 text-xs"><Icon name="sync" className="animate-spin text-sm" /> Loading...</div>
+                              ) : countdowns.length === 0 ? (
+                                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                  <p className="text-xs text-slate-500 mb-1">{t('rules.countdown_none')}</p>
+                                  <a href="/dashboard/elements?tab=countdown" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline">{t('rules.countdown_go_create')}</a>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col gap-2">
+                                  {countdowns.map((cd: any) => {
+                                    let selected = false
+                                    try { selected = JSON.parse(action.value)?.countdown_id === cd.id } catch {}
+                                    return (
+                                      <button key={cd.id} onClick={() => updateAction(action.id, 'value', JSON.stringify({ countdown_id: cd.id, ends_at: cd.ends_at, expiry_action: cd.expiry_action, expiry_value: cd.expiry_value, config: cd.config }))}
+                                        className={"flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all " + (selected ? 'border-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-100 hover:border-slate-300')}
+                                      >
+                                        <div className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ background: cd.config?.digit_bg || '#1A56DB' }}>
+                                          <Icon name="timer" className="text-white text-base" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className={"text-sm font-bold truncate " + (selected ? 'text-[#1A56DB]' : 'text-slate-700')}>{cd.name}</p>
+                                          <p className="text-[11px] text-slate-400">{cd.config?.countdown_type === 'duration' ? `${cd.config.duration_value} ${cd.config.duration_unit}` : (cd.ends_at ? new Date(cd.ends_at).toLocaleDateString() : '—')}</p>
+                                        </div>
+                                        {selected && <Icon name="check_circle" className="text-[#1A56DB] text-base flex-shrink-0" />}
+                                      </button>
+                                    )
+                                  })}
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
