@@ -6,6 +6,7 @@ import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
+import CitySearchInput from '@/components/ui/CitySearchInput'
 import { rulesApi, projectApi, apiClient } from '@/lib/api/client'
 
 // Full signal config map — needed to reconstruct form state from saved rule data
@@ -24,7 +25,7 @@ const SIGNAL_CONFIGS: Record<string, { label: string; operators: string[]; value
   operating_system: { label: 'OS',             operators: ['is'],                                      valueType: 'select', options: ['iOS','Android','Windows','macOS','Linux'] },
   browser:          { label: 'Browser',        operators: ['is'],                                      valueType: 'select', options: ['Chrome','Firefox','Safari','Edge'] },
   geo_country:      { label: 'Country',        operators: ['is','is not'],                             valueType: 'select', options: ['Afghanistan','Albania','Algeria','Argentina','Australia','Austria','Bangladesh','Belgium','Bolivia','Brazil','Cambodia','Canada','Chile','China','Colombia','Croatia','Czech Republic','Denmark','Ecuador','Egypt','Ethiopia','Finland','France','Germany','Ghana','Greece','Guatemala','Honduras','Hungary','India','Indonesia','Iran','Iraq','Ireland','Israel','Italy','Japan','Jordan','Kenya','Kuwait','Malaysia','Mexico','Morocco','Netherlands','New Zealand','Nigeria','Norway','Pakistan','Peru','Philippines','Poland','Portugal','Qatar','Romania','Russia','Saudi Arabia','Senegal','Singapore','South Africa','South Korea','Spain','Sri Lanka','Sweden','Switzerland','Taiwan','Tanzania','Thailand','Turkey','Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Venezuela','Vietnam','Zimbabwe'] },
-  geo_city:         { label: 'City',           operators: ['is','contains'],                           valueType: 'select', options: ['Abuja','Accra','Amsterdam','Atlanta','Austin','Bangkok','Barcelona','Beijing','Berlin','Boston','Brussels','Buenos Aires','Cairo','Cape Town','Chicago','Copenhagen','Dallas','Denver','Dubai','Dublin','Guangzhou','Helsinki','Hong Kong','Houston','Istanbul','Jakarta','Johannesburg','Karachi','Kuala Lumpur','Lagos','Lahore','Lima','Lisbon','London','Los Angeles','Madrid','Manila','Melbourne','Mexico City','Miami','Milan','Montreal','Moscow','Mumbai','Nairobi','New York','Oslo','Paris','Prague','Rome','San Francisco','Santiago','São Paulo','Seattle','Seoul','Shanghai','Singapore','Stockholm','Sydney','Taipei','Tehran','Tel Aviv','Tokyo','Toronto','Vienna','Warsaw','Washington DC','Zurich'] },
+  geo_city:         { label: 'City',           operators: ['is','contains'],                           valueType: 'city' },
   day_time:         { label: 'Time of day',    operators: ['is','is between'],                         valueType: 'text' },
   company_name:     { label: 'Company',        operators: ['is','contains'],                           valueType: 'text' },
   industry:         { label: 'Industry',       operators: ['is'],                                      valueType: 'text' },
@@ -467,6 +468,12 @@ function EditRulePageInner() {
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('rules.value')}</label>
                     {condition.valueType === 'none' ? (
                       <div className="px-3 py-2.5 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-400">Auto-detected</div>
+                    ) : condition.signal === 'geo_city' ? (
+                      <CitySearchInput
+                        value={condition.value}
+                        onChange={val => updateCondition(condition.id, 'value', val)}
+                        placeholder={t('rules.value_placeholder')}
+                      />
                     ) : condition.valueType === 'select' ? (
                       <div className="relative">
                         <select
