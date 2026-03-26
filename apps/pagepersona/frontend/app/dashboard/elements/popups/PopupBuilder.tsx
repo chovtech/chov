@@ -10,7 +10,7 @@ import ImageUploader from '@/components/ui/ImageUploader'
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
-type BlockType = 'image' | 'text' | 'button' | 'embed' | 'no_thanks' | 'columns'
+type BlockType = 'image' | 'text' | 'button' | 'embed' | 'no_thanks' | 'columns' | 'countdown'
 
 interface Block {
   id: string
@@ -46,6 +46,12 @@ interface Block {
   // columns
   col_left?: Block[]
   col_right?: Block[]
+  // countdown
+  countdown_id?: string
+  countdown_ends_at?: string
+  countdown_expiry_action?: string
+  countdown_expiry_value?: string
+  countdown_config?: any
 }
 
 interface PopupConfig {
@@ -90,12 +96,13 @@ const POSITIONS = [
 ]
 
 const ELEMENT_TYPES: { type: BlockType; icon: string; label: string }[] = [
-  { type: 'text',      icon: 'title',        label: 'Text' },
-  { type: 'image',     icon: 'image',        label: 'Image' },
-  { type: 'button',    icon: 'smart_button', label: 'Button' },
-  { type: 'embed',     icon: 'code',         label: 'Embed' },
+  { type: 'text',      icon: 'title',          label: 'Text' },
+  { type: 'image',     icon: 'image',          label: 'Image' },
+  { type: 'button',    icon: 'smart_button',   label: 'Button' },
+  { type: 'countdown', icon: 'timer',          label: 'Countdown' },
+  { type: 'embed',     icon: 'code',           label: 'Embed' },
   { type: 'no_thanks', icon: 'do_not_disturb', label: 'No Thanks' },
-  { type: 'columns',   icon: 'view_column',  label: 'Columns' },
+  { type: 'columns',   icon: 'view_column',    label: 'Columns' },
 ]
 
 function uid() { return Math.random().toString(36).slice(2, 8) }
@@ -347,6 +354,15 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
   const [loading, setLoading] = useState(isEdit)
   const [showTemplates, setShowTemplates] = useState(!isEdit)
   const [editingName, setEditingName] = useState(false)
+  const [countdowns, setCountdowns] = useState<any[]>([])
+  const [loadingCountdowns, setLoadingCountdowns] = useState(true)
+
+  useEffect(() => {
+    apiClient.get('/api/countdowns')
+      .then(res => setCountdowns(res.data))
+      .catch(() => null)
+      .finally(() => setLoadingCountdowns(false))
+  }, [])
 
   useEffect(() => {
     if (!isEdit) return
@@ -425,6 +441,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
       embed:     { embed_code: '' },
       no_thanks: { no_thanks_label: 'No thanks', no_thanks_color: '#94a3b8', no_thanks_dont_show: false },
       columns:   { col_left: [{ id: uid(), type: 'image', image_url: '', image_height: 280, image_fit: 'cover', image_link: '' }], col_right: [{ id: uid(), type: 'text', text: 'Add content here', font_size: 16, font_weight: '700', text_align: 'left', text_color: '#0F172A' }] },
+      countdown: { countdown_id: '', countdown_ends_at: '', countdown_expiry_action: 'hide', countdown_expiry_value: '', countdown_config: {} },
     }
     const newBlock: Block = { id: uid(), type, ...defaults[type] }
 
@@ -732,6 +749,8 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
               onUpdate={(updates) => updateBlock(selectedBlock.id, updates)}
               onClose={() => { setSelectedBlockId(null); setRightPanel('global') }}
               t={t}
+              countdowns={countdowns}
+              loadingCountdowns={loadingCountdowns}
             />
           )}
 
@@ -769,10 +788,10 @@ function CanvasBlock({ block, idx, total, isBar, selectedBlockId, onSelect, onDe
             />
           ))}
           <div className="flex gap-1 mt-1">
-            {(['image','text','button','embed','no_thanks'] as const).map(bt => (
+            {(['image','text','button','countdown','embed','no_thanks'] as const).map(bt => (
               <button key={bt} onClick={() => onAddToCol(bt, 'left', block.id)}
                 className="flex-1 py-1 text-[9px] font-bold text-white/50 hover:text-white/80 border border-dashed border-white/20 hover:border-white/40 rounded transition-all capitalize">
-                {bt === 'no_thanks' ? 'skip' : bt}
+                {bt === 'no_thanks' ? 'skip' : bt === 'countdown' ? '⏱' : bt}
               </button>
             ))}
           </div>
@@ -787,10 +806,10 @@ function CanvasBlock({ block, idx, total, isBar, selectedBlockId, onSelect, onDe
             />
           ))}
           <div className="flex gap-1 mt-1">
-            {(['image','text','button','embed','no_thanks'] as const).map(bt => (
+            {(['image','text','button','countdown','embed','no_thanks'] as const).map(bt => (
               <button key={bt} onClick={() => onAddToCol(bt, 'right', block.id)}
                 className="flex-1 py-1 text-[9px] font-bold text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 hover:border-slate-400 rounded transition-all capitalize">
-                {bt === 'no_thanks' ? 'skip' : bt}
+                {bt === 'no_thanks' ? 'skip' : bt === 'countdown' ? '⏱' : bt}
               </button>
             ))}
           </div>
@@ -878,6 +897,31 @@ function BlockPreview({ block, isBar, t }: { block: Block; isBar: boolean; t: an
           </p>
         </div>
       )
+    case 'countdown': {
+      const cfg = block.countdown_config || {}
+      const bg = cfg.digit_bg || '#1A56DB'
+      const fg = cfg.digit_color || '#ffffff'
+      const radius = cfg.digit_radius ?? 6
+      const size = Math.min(cfg.digit_size || 28, 28)
+      return (
+        <div style={{ padding: '10px 4px', display: 'flex', justifyContent: 'center' }}>
+          {block.countdown_id ? (
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>
+              {['00','12','34','56'].map((n, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+                  {i > 0 && <span style={{ fontSize: size, fontWeight: 800, color: bg, lineHeight: 1, marginTop: 2 }}>:</span>}
+                  <div style={{ background: bg, color: fg, fontSize: size, fontWeight: 800, padding: `${size*0.25}px ${size*0.35}px`, borderRadius: radius, minWidth: size*1.4, textAlign: 'center', lineHeight: 1 }}>{n}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: 0.7 }}>
+              <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: 600 }}>⏱ Select a countdown in the panel →</span>
+            </div>
+          )}
+        </div>
+      )
+    }
     default:
       return null
   }
@@ -885,8 +929,8 @@ function BlockPreview({ block, isBar, t }: { block: Block; isBar: boolean; t: an
 
 // ── Block Properties Panel ────────────────────────────────────────────────
 
-function BlockProperties({ block, onUpdate, onClose, t }: { block: Block; onUpdate: (u: Partial<Block>) => void; onClose: () => void; t: any }) {
-  const labels: Record<string, string> = { text: t('popup_builder.block_text_settings'), image: t('popup_builder.block_image_settings'), button: t('popup_builder.block_button_settings'), embed: t('popup_builder.block_embed_settings'), no_thanks: t('popup_builder.block_no_thanks_settings'), columns: t('popup_builder.block_columns_settings') }
+function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCountdowns }: { block: Block; onUpdate: (u: Partial<Block>) => void; onClose: () => void; t: any; countdowns?: any[]; loadingCountdowns?: boolean }) {
+  const labels: Record<string, string> = { text: t('popup_builder.block_text_settings'), image: t('popup_builder.block_image_settings'), button: t('popup_builder.block_button_settings'), embed: t('popup_builder.block_embed_settings'), no_thanks: t('popup_builder.block_no_thanks_settings'), columns: t('popup_builder.block_columns_settings'), countdown: t('popup_builder.block_countdown_settings') }
 
   return (
     <div className="p-5 flex flex-col gap-4">
@@ -1077,6 +1121,40 @@ function BlockProperties({ block, onUpdate, onClose, t }: { block: Block; onUpda
       {/* COLUMNS */}
       {block.type === 'columns' && (
         <p className="text-xs text-slate-500">{t('popup_builder.block_columns_hint')}</p>
+      )}
+
+      {/* COUNTDOWN */}
+      {block.type === 'countdown' && (
+        <>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">{t('popup_builder.countdown_block_select')}</label>
+            {loadingCountdowns ? (
+              <p className="text-xs text-slate-400">{t('popup_builder.countdown_block_loading')}</p>
+            ) : !countdowns || countdowns.length === 0 ? (
+              <div className="flex flex-col gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <p className="text-xs text-slate-500">{t('popup_builder.countdown_block_none')}</p>
+                <a href="/dashboard/elements/countdowns/new" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline">Create countdown →</a>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                {countdowns.map(cd => (
+                  <button
+                    key={cd.id}
+                    onClick={() => onUpdate({ countdown_id: cd.id, countdown_ends_at: cd.ends_at, countdown_expiry_action: cd.expiry_action, countdown_expiry_value: cd.expiry_value, countdown_config: cd.config })}
+                    className={"flex items-center gap-2.5 p-2.5 rounded-xl border-2 text-left transition-all " + (block.countdown_id === cd.id ? 'border-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-100 hover:border-slate-300')}
+                  >
+                    <div className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center text-white text-sm" style={{ background: cd.config?.digit_bg || '#1A56DB' }}>⏱</div>
+                    <div className="flex-1 min-w-0">
+                      <p className={"text-xs font-bold truncate " + (block.countdown_id === cd.id ? 'text-[#1A56DB]' : 'text-slate-700')}>{cd.name}</p>
+                      <p className="text-[10px] text-slate-400">{cd.ends_at ? new Date(cd.ends_at).toLocaleDateString() : '—'}</p>
+                    </div>
+                    {block.countdown_id === cd.id && <span className="text-[#1A56DB] text-xs">✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   )

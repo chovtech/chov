@@ -32,12 +32,13 @@ const SIGNAL_CONFIGS: Record<string, { label: string; operators: string[]; value
 }
 
 const ACTION_TYPES = [
-  { key: 'swap_text',    label: 'Swap text block', icon: 'text_fields',    needsElement: true },
-  { key: 'swap_image',   label: 'Swap image',      icon: 'image',           needsElement: true },
-  { key: 'hide_section', label: 'Hide section',    icon: 'visibility_off',  needsElement: true },
-  { key: 'inject_token', label: 'Inject token',    icon: 'data_object',     needsElement: true },
-  { key: 'show_popup',   label: 'Show popup',      icon: 'web_asset',       needsElement: false },
-  { key: 'send_webhook', label: 'Send webhook',    icon: 'webhook',         needsElement: false },
+  { key: 'swap_text',        label: 'Swap text block',  icon: 'text_fields',    needsElement: true },
+  { key: 'swap_image',       label: 'Swap image',       icon: 'image',          needsElement: true },
+  { key: 'hide_section',     label: 'Hide section',     icon: 'visibility_off', needsElement: true },
+  { key: 'inject_token',     label: 'Inject token',     icon: 'data_object',    needsElement: true },
+  { key: 'show_popup',       label: 'Show popup',       icon: 'web_asset',      needsElement: false },
+  { key: 'insert_countdown', label: 'Insert countdown', icon: 'timer',          needsElement: false },
+  { key: 'send_webhook',     label: 'Send webhook',     icon: 'webhook',        needsElement: false },
 ]
 
 const TOKENS = ['{city}', '{first_name}', '{company}', '{affiliate_name}']
@@ -111,6 +112,54 @@ function PopupPicker({ value, onChange, popups, loadingPopups }: { value: string
   )
 }
 
+function CountdownPicker({ value, onChange, countdowns, loadingCountdowns }: { value: string; onChange: (v: string) => void; countdowns: any[]; loadingCountdowns: boolean }) {
+  const { t } = useTranslation('common')
+
+  if (loadingCountdowns) return (
+    <div className="flex items-center gap-2 py-2 text-slate-400 text-xs">
+      <Icon name="sync" className="animate-spin text-sm" />
+      Loading countdowns...
+    </div>
+  )
+
+  if (countdowns.length === 0) return (
+    <div className="flex flex-col gap-2 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+      <p className="text-xs font-bold text-slate-500">{t('rules.countdown_none')}</p>
+      <p className="text-xs text-slate-400">{t('rules.countdown_none_desc')}</p>
+      <a href="/dashboard/elements/countdowns/new" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline">{t('rules.countdown_go_create')}</a>
+    </div>
+  )
+
+  const selected = countdowns.find(c => {
+    try { return JSON.parse(value)?.countdown_id === c.id } catch { return false }
+  })
+
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">{t('rules.countdown_select')}</label>
+      <div className="flex flex-col gap-2">
+        {countdowns.map(countdown => (
+          <button
+            key={countdown.id}
+            onClick={() => onChange(JSON.stringify({ countdown_id: countdown.id, ends_at: countdown.ends_at, expiry_action: countdown.expiry_action, expiry_value: countdown.expiry_value, config: countdown.config }))}
+            className={"flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all " + (selected?.id === countdown.id ? 'border-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-100 hover:border-slate-300')}
+          >
+            <div className="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ background: countdown.config?.digit_bg || '#1A56DB' }}>
+              <Icon name="timer" className="text-white text-base" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={"text-sm font-bold truncate " + (selected?.id === countdown.id ? 'text-[#1A56DB]' : 'text-slate-700')}>{countdown.name}</p>
+              <p className="text-[11px] text-slate-400">{countdown.ends_at ? new Date(countdown.ends_at).toLocaleString() : '—'}</p>
+            </div>
+            {selected?.id === countdown.id && <Icon name="check_circle" className="text-[#1A56DB] text-base flex-shrink-0" />}
+          </button>
+        ))}
+      </div>
+      <a href="/dashboard/elements/countdowns/new" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline mt-1">{t('rules.countdown_go_create')}</a>
+    </div>
+  )
+}
+
 function EditRulePageInner() {
   const { t } = useTranslation('common')
   const params = useParams()
@@ -131,14 +180,20 @@ function EditRulePageInner() {
   const [projectPageUrl, setProjectPageUrl] = useState('')
   const [popups, setPopups] = useState<any[]>([])
   const [loadingPopups, setLoadingPopups] = useState(true)
+  const [countdowns, setCountdowns] = useState<any[]>([])
+  const [loadingCountdowns, setLoadingCountdowns] = useState(true)
   const searchParams = useSearchParams()
 
-  // Load popups for picker
+  // Load popups and countdowns for pickers
   useEffect(() => {
     apiClient.get('/api/popups')
       .then(res => setPopups(res.data))
       .catch(() => null)
       .finally(() => setLoadingPopups(false))
+    apiClient.get('/api/countdowns')
+      .then(res => setCountdowns(res.data))
+      .catch(() => null)
+      .finally(() => setLoadingCountdowns(false))
   }, [])
 
   // Load rule and project on mount
@@ -537,6 +592,14 @@ function EditRulePageInner() {
                       onChange={val => updateAction(action.id, 'value', val)}
                       popups={popups}
                       loadingPopups={loadingPopups}
+                    />
+                  )}
+                  {action.type === 'insert_countdown' && (
+                    <CountdownPicker
+                      value={action.value}
+                      onChange={val => updateAction(action.id, 'value', val)}
+                      countdowns={countdowns}
+                      loadingCountdowns={loadingCountdowns}
                     />
                   )}
                   {action.type === 'send_webhook' && (
