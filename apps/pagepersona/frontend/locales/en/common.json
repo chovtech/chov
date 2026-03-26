@@ -414,6 +414,12 @@
     "action_show_popup": "Show popup",
     "action_send_webhook": "Send webhook",
     "action_insert_countdown": "Insert countdown",
+    "action_swap_url": "Swap URL",
+    "action_show_element": "Show element",
+    "token_fallbacks": "Token fallbacks",
+    "fallback_for": "Fallback for",
+    "new_url_label": "New URL",
+    "new_url_placeholder": "https://...",
     "on_page_personalisation": "On-Page Personalisation"
   },
   "signal_modal": {

@@ -13,13 +13,30 @@ const ACTION_TYPES = [
   { key: "swap_text",         labelKey: "picker.action_swap_text",         icon: "text_fields",    needsElement: true  },
   { key: "swap_image",        labelKey: "picker.action_swap_image",        icon: "image",          needsElement: true  },
   { key: "hide_section",      labelKey: "picker.action_hide_section",      icon: "visibility_off", needsElement: true  },
-  { key: "inject_token",      labelKey: "picker.action_inject_token",      icon: "data_object",    needsElement: true  },
+  { key: "show_element",      labelKey: "picker.action_show_element",      icon: "visibility",     needsElement: true  },
+  { key: "swap_url",          labelKey: "picker.action_swap_url",          icon: "link",           needsElement: true  },
   { key: "show_popup",        labelKey: "picker.action_show_popup",        icon: "web_asset",      needsElement: false },
   { key: "insert_countdown",  labelKey: "picker.action_insert_countdown",  icon: "timer",          needsElement: true  },
-  { key: "send_webhook",      labelKey: "picker.action_send_webhook",      icon: "webhook",        needsElement: false },
 ]
 
-const TOKENS = ["{city}", "{first_name}", "{company}", "{affiliate_name}"]
+const GEO_TOKENS = ["{country}", "{city}", "{region}"]
+const TOKEN_DEFAULTS: Record<string, string> = { country: "Your Country", city: "Your City", region: "Your Region" }
+
+function parseSwapText(val: string): { text: string; fallbacks: Record<string, string> } {
+  try {
+    const p = JSON.parse(val)
+    if (p && typeof p === "object" && "text" in p) return { text: p.text || "", fallbacks: p.fallbacks || {} }
+  } catch {}
+  return { text: val || "", fallbacks: {} }
+}
+
+function serializeSwapText(text: string, fallbacks: Record<string, string>): string {
+  const detected = GEO_TOKENS.filter(t => text.includes(t)).map(t => t.slice(1, -1))
+  if (detected.length === 0) return text
+  const trimmed: Record<string, string> = {}
+  detected.forEach(k => { trimmed[k] = fallbacks[k] ?? TOKEN_DEFAULTS[k] ?? "" })
+  return JSON.stringify({ text, fallbacks: trimmed })
+}
 
 interface Condition {
   id: string
@@ -227,7 +244,11 @@ function NewRulePageInner() {
   }
 
   const injectToken = (actionId: string, token: string) => {
-    setActions(prev => prev.map(a => a.id === actionId ? { ...a, value: a.value + " " + token } : a))
+    setActions(prev => prev.map(a => {
+      if (a.id !== actionId) return a
+      const parts = parseSwapText(a.value)
+      return { ...a, value: serializeSwapText(parts.text + " " + token, parts.fallbacks) }
+    }))
   }
 
   // Load popups and countdowns for pickers
@@ -532,37 +553,74 @@ function NewRulePageInner() {
                     </div>
                   )}
 
-                  {(action.type === "swap_text" || action.type === "inject_token") && (
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('rules.replacement_content')}</label>
-                      <textarea
-                        value={action.value}
-                        onChange={e => updateAction(action.id, "value", e.target.value)}
-                        placeholder="Enter the content to show this visitor segment..."
-                        rows={3}
-                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
-                      />
-                      <div className="mt-2">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Insert Token:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {TOKENS.map(token => (
-                            <button
-                              key={token}
-                              onClick={() => injectToken(action.id, token)}
-                              className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-colors"
-                            >
-                              <span className="text-[#1A56DB]/70">{"{"}</span>{token.slice(1,-1)}<span className="text-[#1A56DB]/70">{"}"}</span>
-                            </button>
-                          ))}
+                  {action.type === "swap_text" && (() => {
+                    const parts = parseSwapText(action.value)
+                    const detected = GEO_TOKENS.filter(t => parts.text.includes(t)).map(t => t.slice(1, -1))
+                    const onTextChange = (newText: string) => updateAction(action.id, "value", serializeSwapText(newText, parts.fallbacks))
+                    const onFallbackChange = (token: string, val: string) => updateAction(action.id, "value", serializeSwapText(parts.text, { ...parts.fallbacks, [token]: val }))
+                    return (
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('rules.replacement_content')}</label>
+                        <textarea
+                          value={parts.text}
+                          onChange={e => onTextChange(e.target.value)}
+                          placeholder="Enter the content to show this visitor segment..."
+                          rows={3}
+                          className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+                        />
+                        <div className="mt-2">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">{t('picker.insert_token')}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {GEO_TOKENS.map(token => (
+                              <button
+                                key={token}
+                                onClick={() => injectToken(action.id, token)}
+                                className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-colors"
+                              >
+                                <span className="text-[#1A56DB]/70">{"{"}</span>{token.slice(1,-1)}<span className="text-[#1A56DB]/70">{"}"}</span>
+                              </button>
+                            ))}
+                          </div>
                         </div>
+                        {detected.length > 0 && (
+                          <div className="mt-3 p-3 bg-amber-50 border border-amber-100 rounded-xl">
+                            <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-2">{t('picker.token_fallbacks')}</p>
+                            <div className="flex flex-col gap-2">
+                              {detected.map(token => (
+                                <div key={token} className="flex items-center gap-2">
+                                  <span className="text-xs text-slate-500 w-28 shrink-0">{t('picker.fallback_for')} <span className="font-mono text-[#1A56DB]">{"{" + token + "}"}</span></span>
+                                  <input
+                                    type="text"
+                                    value={parts.fallbacks[token] ?? TOKEN_DEFAULTS[token] ?? ""}
+                                    onChange={e => onFallbackChange(token, e.target.value)}
+                                    className="flex-1 px-2.5 py-1.5 bg-white border border-amber-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-amber-300/40 focus:border-amber-400 transition-all"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  )}
+                    )
+                  })()}
 
                   {action.type === "swap_image" && (
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">New Image</label>
                       <ImageUploader value={action.value} onChange={url => updateAction(action.id, "value", url)} />
+                    </div>
+                  )}
+
+                  {action.type === "swap_url" && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('picker.new_url_label')}</label>
+                      <input
+                        type="url"
+                        value={action.value}
+                        onChange={e => updateAction(action.id, "value", e.target.value)}
+                        placeholder={t('picker.new_url_placeholder')}
+                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+                      />
                     </div>
                   )}
 
@@ -582,19 +640,6 @@ function NewRulePageInner() {
                       countdowns={countdowns}
                       loadingCountdowns={loadingCountdowns}
                     />
-                  )}
-
-                  {action.type === "send_webhook" && (
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Webhook URL</label>
-                      <input
-                        type="url"
-                        value={action.value}
-                        onChange={e => updateAction(action.id, "value", e.target.value)}
-                        placeholder="https://hooks.zapier.com/..."
-                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
-                      />
-                    </div>
                   )}
                 </div>
               ))}

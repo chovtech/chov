@@ -273,13 +273,13 @@
 
   function fireAction(action) {
     switch (action.type) {
-      case 'swap_text':    swapText(action.target_block, action.value);    break;
-      case 'swap_image':   swapImage(action.target_block, action.value);   break;
-      case 'hide_section': hideSection(action.target_block);               break;
-      case 'inject_token': injectToken(action.target_block, action.value); break;
-      case 'show_popup':        showPopup(action.value);                              break;
-      case 'send_webhook':      sendWebhook(action.value);                            break;
-      case 'insert_countdown':  insertCountdown(action.target_block, action.value);   break;
+      case 'swap_text':        swapText(action.target_block, action.value);           break;
+      case 'swap_image':       swapImage(action.target_block, action.value);          break;
+      case 'hide_section':     hideSection(action.target_block);                      break;
+      case 'show_element':     showElement(action.target_block);                      break;
+      case 'swap_url':         swapUrl(action.target_block, action.value);            break;
+      case 'show_popup':       showPopup(action.value);                               break;
+      case 'insert_countdown': insertCountdown(action.target_block, action.value);    break;
       default: warn('Unknown action type: ' + action.type);
     }
   }
@@ -383,10 +383,41 @@
     if (endsAt) setInterval(tick, 1000);
   }
 
-  function swapText(blockId, newText) {
+  function swapText(blockId, value) {
     var el = findElement(blockId);
     if (!el) return;
-    el.textContent = resolveTokens(newText);
+    var text, fallbacks;
+    try {
+      var parsed = JSON.parse(value);
+      if (parsed && typeof parsed === 'object' && 'text' in parsed) {
+        text = parsed.text || '';
+        fallbacks = parsed.fallbacks || {};
+      } else {
+        text = value || '';
+        fallbacks = {};
+      }
+    } catch(e) {
+      text = value || '';
+      fallbacks = {};
+    }
+    el.textContent = resolveTokensWithFallbacks(text, fallbacks);
+  }
+
+  function swapUrl(blockId, newUrl) {
+    var el = findElement(blockId);
+    if (!el) return;
+    if (el.tagName === 'A') {
+      el.href = newUrl;
+    } else {
+      var a = el.querySelector('a');
+      if (a) a.href = newUrl;
+    }
+  }
+
+  function showElement(blockId) {
+    var el = findElement(blockId);
+    if (!el) return;
+    el.style.removeProperty('display');
   }
 
   function swapImage(blockId, newSrc) {
@@ -404,12 +435,6 @@
     var el = findElement(blockId);
     if (!el) return;
     el.style.display = 'none';
-  }
-
-  function injectToken(blockId, template) {
-    var el = findElement(blockId);
-    if (!el) return;
-    el.textContent = resolveTokens(template);
   }
 
   function showPopup(value) {
@@ -649,36 +674,27 @@
     }
   }
 
-  function sendWebhook(url) {
-    if (!url) return;
-    var payload = {
-      event: 'pp_rule_fired',
-      timestamp: new Date().toISOString(),
-      page: window.location.href,
-    };
-    fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      keepalive: true
-    }).catch(function () {});
-  }
-
   // ─── TOKENS ────────────────────────────────────────────────────────────────
-  function resolveTokens(text) {
+  function resolveTokensWithFallbacks(text, fallbacks) {
     if (!text) return text;
-    var params = parseQueryString(window.location.search);
-    var tokens = {
-      '{city}':           getCookieOrParam('pp_city', params),
-      '{first_name}':     getCookieOrParam('pp_first_name', params),
-      '{company}':        getCookieOrParam('pp_company', params),
-      '{affiliate_name}': getCookieOrParam('pp_affiliate', params) || getAffiliateName(),
+    var signals = (window.__pp && window.__pp.signals) || {};
+    var geo = {
+      '{country}': signals.geo_country || '',
+      '{city}':    signals.geo_city    || '',
+      '{region}':  signals.geo_region  || '',
     };
     var result = text;
-    for (var token in tokens) {
-      result = result.split(token).join(tokens[token] || '');
+    for (var token in geo) {
+      var key = token.slice(1, -1); // 'country', 'city', 'region'
+      var val = geo[token] || (fallbacks && fallbacks[key]) || '';
+      result = result.split(token).join(val);
     }
     return result;
+  }
+
+  function resolveTokens(text) {
+    if (!text) return text;
+    return resolveTokensWithFallbacks(text, {});
   }
 
   function getAffiliateName() {
