@@ -15,7 +15,7 @@ const ACTION_TYPES = [
   { key: "hide_section",      labelKey: "picker.action_hide_section",      icon: "visibility_off", needsElement: true  },
   { key: "inject_token",      labelKey: "picker.action_inject_token",      icon: "data_object",    needsElement: true  },
   { key: "show_popup",        labelKey: "picker.action_show_popup",        icon: "web_asset",      needsElement: false },
-  { key: "insert_countdown",  labelKey: "picker.action_insert_countdown",  icon: "timer",          needsElement: false },
+  { key: "insert_countdown",  labelKey: "picker.action_insert_countdown",  icon: "timer",          needsElement: true  },
   { key: "send_webhook",      labelKey: "picker.action_send_webhook",      icon: "webhook",        needsElement: false },
 ]
 
