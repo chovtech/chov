@@ -235,7 +235,7 @@ const TEMPLATES: { key: string; label: string; config: Partial<PopupConfig> }[] 
       popup_url: '',
       blocks: [
         { id: uid(), type: 'columns', col_left: [
-          { id: uid(), type: 'image', image_url: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/93521bae9ea14502b3256f0fd6eefb8f.jpg', image_height: 420, image_fit: 'cover', image_link: '' },
+          { id: uid(), type: 'image', image_url: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/6b177af644af4b2c96a9d1eb195122fe.jpg', image_height: 420, image_fit: 'cover', image_link: '' },
         ], col_right: [
           { id: uid(), type: 'text', text: 'Join the Circle of Verified SMI Investors', font_size: 24, font_weight: '800', text_align: 'left', text_color: '#0F172A' },
           { id: uid(), type: 'text', text: 'Join School Management Institute (SMI) in transforming school leadership across Nigeria.', font_size: 14, font_weight: '400', text_align: 'left', text_color: '#64748b' },
@@ -286,7 +286,7 @@ const TEMPLATES: { key: string; label: string; config: Partial<PopupConfig> }[] 
           { id: uid(), type: 'button', btn_label: 'Shop The Flash Sale Now', btn_url: '', btn_action: 'link', btn_color: '#ec4899', btn_text_color: '#ffffff', btn_radius: 8, btn_bold: true },
           { id: uid(), type: 'no_thanks', no_thanks_label: 'NO, THANKS!', no_thanks_color: '#94a3b8', no_thanks_dont_show: false },
         ], col_right: [
-          { id: uid(), type: 'image', image_url: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/9b4183b0d19e451fb1b3ed6352df0dd5.jpg', image_height: 420, image_fit: 'cover', image_link: '' },
+          { id: uid(), type: 'image', image_url: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/5d67de61d47f492e9d0d06dbeb4d5348.jpg', image_height: 420, image_fit: 'cover', image_link: '' },
         ]},
       ]
     }
@@ -616,13 +616,23 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
                       className="group rounded-xl border-2 border-slate-100 hover:border-[#1A56DB] transition-all text-left overflow-hidden shadow-sm hover:shadow-md"
                     >
                       {/* Preview */}
-                      <div className="relative overflow-hidden" style={{ height: 180, background: tpl.config.bg_color as string }}>
+                      <div className="relative overflow-hidden" style={{
+                        height: 180,
+                        background: tpl.config.bg_image
+                          ? `url(${tpl.config.bg_image}) center/cover no-repeat`
+                          : tpl.config.bg_color as string
+                      }}>
+                        {tpl.config.bg_image && (
+                          <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${(tpl.config.bg_image_opacity as number || 40) / 100})` }} />
+                        )}
                         {tpl.config.layout === 'two-column' ? (
                           <div className="flex h-full">
                             <div className="w-1/2 h-full overflow-hidden">
                               {(() => {
                                 const col = (tpl.config.blocks || []).find((b: any) => b.type === 'columns')
-                                const img = col?.col_left?.[0]
+                                const imgLeft = col?.col_left?.find((b: any) => b.type === 'image')
+                                const imgRight = col?.col_right?.find((b: any) => b.type === 'image')
+                                const img = imgLeft || imgRight
                                 return img?.image_url ? (
                                   <img src={img.image_url} alt="" className="w-full h-full object-cover" />
                                 ) : (
@@ -635,7 +645,9 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
                             <div className="w-1/2 flex flex-col justify-center gap-2 px-4 py-4">
                               {(() => {
                                 const col = (tpl.config.blocks || []).find((b: any) => b.type === 'columns')
-                                return (col?.col_right || []).slice(0, 3).map((b: any, i: number) => {
+                                const imgLeft = col?.col_left?.find((b: any) => b.type === 'image')
+                                const textSide = imgLeft ? (col?.col_right || []) : (col?.col_left || [])
+                                return textSide.slice(0, 3).map((b: any, i: number) => {
                                   if (b.type === 'text') return <p key={i} style={{ fontSize: Math.min(b.font_size || 14, 13), fontWeight: b.font_weight, color: b.text_color, textAlign: b.text_align as any, margin: 0, lineHeight: 1.3 }} className="truncate">{b.text}</p>
                                   if (b.type === 'button') return <div key={i} style={{ background: b.btn_color, color: b.btn_text_color, borderRadius: b.btn_radius, padding: '5px 10px', fontSize: 11, fontWeight: 700, textAlign: 'center' }}>{b.btn_label}</div>
                                   return null
@@ -644,7 +656,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
                             </div>
                           </div>
                         ) : (
-                          <div className="flex flex-col items-center justify-center h-full gap-2 px-6">
+                          <div className="relative z-10 flex flex-col items-center justify-center h-full gap-2 px-6">
                             {(() => {
                               const firstImg = (tpl.config.blocks || []).find((b: any) => b.type === 'image')
                               const texts = (tpl.config.blocks || []).filter((b: any) => b.type === 'text').slice(0, 2)
