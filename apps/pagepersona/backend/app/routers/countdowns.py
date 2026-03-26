@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/countdowns", tags=["countdowns"])
 
 class CountdownCreate(BaseModel):
     name: str
-    ends_at: str
+    ends_at: Optional[str] = None
     expiry_action: str = "hide"
     expiry_value: str = ""
     config: dict = {}

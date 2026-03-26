@@ -5,15 +5,16 @@ from typing import Optional
 
 
 async def create_countdown(db: asyncpg.Connection, workspace_id: str, name: str,
-                           ends_at: str, expiry_action: str, expiry_value: str,
+                           ends_at: Optional[str], expiry_action: str, expiry_value: str,
                            config: dict) -> dict:
+    parsed_ends_at = None if not ends_at else ends_at
     row = await db.fetchrow(
         """
         INSERT INTO countdowns (id, workspace_id, name, ends_at, expiry_action, expiry_value, config, status)
         VALUES ($1, $2, $3, $4::timestamptz, $5, $6, $7::jsonb, 'draft')
         RETURNING *
         """,
-        uuid.uuid4(), uuid.UUID(workspace_id), name, ends_at, expiry_action, expiry_value,
+        uuid.uuid4(), uuid.UUID(workspace_id), name, parsed_ends_at, expiry_action, expiry_value,
         json.dumps(config)
     )
     return _parse(row)
@@ -47,7 +48,8 @@ async def update_countdown(db: asyncpg.Connection, countdown_id: str, workspace_
         return None
     current = _parse(row)
     new_name          = name          if name          is not None else current['name']
-    new_ends_at       = ends_at       if ends_at       is not None else current['ends_at']
+    # empty string means explicitly clear ends_at (duration mode)
+    new_ends_at       = None if ends_at == "" else (ends_at if ends_at is not None else current['ends_at'])
     new_expiry_action = expiry_action if expiry_action is not None else current['expiry_action']
     new_expiry_value  = expiry_value  if expiry_value  is not None else current['expiry_value']
     new_config        = config        if config        is not None else current['config']

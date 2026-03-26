@@ -44,7 +44,11 @@ function getPopupPreviewImage(config: any): string | null {
 export default function ElementsPage() {
   const { t } = useTranslation('common')
   const router = useRouter()
-  const [tab, setTab] = useState('popups')
+  const [tab, setTab] = useState(() => {
+    if (typeof window !== 'undefined') return localStorage.getItem('pp_elements_tab') || 'popups'
+    return 'popups'
+  })
+  const switchTab = (t: string) => { setTab(t); localStorage.setItem('pp_elements_tab', t) }
   const [popups, setPopups] = useState<Popup[]>([])
   const [loading, setLoading] = useState(true)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -138,13 +142,13 @@ export default function ElementsPage() {
 
           <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit mb-8">
             <button
-              onClick={() => setTab('popups')}
+              onClick={() => switchTab('popups')}
               className={"px-5 py-2 rounded-lg text-sm font-semibold transition-all " + (tab === 'popups' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
             >
               {t('elements.tab_popups')}
             </button>
             <button
-              onClick={() => setTab('countdown')}
+              onClick={() => switchTab('countdown')}
               className={"px-5 py-2 rounded-lg text-sm font-semibold transition-all " + (tab === 'countdown' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
             >
               {t('elements.tab_countdown')}

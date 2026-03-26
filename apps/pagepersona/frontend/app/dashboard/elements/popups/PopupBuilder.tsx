@@ -353,6 +353,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
   const [saveError, setSaveError] = useState('')
   const [loading, setLoading] = useState(isEdit)
   const [showTemplates, setShowTemplates] = useState(!isEdit)
+  const [hasStarted, setHasStarted] = useState(isEdit)
   const [editingName, setEditingName] = useState(false)
   const [countdowns, setCountdowns] = useState<any[]>([])
   const [loadingCountdowns, setLoadingCountdowns] = useState(true)
@@ -498,6 +499,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
     setConfig(merged as PopupConfig)
     if (!name) setName(tpl.label)
     setShowTemplates(false)
+    setHasStarted(true)
     setSelectedBlockId(null)
   }
 
@@ -538,6 +540,12 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {!showTemplates && (
+            <button onClick={() => setShowTemplates(true)} className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors">
+              <Icon name="style" className="text-sm" />
+              {t('popup_builder.templates_btn')}
+            </button>
+          )}
           {saved && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-xl">
               <Icon name="check_circle" className="text-emerald-500 text-sm" />
@@ -594,7 +602,12 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
                     <h2 className="text-base font-bold text-slate-900">{t('popup_builder.template_heading')}</h2>
                     <p className="text-xs text-slate-500 mt-0.5">{t('popup_builder.template_subheading')}</p>
                   </div>
-                  <button onClick={() => setShowTemplates(false)} className="text-xs font-bold text-white bg-slate-600 hover:bg-slate-700 px-4 py-1.5 rounded-lg transition-colors">{t('popup_builder.start_blank')}</button>
+                  <div className="flex gap-2">
+                    {(hasStarted || isEdit) && (
+                      <button onClick={() => setShowTemplates(false)} className="text-xs font-bold text-slate-600 hover:text-slate-900 px-3 py-1.5 border border-slate-200 rounded-lg transition-colors">{t('popup_builder.cancel')}</button>
+                    )}
+                    <button onClick={() => { setShowTemplates(false); setHasStarted(true) }} className="text-xs font-bold text-white bg-slate-600 hover:bg-slate-700 px-4 py-1.5 rounded-lg transition-colors">{t('popup_builder.start_blank')}</button>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {TEMPLATES.map(tpl => (

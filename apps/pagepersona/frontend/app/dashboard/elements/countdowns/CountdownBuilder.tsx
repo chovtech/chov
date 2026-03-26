@@ -14,6 +14,7 @@ interface CountdownStyleConfig {
   label_color: string
   bg_color: string
   width: number | string
+  height: number | string
   padding: number
   show_labels: boolean
   show_days: boolean
@@ -23,6 +24,9 @@ interface CountdownStyleConfig {
   digit_size: number
   digit_radius: number
   gap: number
+  countdown_type: 'fixed' | 'duration'
+  duration_value: number
+  duration_unit: 'minutes' | 'hours' | 'days'
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -33,6 +37,7 @@ const DEFAULT_CONFIG: CountdownStyleConfig = {
   label_color: '#64748b',
   bg_color: '#ffffff',
   width: 480,
+  height: 'auto',
   padding: 24,
   show_labels: true,
   show_days: true,
@@ -42,6 +47,9 @@ const DEFAULT_CONFIG: CountdownStyleConfig = {
   digit_size: 36,
   digit_radius: 8,
   gap: 12,
+  countdown_type: 'fixed',
+  duration_value: 24,
+  duration_unit: 'hours',
 }
 
 const PRESETS = [
@@ -55,22 +63,22 @@ const TEMPLATES = [
   {
     key: 'blue_boxes',
     label: 'Blue Boxes',
-    config: { digit_bg: '#1A56DB', digit_color: '#ffffff', label_color: '#475569', bg_color: '#ffffff', width: 480, padding: 24, show_labels: true, show_days: true, show_hours: true, show_minutes: true, show_seconds: true, digit_size: 36, digit_radius: 8, gap: 12 },
+    config: { digit_bg: '#1A56DB', digit_color: '#ffffff', label_color: '#475569', bg_color: '#ffffff', width: 480, height: 'auto', padding: 24, show_labels: true, show_days: true, show_hours: true, show_minutes: true, show_seconds: true, digit_size: 36, digit_radius: 8, gap: 12 },
   },
   {
     key: 'dark_urgency',
     label: 'Dark Urgency',
-    config: { digit_bg: '#0F172A', digit_color: '#ffffff', label_color: '#94a3b8', bg_color: '#1e1e2e', width: 480, padding: 28, show_labels: true, show_days: true, show_hours: true, show_minutes: true, show_seconds: true, digit_size: 40, digit_radius: 6, gap: 10 },
+    config: { digit_bg: '#0F172A', digit_color: '#ffffff', label_color: '#94a3b8', bg_color: '#1e1e2e', width: 480, height: 'auto', padding: 28, show_labels: true, show_days: true, show_hours: true, show_minutes: true, show_seconds: true, digit_size: 40, digit_radius: 6, gap: 10 },
   },
   {
     key: 'teal_fresh',
     label: 'Teal Fresh',
-    config: { digit_bg: '#14B8A6', digit_color: '#ffffff', label_color: '#475569', bg_color: '#f0fdf4', width: 520, padding: 28, show_labels: true, show_days: true, show_hours: true, show_minutes: true, show_seconds: true, digit_size: 36, digit_radius: 12, gap: 14 },
+    config: { digit_bg: '#14B8A6', digit_color: '#ffffff', label_color: '#475569', bg_color: '#f0fdf4', width: 520, height: 'auto', padding: 28, show_labels: true, show_days: true, show_hours: true, show_minutes: true, show_seconds: true, digit_size: 36, digit_radius: 12, gap: 14 },
   },
   {
     key: 'red_urgent',
     label: 'Red Urgent',
-    config: { digit_bg: '#DC2626', digit_color: '#ffffff', label_color: '#94a3b8', bg_color: '#1c0a0a', width: 440, padding: 24, show_labels: true, show_days: false, show_hours: true, show_minutes: true, show_seconds: true, digit_size: 44, digit_radius: 6, gap: 8 },
+    config: { digit_bg: '#DC2626', digit_color: '#ffffff', label_color: '#94a3b8', bg_color: '#1c0a0a', width: 440, height: 'auto', padding: 24, show_labels: true, show_days: false, show_hours: true, show_minutes: true, show_seconds: true, digit_size: 44, digit_radius: 6, gap: 8 },
   },
 ]
 
@@ -132,8 +140,26 @@ function CountdownDisplay({ endsAt, config, t }: { endsAt: string; config: Count
     </div>
   )
 
+  const containerStyle = {
+    background: config.bg_color === 'transparent' ? 'transparent' : config.bg_color,
+    width: config.width === 'auto' ? '100%' : config.width,
+    height: config.height === 'auto' ? undefined : config.height,
+    padding: config.padding,
+    borderRadius: 12,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 80,
+    backgroundImage: config.bg_color === 'transparent'
+      ? 'repeating-conic-gradient(#e2e8f0 0% 25%, #ffffff 0% 50%)'
+      : undefined,
+    backgroundSize: config.bg_color === 'transparent' ? '16px 16px' : undefined,
+  }
+
   return (
-    <div style={{ background: config.bg_color, width: config.width === 'auto' ? '100%' : config.width, padding: config.padding, borderRadius: 12, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 10, minHeight: 80 }}>
+    <div style={containerStyle}>
       {timeLeft.noDate ? (
         <>
           {renderDigits(DEMO_VALUES)}
@@ -168,9 +194,14 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
   const [saveError, setSaveError] = useState('')
   const [loading, setLoading] = useState(isEdit)
   const [showTemplates, setShowTemplates] = useState(!isEdit)
+  const [hasStarted, setHasStarted] = useState(isEdit)
 
   const setC = (key: keyof CountdownStyleConfig, value: any) =>
     setConfig(prev => ({ ...prev, [key]: value }))
+
+  const countdownType = config.countdown_type || 'fixed'
+  const durationValue = config.duration_value ?? 24
+  const durationUnit = config.duration_unit || 'hours'
 
   useEffect(() => {
     if (!isEdit) return
@@ -194,16 +225,17 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
 
   const handleSave = async () => {
     if (!name.trim()) { setSaveError(t('countdown_builder.name_required')); return }
-    if (!endsAt) { setSaveError(t('countdown_builder.date_required')); return }
+    if (countdownType === 'fixed' && !endsAt) { setSaveError(t('countdown_builder.date_required')); return }
     setSaving(true); setSaveError(''); setSaved(false)
     try {
-      const endsAtISO = new Date(endsAt).toISOString()
+      const endsAtISO = countdownType === 'duration' ? '' : new Date(endsAt).toISOString()
+      const fullConfig = { ...config, countdown_type: countdownType, duration_value: durationValue, duration_unit: durationUnit }
       if (isEdit) {
-        await apiClient.put('/api/countdowns/' + countdownId, { name, ends_at: endsAtISO, expiry_action: expiryAction, expiry_value: expiryValue, config })
+        await apiClient.put('/api/countdowns/' + countdownId, { name, ends_at: endsAtISO, expiry_action: expiryAction, expiry_value: expiryValue, config: fullConfig })
         setSaved(true)
         setTimeout(() => setSaved(false), 3000)
       } else {
-        const res = await apiClient.post('/api/countdowns', { name, ends_at: endsAtISO, expiry_action: expiryAction, expiry_value: expiryValue, config })
+        const res = await apiClient.post('/api/countdowns', { name, ends_at: endsAtISO || null, expiry_action: expiryAction, expiry_value: expiryValue, config: fullConfig })
         router.push('/dashboard/elements/countdowns/' + res.data.id + '/edit')
       }
     } catch { setSaveError(t('countdown_builder.save_failed')) }
@@ -214,6 +246,13 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
     setConfig({ ...DEFAULT_CONFIG, ...tpl.config })
     if (!name) setName(tpl.label)
     setShowTemplates(false)
+    setHasStarted(true)
+  }
+
+  const startBlank = () => {
+    if (!name) setName('My Countdown')
+    setShowTemplates(false)
+    setHasStarted(true)
   }
 
   if (loading) return (
@@ -277,8 +316,10 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                     <h2 className="text-base font-bold text-slate-900">{t('countdown_builder.template_heading')}</h2>
                     <p className="text-xs text-slate-500 mt-0.5">{t('countdown_builder.template_subheading')}</p>
                   </div>
-                  {isEdit && (
-                    <button onClick={() => setShowTemplates(false)} className="text-xs font-bold text-slate-600 hover:text-slate-900 px-3 py-1.5 border border-slate-200 rounded-lg transition-colors">{t('countdown_builder.cancel')}</button>
+                  {(hasStarted || isEdit) && (
+                    <button onClick={() => setShowTemplates(false)} className="text-xs font-bold text-slate-600 hover:text-slate-900 px-3 py-1.5 border border-slate-200 rounded-lg transition-colors">
+                      {t('countdown_builder.cancel')}
+                    </button>
                   )}
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-4">
@@ -292,7 +333,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                             <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
                               {i > 0 && <span style={{ fontSize: 18, fontWeight: 800, color: tpl.config.digit_bg, lineHeight: 1, marginTop: 4 }}>:</span>}
                               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                                <div style={{ background: tpl.config.digit_bg, color: tpl.config.digit_color, fontSize: 18, fontWeight: 800, padding: '5px 7px', borderRadius: tpl.config.digit_radius, minWidth: 30, textAlign: 'center', lineHeight: 1 }}>{n}</div>
+                                <div style={{ background: tpl.config.digit_bg, color: tpl.config.digit_color, fontSize: 18, fontWeight: 800, padding: '5px 7px', borderRadius: (tpl.config as any).digit_radius, minWidth: 30, textAlign: 'center', lineHeight: 1 }}>{n}</div>
                                 {tpl.config.show_labels && <span style={{ fontSize: 8, fontWeight: 700, color: tpl.config.label_color }}>{'HMD'[i]}</span>}
                               </div>
                             </div>
@@ -306,7 +347,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                     </button>
                   ))}
                 </div>
-                <button onClick={() => { if (!name) setName('My Countdown'); setShowTemplates(false) }}
+                <button onClick={startBlank}
                   className="w-full py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-700 border border-dashed border-slate-300 hover:border-slate-400 rounded-xl transition-colors">
                   {t('countdown_builder.start_blank')}
                 </button>
@@ -319,7 +360,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                 <Icon name="visibility" className="text-slate-400 text-sm" />
                 <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{t('countdown_builder.preview_heading')} · {t('countdown_builder.preview_live_subheading')}</span>
               </div>
-              <CountdownDisplay endsAt={endsAt} config={config} t={t} />
+              <CountdownDisplay endsAt={countdownType === 'duration' ? '' : endsAt} config={config} t={t} />
               <p className="text-[11px] text-slate-400">{t('countdown_builder.preview_caption')}</p>
             </div>
           )}
@@ -333,12 +374,38 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
               {/* Timer */}
               <div>
                 <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">{t('countdown_builder.section_timer')}</h3>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('countdown_builder.ends_at')}</label>
-                  <input type="datetime-local" value={endsAt} onChange={e => setEndsAt(e.target.value)}
-                    className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all" />
-                  <p className="text-[10px] text-slate-400 mt-1">{t('countdown_builder.ends_at_hint')}</p>
+                {/* Type toggle */}
+                <div className="flex gap-1 p-1 bg-slate-100 rounded-xl mb-3">
+                  {(['fixed', 'duration'] as const).map(type => (
+                    <button key={type} onClick={() => setC('countdown_type', type)}
+                      className={"flex-1 py-1.5 rounded-lg text-xs font-bold transition-all " + (countdownType === type ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500')}>
+                      {t(`countdown_builder.type_${type}`)}
+                    </button>
+                  ))}
                 </div>
+                {countdownType === 'fixed' ? (
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('countdown_builder.ends_at')}</label>
+                    <input type="datetime-local" value={endsAt} onChange={e => setEndsAt(e.target.value)}
+                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all" />
+                    <p className="text-[10px] text-slate-400 mt-1">{t('countdown_builder.ends_at_hint')}</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('countdown_builder.duration_value_label')}</label>
+                    <div className="flex gap-2">
+                      <input type="number" min={1} max={999} value={durationValue} onChange={e => setC('duration_value', parseInt(e.target.value) || 1)}
+                        className="w-24 px-3 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB]" />
+                      <select value={durationUnit} onChange={e => setC('duration_unit', e.target.value)}
+                        className="flex-1 px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB]">
+                        <option value="minutes">{t('countdown_builder.unit_minutes')}</option>
+                        <option value="hours">{t('countdown_builder.unit_hours')}</option>
+                        <option value="days">{t('countdown_builder.unit_days')}</option>
+                      </select>
+                    </div>
+                    <p className="text-[10px] text-slate-400">{t('countdown_builder.duration_hint')}</p>
+                  </div>
+                )}
               </div>
 
               {/* On Expiry */}
@@ -375,13 +442,23 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
               <div>
                 <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">{t('countdown_builder.section_container')}</h3>
                 <div className="flex flex-col gap-3">
+                  {/* Background */}
                   <div className="flex items-center justify-between">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('countdown_builder.bg_color_label')}</label>
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-md border border-slate-200" style={{ background: config.bg_color }} />
-                      <input type="color" value={config.bg_color} onChange={e => setC('bg_color', e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
+                      <button onClick={() => setC('bg_color', config.bg_color === 'transparent' ? '#ffffff' : 'transparent')}
+                        className={"px-2 py-1 rounded-lg border text-[10px] font-bold transition-all " + (config.bg_color === 'transparent' ? 'border-[#1A56DB] text-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-200 text-slate-400')}>
+                        {t('countdown_builder.transparent')}
+                      </button>
+                      {config.bg_color !== 'transparent' && (
+                        <>
+                          <div className="w-6 h-6 rounded-md border border-slate-200" style={{ background: config.bg_color }} />
+                          <input type="color" value={config.bg_color} onChange={e => setC('bg_color', e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
+                        </>
+                      )}
                     </div>
                   </div>
+                  {/* Width */}
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{t('countdown_builder.width_label')}</label>
                     <div className="flex gap-2">
@@ -394,6 +471,20 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                       </button>
                     </div>
                   </div>
+                  {/* Height */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{t('countdown_builder.height_label')}</label>
+                    <div className="flex gap-2">
+                      <input type="number" min={60} max={600} value={typeof config.height === 'number' ? config.height : 120}
+                        onChange={e => setC('height', parseInt(e.target.value) || 120)}
+                        className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+                      <button onClick={() => setC('height', config.height === 'auto' ? 120 : 'auto')}
+                        className={"px-2.5 py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.height === 'auto' ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500')}>
+                        Auto
+                      </button>
+                    </div>
+                  </div>
+                  {/* Padding */}
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{t('countdown_builder.padding_label')} — {config.padding}px</label>
                     <input type="range" min={0} max={80} value={config.padding} onChange={e => setC('padding', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
@@ -461,9 +552,9 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
               <div>
                 <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">{t('countdown_builder.section_display')}</h3>
                 <div className="flex flex-col gap-2">
-                  {([['show_labels','show_labels'],['show_days','show_days'],['show_hours','show_hours'],['show_minutes','show_minutes'],['show_seconds','show_seconds']] as const).map(([key, labelKey]) => (
+                  {(['show_labels','show_days','show_hours','show_minutes','show_seconds'] as const).map(key => (
                     <label key={key} className="flex items-center justify-between py-2 border-b border-slate-50">
-                      <span className="text-sm font-medium text-slate-700">{t(`countdown_builder.${labelKey}`)}</span>
+                      <span className="text-sm font-medium text-slate-700">{t(`countdown_builder.${key}`)}</span>
                       <button onClick={() => setC(key, !config[key])}
                         className={"relative w-10 h-5 rounded-full transition-colors " + (config[key] ? 'bg-[#1A56DB]' : 'bg-slate-200')}>
                         <span className={"absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform " + (config[key] ? 'translate-x-5' : 'translate-x-0.5')} />

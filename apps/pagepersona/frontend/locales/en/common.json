@@ -624,7 +624,9 @@
     "block_countdown_settings": "Countdown Settings",
     "countdown_block_select": "Select a countdown",
     "countdown_block_none": "No countdowns yet — create one in Elements",
-    "countdown_block_loading": "Loading countdowns..."
+    "countdown_block_loading": "Loading countdowns...",
+    "templates_btn": "Templates",
+    "cancel": "Cancel"
   },
   "countdown_builder": {
     "title_new": "New Countdown Timer",
@@ -677,6 +679,15 @@
     "bg_color_label": "Background",
     "width_label": "Width (px)",
     "padding_label": "Padding",
-    "date_required": "Please set an end date and time"
+    "date_required": "Please set an end date and time",
+    "height_label": "Height (px)",
+    "transparent": "Transparent",
+    "type_fixed": "Fixed date",
+    "type_duration": "Duration (per visitor)",
+    "duration_value_label": "Duration",
+    "unit_minutes": "Minutes",
+    "unit_hours": "Hours",
+    "unit_days": "Days",
+    "duration_hint": "Counts down from each visitor's first view"
   }
 }

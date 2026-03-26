@@ -624,7 +624,9 @@
     "block_countdown_settings": "Paramètres du minuteur",
     "countdown_block_select": "Sélectionner un minuteur",
     "countdown_block_none": "Aucun minuteur — créez-en un dans Éléments",
-    "countdown_block_loading": "Chargement des minuteurs..."
+    "countdown_block_loading": "Chargement des minuteurs...",
+    "templates_btn": "Modèles",
+    "cancel": "Annuler"
   },
   "countdown_builder": {
     "title_new": "Nouveau minuteur",
@@ -677,6 +679,15 @@
     "bg_color_label": "Arrière-plan",
     "width_label": "Largeur (px)",
     "padding_label": "Espacement",
-    "date_required": "Veuillez définir une date et une heure de fin"
+    "date_required": "Veuillez définir une date et une heure de fin",
+    "height_label": "Hauteur (px)",
+    "transparent": "Transparent",
+    "type_fixed": "Date fixe",
+    "type_duration": "Durée (par visiteur)",
+    "duration_value_label": "Durée",
+    "unit_minutes": "Minutes",
+    "unit_hours": "Heures",
+    "unit_days": "Jours",
+    "duration_hint": "Compte à rebours depuis la première visite du visiteur"
   }
 }
