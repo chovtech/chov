@@ -153,8 +153,11 @@ cd ~/chov/apps/pagepersona/frontend && npm run dev
 | rules | id, project_id, name, conditions JSONB, condition_operator, actions JSONB, priority, is_active |
 | popups | id, workspace_id, name, status, config JSONB, created_at, updated_at |
 | countdowns | id, workspace_id, name, ends_at, expiry_action, expiry_value, config JSONB, status, created_at |
+| page_visits | id, project_id, session_id, timestamp, country, country_code, continent, device, os, browser, referrer, utm_*, is_new_visitor, time_on_page, scroll_depth |
+| rule_events | id, rule_id, project_id, session_id, timestamp, country, device, time_on_page_at_fire, scroll_depth_at_fire |
 
-> ⚠️ `countdowns` — table code is 100% done (router, service, frontend, CountdownPicker). Only needs `CREATE TABLE` run on VPS.
+> ⚠️ `countdowns` — table code is 100% done. Only needs `CREATE TABLE` run on VPS.
+> ⚠️ `page_visits` + `rule_events` — created locally. Only needs `CREATE TABLE` run on VPS.
 > ℹ️ `workspace_members` — exists locally only, not referenced by any backend code. Dormant — not blocking anything.
 
 ---
@@ -198,7 +201,8 @@ GOOGLE_REDIRECT_URI=https://api.usepagepersona.com/api/auth/google/callback
       app/
         core/           — config.py, security.py
         routers/        — auth.py, users.py, projects.py, rules.py, sdk.py,
-                          upload.py, webhooks.py, google_auth.py, popups.py, countdowns.py
+                          upload.py, webhooks.py, google_auth.py, popups.py, countdowns.py,
+                          analytics.py, sdk_analytics.py
         schemas/        — projects.py, users.py, rules.py
         services/       — project_service.py, user_service.py,
                           popup_service.py, countdown_service.py, email_service.py
@@ -479,8 +483,8 @@ pp.js detects when loaded inside the PagePersona iframe and skips all rule execu
 
 ## 20. NEXT TASKS
 
-### 1. Create countdowns table on VPS ← START HERE
-Everything is built. Just run this SQL on the VPS database:
+### 1. Create 3 missing tables on VPS ← START HERE
+Everything is built locally. Run on VPS (terminal 4):
 
 ```sql
 CREATE TABLE IF NOT EXISTS countdowns (
@@ -494,9 +498,35 @@ CREATE TABLE IF NOT EXISTS countdowns (
   status TEXT NOT NULL DEFAULT 'draft',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-```
 
-Run via terminal 4: `psql -U chov -d chov -c "CREATE TABLE IF NOT EXISTS ..."`
+CREATE TABLE IF NOT EXISTS page_visits (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  session_id VARCHAR NOT NULL,
+  timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  country VARCHAR, country_code VARCHAR, continent VARCHAR,
+  device VARCHAR, os VARCHAR, browser VARCHAR,
+  referrer VARCHAR,
+  utm_source VARCHAR, utm_medium VARCHAR, utm_campaign VARCHAR, utm_content VARCHAR, utm_term VARCHAR,
+  is_new_visitor BOOLEAN NOT NULL DEFAULT false,
+  time_on_page INTEGER, scroll_depth INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_page_visits_project_id ON page_visits(project_id);
+CREATE INDEX IF NOT EXISTS idx_page_visits_timestamp ON page_visits(timestamp);
+
+CREATE TABLE IF NOT EXISTS rule_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  rule_id UUID NOT NULL REFERENCES rules(id) ON DELETE CASCADE,
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  session_id VARCHAR NOT NULL,
+  timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  country VARCHAR, device VARCHAR,
+  time_on_page_at_fire INTEGER, scroll_depth_at_fire INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_rule_events_project_id ON rule_events(project_id);
+CREATE INDEX IF NOT EXISTS idx_rule_events_rule_id ON rule_events(rule_id);
+CREATE INDEX IF NOT EXISTS idx_rule_events_timestamp ON rule_events(timestamp);
+```
 
 ### 2. End-to-end action testing
 All actions tested on `test.html` and SMI WordPress page.

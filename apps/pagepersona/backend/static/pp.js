@@ -33,9 +33,11 @@
       window.__pp = window.__pp || {};
       window.__pp.signals = signals;
       window.__pp.rules = rules;
+      // Visit beacon
+      sendVisitBeacon(scriptId, signals, geo);
       var matched = evaluateRules(rules, signals);
       window.__pp.matched = matched;
-      fireActions(matched);
+      fireActions(matched, scriptId, signals);
     });
   }
 
@@ -249,7 +251,7 @@
   }
 
   // ─── ACTION EXECUTION ──────────────────────────────────────────────────────
-  function fireActions(rules) {
+  function fireActions(rules, scriptId, signals) {
     // Collect all target selectors that need visual changes to hide before paint
     var selectorsToHide = [];
     for (var i = 0; i < rules.length; i++) {
@@ -269,12 +271,13 @@
       hideStyle.textContent = selectorsToHide.join(',') + '{visibility:hidden !important;}';
       document.head.appendChild(hideStyle);
     }
-    // Fire all actions
+    // Fire all actions + send event beacons
     for (var i = 0; i < rules.length; i++) {
       var actions = rules[i].actions || [];
       for (var j = 0; j < actions.length; j++) {
         fireAction(actions[j]);
       }
+      if (scriptId && signals) sendEventBeacon(scriptId, rules[i], signals);
     }
     // Remove hide style — elements now have correct content
     if (hideStyle && hideStyle.parentNode) {
@@ -690,6 +693,76 @@
     }
   }
 
+  // ─── ANALYTICS BEACONS ─────────────────────────────────────────────────────
+  var _visitId = null;
+
+  function getSessionId() {
+    var key = 'pp_session_id';
+    var sid = sessionStorage.getItem(key);
+    if (!sid) {
+      sid = 'ps_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      sessionStorage.setItem(key, sid);
+    }
+    return sid;
+  }
+
+  function sendVisitBeacon(scriptId, signals, geo) {
+    var params = parseQueryString(window.location.search);
+    var payload = JSON.stringify({
+      project_id: scriptId,
+      session_id: getSessionId(),
+      country: (geo && geo.country) || null,
+      country_code: (geo && geo.country_code) || null,
+      continent: (geo && geo.continent) || null,
+      device: signals.device_type || null,
+      os: signals.operating_system || null,
+      browser: signals.browser || null,
+      referrer: document.referrer || null,
+      utm_source: params.utm_source || null,
+      utm_medium: params.utm_medium || null,
+      utm_campaign: params.utm_campaign || null,
+      utm_content: params.utm_content || null,
+      utm_term: params.utm_term || null,
+      is_new_visitor: signals.visitor_type === 'new',
+    });
+    post(API_BASE + '/api/sdk/visit', payload, function(data) {
+      if (data && data.visit_id) {
+        _visitId = data.visit_id;
+        // Wire unload beacon now that we have a visit_id
+        window.addEventListener('visibilitychange', function() {
+          if (document.visibilityState === 'hidden' && _visitId) {
+            var patchPayload = JSON.stringify({
+              time_on_page: signals.time_on_page || 0,
+              scroll_depth: signals.scroll_depth || 0,
+            });
+            var url = API_BASE + '/api/sdk/visit/' + _visitId;
+            try {
+              fetch(url, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: patchPayload,
+                keepalive: true,
+              });
+            } catch(e) {}
+          }
+        });
+      }
+    });
+  }
+
+  function sendEventBeacon(scriptId, rule, signals) {
+    var payload = JSON.stringify({
+      project_id: scriptId,
+      rule_id: rule.id,
+      session_id: getSessionId(),
+      country: (window.__pp && window.__pp.signals && window.__pp.signals.geo_country) || null,
+      device: signals.device_type || null,
+      time_on_page: signals.time_on_page || 0,
+      scroll_depth: signals.scroll_depth || 0,
+    });
+    post(API_BASE + '/api/sdk/event', payload, function() {});
+  }
+
   // ─── TOKENS ────────────────────────────────────────────────────────────────
   function resolveTokensWithFallbacks(text, fallbacks) {
     if (!text) return text;
@@ -737,6 +810,21 @@
       }
     };
     xhr.send();
+  }
+
+  function post(url, payload, callback) {
+    try {
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          try { callback(JSON.parse(xhr.responseText)); }
+          catch (e) { callback(null); }
+        }
+      };
+      xhr.send(payload);
+    } catch(e) {}
   }
 
   function parseQueryString(search) {

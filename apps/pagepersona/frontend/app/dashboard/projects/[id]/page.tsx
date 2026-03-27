@@ -1,12 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { projectApi, apiClient } from '@/lib/api/client'
-import { useRef } from 'react'
+import {
+  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
+} from 'recharts'
 
 interface Project {
   id: string
@@ -322,6 +325,11 @@ export default function ProjectDashboardPage() {
   const [showEdit, setShowEdit] = useState(false)
   const [thumbnailUploading, setThumbnailUploading] = useState(false)
   const thumbnailInputRef = useRef<HTMLInputElement>(null)
+  const [activeTab, setActiveTab] = useState<'overview' | 'analytics'>('overview')
+  const [analyticsPeriod, setAnalyticsPeriod] = useState(30)
+  const [analyticsData, setAnalyticsData] = useState<any>(null)
+  const [analyticsLoading, setAnalyticsLoading] = useState(false)
+  const [analyticsError, setAnalyticsError] = useState(false)
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -334,6 +342,16 @@ export default function ProjectDashboardPage() {
     }
     if (projectId) fetchProject()
   }, [projectId])
+
+  useEffect(() => {
+    if (activeTab !== 'analytics' || !projectId) return
+    setAnalyticsLoading(true)
+    setAnalyticsError(false)
+    apiClient.get(`/api/analytics/project/${projectId}?period=${analyticsPeriod}`)
+      .then(res => setAnalyticsData(res.data))
+      .catch(() => setAnalyticsError(true))
+      .finally(() => setAnalyticsLoading(false))
+  }, [activeTab, analyticsPeriod, projectId])
 
   if (loading || notFound || !project) return (
     <div className="flex flex-col min-h-screen">
@@ -465,7 +483,235 @@ export default function ProjectDashboardPage() {
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        {/* Tabs */}
+        <div className="flex gap-1 bg-slate-100 rounded-xl p-1 mb-8 w-fit">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={'px-5 py-2 text-sm font-semibold rounded-lg transition-all ' + (activeTab === 'overview' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
+          >
+            {t('project.tab_overview')}
+          </button>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={'px-5 py-2 text-sm font-semibold rounded-lg transition-all ' + (activeTab === 'analytics' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
+          >
+            {t('analytics.tab')}
+          </button>
+        </div>
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (() => {
+          if (analyticsLoading) return (
+            <div className="flex items-center justify-center py-24 text-slate-400">
+              <Icon name="sync" className="animate-spin text-3xl mr-3" />
+              <span className="text-sm">{t('analytics.loading')}</span>
+            </div>
+          )
+          if (analyticsError) return (
+            <div className="flex items-center justify-center py-24 text-slate-400">
+              <Icon name="error_outline" className="text-3xl mr-3 text-red-400" />
+              <span className="text-sm">{t('analytics.error')}</span>
+            </div>
+          )
+          const d = analyticsData
+          const COLORS = ['#1A56DB', '#14B8A6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#10b981', '#f97316']
+          const hasData = d && d.headline.total_visits > 0
+          return (
+            <div className="space-y-6">
+              {/* Period selector */}
+              <div className="flex items-center justify-end gap-2">
+                {[7, 30, 90].map(p => (
+                  <button key={p} onClick={() => setAnalyticsPeriod(p)}
+                    className={'px-4 py-1.5 text-xs font-semibold rounded-lg border transition-all ' + (analyticsPeriod === p ? 'bg-[#1A56DB] text-white border-[#1A56DB]' : 'bg-white text-slate-600 border-slate-200 hover:border-[#1A56DB]/40')}>
+                    {t(`analytics.period_${p}`)}
+                  </button>
+                ))}
+              </div>
+              {!hasData ? (
+                <div className="flex flex-col items-center justify-center py-24 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+                    <Icon name="bar_chart" className="text-3xl text-slate-300" />
+                  </div>
+                  <p className="text-slate-700 font-semibold mb-1">{t('analytics.no_data')}</p>
+                  <p className="text-sm text-slate-400 max-w-sm">{t('analytics.no_data_sub')}</p>
+                </div>
+              ) : (
+                <>
+                  {/* Headline cards */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      { label: t('analytics.total_visits'), value: d.headline.total_visits.toLocaleString(), icon: 'visibility' },
+                      { label: t('analytics.unique_visitors'), value: d.headline.unique_visitors.toLocaleString(), icon: 'person' },
+                      { label: t('analytics.rules_fired'), value: d.headline.rules_fired.toLocaleString(), icon: 'bolt' },
+                      { label: t('analytics.personalisation_rate'), value: d.headline.personalisation_rate + t('analytics.percent_abbr'), icon: 'auto_awesome' },
+                    ].map(card => (
+                      <div key={card.label} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-8 h-8 rounded-lg bg-[#1A56DB]/10 flex items-center justify-center">
+                            <Icon name={card.icon} className="text-[#1A56DB] text-base" />
+                          </div>
+                          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{card.label}</p>
+                        </div>
+                        <p className="text-3xl font-black text-slate-900">{card.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { label: t('analytics.avg_time_on_page'), value: d.headline.avg_time_on_page + t('analytics.seconds_abbr'), icon: 'timer' },
+                      { label: t('analytics.avg_scroll_depth'), value: d.headline.avg_scroll_depth + t('analytics.percent_abbr'), icon: 'swap_vert' },
+                    ].map(card => (
+                      <div key={card.label} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-8 h-8 rounded-lg bg-[#14B8A6]/10 flex items-center justify-center">
+                            <Icon name={card.icon} className="text-[#14B8A6] text-base" />
+                          </div>
+                          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{card.label}</p>
+                        </div>
+                        <p className="text-3xl font-black text-slate-900">{card.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Visits + rules fired over time */}
+                  <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+                    <h4 className="font-bold text-slate-900 mb-5">{t('analytics.visits_over_time')}</h4>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <LineChart data={d.daily_series} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
+                        <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} tickLine={false} axisLine={false}
+                          tickFormatter={(v: string) => { const dt = new Date(v); return (dt.getMonth()+1) + '/' + dt.getDate() }} />
+                        <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
+                        <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
+                        <Legend wrapperStyle={{ fontSize: 12 }} />
+                        <Line type="monotone" dataKey="visits" stroke="#1A56DB" strokeWidth={2} dot={false} name={t('analytics.visits')} />
+                        <Line type="monotone" dataKey="rules_fired" stroke="#14B8A6" strokeWidth={2} dot={false} name={t('analytics.rules_fired_over_time')} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Top countries + Traffic sources */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+                      <h4 className="font-bold text-slate-900 mb-5">{t('analytics.top_countries')}</h4>
+                      {d.top_countries.length === 0 ? <p className="text-sm text-slate-400">{t('analytics.no_data')}</p> : (
+                        <ResponsiveContainer width="100%" height={180}>
+                          <BarChart data={d.top_countries} layout="vertical" margin={{ left: 0, right: 20, top: 0, bottom: 0 }}>
+                            <XAxis type="number" tick={{ fontSize: 10, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
+                            <YAxis type="category" dataKey="country" tick={{ fontSize: 11, fill: '#475569' }} tickLine={false} axisLine={false} width={90} />
+                            <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
+                            <Bar dataKey="visits" fill="#1A56DB" radius={[0, 4, 4, 0]} name={t('analytics.visits')} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      )}
+                    </div>
+                    <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+                      <h4 className="font-bold text-slate-900 mb-5">{t('analytics.traffic_sources')}</h4>
+                      {d.traffic_sources.length === 0 ? <p className="text-sm text-slate-400">{t('analytics.no_data')}</p> : (
+                        <div className="space-y-2.5">
+                          {d.traffic_sources.map((s: any, i: number) => {
+                            const maxV = d.traffic_sources[0].visits
+                            return (
+                              <div key={s.source} className="flex items-center gap-3">
+                                <span className="text-xs text-slate-500 w-24 truncate">{s.source === 'direct' ? t('analytics.direct') : s.source}</span>
+                                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                  <div className="h-full rounded-full" style={{ width: (s.visits / maxV * 100) + '%', backgroundColor: COLORS[i % COLORS.length] }} />
+                                </div>
+                                <span className="text-xs font-semibold text-slate-700 w-8 text-right">{s.visits}</span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Device split + Visitor split */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+                      <h4 className="font-bold text-slate-900 mb-5">{t('analytics.device_split')}</h4>
+                      {d.device_split.length === 0 ? <p className="text-sm text-slate-400">{t('analytics.no_data')}</p> : (
+                        <div className="flex items-center gap-6">
+                          <ResponsiveContainer width={140} height={140}>
+                            <PieChart>
+                              <Pie data={d.device_split} dataKey="visits" nameKey="device" cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={2}>
+                                {d.device_split.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                              </Pie>
+                              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                          <div className="space-y-2">
+                            {d.device_split.map((s: any, i: number) => (
+                              <div key={s.device} className="flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
+                                <span className="text-sm text-slate-600 capitalize">{s.device}</span>
+                                <span className="text-sm font-bold text-slate-900 ml-auto">{s.visits}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+                      <h4 className="font-bold text-slate-900 mb-5">{t('analytics.visitor_split')}</h4>
+                      {d.visitor_split.every((s: any) => s.count === 0) ? <p className="text-sm text-slate-400">{t('analytics.no_data')}</p> : (
+                        <div className="flex items-center gap-6">
+                          <ResponsiveContainer width={140} height={140}>
+                            <PieChart>
+                              <Pie data={d.visitor_split} dataKey="count" nameKey="type" cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={2}>
+                                <Cell fill="#1A56DB" />
+                                <Cell fill="#14B8A6" />
+                              </Pie>
+                              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                          <div className="space-y-2">
+                            {d.visitor_split.map((s: any, i: number) => (
+                              <div key={s.type} className="flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: i === 0 ? '#1A56DB' : '#14B8A6' }} />
+                                <span className="text-sm text-slate-600">{s.type === 'new' ? t('analytics.visitor_new') : t('analytics.visitor_returning')}</span>
+                                <span className="text-sm font-bold text-slate-900 ml-auto">{s.count}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Rules performance */}
+                  {d.rules_performance.length > 0 && (
+                    <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                      <div className="px-6 py-4 border-b border-slate-100">
+                        <h4 className="font-bold text-slate-900">{t('analytics.rules_performance')}</h4>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                          <thead><tr className="bg-slate-50">
+                            <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('analytics.rule_name')}</th>
+                            <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('analytics.fires')}</th>
+                            <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('analytics.unique_sessions')}</th>
+                          </tr></thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {d.rules_performance.map((r: any) => (
+                              <tr key={r.rule_id} className="hover:bg-slate-50 transition-colors">
+                                <td className="px-6 py-3 text-sm font-semibold text-slate-900">{r.name}</td>
+                                <td className="px-6 py-3 text-sm text-slate-700">{r.fires.toLocaleString()}</td>
+                                <td className="px-6 py-3 text-sm text-slate-700">{r.unique_sessions.toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )
+        })()}
+
+        {/* Overview Tab */}
+        {activeTab === 'overview' && <><div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
           {[
             { label: t('project.stats.active_rules'), value: '0', delta: '0%', deltaColor: 'text-slate-400' },
             { label: t('project.stats.sessions_today'), value: '0', delta: '+0%', deltaColor: 'text-emerald-500' },
@@ -579,6 +825,7 @@ export default function ProjectDashboardPage() {
             </table>
           </div>
         </div>
+        </>}
       </div>
     </div>
   )
