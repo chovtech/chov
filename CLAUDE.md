@@ -112,8 +112,8 @@ cd ~/chov && git add -A && git commit -m "message" && deploy-pp
 
 ### Start local environment:
 ```bash
-# Terminal 3 — Database (run first)
-docker start chov-db
+# Terminal 0 — Local Bash
+ssh chov-vps
 
 # Terminal 1 — Backend
 cd ~/chov/apps/pagepersona/backend && source venv/bin/activate
@@ -121,6 +121,12 @@ uvicorn app.main:app --reload --port 8000
 
 # Terminal 2 — Frontend
 cd ~/chov/apps/pagepersona/frontend && npm run dev
+
+# Terminal 3 — Database (run first)
+docker start chov-db
+
+# Terminal 4 — Live server for chike
+ssh chov-vps
 ```
 
 ---

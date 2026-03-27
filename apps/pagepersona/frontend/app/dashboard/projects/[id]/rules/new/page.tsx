@@ -7,7 +7,6 @@ import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import ImageUploader from '@/components/ui/ImageUploader'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
-import CitySearchInput from '@/components/ui/CitySearchInput'
 import { rulesApi, projectApi, apiClient } from '@/lib/api/client'
 
 const ACTION_TYPES = [
@@ -20,8 +19,8 @@ const ACTION_TYPES = [
   { key: "insert_countdown",  labelKey: "picker.action_insert_countdown",  icon: "timer",          needsElement: true  },
 ]
 
-const GEO_TOKENS = ["{country}", "{city}", "{region}", "{company}"]
-const TOKEN_DEFAULTS: Record<string, string> = { country: "Your Country", city: "Your City", region: "Your Region", company: "Your Company" }
+const GEO_TOKENS = ["{country}"]
+const TOKEN_DEFAULTS: Record<string, string> = { country: "Your Country" }
 
 function parseSwapText(val: string): { text: string; fallbacks: Record<string, string> } {
   try {
@@ -428,12 +427,6 @@ function NewRulePageInner() {
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('rules.value')}</label>
                     {condition.valueType === "none" ? (
                       <div className="px-3 py-2.5 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-400">Auto-detected</div>
-                    ) : condition.signal === "geo_city" ? (
-                      <CitySearchInput
-                        value={condition.value}
-                        onChange={val => updateCondition(condition.id, "value", val)}
-                        placeholder={t('rules.value_placeholder')}
-                      />
                     ) : condition.valueType === "select" ? (
                       <div className="relative">
                         <select

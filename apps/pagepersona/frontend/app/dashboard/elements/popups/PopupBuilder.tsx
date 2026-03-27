@@ -967,8 +967,8 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
 
       {/* TEXT */}
       {block.type === 'text' && (() => {
-        const POPUP_TOKENS = ['{country}', '{city}', '{region}', '{company}']
-        const POPUP_TOKEN_DEFAULTS: Record<string, string> = { country: 'Your Country', city: 'Your City', region: 'Your Region', company: 'Your Company' }
+        const POPUP_TOKENS = ['{country}']
+        const POPUP_TOKEN_DEFAULTS: Record<string, string> = { country: 'Your Country' }
         const detectedTokens = POPUP_TOKENS.filter(tok => (block.text || '').includes(tok)).map(tok => tok.slice(1, -1))
         const insertToken = (tok: string) => {
           const newText = (block.text || '') + ' ' + tok

@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { rulesApi, projectApi, apiClient } from '@/lib/api/client'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
-import CitySearchInput from '@/components/ui/CitySearchInput'
 import Icon from '@/components/ui/Icon'
 import ImageUploader from '@/components/ui/ImageUploader'
 import { useTranslation } from '@/lib/hooks/useTranslation'
@@ -55,8 +54,8 @@ const ACTION_TYPE_DEFS = [
   { key: 'insert_countdown', labelKey: 'picker.action_insert_countdown', icon: 'timer',        needsElement: true  },
 ]
 
-const GEO_TOKENS = ['{country}', '{city}', '{region}', '{company}']
-const TOKEN_DEFAULTS: Record<string, string> = { country: 'Your Country', city: 'Your City', region: 'Your Region', company: 'Your Company' }
+const GEO_TOKENS = ['{country}']
+const TOKEN_DEFAULTS: Record<string, string> = { country: 'Your Country' }
 
 function parseSwapText(val: string): { text: string; fallbacks: Record<string, string> } {
   try {
@@ -953,13 +952,7 @@ function PickerPageInner() {
                             {c.valueType !== 'none' && (
                               <div>
                                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('picker.value_label')}</label>
-                                {c.signal === 'geo_city' ? (
-                                  <CitySearchInput
-                                    value={c.value}
-                                    onChange={val => updateCondition(c.id, 'value', val)}
-                                    placeholder={t('picker.value_placeholder')}
-                                  />
-                                ) : c.valueType === 'select' ? (
+                                {c.valueType === 'select' ? (
                                   <select value={c.value} onChange={e => updateCondition(c.id, 'value', e.target.value)}
                                     className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm appearance-none focus:outline-none focus:border-[#1A56DB] transition-all"
                                   >

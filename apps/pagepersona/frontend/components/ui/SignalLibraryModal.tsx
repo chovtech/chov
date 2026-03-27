@@ -51,18 +51,7 @@ export const SIGNAL_GROUPS = [
       { key: "operating_system", labelKey: "signal_modal.signal_operating_system", descKey: "signal_modal.signal_operating_system_desc", icon: "computer", operators: ["is"], valueType: "select", options: ["iOS", "Android", "Windows", "macOS", "Linux"] },
       { key: "browser", labelKey: "signal_modal.signal_browser", descKey: "signal_modal.signal_browser_desc", icon: "language", operators: ["is"], valueType: "select", options: ["Chrome", "Firefox", "Safari", "Edge"] },
       { key: "geo_country", labelKey: "signal_modal.signal_geo_country", descKey: "signal_modal.signal_geo_country_desc", icon: "public", operators: ["is", "is not"], valueType: "select", options: ALL_COUNTRIES },
-      { key: "geo_city", labelKey: "signal_modal.signal_geo_city", descKey: "signal_modal.signal_geo_city_desc", icon: "location_on", operators: ["is", "contains"], valueType: "city" },
       { key: "day_time", labelKey: "signal_modal.signal_day_time", descKey: "signal_modal.signal_day_time_desc", icon: "schedule", operators: ["is", "is between"], valueType: "text" },
-    ]
-  },
-  {
-    key: "firmographics",
-    labelKey: "signal_modal.group_firmographics",
-    icon: "domain",
-    signals: [
-      { key: "company_name", labelKey: "signal_modal.signal_company_name", descKey: "signal_modal.signal_company_name_desc", icon: "apartment", operators: ["is", "contains"], valueType: "text" },
-      { key: "industry", labelKey: "signal_modal.signal_industry", descKey: "signal_modal.signal_industry_desc", icon: "factory", operators: ["is"], valueType: "text" },
-      { key: "company_size", labelKey: "signal_modal.signal_company_size", descKey: "signal_modal.signal_company_size_desc", icon: "groups", operators: ["is greater than", "is less than"], valueType: "number" },
     ]
   },
 ]

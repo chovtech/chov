@@ -6,7 +6,6 @@ import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
-import CitySearchInput from '@/components/ui/CitySearchInput'
 import { rulesApi, projectApi, apiClient } from '@/lib/api/client'
 
 // Full signal config map — needed to reconstruct form state from saved rule data
@@ -25,11 +24,7 @@ const SIGNAL_CONFIGS: Record<string, { label: string; operators: string[]; value
   operating_system: { label: 'OS',             operators: ['is'],                                      valueType: 'select', options: ['iOS','Android','Windows','macOS','Linux'] },
   browser:          { label: 'Browser',        operators: ['is'],                                      valueType: 'select', options: ['Chrome','Firefox','Safari','Edge'] },
   geo_country:      { label: 'Country',        operators: ['is','is not'],                             valueType: 'select', options: ['Afghanistan','Albania','Algeria','Argentina','Australia','Austria','Bangladesh','Belgium','Bolivia','Brazil','Cambodia','Canada','Chile','China','Colombia','Croatia','Czech Republic','Denmark','Ecuador','Egypt','Ethiopia','Finland','France','Germany','Ghana','Greece','Guatemala','Honduras','Hungary','India','Indonesia','Iran','Iraq','Ireland','Israel','Italy','Japan','Jordan','Kenya','Kuwait','Malaysia','Mexico','Morocco','Netherlands','New Zealand','Nigeria','Norway','Pakistan','Peru','Philippines','Poland','Portugal','Qatar','Romania','Russia','Saudi Arabia','Senegal','Singapore','South Africa','South Korea','Spain','Sri Lanka','Sweden','Switzerland','Taiwan','Tanzania','Thailand','Turkey','Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Venezuela','Vietnam','Zimbabwe'] },
-  geo_city:         { label: 'City',           operators: ['is','contains'],                           valueType: 'city' },
   day_time:         { label: 'Time of day',    operators: ['is','is between'],                         valueType: 'text' },
-  company_name:     { label: 'Company',        operators: ['is','contains'],                           valueType: 'text' },
-  industry:         { label: 'Industry',       operators: ['is'],                                      valueType: 'text' },
-  company_size:     { label: 'Company size',   operators: ['is greater than','is less than'],          valueType: 'number' },
 }
 
 const ACTION_TYPES = [
@@ -42,8 +37,8 @@ const ACTION_TYPES = [
   { key: 'insert_countdown', label: 'Insert countdown', icon: 'timer',          needsElement: true  },
 ]
 
-const GEO_TOKENS = ['{country}', '{city}', '{region}', '{company}']
-const TOKEN_DEFAULTS: Record<string, string> = { country: 'Your Country', city: 'Your City', region: 'Your Region', company: 'Your Company' }
+const GEO_TOKENS = ['{country}']
+const TOKEN_DEFAULTS: Record<string, string> = { country: 'Your Country' }
 
 function parseSwapText(val: string): { text: string; fallbacks: Record<string, string> } {
   try {
@@ -468,12 +463,6 @@ function EditRulePageInner() {
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('rules.value')}</label>
                     {condition.valueType === 'none' ? (
                       <div className="px-3 py-2.5 bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-400">Auto-detected</div>
-                    ) : condition.signal === 'geo_city' ? (
-                      <CitySearchInput
-                        value={condition.value}
-                        onChange={val => updateCondition(condition.id, 'value', val)}
-                        placeholder={t('rules.value_placeholder')}
-                      />
                     ) : condition.valueType === 'select' ? (
                       <div className="relative">
                         <select

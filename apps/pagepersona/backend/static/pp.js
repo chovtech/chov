@@ -25,9 +25,11 @@
       warn('No ?id= param found on pp.js script tag. Aborting.');
       return;
     }
-    loadRules(scriptId, function (rules) {
+    loadRules(scriptId, function (data) {
+      var rules = data.rules;
+      var geo = data.geo || {};
       if (!rules || rules.length === 0) return;
-      var signals = detectSignals();
+      var signals = detectSignals(geo);
       window.__pp = window.__pp || {};
       window.__pp.signals = signals;
       window.__pp.rules = rules;
@@ -61,12 +63,13 @@
     }
   }
 
-  function setCache(scriptId, rulesHash, rules) {
+  function setCache(scriptId, rulesHash, rules, geo) {
     try {
       localStorage.setItem(CACHE_PREFIX + scriptId, JSON.stringify({
         ts: Date.now(),
         rules_hash: rulesHash,
-        rules: rules
+        rules: rules,
+        geo: geo || null
       }));
     } catch (e) {}
   }
@@ -76,11 +79,11 @@
     var cached = getCached(scriptId);
 
     if (cached) {
-      callback(cached.rules);
+      callback({ rules: cached.rules, geo: cached.geo || null });
       pingHash(scriptId, function (serverHash) {
         if (serverHash && serverHash !== cached.rules_hash) {
           fetchRules(scriptId, function (data) {
-            if (data) setCache(scriptId, data.rules_hash, data.rules);
+            if (data) setCache(scriptId, data.rules_hash, data.rules, data.geo);
           });
         }
       });
@@ -89,8 +92,8 @@
 
     fetchRules(scriptId, function (data) {
       if (!data) return;
-      setCache(scriptId, data.rules_hash, data.rules);
-      callback(data.rules);
+      setCache(scriptId, data.rules_hash, data.rules, data.geo);
+      callback({ rules: data.rules, geo: data.geo || null });
     });
   }
 
@@ -107,8 +110,9 @@
   }
 
   // ─── SIGNAL DETECTION ──────────────────────────────────────────────────────
-  function detectSignals() {
+  function detectSignals(geo) {
     var signals = {};
+    geo = geo || {};
 
     var params = parseQueryString(window.location.search);
     signals.utm_source   = params.utm_source   || '';
@@ -175,10 +179,22 @@
     });
 
     var now = new Date();
-    signals.day_time = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+    var tz = geo.timezone_id || '';
+    if (tz) {
+      try {
+        var tzParts = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: tz }).formatToParts(now);
+        var tzH = '', tzM = '';
+        tzParts.forEach(function(p) { if (p.type === 'hour') tzH = p.value; if (p.type === 'minute') tzM = p.value; });
+        signals.day_time = tzH + ':' + tzM;
+      } catch(e) {
+        signals.day_time = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+      }
+    } else {
+      signals.day_time = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+    }
 
-    signals.geo_country = '';
-    signals.geo_city = '';
+    signals.geo_country = geo.country || '';
+    signals.visitor_timezone = tz;
 
     return signals;
   }
@@ -678,19 +694,8 @@
   function resolveTokensWithFallbacks(text, fallbacks) {
     if (!text) return text;
     var signals = (window.__pp && window.__pp.signals) || {};
-    var geo = {
-      '{country}': signals.geo_country  || '',
-      '{city}':    signals.geo_city     || '',
-      '{region}':  signals.geo_region   || '',
-      '{company}': signals.company_name || '',
-    };
-    var result = text;
-    for (var token in geo) {
-      var key = token.slice(1, -1);
-      var val = geo[token] || (fallbacks && fallbacks[key]) || '';
-      result = result.split(token).join(val);
-    }
-    return result;
+    var countryVal = signals.geo_country || (fallbacks && fallbacks['country']) || '';
+    return text.split('{country}').join(countryVal);
   }
 
   function resolveTokens(text) {

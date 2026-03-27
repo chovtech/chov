@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 import asyncpg
 import httpx
@@ -7,7 +7,34 @@ import json
 from app.database import get_db
 from app.core.security import get_current_user
 
+_geo_cache: dict = {}
+
 router = APIRouter(prefix='/api/sdk', tags=['sdk'])
+
+
+async def get_visitor_geo(ip: str) -> dict:
+    """Look up geo info for visitor IP via ipwho.is. Cached in memory per IP."""
+    if ip in _geo_cache:
+        return _geo_cache[ip]
+    null_geo = {'country': None, 'country_code': None, 'continent': None, 'isp': None, 'timezone_id': None}
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            resp = await client.get(f'https://ipwho.is/{ip}')
+            data = resp.json()
+            if data.get('success'):
+                geo = {
+                    'country': data.get('country'),
+                    'country_code': data.get('country_code'),
+                    'continent': data.get('continent'),
+                    'isp': (data.get('connection') or {}).get('org'),
+                    'timezone_id': (data.get('timezone') or {}).get('id'),
+                }
+                _geo_cache[ip] = geo
+                return geo
+    except Exception:
+        pass
+    _geo_cache[ip] = null_geo
+    return null_geo
 
 
 def compute_rules_hash(rules: list) -> str:
@@ -78,21 +105,32 @@ async def sdk_ping(
 # ---------------------------------------------------------------------------
 @router.get('/rules')
 async def sdk_rules(
+    request: Request,
     script_id: str = Query(...),
     db: asyncpg.Connection = Depends(get_db)
 ):
+    # Extract visitor IP: X-Forwarded-For → X-Real-IP → direct connection
+    forwarded_for = request.headers.get('X-Forwarded-For')
+    if forwarded_for:
+        visitor_ip = forwarded_for.split(',')[0].strip()
+    else:
+        real_ip = request.headers.get('X-Real-IP')
+        visitor_ip = real_ip.strip() if real_ip else (request.client.host if request.client else '0.0.0.0')
+
+    geo = await get_visitor_geo(visitor_ip)
+
     project = await get_project_by_script_id(script_id, db)
     if project['status'] == 'draft':
-        # Return empty rules for unpublished projects
         return JSONResponse(
-            content={'rules_hash': 'draft', 'rules': []},
+            content={'rules_hash': 'draft', 'rules': [], 'geo': geo},
             headers={'Access-Control-Allow-Origin': '*'}
         )
     rules = await get_active_rules(str(project['id']), db)
     rules_hash = compute_rules_hash(rules)
     response = JSONResponse(content={
         'rules_hash': rules_hash,
-        'rules': rules
+        'rules': rules,
+        'geo': geo,
     })
     response.headers['Cache-Control'] = 'public, max-age=30'
     response.headers['Access-Control-Allow-Origin'] = '*'
