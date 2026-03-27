@@ -28,9 +28,10 @@
 
 | Terminal | Purpose | State |
 |----------|---------|-------|
+| 0 |Local command terminal | Where commands are run |
 | 1 | Local backend | `uvicorn app.main:app --reload --port 8000` |
 | 2 | Local frontend | `npm run dev` |
-| 3 | Local command terminal | Where commands are run |
+| 3 | Docker | Where commands are run |
 | 4 | Live VPS | Always SSH'd in as `chike@mail` |
 
 ---
@@ -137,7 +138,7 @@ cd ~/chov/apps/pagepersona/frontend && npm run dev
 | Database | `chov` |
 | Port | 5432 local, native on VPS |
 
-### Tables (10 total):
+### Tables (local: 11, VPS: 10):
 
 | Table | Key Columns |
 |-------|-------------|
@@ -151,9 +152,10 @@ cd ~/chov/apps/pagepersona/frontend && npm run dev
 | projects | id, workspace_id, name, page_url, platform, script_id, script_verified, status, thumbnail_url |
 | rules | id, project_id, name, conditions JSONB, condition_operator, actions JSONB, priority, is_active |
 | popups | id, workspace_id, name, status, config JSONB, created_at, updated_at |
+| countdowns | id, workspace_id, name, ends_at, expiry_action, expiry_value, config JSONB, status, created_at |
 
-> ⚠️ `workspace_members` — exists locally only, NOT on VPS yet
-> ⚠️ `countdowns` — needs to be created (next task)
+> ⚠️ `countdowns` — table code is 100% done (router, service, frontend, CountdownPicker). Only needs `CREATE TABLE` run on VPS.
+> ℹ️ `workspace_members` — exists locally only, not referenced by any backend code. Dormant — not blocking anything.
 
 ---
 
@@ -196,10 +198,10 @@ GOOGLE_REDIRECT_URI=https://api.usepagepersona.com/api/auth/google/callback
       app/
         core/           — config.py, security.py
         routers/        — auth.py, users.py, projects.py, rules.py, sdk.py,
-                          upload.py, webhooks.py, google_auth.py, popups.py
+                          upload.py, webhooks.py, google_auth.py, popups.py, countdowns.py
         schemas/        — projects.py, users.py, rules.py
         services/       — project_service.py, user_service.py,
-                          popup_service.py, email_service.py
+                          popup_service.py, countdown_service.py, email_service.py
         database.py
         main.py
       static/
@@ -218,6 +220,10 @@ GOOGLE_REDIRECT_URI=https://api.usepagepersona.com/api/auth/google/callback
             page.tsx                        — Elements page (Popups tab + Countdown Timers tab)
             popups/
               PopupBuilder.tsx              — Shared canvas popup builder (10 templates)
+              new/page.tsx
+              [id]/edit/page.tsx
+            countdowns/
+              CountdownBuilder.tsx          — Countdown builder (type, style, expiry settings)
               new/page.tsx
               [id]/edit/page.tsx
           projects/
@@ -352,7 +358,7 @@ grep -n "t(el\.\|t(block\.\|t(action\.\|t(item\.\|t(a\.\|t(undefined" /path/to/f
 | show_element | ✅ Working |
 | swap_url | ✅ Working |
 | show_popup | ✅ Working — full canvas builder + PopupPicker in rule engine + live picker |
-| insert_countdown | ✅ pp.js done, rule builder done — DB + backend + Elements picker TO BUILD |
+| insert_countdown | ✅ Fully built — CountdownBuilder, Elements page, CountdownPicker, pp.js all done. Only VPS DB table creation pending. |
 | inject_token | ❌ Removed — replaced by `{country}` token in swap_text |
 | send_webhook | ❌ Removed |
 
@@ -473,13 +479,24 @@ pp.js detects when loaded inside the PagePersona iframe and skips all rule execu
 
 ## 20. NEXT TASKS
 
-### 1. Countdown Builder ← START HERE
-- **DB:** Create `countdowns` table on VPS:
-  `id, workspace_id, name, countdown_type (fixed|duration), ends_at, duration_value, duration_unit (minutes|hours|days), expiry_action (hide|redirect|message), expiry_value, style JSONB (digit_bg, digit_color, show_labels, etc.), created_at`
-- **Backend:** `routers/countdowns.py` — CRUD endpoints
-- **Frontend (Elements page):** Countdown Timers tab in `/dashboard/elements/page.tsx` (currently "Coming Soon") + `countdowns/new/` + `countdowns/[id]/edit/` pages
-- **Rule builder:** `insert_countdown` already in ACTION_TYPES — need CountdownPicker (mirrors PopupPicker)
-- **pp.js:** `insertCountdown(blockId, value)` is already fully implemented — injects live DD:HH:MM:SS ticker, fires expiry_action on zero
+### 1. Create countdowns table on VPS ← START HERE
+Everything is built. Just run this SQL on the VPS database:
+
+```sql
+CREATE TABLE IF NOT EXISTS countdowns (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  ends_at TIMESTAMPTZ,
+  expiry_action TEXT NOT NULL DEFAULT 'hide',
+  expiry_value TEXT NOT NULL DEFAULT '',
+  config JSONB NOT NULL DEFAULT '{}',
+  status TEXT NOT NULL DEFAULT 'draft',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+Run via terminal 4: `psql -U chov -d chov -c "CREATE TABLE IF NOT EXISTS ..."`
 
 ### 2. End-to-end action testing
 All actions tested on `test.html` and SMI WordPress page.
@@ -522,13 +539,16 @@ All actions tested on `test.html` and SMI WordPress page.
 2. **Phase 2** — Extract reusable code into Chov Libraries after each launch
 3. **Phase 3** — Launch chov.ai as unified suite (subscription)
 
-### Four building blocks (vocabulary is permanent):
+### Building blocks (vocabulary is permanent):
 | Block | Location | Definition |
 |-------|----------|-----------|
 | **UI Component** | `/packages/ui/` | Visual element only — no logic, no API, no DB |
 | **Package** | `/packages/utils/` | Pure logic utility — no UI, no rendering |
 | **Module** | `/packages/modules/` | Complete feature: UI + logic + API + database |
 | **Engine** | `/packages/engines/` | Major capability system entire products are built around |
+| **Product** | `/packages/product/` | A full product that executes independently — e.g. PagePersona |
+| **Pack** | `/packages/pack/` | A bundle of 2–4 complementary products — e.g. PagePersona + MagnetIQ + LeadGenie + Qualifir = LeadOps |
+| **Suite** | `/packages/suite/` | All products together — this is chov.ai |
 
 ### The launch-first rule:
 Build PagePersona first. Extract libraries after first sales. Every reusable piece found during the build goes into a **"Library Later" note** — flagged for extraction, not built as a library yet. Name tables and folders generically so extraction requires renaming nothing.
@@ -539,6 +559,7 @@ Every JVZoo product is simultaneously a brick in chov.ai. When enough products e
 ---
 
 ## 23. SOPs IN PROJECT FILES
+> These files will be moved to the SOP folder Chike created.
 
 | File | Purpose |
 |------|---------|
