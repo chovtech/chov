@@ -13,6 +13,7 @@ import {
 
 interface Project {
   id: string
+  thumbnail_url?: string
   name: string
   page_url: string
   platform: string
@@ -344,14 +345,14 @@ export default function ProjectDashboardPage() {
   }, [projectId])
 
   useEffect(() => {
-    if (activeTab !== 'analytics' || !projectId) return
+    if (!projectId) return
     setAnalyticsLoading(true)
     setAnalyticsError(false)
     apiClient.get(`/api/analytics/project/${projectId}?period=${analyticsPeriod}`)
       .then(res => setAnalyticsData(res.data))
       .catch(() => setAnalyticsError(true))
       .finally(() => setAnalyticsLoading(false))
-  }, [activeTab, analyticsPeriod, projectId])
+  }, [analyticsPeriod, projectId])
 
   if (loading || notFound || !project) return (
     <div className="flex flex-col min-h-screen">
@@ -397,12 +398,6 @@ export default function ProjectDashboardPage() {
   const activityItems = [
     { bg: 'bg-blue-100', color: 'text-blue-600', icon: 'bolt', title: 'No rules fired yet', desc: 'Rules will appear here once active and visitors arrive', time: '' },
     { bg: 'bg-emerald-100', color: 'text-emerald-600', icon: 'check_circle', title: 'Script installed', desc: 'PagePersona script was verified on your page', time: 'Just now' },
-  ]
-
-  const stubVisitors = [
-    { location: 'New York, US', ip: '72.14.xx.xxx', stage: 'HOT', stageColor: 'bg-red-100 text-red-700 border-red-200', rule: 'Pricing Modal', time: '2m 14s', last: 'Just now', lastColor: 'text-emerald-600' },
-    { location: 'London, UK', ip: '194.223.xx.xx', stage: 'WARM', stageColor: 'bg-amber-100 text-amber-700 border-amber-200', rule: 'None', time: '5m 42s', last: '4m ago', lastColor: 'text-slate-500' },
-    { location: 'Berlin, DE', ip: '85.214.xx.xxx', stage: 'COLD', stageColor: 'bg-slate-100 text-slate-600 border-slate-200', rule: 'None', time: '0m 34s', last: '12m ago', lastColor: 'text-slate-500' },
   ]
 
   return (
@@ -484,16 +479,16 @@ export default function ProjectDashboardPage() {
           </div>
         </div>
         {/* Tabs */}
-        <div className="flex gap-1 bg-slate-100 rounded-xl p-1 mb-8 w-fit">
+        <div className="flex gap-2 mb-8">
           <button
             onClick={() => setActiveTab('overview')}
-            className={'px-5 py-2 text-sm font-semibold rounded-lg transition-all ' + (activeTab === 'overview' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
+            className={'px-6 py-2.5 text-sm font-semibold rounded-xl border-2 transition-all ' + (activeTab === 'overview' ? 'border-[#1A56DB] text-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-200 text-slate-500 hover:border-slate-300 bg-white')}
           >
             {t('project.tab_overview')}
           </button>
           <button
             onClick={() => setActiveTab('analytics')}
-            className={'px-5 py-2 text-sm font-semibold rounded-lg transition-all ' + (activeTab === 'analytics' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
+            className={'px-6 py-2.5 text-sm font-semibold rounded-xl border-2 transition-all ' + (activeTab === 'analytics' ? 'border-[#1A56DB] text-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-200 text-slate-500 hover:border-slate-300 bg-white')}
           >
             {t('analytics.tab')}
           </button>
@@ -759,7 +754,7 @@ export default function ProjectDashboardPage() {
                 <div className="flex items-center gap-3"><Icon name="code" className="text-slate-400 group-hover:text-[#1A56DB] transition-colors" /><span className="text-sm font-semibold text-slate-700">Installation</span></div>
                 <Icon name="chevron_right" className="text-slate-300 group-hover:text-[#1A56DB] transition-colors" />
               </button>
-              <button className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#1A56DB]/30 transition-all">
+              <button onClick={() => setActiveTab('analytics')} className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#1A56DB]/30 transition-all">
                 <div className="flex items-center gap-3"><Icon name="leaderboard" className="text-slate-400 group-hover:text-[#1A56DB] transition-colors" /><span className="text-sm font-semibold text-slate-700">{t('project.actions.view_analytics')}</span></div>
                 <Icon name="chevron_right" className="text-slate-300 group-hover:text-[#1A56DB] transition-colors" />
               </button>
@@ -775,20 +770,27 @@ export default function ProjectDashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h4 className="font-bold text-slate-900">{t('project.trend.heading')}</h4>
               <div className="flex gap-3">
-                <span className="flex items-center gap-1.5 text-xs text-slate-500"><span className="w-2.5 h-2.5 rounded-full bg-[#1A56DB]"></span>Conversions</span>
-                <span className="flex items-center gap-1.5 text-xs text-slate-500"><span className="w-2.5 h-2.5 rounded-full bg-slate-200"></span>Sessions</span>
+                <span className="flex items-center gap-1.5 text-xs text-slate-500"><span className="w-2.5 h-2.5 rounded-full bg-[#1A56DB]" />{t('analytics.visits')}</span>
+                <span className="flex items-center gap-1.5 text-xs text-slate-500"><span className="w-2.5 h-2.5 rounded-full bg-[#14B8A6]" />{t('analytics.rules_fired_over_time')}</span>
               </div>
             </div>
-            <div className="h-48 bg-slate-50 rounded-lg flex items-end justify-between p-4 gap-2 mb-3">
-              {[30,45,40,60,55,85,50,95].map((h, i) => (
-                <div key={i} className="w-full flex flex-col gap-1 items-center justify-end h-full">
-                  <div className="w-full rounded-t" style={{height: h + '%', backgroundColor: i % 2 === 0 ? '#e2e8f0' : 'rgba(26,86,219,' + (0.3 + (h/100)*0.7) + ')'}}></div>
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-between text-[10px] text-slate-400 px-4">
-              {['Mon','Tue','Wed','Thu','Fri','Sat','Sun','Today'].map(d => <span key={d}>{d}</span>)}
-            </div>
+            {analyticsData && analyticsData.daily_series.length > 0 ? (
+              <ResponsiveContainer width="100%" height={192}>
+                <LineChart data={analyticsData.daily_series} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} tickLine={false} axisLine={false}
+                    tickFormatter={(v: string) => { const dt = new Date(v); return (dt.getMonth()+1) + '/' + dt.getDate() }} />
+                  <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
+                  <Line type="monotone" dataKey="visits" stroke="#1A56DB" strokeWidth={2} dot={false} name={t('analytics.visits')} />
+                  <Line type="monotone" dataKey="rules_fired" stroke="#14B8A6" strokeWidth={2} dot={false} name={t('analytics.rules_fired_over_time')} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-48 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 text-sm">
+                {analyticsLoading ? <Icon name="sync" className="animate-spin mr-2" /> : null}
+                {analyticsLoading ? t('analytics.loading') : t('analytics.no_data')}
+              </div>
+            )}
           </div>
           <div className="bg-gradient-to-br from-[#1A56DB] to-blue-700 p-6 rounded-xl text-white shadow-lg shadow-[#1A56DB]/20 flex flex-col">
             <Icon name="lightbulb" className="text-3xl mb-4" />
@@ -800,29 +802,53 @@ export default function ProjectDashboardPage() {
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-8">
           <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
             <h4 className="font-bold text-slate-900">{t('project.visitors.heading')}</h4>
-            <button className="text-[#1A56DB] text-sm font-semibold hover:underline">{t('project.visitors.view_all')}</button>
+            <button onClick={() => setActiveTab('analytics')} className="text-[#1A56DB] text-sm font-semibold hover:underline">{t('project.visitors.view_all')}</button>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead><tr className="bg-slate-50">
-                <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('project.visitors.col_visitor')}</th>
-                <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Awareness Stage</th>
-                <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Rule Triggered</th>
-                <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Time on Site</th>
-                <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Last Active</th>
-              </tr></thead>
-              <tbody className="divide-y divide-slate-100">
-                {stubVisitors.map((v, i) => (
-                  <tr key={i} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><Icon name="person" className="text-slate-400 text-lg" /></div><div><p className="text-sm font-semibold text-slate-900">{v.location}</p><p className="text-xs text-slate-500">{v.ip}</p></div></div></td>
-                    <td className="px-6 py-4"><span className={'px-2.5 py-0.5 text-xs font-bold rounded-full border ' + v.stageColor}>{v.stage}</span></td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{v.rule}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{v.time}</td>
-                    <td className={'px-6 py-4 text-sm font-medium ' + v.lastColor}>{v.last}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {analyticsData && analyticsData.recent_visits && analyticsData.recent_visits.length > 0 ? (
+              <table className="w-full text-left border-collapse">
+                <thead><tr className="bg-slate-50">
+                  <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('project.visitors.col_visitor')}</th>
+                  <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('analytics.device_split')}</th>
+                  <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('analytics.rules_fired')}</th>
+                  <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('analytics.avg_time_on_page')}</th>
+                  <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('project.visitors.view_all')}</th>
+                </tr></thead>
+                <tbody className="divide-y divide-slate-100">
+                  {analyticsData.recent_visits.map((v: any, i: number) => (
+                    <tr key={i} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                            <Icon name="person" className="text-slate-400 text-lg" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-slate-900">{v.country}</p>
+                            <p className="text-xs text-slate-500">{v.is_new_visitor ? t('analytics.visitor_new') : t('analytics.visitor_returning')}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-xs font-medium text-slate-600 capitalize">{v.device} · {v.browser}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {v.rule_name ? (
+                          <span className="px-2.5 py-0.5 text-xs font-bold rounded-full border bg-blue-50 border-blue-200 text-blue-700">{v.rule_name}</span>
+                        ) : (
+                          <span className="text-xs text-slate-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">{v.time_on_page > 0 ? v.time_on_page + t('analytics.seconds_abbr') : '—'}</td>
+                      <td className="px-6 py-4 text-sm text-slate-500">{v.last_active}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="flex items-center justify-center py-12 text-slate-400 text-sm">
+                {analyticsLoading ? <><Icon name="sync" className="animate-spin mr-2" />{t('analytics.loading')}</> : t('analytics.no_data')}
+              </div>
+            )}
           </div>
         </div>
         </>}

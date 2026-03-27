@@ -165,6 +165,47 @@ async def project_analytics(
         for r in rule_rows
     ]
 
+    # --- Recent visits (last 20) ---
+    recent_rows = await db.fetch(
+        '''
+        SELECT pv.session_id, pv.country, pv.device, pv.browser, pv.referrer,
+               pv.utm_source, pv.is_new_visitor, pv.time_on_page, pv.scroll_depth,
+               pv.timestamp,
+               (SELECT r.name FROM rule_events re
+                JOIN rules r ON r.id = re.rule_id
+                WHERE re.session_id = pv.session_id AND re.project_id = pv.project_id
+                ORDER BY re.timestamp DESC LIMIT 1) AS rule_name
+        FROM page_visits pv
+        WHERE pv.project_id = $1
+        ORDER BY pv.timestamp DESC LIMIT 20
+        ''',
+        project_id
+    )
+
+    def _age(ts):
+        diff = int((datetime.now(timezone.utc) - ts).total_seconds())
+        if diff < 60: return f'{diff}s ago'
+        if diff < 3600: return f'{diff // 60}m ago'
+        if diff < 86400: return f'{diff // 3600}h ago'
+        return f'{diff // 86400}d ago'
+
+    recent_visits = [
+        {
+            'session_id': r['session_id'],
+            'country': r['country'] or '—',
+            'device': r['device'] or '—',
+            'browser': r['browser'] or '—',
+            'referrer': r['referrer'] or '',
+            'utm_source': r['utm_source'] or '',
+            'is_new_visitor': r['is_new_visitor'],
+            'time_on_page': r['time_on_page'] or 0,
+            'scroll_depth': r['scroll_depth'] or 0,
+            'rule_name': r['rule_name'] or None,
+            'last_active': _age(r['timestamp']),
+        }
+        for r in recent_rows
+    ]
+
     return {
         'period': period,
         'headline': {
@@ -182,6 +223,7 @@ async def project_analytics(
         'device_split': device_split,
         'visitor_split': visitor_split,
         'rules_performance': rules_performance,
+        'recent_visits': recent_visits,
     }
 
 

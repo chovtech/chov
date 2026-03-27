@@ -5,25 +5,16 @@ import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import NewProjectModal from '@/components/ui/NewProjectModal'
 import { useTranslation } from '@/lib/hooks/useTranslation'
-import { projectApi, apiClient } from '@/lib/api/client'
-import {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, Tooltip, ResponsiveContainer,
-} from 'recharts'
+import { projectApi } from '@/lib/api/client'
 
 const tabKeys = ['all', 'active', 'drafts', 'archived']
 
 export default function DashboardPage() {
   const { t } = useTranslation('common')
   const [activeTab, setActiveTab] = useState('all')
-  const [pageView, setPageView] = useState<'projects' | 'analytics'>('projects')
   const [modalOpen, setModalOpen] = useState(false)
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
-  const [analyticsPeriod, setAnalyticsPeriod] = useState(30)
-  const [analyticsData, setAnalyticsData] = useState<any>(null)
-  const [analyticsLoading, setAnalyticsLoading] = useState(false)
-  const [analyticsError, setAnalyticsError] = useState(false)
 
   const fetchProjects = async () => {
     try { const res = await projectApi.list(); setProjects(res.data) }
@@ -32,16 +23,6 @@ export default function DashboardPage() {
   }
 
   useEffect(() => { fetchProjects() }, [])
-
-  useEffect(() => {
-    if (pageView !== 'analytics') return
-    setAnalyticsLoading(true)
-    setAnalyticsError(false)
-    apiClient.get(`/api/analytics/overview?period=${analyticsPeriod}`)
-      .then(res => setAnalyticsData(res.data))
-      .catch(() => setAnalyticsError(true))
-      .finally(() => setAnalyticsLoading(false))
-  }, [pageView, analyticsPeriod])
 
   const hasProjects = projects.length > 0
 
@@ -89,208 +70,17 @@ export default function DashboardPage() {
                 {t('dashboard.subheading')}
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex gap-1 bg-slate-100 rounded-xl p-1">
-                <button
-                  onClick={() => setPageView('projects')}
-                  className={'px-4 py-2 text-sm font-semibold rounded-lg transition-all ' + (pageView === 'projects' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
-                >
-                  {t('project.tab_overview')}
-                </button>
-                <button
-                  onClick={() => setPageView('analytics')}
-                  className={'px-4 py-2 text-sm font-semibold rounded-lg transition-all ' + (pageView === 'analytics' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
-                >
-                  {t('analytics.tab')}
-                </button>
-              </div>
-              {pageView === 'projects' && (
-                <button
-                  onClick={() => setModalOpen(true)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] text-white rounded-xl font-bold shadow-lg shadow-[#1A56DB]/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                >
-                  <Icon name="add" className="text-lg" />
-                  <span>{t('dashboard.new_project')}</span>
-                </button>
-              )}
-            </div>
+            <button
+              onClick={() => setModalOpen(true)}
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] text-white rounded-xl font-bold shadow-lg shadow-[#1A56DB]/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            >
+              <Icon name="add" className="text-lg" />
+              <span>{t('dashboard.new_project')}</span>
+            </button>
           </div>
 
-          {/* Analytics View */}
-          {pageView === 'analytics' && (() => {
-            const COLORS = ['#1A56DB', '#14B8A6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#10b981', '#f97316']
-            if (analyticsLoading) return (
-              <div className="flex items-center justify-center py-24 text-slate-400">
-                <Icon name="sync" className="animate-spin text-3xl mr-3" />
-                <span className="text-sm">{t('analytics.loading')}</span>
-              </div>
-            )
-            if (analyticsError) return (
-              <div className="flex items-center justify-center py-24">
-                <Icon name="error_outline" className="text-3xl mr-3 text-red-400" />
-                <span className="text-sm text-slate-500">{t('analytics.error')}</span>
-              </div>
-            )
-            const d = analyticsData
-            const hasData = d && d.headline.total_visits > 0
-            return (
-              <div className="space-y-6">
-                {/* Period selector */}
-                <div className="flex items-center justify-end gap-2">
-                  {[7, 30, 90].map(p => (
-                    <button key={p} onClick={() => setAnalyticsPeriod(p)}
-                      className={'px-4 py-1.5 text-xs font-semibold rounded-lg border transition-all ' + (analyticsPeriod === p ? 'bg-[#1A56DB] text-white border-[#1A56DB]' : 'bg-white text-slate-600 border-slate-200 hover:border-[#1A56DB]/40')}>
-                      {t(`analytics.period_${p}`)}
-                    </button>
-                  ))}
-                </div>
-                {!hasData ? (
-                  <div className="flex flex-col items-center justify-center py-24 text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
-                      <Icon name="bar_chart" className="text-3xl text-slate-300" />
-                    </div>
-                    <p className="text-slate-700 font-semibold mb-1">{t('analytics.no_data')}</p>
-                    <p className="text-sm text-slate-400 max-w-sm">{t('analytics.no_data_sub')}</p>
-                  </div>
-                ) : (
-                  <>
-                    {/* Headline cards */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                      {[
-                        { label: t('analytics.total_visits'), value: d.headline.total_visits.toLocaleString(), icon: 'visibility' },
-                        { label: t('analytics.unique_visitors'), value: d.headline.unique_visitors.toLocaleString(), icon: 'person' },
-                        { label: t('analytics.rules_fired'), value: d.headline.rules_fired.toLocaleString(), icon: 'bolt' },
-                        { label: t('analytics.personalisation_rate'), value: d.headline.personalisation_rate + t('analytics.percent_abbr'), icon: 'auto_awesome' },
-                      ].map(card => (
-                        <div key={card.label} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="w-8 h-8 rounded-lg bg-[#1A56DB]/10 flex items-center justify-center">
-                              <Icon name={card.icon} className="text-[#1A56DB] text-base" />
-                            </div>
-                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{card.label}</p>
-                          </div>
-                          <p className="text-3xl font-black text-slate-900">{card.value}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Stacked bar: personalised vs unpersonalised */}
-                    <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
-                      <h4 className="font-bold text-slate-900 mb-5">{t('analytics.visits_over_time')}</h4>
-                      <ResponsiveContainer width="100%" height={220}>
-                        <BarChart data={d.daily_series} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
-                          <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} tickLine={false} axisLine={false}
-                            tickFormatter={(v: string) => { const dt = new Date(v); return (dt.getMonth()+1) + '/' + dt.getDate() }} />
-                          <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
-                          <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
-                          <Bar dataKey="personalised" stackId="a" fill="#1A56DB" name={t('analytics.personalised')} />
-                          <Bar dataKey="unpersonalised" stackId="a" fill="#e2e8f0" name={t('analytics.unpersonalised')} radius={[2, 2, 0, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-
-                    {/* Project performance + Top countries */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-100">
-                          <h4 className="font-bold text-slate-900">{t('analytics.project_performance')}</h4>
-                        </div>
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left">
-                            <thead><tr className="bg-slate-50">
-                              <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">Project</th>
-                              <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('analytics.visits')}</th>
-                              <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('analytics.rules_fired')}</th>
-                              <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('analytics.personalisation_rate')}</th>
-                            </tr></thead>
-                            <tbody className="divide-y divide-slate-100">
-                              {d.project_performance.map((p: any) => (
-                                <tr key={p.project_id} className="hover:bg-slate-50 transition-colors">
-                                  <td className="px-5 py-3 text-sm font-semibold text-slate-900 max-w-[140px] truncate">{p.name}</td>
-                                  <td className="px-5 py-3 text-sm text-slate-700">{p.visits.toLocaleString()}</td>
-                                  <td className="px-5 py-3 text-sm text-slate-700">{p.rules_fired.toLocaleString()}</td>
-                                  <td className="px-5 py-3 text-sm text-slate-700">{p.personalisation_rate}%</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                      <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
-                        <h4 className="font-bold text-slate-900 mb-5">{t('analytics.top_countries')}</h4>
-                        {d.top_countries.length === 0 ? <p className="text-sm text-slate-400">{t('analytics.no_data')}</p> : (
-                          <ResponsiveContainer width="100%" height={200}>
-                            <BarChart data={d.top_countries} layout="vertical" margin={{ left: 0, right: 20, top: 0, bottom: 0 }}>
-                              <XAxis type="number" tick={{ fontSize: 10, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
-                              <YAxis type="category" dataKey="country" tick={{ fontSize: 11, fill: '#475569' }} tickLine={false} axisLine={false} width={90} />
-                              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
-                              <Bar dataKey="visits" fill="#1A56DB" radius={[0, 4, 4, 0]} name={t('analytics.visits')} />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Device split + UTM performance */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
-                        <h4 className="font-bold text-slate-900 mb-5">{t('analytics.device_split')}</h4>
-                        {d.device_split.length === 0 ? <p className="text-sm text-slate-400">{t('analytics.no_data')}</p> : (
-                          <div className="flex items-center gap-6">
-                            <ResponsiveContainer width={140} height={140}>
-                              <PieChart>
-                                <Pie data={d.device_split} dataKey="visits" nameKey="device" cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={2}>
-                                  {d.device_split.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                                </Pie>
-                                <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
-                              </PieChart>
-                            </ResponsiveContainer>
-                            <div className="space-y-2">
-                              {d.device_split.map((s: any, i: number) => (
-                                <div key={s.device} className="flex items-center gap-2">
-                                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
-                                  <span className="text-sm text-slate-600 capitalize">{s.device}</span>
-                                  <span className="text-sm font-bold text-slate-900 ml-auto">{s.visits}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-100">
-                          <h4 className="font-bold text-slate-900">{t('analytics.utm_performance')}</h4>
-                        </div>
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left">
-                            <thead><tr className="bg-slate-50">
-                              <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('analytics.utm_source')}</th>
-                              <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('analytics.utm_medium')}</th>
-                              <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('analytics.visits')}</th>
-                              <th className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('analytics.unique_visitors')}</th>
-                            </tr></thead>
-                            <tbody className="divide-y divide-slate-100">
-                              {d.utm_performance.map((u: any, i: number) => (
-                                <tr key={i} className="hover:bg-slate-50 transition-colors">
-                                  <td className="px-5 py-3 text-sm font-semibold text-slate-900">{u.source === 'direct' ? t('analytics.direct') : u.source}</td>
-                                  <td className="px-5 py-3 text-sm text-slate-600">{u.medium || '—'}</td>
-                                  <td className="px-5 py-3 text-sm text-slate-700">{u.visits.toLocaleString()}</td>
-                                  <td className="px-5 py-3 text-sm text-slate-700">{u.unique_visitors.toLocaleString()}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            )
-          })()}
-
-          {/* Projects View — Tabs */}
-          {pageView === 'projects' && <div className="flex border-b border-slate-200 dark:border-slate-800 mb-8 overflow-x-auto">
+          {/* Tabs */}
+          <div className="flex border-b border-slate-200 dark:border-slate-800 mb-8 overflow-x-auto">
             {tabKeys.map((key) => (
               <button
                 key={key}
@@ -304,10 +94,10 @@ export default function DashboardPage() {
                 {t(`dashboard.tabs.${key}`)}
               </button>
             ))}
-          </div>}
+          </div>
 
           {/* Project grid */}
-          {pageView === 'projects' && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map((project) => (
               <a
                 key={project.id}
@@ -398,7 +188,7 @@ export default function DashboardPage() {
                 {t('dashboard.empty_state.cta_primary')}
               </span>
             </div>
-          </div>}
+          </div>
         </div>
 
       ) : (
