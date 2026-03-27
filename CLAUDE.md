@@ -68,12 +68,14 @@ PYEOF
 ## 5. DEPLOY WORKFLOW
 
 ```bash
-cd ~/chov && git add -A && git commit -m "message" && deploy-pp
+cd ~/chov && git add -A && git commit -m "message" && git push
 ```
 
-- `deploy-pp` = git push + `ssh chov-vps ~/deploy.sh`
+Then in terminal 4 (already SSH'd to VPS): `~/deploy.sh`
+
 - `deploy.sh`: git pull → copy pp.js to CDN (with prod API_BASE via sed) → restart backend → rm -rf .next → npm run build → pm2 restart
 - **Never edit the CDN pp.js directly** — always go through deploy.sh
+- `ssh chov-vps ~/deploy.sh` fails from Claude's terminal (no SSH key) — Chike always runs it manually in terminal 4
 
 ---
 
@@ -92,6 +94,7 @@ cd ~/chov && git add -A && git commit -m "message" && deploy-pp
 | Payments | Stripe + JVZoo webhooks | |
 | Deployment | Hostinger VPS, Docker + Nginx + PM2 | |
 | Translation | Custom `useTranslation` hook | `/locales/{lang}/common.json` |
+| Geo lookup | ipwho.is | Free, no key needed — called server-side in sdk.py |
 
 **Polyglot rule:** Node.js/TypeScript for pure SaaS products. Python/FastAPI for AI-heavy products. This is intentional architecture, not inconsistency.
 
@@ -112,8 +115,8 @@ cd ~/chov && git add -A && git commit -m "message" && deploy-pp
 
 ### Start local environment:
 ```bash
-# Terminal 0 — Local Bash
-ssh chov-vps
+# Terminal 3 — Database (run first)
+docker start chov-db
 
 # Terminal 1 — Backend
 cd ~/chov/apps/pagepersona/backend && source venv/bin/activate
@@ -121,12 +124,6 @@ uvicorn app.main:app --reload --port 8000
 
 # Terminal 2 — Frontend
 cd ~/chov/apps/pagepersona/frontend && npm run dev
-
-# Terminal 3 — Database (run first)
-docker start chov-db
-
-# Terminal 4 — Live server for chike
-ssh chov-vps
 ```
 
 ---
@@ -234,10 +231,12 @@ GOOGLE_REDIRECT_URI=https://api.usepagepersona.com/api/auth/google/callback
         page.tsx                            — redirects to /login
       components/
         layouts/        — Topbar.tsx, Sidebar.tsx
-        ui/             — Icon.tsx, SignalLibraryModal.tsx, ImageUploader.tsx, NewProjectModal.tsx
+        ui/             — Icon.tsx, SignalLibraryModal.tsx, ImageUploader.tsx,
+                          NewProjectModal.tsx, CitySearchInput.tsx (built, dormant — geo_city removed)
       lib/
         api/client.ts
         hooks/          — useTranslation.ts, useLanguage.ts
+        data/           — world-cities.ts (3000+ cities, built, dormant — geo_city removed)
       locales/
         en/common.json  — English strings
         fr/common.json  — French strings
@@ -323,6 +322,8 @@ grep -n "t(el\.\|t(block\.\|t(action\.\|t(item\.\|t(a\.\|t(undefined" /path/to/f
 | `axios` 401 interceptor | Excludes `/api/auth/login` and `/api/auth/signup` |
 | `ImageUploader` content type | Needs `{ headers: { 'Content-Type': 'multipart/form-data' } }` |
 | Nginx body size | `client_max_body_size 10m` on `api.usepagepersona.com` |
+| `_geo_cache` in sdk.py | Module-level dict — in-memory, cleared on backend restart. No eviction. |
+| swap_text JSON format | When `{country}` token present, value is `{"text":"...","fallbacks":{"country":"..."}}`. pp.js tries JSON.parse first — plain strings still work (backward compat). |
 
 ---
 
@@ -345,19 +346,72 @@ grep -n "t(el\.\|t(block\.\|t(action\.\|t(item\.\|t(a\.\|t(undefined" /path/to/f
 
 | Action | Status |
 |--------|--------|
-| swap_text | ✅ Working |
+| swap_text | ✅ Working — supports `{country}` token with fallback |
 | swap_image | ✅ Working |
 | hide_section | ✅ Working |
-| inject_token | ✅ Working |
-| show_popup | ✅ Working — full canvas builder + PopupPicker |
-| send_webhook | ✅ Working |
-| insert_countdown | 🔲 TO BUILD |
-| swap_url | 🔲 TO BUILD |
-| show_element | 🔲 TO BUILD |
+| show_element | ✅ Working |
+| swap_url | ✅ Working |
+| show_popup | ✅ Working — full canvas builder + PopupPicker in rule engine + live picker |
+| insert_countdown | ✅ pp.js done, rule builder done — DB + backend + Elements picker TO BUILD |
+| inject_token | ❌ Removed — replaced by `{country}` token in swap_text |
+| send_webhook | ❌ Removed |
 
 ---
 
-## 16. POPUP BUILDER — CONFIG SHAPE
+## 16. SIGNAL LIBRARY — CURRENT STATE
+
+### Available signals (what the rule builder exposes):
+
+| Group | Signal | Key | Value type |
+|-------|--------|-----|------------|
+| Visitor Behaviour | Visit count | `visit_count` | number |
+| Visitor Behaviour | Time on page | `time_on_page` | number (seconds) |
+| Visitor Behaviour | Scroll depth | `scroll_depth` | number (%) |
+| Visitor Behaviour | Exit intent | `exit_intent` | none (detected) |
+| Visitor Behaviour | Visitor type | `visitor_type` | select: new / returning |
+| Traffic Source | UTM source | `utm_source` | text |
+| Traffic Source | UTM medium | `utm_medium` | text |
+| Traffic Source | UTM campaign | `utm_campaign` | text |
+| Traffic Source | Referrer URL | `referrer_url` | text |
+| Traffic Source | Query param | `query_param` | text |
+| Context | Device type | `device_type` | select: mobile / tablet / desktop |
+| Context | Operating system | `operating_system` | select |
+| Context | Browser | `browser` | select |
+| Context | Geo country | `geo_country` | select (all countries) |
+| Context | Day / time | `day_time` | text (HH:MM) |
+
+**Removed (permanently):** `geo_city`, `company_name`, `industry`, `company_size` (entire Firmographics group).
+
+### How geo_country and day_time work:
+- `geo_country` is resolved **server-side** in `/api/sdk/rules` via ipwho.is and returned in the rules API response as `geo.country`.
+- pp.js reads `data.geo` from the API response, stores it in the localStorage rules cache, and populates `signals.geo_country` from it.
+- `day_time` uses `geo.timezone_id` from ipwho.is via `Intl.DateTimeFormat` to get the visitor's accurate local time — NOT browser time or server time. Falls back to browser local time if timezone is unavailable.
+
+---
+
+## 17. TOKEN SUPPORT
+
+Only **`{country}`** is supported. No other tokens exist.
+
+| Token | Resolves from | Default fallback |
+|-------|--------------|-----------------|
+| `{country}` | `signals.geo_country` (from ipwho.is) | "Your Country" |
+
+**Where tokens work:**
+- `swap_text` action (rule engine new + edit + live picker)
+- Popup `text` blocks (PopupBuilder)
+
+**Serialization:** When `{country}` is present in the text, value is stored as:
+```json
+{"text": "Hello visitor from {country}!", "fallbacks": {"country": "Your Country"}}
+```
+Plain strings without tokens are stored as-is. pp.js handles both transparently.
+
+**In pp.js:** `resolveTokensWithFallbacks(text, fallbacks)` reads `window.__pp.signals.geo_country`, falls back to `fallbacks.country`, falls back to empty string.
+
+---
+
+## 18. POPUP BUILDER — CONFIG SHAPE
 
 ```json
 {
@@ -386,7 +440,7 @@ grep -n "t(el\.\|t(block\.\|t(action\.\|t(item\.\|t(a\.\|t(undefined" /path/to/f
 ### Block types:
 | Type | Key fields |
 |------|-----------|
-| text | text, font_size, font_weight, text_align, text_color, text_italic, text_underline |
+| text | text, text_fallbacks, font_size, font_weight, text_align, text_color, text_italic, text_underline |
 | image | image_url, image_height, image_fit, image_link |
 | button | btn_label, btn_url, btn_action (link/close), btn_color, btn_text_color, btn_radius, btn_bold, btn_italic |
 | embed | embed_code |
@@ -397,36 +451,42 @@ Popup config is **embedded in the rule at save** — pp.js does NOT make a runti
 
 ---
 
-## 17. pp.js SDK
+## 19. pp.js SDK
 
 | Environment | Location | API_BASE |
 |-------------|----------|----------|
 | Local | `~/chov/apps/pagepersona/backend/static/pp.js` | `http://localhost:8000` |
 | Production CDN | `/var/www/cdn/pp.js` | `https://api.usepagepersona.com` |
 
+### Data flow:
+1. pp.js calls `/api/sdk/rules?script_id=X`
+2. Backend extracts visitor IP (`X-Forwarded-For` → `X-Real-IP` → direct), calls `ipwho.is/{ip}` (server-cached in `_geo_cache` dict)
+3. Response: `{ rules_hash, rules, geo: { country, country_code, continent, isp, timezone_id } }`
+4. pp.js stores full response in localStorage (5-min TTL), including `geo`
+5. `detectSignals(geo)` builds signals: `geo_country` from `geo.country`, `day_time` from `geo.timezone_id`
+6. `evaluateRules` runs, `fireActions` fires
+
+### Picker mode:
+pp.js detects when loaded inside the PagePersona iframe and skips all rule execution — only the element picker overlay runs.
+
 ---
 
-## 18. NEXT TASKS (Chat 10 Agenda)
+## 20. NEXT TASKS
 
 ### 1. Countdown Builder ← START HERE
-- **DB:** `countdowns` table — `id, workspace_id, name, ends_at, expiry_action (hide|redirect|message), expiry_value, created_at`
-- **Backend:** `routers/countdowns.py` with CRUD
-- **Frontend:** Countdown Timers tab in `/dashboard/elements/page.tsx` (currently "Coming Soon") + `countdowns/new/` + `countdowns/[id]/edit/` pages
-- **Rule builder:** `insert_countdown` action + CountdownPicker (mirrors PopupPicker)
-- **pp.js:** `insertCountdown(value)` → injects live `DD:HH:MM:SS` ticker → fires expiry_action on zero
+- **DB:** Create `countdowns` table on VPS:
+  `id, workspace_id, name, countdown_type (fixed|duration), ends_at, duration_value, duration_unit (minutes|hours|days), expiry_action (hide|redirect|message), expiry_value, style JSONB (digit_bg, digit_color, show_labels, etc.), created_at`
+- **Backend:** `routers/countdowns.py` — CRUD endpoints
+- **Frontend (Elements page):** Countdown Timers tab in `/dashboard/elements/page.tsx` (currently "Coming Soon") + `countdowns/new/` + `countdowns/[id]/edit/` pages
+- **Rule builder:** `insert_countdown` already in ACTION_TYPES — need CountdownPicker (mirrors PopupPicker)
+- **pp.js:** `insertCountdown(blockId, value)` is already fully implemented — injects live DD:HH:MM:SS ticker, fires expiry_action on zero
 
-### 2. swap_url action
-Changes `href` on any link/button based on visitor segment.
-
-### 3. show_element action
-Complement to `hide_section`. Reveals a hidden element for a segment.
-
-### 4. End-to-end action testing
+### 2. End-to-end action testing
 All actions tested on `test.html` and SMI WordPress page.
 
 ---
 
-## 19. LOCKED DECISIONS (never revisit)
+## 21. LOCKED DECISIONS (never revisit)
 
 - No onboarding flow — JVZoo buyers are self-selected marketers
 - No 'Projects' in sidebar — Home shows all projects
@@ -447,10 +507,15 @@ All actions tested on `test.html` and SMI WordPress page.
 - Popup config embedded in rule at save — no runtime API call from pp.js
 - PopupPicker must be stateless — hooks in parent only
 - Countdown timers stored in DB, picked in rule builder like popups, pp.js handles live ticking
+- Only `{country}` token — no city, region, or company tokens
+- `inject_token` and `send_webhook` actions are permanently removed
+- Firmographics signals (company_name, industry, company_size) permanently removed from signal library
+- `geo_city` signal permanently removed — country-level targeting only
+- Geo data resolved server-side via ipwho.is — pp.js never calls a geo API directly
 
 ---
 
-## 20. BIG PICTURE — CHOV ARCHITECTURE
+## 22. BIG PICTURE — CHOV ARCHITECTURE
 
 ### Three phases:
 1. **Phase 1** — Launch individual products on JVZoo (LTDs) — *we are here*
@@ -473,7 +538,7 @@ Every JVZoo product is simultaneously a brick in chov.ai. When enough products e
 
 ---
 
-## 21. SOPs IN PROJECT FILES
+## 23. SOPs IN PROJECT FILES
 
 | File | Purpose |
 |------|---------|
