@@ -97,6 +97,40 @@ export const projectApi = {
     apiClient.delete(`/api/projects/${id}`),
 }
 
+// Workspace API
+export const workspaceApi = {
+  list: () =>
+    apiClient.get('/api/workspaces'),
+  create: (data: { name: string; type?: string }) =>
+    apiClient.post('/api/workspaces', data),
+  get: (id: string) =>
+    apiClient.get(`/api/workspaces/${id}`),
+  update: (id: string, data: { name?: string; white_label_brand_name?: string; white_label_logo?: string; white_label_primary_color?: string }) =>
+    apiClient.patch(`/api/workspaces/${id}`, data),
+  listClients: (id: string) =>
+    apiClient.get(`/api/workspaces/${id}/clients`),
+}
+
+// Team API
+export const teamApi = {
+  list: () =>
+    apiClient.get('/api/team'),
+  invite: (data: { email: string; role?: string }) =>
+    apiClient.post('/api/team/invite', data),
+  updateRole: (memberId: string, role: string) =>
+    apiClient.patch(`/api/team/${memberId}/role`, { role }),
+  remove: (memberId: string) =>
+    apiClient.delete(`/api/team/${memberId}`),
+}
+
+// Clients API
+export const clientsApi = {
+  invite: (data: { client_email: string; workspace_id: string }) =>
+    apiClient.post('/api/clients/invite', data),
+  sendReport: (data: { workspace_id: string; client_workspace_id: string; message?: string }) =>
+    apiClient.post('/api/clients/report', data),
+}
+
 // Rules API
 export const rulesApi = {
   create: (projectId: string, data: { name: string; conditions: any[]; condition_operator: string; actions: any[]; priority?: number }) =>

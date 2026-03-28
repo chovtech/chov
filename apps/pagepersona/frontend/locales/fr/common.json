@@ -13,7 +13,10 @@
     "workspace": "Espace de travail",
     "addWorkspace": "Ajouter un espace",
     "personalWorkspace": "Personnel",
-    "elements": "Éléments"
+    "elements": "Éléments",
+    "agency": "Agence",
+    "billing": "Facturation",
+    "newWorkspaceName": "Nom de l'espace de travail"
   },
   "topbar": {
     "search": "Rechercher des pages, campagnes...",
@@ -93,7 +96,8 @@
       "general": "Général",
       "team": "Équipe",
       "billing": "Facturation",
-      "integrations": "Intégrations"
+      "integrations": "Intégrations",
+      "whitelabel": "Marque blanche"
     },
     "profile": {
       "title": "Votre profil",
@@ -117,7 +121,20 @@
       "title": "Membres de l'équipe",
       "desc": "Invitez des membres à collaborer sur votre espace de travail.",
       "comingSoon": "Collaboration d'équipe bientôt disponible",
-      "comingSoonDesc": "Invitez des coéquipiers, attribuez des rôles et gérez l'accès — disponible avec le plan Agence."
+      "comingSoonDesc": "Invitez des coéquipiers, attribuez des rôles et gérez l'accès — disponible avec le plan Agence.",
+      "invite_btn": "Inviter un membre",
+      "invite_title": "Inviter un membre de l'équipe",
+      "invite_email": "Adresse e-mail",
+      "invite_email_placeholder": "collegue@entreprise.com",
+      "invite_role": "Rôle",
+      "role_member": "Membre",
+      "role_admin": "Admin",
+      "invite_error": "Échec de l'envoi de l'invitation. Veuillez réessayer.",
+      "no_members": "Aucun membre pour l'instant",
+      "no_members_sub": "Invitez des collègues à collaborer sur votre espace de travail.",
+      "remove": "Retirer le membre",
+      "confirm_remove": "Êtes-vous sûr de vouloir retirer ce membre ?",
+      "sending": "Envoi de l'invitation..."
     },
     "billing": {
       "title": "Facturation et plan",
@@ -133,7 +150,28 @@
       "desc": "Connectez vos outils préférés à PagePersona.",
       "comingSoon": "Intégrations bientôt disponibles",
       "comingSoonDesc": "Zapier, Make, Slack, GA4, Meta Pixel et plus — disponibles avec le produit complet."
+    },
+    "whitelabel": {
+      "title": "Marque blanche",
+      "desc": "Personnalisez le tableau de bord client avec votre propre logo et vos couleurs.",
+      "brand_name": "Nom de marque",
+      "brand_name_placeholder": "Nom de votre agence",
+      "brand_name_hint": "Remplace «\u00a0PagePersona\u00a0» dans les vues client.",
+      "logo": "Logo",
+      "logo_placeholder": "Télécharger votre logo",
+      "logo_hint": "Affiché dans la barre supérieure du tableau de bord client. Recommandé : 200×50px PNG.",
+      "primary_color": "Couleur principale",
+      "color_hint": "Utilisée pour les boutons et les accents dans le tableau de bord client.",
+      "preview": "Aperçu",
+      "preview_btn": "Exemple de bouton",
+      "save": "Enregistrer les paramètres",
+      "saving": "Enregistrement...",
+      "saved": "Paramètres de marque blanche enregistrés",
+      "save_error": "Échec de l'enregistrement. Veuillez réessayer."
     }
+  },
+  "common": {
+    "cancel": "Annuler"
   },
   "language": {
     "label": "Langue",
@@ -696,6 +734,55 @@
     "unit_hours": "Heures",
     "unit_days": "Jours",
     "duration_hint": "Compte à rebours depuis la première visite du visiteur"
+  },
+  "agency": {
+    "title": "Tableau de bord agence",
+    "subtitle": "Gérez vos clients et envoyez des rapports personnalisés.",
+    "add_client": "Ajouter un client",
+    "add_first_client": "Ajouter votre premier client",
+    "no_clients": "Aucun client pour l'instant",
+    "no_clients_sub": "Invitez des clients pour leur donner une vue en lecture seule de leurs résultats de personnalisation.",
+    "col_client": "Client",
+    "col_workspace": "Espace de travail",
+    "col_status": "Statut",
+    "col_added": "Ajouté",
+    "col_actions": "Actions",
+    "status_active": "Actif",
+    "status_pending": "En attente",
+    "send_report": "Envoyer un rapport",
+    "add_client_title": "Ajouter un client",
+    "client_email_label": "E-mail du client",
+    "client_email_placeholder": "client@entreprise.com",
+    "invite_error": "Échec de l'envoi de l'invitation. Veuillez réessayer.",
+    "invite_desc": "Nous leur enverrons une invitation pour créer leur compte et consulter leurs résultats.",
+    "send_invite": "Envoyer l'invitation",
+    "sending_invite": "Envoi...",
+    "send_report_title": "Envoyer un rapport",
+    "send_report_to": "Envoi à :",
+    "report_message_label": "Message (facultatif)",
+    "report_message_placeholder": "Voici vos derniers résultats de personnalisation...",
+    "report_sent": "Rapport envoyé avec succès !",
+    "sending": "Envoi..."
+  },
+  "billing": {
+    "title": "Facturation",
+    "subtitle": "Votre plan actuel et historique de paiement.",
+    "current_plan": "Plan actuel",
+    "ltd_plan": "Offre à vie",
+    "ltd_desc": "Vous avez un accès à vie — aucun frais récurrent.",
+    "includes": "Ce qui est inclus :",
+    "feature_projects": "Projets illimités",
+    "feature_rules": "Règles illimitées",
+    "feature_popups": "Constructeur de popups",
+    "feature_countdowns": "Minuteries de compte à rebours",
+    "feature_analytics": "Tableau de bord analytique",
+    "feature_team": "Collaboration d'équipe",
+    "feature_agency": "Gestion clients agence",
+    "feature_whitelabel": "Tableau de bord marque blanche",
+    "manage_title": "Gérer la facturation",
+    "manage_desc": "Acheté sur JVZoo — gérez votre licence là-bas.",
+    "manage_btn": "Gérer sur JVZoo",
+    "jvzoo_note": "Pour gérer votre licence, connectez-vous à votre compte acheteur JVZoo."
   },
   "analytics": {
     "tab": "Analytiques",

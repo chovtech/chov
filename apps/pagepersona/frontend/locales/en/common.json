@@ -13,7 +13,10 @@
     "workspace": "Workspace",
     "addWorkspace": "Add workspace",
     "personalWorkspace": "Personal",
-    "elements": "Elements"
+    "elements": "Elements",
+    "agency": "Agency",
+    "billing": "Billing",
+    "newWorkspaceName": "Enter workspace name"
   },
   "topbar": {
     "search": "Search pages, campaigns...",
@@ -86,6 +89,9 @@
     "resending": "Sending...",
     "sent": "Verification email sent"
   },
+  "common": {
+    "cancel": "Cancel"
+  },
   "settings": {
     "title": "Settings",
     "subtitle": "Manage your account and workspace preferences.",
@@ -93,7 +99,8 @@
       "general": "General",
       "team": "Team",
       "billing": "Billing",
-      "integrations": "Integrations"
+      "integrations": "Integrations",
+      "whitelabel": "White Label"
     },
     "profile": {
       "title": "Your profile",
@@ -117,7 +124,20 @@
       "title": "Team members",
       "desc": "Invite team members to collaborate on your workspace.",
       "comingSoon": "Team collaboration coming soon",
-      "comingSoonDesc": "Invite teammates, assign roles and manage access — available in the Agency plan."
+      "comingSoonDesc": "Invite teammates, assign roles and manage access — available in the Agency plan.",
+      "invite_btn": "Invite member",
+      "invite_title": "Invite a team member",
+      "invite_email": "Email address",
+      "invite_email_placeholder": "colleague@company.com",
+      "invite_role": "Role",
+      "role_member": "Member",
+      "role_admin": "Admin",
+      "invite_error": "Failed to send invite. Please try again.",
+      "no_members": "No team members yet",
+      "no_members_sub": "Invite colleagues to collaborate on your workspace.",
+      "remove": "Remove member",
+      "confirm_remove": "Are you sure you want to remove this team member?",
+      "sending": "Sending invite..."
     },
     "billing": {
       "title": "Billing & plan",
@@ -133,6 +153,24 @@
       "desc": "Connect your favourite tools to PagePersona.",
       "comingSoon": "Integrations coming soon",
       "comingSoonDesc": "Zapier, Make, Slack, GA4, Meta Pixel and more — launching with the full product."
+    },
+    "whitelabel": {
+      "title": "White Label",
+      "desc": "Brand the client-facing dashboard with your own logo and colours.",
+      "brand_name": "Brand name",
+      "brand_name_placeholder": "Your Agency Name",
+      "brand_name_hint": "Replaces \"PagePersona\" in client-facing views.",
+      "logo": "Logo",
+      "logo_placeholder": "Upload your logo",
+      "logo_hint": "Shown in the client dashboard topbar. Recommended: 200×50px PNG.",
+      "primary_color": "Primary colour",
+      "color_hint": "Used for buttons and highlights in the client dashboard.",
+      "preview": "Preview",
+      "preview_btn": "Sample Button",
+      "save": "Save White Label Settings",
+      "saving": "Saving...",
+      "saved": "White label settings saved",
+      "save_error": "Failed to save. Please try again."
     }
   },
   "language": {
@@ -696,6 +734,55 @@
     "unit_hours": "Hours",
     "unit_days": "Days",
     "duration_hint": "Counts down from each visitor's first view"
+  },
+  "agency": {
+    "title": "Agency Dashboard",
+    "subtitle": "Manage your clients and send personalised reports.",
+    "add_client": "Add Client",
+    "add_first_client": "Add your first client",
+    "no_clients": "No clients yet",
+    "no_clients_sub": "Invite clients to give them a branded, read-only view of their personalisation results.",
+    "col_client": "Client",
+    "col_workspace": "Workspace",
+    "col_status": "Status",
+    "col_added": "Added",
+    "col_actions": "Actions",
+    "status_active": "Active",
+    "status_pending": "Pending",
+    "send_report": "Send report",
+    "add_client_title": "Add a client",
+    "client_email_label": "Client email",
+    "client_email_placeholder": "client@company.com",
+    "invite_error": "Failed to send invite. Please try again.",
+    "invite_desc": "We'll send them an invite to set up their account and view their results.",
+    "send_invite": "Send Invite",
+    "sending_invite": "Sending...",
+    "send_report_title": "Send Report",
+    "send_report_to": "Sending to:",
+    "report_message_label": "Message (optional)",
+    "report_message_placeholder": "Here are your latest personalisation results...",
+    "report_sent": "Report sent successfully!",
+    "sending": "Sending..."
+  },
+  "billing": {
+    "title": "Billing",
+    "subtitle": "Your current plan and payment history.",
+    "current_plan": "Current Plan",
+    "ltd_plan": "Lifetime Deal",
+    "ltd_desc": "You have lifetime access — no recurring charges.",
+    "includes": "What's included:",
+    "feature_projects": "Unlimited projects",
+    "feature_rules": "Unlimited rules",
+    "feature_popups": "Popup builder",
+    "feature_countdowns": "Countdown timers",
+    "feature_analytics": "Analytics dashboard",
+    "feature_team": "Team collaboration",
+    "feature_agency": "Agency client management",
+    "feature_whitelabel": "White label dashboard",
+    "manage_title": "Manage Billing",
+    "manage_desc": "Purchased on JVZoo — manage your licence there.",
+    "manage_btn": "Manage on JVZoo",
+    "jvzoo_note": "To manage your licence, log into your JVZoo buyer account."
   },
   "analytics": {
     "tab": "Analytics",

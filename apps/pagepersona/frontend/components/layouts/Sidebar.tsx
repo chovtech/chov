@@ -6,13 +6,20 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import Icon from '@/components/ui/Icon'
 import { authApi } from '@/lib/api/client'
+import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
-const navigation = [
+const fullNavigation = [
   { key: 'dashboard', href: '/dashboard', icon: 'home', exact: true },
   { key: 'elements', href: '/dashboard/elements', icon: 'widgets', exact: false },
   { key: 'analytics', href: '/dashboard/analytics', icon: 'bar_chart', exact: false },
-  { key: 'integrations', href: '/dashboard/integrations', icon: 'extension', exact: false },
+  { key: 'agency', href: '/dashboard/agency', icon: 'groups', exact: false },
+  { key: 'billing', href: '/dashboard/billing', icon: 'credit_card', exact: false },
   { key: 'settings', href: '/dashboard/settings', icon: 'settings', exact: false },
+]
+
+const clientNavigation = [
+  { key: 'dashboard', href: '/dashboard', icon: 'home', exact: true },
+  { key: 'analytics', href: '/dashboard/analytics', icon: 'bar_chart', exact: false },
 ]
 
 interface User { name?: string; email: string; avatar_url?: string }
@@ -22,6 +29,7 @@ export default function Sidebar() {
   const { t } = useTranslation('common')
   const [user, setUser] = useState<User | null>(null)
   const [workspaceOpen, setWorkspaceOpen] = useState(false)
+  const { workspaces, activeWorkspace, setActiveWorkspaceId, refreshWorkspaces } = useWorkspace()
 
   useEffect(() => {
     authApi.me().then(res => setUser(res.data)).catch(() => null)
@@ -42,9 +50,23 @@ export default function Sidebar() {
     return exact ? pathname === href : pathname.startsWith(href)
   }
 
-  const workspaceName = user?.name
+  const workspaceName = activeWorkspace?.name || (user?.name
     ? `${(user.name || '').split(' ')[0]}'s ${t('nav.workspace')}`
-    : t('nav.workspace')
+    : t('nav.workspace'))
+
+  const isClient = activeWorkspace?.type === 'client'
+  const navigation = isClient ? clientNavigation : fullNavigation
+
+  async function handleAddWorkspace() {
+    const name = window.prompt(t('nav.newWorkspaceName'))
+    if (!name?.trim()) return
+    try {
+      const { workspaceApi } = await import('@/lib/api/client')
+      await workspaceApi.create({ name: name.trim() })
+      await refreshWorkspaces()
+    } catch { /* ignore */ }
+    setWorkspaceOpen(false)
+  }
 
   return (
     <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col fixed inset-y-0 left-0 z-50">
@@ -80,18 +102,32 @@ export default function Sidebar() {
 
         {workspaceOpen && (
           <div className="mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden">
-            <div className="p-2">
-              <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-[#1A56DB]/5 border border-[#1A56DB]/10">
-                <div className="size-6 rounded-md bg-[#1A56DB] flex items-center justify-center text-white text-[10px] font-bold">{initials}</div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{workspaceName}</p>
-                  <p className="text-[10px] text-slate-400">{t('nav.personalWorkspace')}</p>
-                </div>
-                <Icon name="check" className="text-[#1A56DB] text-[16px]" />
-              </div>
+            <div className="p-2 space-y-0.5">
+              {workspaces.map(ws => {
+                const isActivews = activeWorkspace?.id === ws.id
+                return (
+                  <button
+                    key={ws.id}
+                    onClick={() => { setActiveWorkspaceId(ws.id); setWorkspaceOpen(false) }}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors ${isActivews ? 'bg-[#1A56DB]/5 border border-[#1A56DB]/10' : 'hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+                  >
+                    <div className="size-6 rounded-md bg-[#1A56DB] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                      {ws.name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{ws.name}</p>
+                      <p className="text-[10px] text-slate-400 capitalize">{ws.type}</p>
+                    </div>
+                    {isActivews && <Icon name="check" className="text-[#1A56DB] text-[16px] flex-shrink-0" />}
+                  </button>
+                )
+              })}
             </div>
             <div className="border-t border-slate-100 dark:border-slate-700 p-2">
-              <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+              <button
+                onClick={handleAddWorkspace}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
                 <Icon name="add" className="text-[16px]" />
                 {t('nav.addWorkspace')}
               </button>

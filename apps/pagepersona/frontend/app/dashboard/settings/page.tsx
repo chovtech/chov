@@ -3,19 +3,167 @@
 import { useState, useEffect } from 'react'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
-import { authApi, userApi } from '@/lib/api/client'
+import { authApi, userApi, workspaceApi, teamApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { useLanguage } from '@/lib/hooks/useLanguage'
 import ImageUploader from '@/components/ui/ImageUploader'
+import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
 interface User {
   id: string; name: string; email: string
   avatar_url?: string; email_verified: boolean; language: string
 }
 
+interface Member {
+  id: string; email: string; role: string; status: string; invited_at: string; joined_at: string | null
+}
+
+function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgClass: (type: string) => string }) {
+  const [members, setMembers] = useState<Member[]>([])
+  const [loading, setLoading] = useState(true)
+  const [inviteOpen, setInviteOpen] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState('member')
+  const [inviteLoading, setInviteLoading] = useState(false)
+  const [inviteMsg, setInviteMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  async function fetchMembers() {
+    try {
+      const res = await teamApi.list()
+      setMembers(res.data)
+    } catch { setMembers([]) }
+    finally { setLoading(false) }
+  }
+
+  useEffect(() => { fetchMembers() }, [])
+
+  async function handleInvite(e: React.FormEvent) {
+    e.preventDefault()
+    setInviteMsg(null)
+    setInviteLoading(true)
+    try {
+      await teamApi.invite({ email: inviteEmail, role: inviteRole })
+      setInviteEmail(''); setInviteRole('member')
+      setInviteOpen(false)
+      await fetchMembers()
+    } catch (err: any) {
+      setInviteMsg({ type: 'error', text: err?.response?.data?.detail || t('settings.team.invite_error') })
+    } finally { setInviteLoading(false) }
+  }
+
+  async function handleRemove(memberId: string) {
+    if (!window.confirm(t('settings.team.confirm_remove'))) return
+    try {
+      await teamApi.remove(memberId)
+      await fetchMembers()
+    } catch { /* ignore */ }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+        <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">{t('settings.team.title')}</h2>
+            <p className="text-sm text-slate-500 mt-0.5">{t('settings.team.desc')}</p>
+          </div>
+          <button
+            onClick={() => { setInviteMsg(null); setInviteOpen(true) }}
+            className="flex items-center gap-2 px-4 py-2 bg-[#1A56DB] text-white text-sm font-bold rounded-xl hover:bg-[#1547b3] transition-colors"
+          >
+            <Icon name="person_add" className="text-[18px]" />
+            {t('settings.team.invite_btn')}
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <Icon name="sync" className="animate-spin text-2xl text-slate-300" />
+          </div>
+        ) : members.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="size-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+              <Icon name="group_add" className="text-2xl text-slate-300" />
+            </div>
+            <p className="text-sm font-semibold text-slate-600 mb-1">{t('settings.team.no_members')}</p>
+            <p className="text-xs text-slate-400">{t('settings.team.no_members_sub')}</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            {members.map(m => (
+              <div key={m.id} className="flex items-center justify-between px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="size-8 rounded-full bg-[#1A56DB]/10 flex items-center justify-center text-[#1A56DB] font-bold text-xs">
+                    {m.email.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{m.email}</p>
+                    <p className="text-xs text-slate-400 capitalize">{m.role}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  {m.status === 'pending' ? (
+                    <span className="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase tracking-wider">{t('agency.status_pending')}</span>
+                  ) : (
+                    <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase tracking-wider">{t('agency.status_active')}</span>
+                  )}
+                  <button
+                    onClick={() => handleRemove(m.id)}
+                    className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    title={t('settings.team.remove')}
+                  >
+                    <Icon name="person_remove" className="text-[18px]" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Invite modal */}
+      {inviteOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+              <h3 className="text-base font-bold text-slate-900">{t('settings.team.invite_title')}</h3>
+              <button onClick={() => setInviteOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
+                <Icon name="close" className="text-[20px]" />
+              </button>
+            </div>
+            <form onSubmit={handleInvite} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">{t('settings.team.invite_email')}</label>
+                <input type="email" required value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} placeholder={t('settings.team.invite_email_placeholder')} className={inputClass} />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">{t('settings.team.invite_role')}</label>
+                <select value={inviteRole} onChange={e => setInviteRole(e.target.value)} className={inputClass}>
+                  <option value="member">{t('settings.team.role_member')}</option>
+                  <option value="admin">{t('settings.team.role_admin')}</option>
+                </select>
+              </div>
+              {inviteMsg && <div className={msgClass(inviteMsg.type)}>{inviteMsg.text}</div>}
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => setInviteOpen(false)} className="px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">
+                  {t('common.cancel')}
+                </button>
+                <button type="submit" disabled={inviteLoading} className="px-5 py-2.5 text-sm font-bold text-white bg-[#1A56DB] rounded-xl hover:bg-[#1547b3] disabled:opacity-60 transition-colors">
+                  {inviteLoading ? t('settings.team.sending') : t('settings.team.invite_btn')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function SettingsPage() {
   const { t } = useTranslation('common')
   const { language } = useLanguage()
+  const { activeWorkspace, refreshWorkspaces } = useWorkspace()
   const [activeTab, setActiveTab] = useState('general')
   const [user, setUser] = useState<User | null>(null)
   const [profileForm, setProfileForm] = useState({ name: '', email: '', avatar_url: '' })
@@ -25,11 +173,16 @@ export default function SettingsPage() {
   const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [passwordMsg, setPasswordMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  // White label state
+  const [wlForm, setWlForm] = useState({ brand_name: '', logo: '', primary_color: '#1A56DB' })
+  const [wlLoading, setWlLoading] = useState(false)
+  const [wlMsg, setWlMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
   const tabs = [
     { key: 'general', label: t('settings.tabs.general'), icon: 'person' },
     { key: 'team', label: t('settings.tabs.team'), icon: 'group' },
     { key: 'billing', label: t('settings.tabs.billing'), icon: 'credit_card' },
-    { key: 'integrations', label: t('settings.tabs.integrations'), icon: 'extension' },
+    { key: 'whitelabel', label: t('settings.tabs.whitelabel'), icon: 'palette' },
   ]
 
   useEffect(() => {
@@ -38,6 +191,36 @@ export default function SettingsPage() {
       setProfileForm({ name: res.data.name || '', email: res.data.email, avatar_url: res.data.avatar_url || '' })
     }).catch(() => null)
   }, [])
+
+  useEffect(() => {
+    if (activeWorkspace) {
+      setWlForm({
+        brand_name: activeWorkspace.white_label_brand_name || '',
+        logo: activeWorkspace.white_label_logo || '',
+        primary_color: activeWorkspace.white_label_primary_color || '#1A56DB',
+      })
+    }
+  }, [activeWorkspace?.id])
+
+  async function handleWlSave(e: React.FormEvent) {
+    e.preventDefault()
+    if (!activeWorkspace) return
+    setWlMsg(null)
+    setWlLoading(true)
+    try {
+      await workspaceApi.update(activeWorkspace.id, {
+        white_label_brand_name: wlForm.brand_name || undefined,
+        white_label_logo: wlForm.logo || undefined,
+        white_label_primary_color: wlForm.primary_color,
+      })
+      await refreshWorkspaces()
+      setWlMsg({ type: 'success', text: t('settings.whitelabel.saved') })
+    } catch {
+      setWlMsg({ type: 'error', text: t('settings.whitelabel.save_error') })
+    } finally {
+      setWlLoading(false)
+    }
+  }
 
   async function handleProfileSave(e: React.FormEvent) {
     e.preventDefault()
@@ -221,17 +404,7 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'team' && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
-              <h2 className="text-base font-bold text-slate-900 dark:text-white mb-1">{t('settings.team.title')}</h2>
-              <p className="text-sm text-slate-500 mb-6">{t('settings.team.desc')}</p>
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="size-14 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-                  <Icon name="group_add" className="text-3xl text-slate-400" />
-                </div>
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{t('settings.team.comingSoon')}</p>
-                <p className="text-xs text-slate-400 max-w-xs">{t('settings.team.comingSoonDesc')}</p>
-              </div>
-            </div>
+            <TeamTab t={t} inputClass={inputClass} msgClass={msgClass} />
           )}
 
           {activeTab === 'billing' && (
@@ -255,19 +428,81 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {activeTab === 'integrations' && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
-              <h2 className="text-base font-bold text-slate-900 dark:text-white mb-1">{t('settings.integrations.title')}</h2>
-              <p className="text-sm text-slate-500 mb-6">{t('settings.integrations.desc')}</p>
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="size-14 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-                  <Icon name="extension" className="text-3xl text-slate-400" />
-                </div>
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{t('settings.integrations.comingSoon')}</p>
-                <p className="text-xs text-slate-400 max-w-xs">{t('settings.integrations.comingSoonDesc')}</p>
+          {activeTab === 'whitelabel' && (
+            <div className="space-y-6">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+                <h2 className="text-base font-bold text-slate-900 dark:text-white mb-1">{t('settings.whitelabel.title')}</h2>
+                <p className="text-sm text-slate-500 mb-6">{t('settings.whitelabel.desc')}</p>
+                {wlMsg && <div className={msgClass(wlMsg.type)}>{wlMsg.text}</div>}
+                <form onSubmit={handleWlSave} className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.whitelabel.brand_name')}</label>
+                    <input
+                      type="text"
+                      value={wlForm.brand_name}
+                      onChange={e => setWlForm(p => ({ ...p, brand_name: e.target.value }))}
+                      placeholder={t('settings.whitelabel.brand_name_placeholder')}
+                      className={inputClass}
+                    />
+                    <p className="text-xs text-slate-400 mt-1">{t('settings.whitelabel.brand_name_hint')}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.whitelabel.logo')}</label>
+                    <ImageUploader
+                      value={wlForm.logo}
+                      onChange={url => setWlForm(p => ({ ...p, logo: url }))}
+                      placeholder={t('settings.whitelabel.logo_placeholder')}
+                    />
+                    <p className="text-xs text-slate-400 mt-1">{t('settings.whitelabel.logo_hint')}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.whitelabel.primary_color')}</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        value={wlForm.primary_color}
+                        onChange={e => setWlForm(p => ({ ...p, primary_color: e.target.value }))}
+                        className="w-12 h-10 rounded-lg border border-slate-200 cursor-pointer p-0.5"
+                      />
+                      <input
+                        type="text"
+                        value={wlForm.primary_color}
+                        onChange={e => setWlForm(p => ({ ...p, primary_color: e.target.value }))}
+                        placeholder="#1A56DB"
+                        className={inputClass + ' font-mono'}
+                      />
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1">{t('settings.whitelabel.color_hint')}</p>
+                  </div>
+                  {/* Preview */}
+                  <div className="rounded-xl border border-slate-200 p-4 bg-slate-50">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">{t('settings.whitelabel.preview')}</p>
+                    <div className="flex items-center gap-3">
+                      {wlForm.logo ? (
+                        <img src={wlForm.logo} alt="Logo" className="h-8 object-contain" />
+                      ) : (
+                        <div className="size-8 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{ background: wlForm.primary_color }}>
+                          {(wlForm.brand_name || 'WL').slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <span className="text-sm font-bold text-slate-900">{wlForm.brand_name || t('settings.whitelabel.brand_name_placeholder')}</span>
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      <button type="button" className="px-4 py-1.5 text-white text-xs font-bold rounded-lg" style={{ background: wlForm.primary_color }}>
+                        {t('settings.whitelabel.preview_btn')}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex justify-end pt-2">
+                    <button type="submit" disabled={wlLoading} className="px-6 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
+                      {wlLoading ? t('settings.whitelabel.saving') : t('settings.whitelabel.save')}
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           )}
+
         </div>
       </div>
     </>
