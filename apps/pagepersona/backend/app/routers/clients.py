@@ -108,13 +108,13 @@ async def invite_client(
     if not agency_ws:
         raise HTTPException(status_code=404, detail="Workspace not found")
 
-    # Block duplicate active/pending invites
+    # Block if already active (accepted). If pending, resend with a fresh token.
     existing = await db.fetchrow(
-        "SELECT id FROM client_invites WHERE workspace_id = $1 AND email = $2 AND status IN ('pending', 'active')",
+        "SELECT id, status FROM client_invites WHERE workspace_id = $1 AND email = $2 AND status IN ('pending', 'active')",
         body.workspace_id, body.client_email
     )
-    if existing:
-        raise HTTPException(status_code=400, detail="This email already has an active invite for this workspace.")
+    if existing and existing['status'] == 'active':
+        raise HTTPException(status_code=400, detail="This client has already accepted the invite.")
 
     # Find or create the client workspace
     client_ws = await db.fetchrow(
@@ -135,12 +135,19 @@ async def invite_client(
         )
 
     token = str(uuid.uuid4())
-    invite = await db.fetchrow(
-        """INSERT INTO client_invites (workspace_id, email, client_workspace_id, token)
-           VALUES ($1, $2, $3, $4)
-           RETURNING *""",
-        body.workspace_id, body.client_email, client_ws['id'], token
-    )
+    if existing and existing['status'] == 'pending':
+        # Resend: refresh token on the existing invite row
+        invite = await db.fetchrow(
+            "UPDATE client_invites SET token = $1, created_at = NOW() WHERE id = $2 RETURNING *",
+            token, existing['id']
+        )
+    else:
+        invite = await db.fetchrow(
+            """INSERT INTO client_invites (workspace_id, email, client_workspace_id, token)
+               VALUES ($1, $2, $3, $4)
+               RETURNING *""",
+            body.workspace_id, body.client_email, client_ws['id'], token
+        )
 
     brand_name = agency_ws.get('brand_name') or 'PagePersona'
     logo_url = agency_ws.get('logo_url')
