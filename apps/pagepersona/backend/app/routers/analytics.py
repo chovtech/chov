@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
+from typing import Optional
 import asyncpg
 from app.database import get_db
 from app.core.security import get_current_user
@@ -398,13 +399,22 @@ async def workspace_analytics(
 @router.get('/overview')
 async def workspace_analytics_self(
     period: int = Query(30, ge=1, le=365),
+    workspace_id: Optional[str] = Query(None),
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
-    """Same as /workspace/{id} but auto-resolves workspace from auth token."""
-    workspace = await db.fetchrow(
-        'SELECT id FROM workspaces WHERE owner_id=$1', current_user['id']
-    )
+    """Auto-resolves workspace from auth token, or uses provided workspace_id."""
+    if workspace_id:
+        workspace = await db.fetchrow(
+            '''SELECT w.id FROM workspaces w
+               LEFT JOIN workspace_members wm ON wm.workspace_id = w.id AND wm.user_id = $2
+               WHERE w.id = $1 AND (w.owner_id = $2 OR wm.id IS NOT NULL)''',
+            workspace_id, current_user['id']
+        )
+    else:
+        workspace = await db.fetchrow(
+            'SELECT id FROM workspaces WHERE owner_id=$1', current_user['id']
+        )
     if not workspace:
         raise HTTPException(status_code=404, detail='Workspace not found')
 

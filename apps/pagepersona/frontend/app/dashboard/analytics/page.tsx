@@ -5,6 +5,7 @@ import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { apiClient } from '@/lib/api/client'
+import { useWorkspace } from '@/lib/context/WorkspaceContext'
 import {
   BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -14,23 +15,25 @@ const COLORS = ['#1A56DB', '#14B8A6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
 
 export default function AnalyticsPage() {
   const { t } = useTranslation('common')
+  const { activeWorkspace } = useWorkspace()
   const [period, setPeriod] = useState(30)
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
   useEffect(() => {
+    if (!activeWorkspace) return
     setLoading(true)
     setError(false)
-    apiClient.get(`/api/analytics/overview?period=${period}`)
+    apiClient.get(`/api/analytics/overview?period=${period}&workspace_id=${activeWorkspace.id}`)
       .then(res => setData(res.data))
       .catch(() => setError(true))
       .finally(() => setLoading(false))
-  }, [period])
+  }, [period, activeWorkspace?.id])
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
-      <Topbar workspaceName="Marketing Team Workspace" />
+      <Topbar workspaceName={activeWorkspace?.name || t('analytics.workspace_analytics_title')} />
       <div className="p-8 max-w-7xl mx-auto w-full">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
