@@ -765,6 +765,11 @@
     "tab_all": "All",
     "tab_active": "Active",
     "tab_inactive": "Inactive",
+    "tabs": {
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
     "pages_active": "Pages active",
     "rules_running": "Rules running",
     "sessions_month": "Sessions this month",
