@@ -13,7 +13,6 @@ const fullNavigation = [
   { key: 'elements', href: '/dashboard/elements', icon: 'widgets', exact: false },
   { key: 'analytics', href: '/dashboard/analytics', icon: 'bar_chart', exact: false },
   { key: 'agency', href: '/dashboard/agency', icon: 'groups', exact: false },
-  { key: 'billing', href: '/dashboard/billing', icon: 'credit_card', exact: false },
   { key: 'settings', href: '/dashboard/settings', icon: 'settings', exact: false },
 ]
 
@@ -30,6 +29,9 @@ export default function Sidebar() {
   const [user, setUser] = useState<User | null>(null)
   const [workspaceOpen, setWorkspaceOpen] = useState(false)
   const { workspaces, activeWorkspace, setActiveWorkspaceId, refreshWorkspaces } = useWorkspace()
+  const [addWsOpen, setAddWsOpen] = useState(false)
+  const [addWsName, setAddWsName] = useState('')
+  const [addWsLoading, setAddWsLoading] = useState(false)
 
   useEffect(() => {
     authApi.me().then(res => setUser(res.data)).catch(() => null)
@@ -57,18 +59,23 @@ export default function Sidebar() {
   const isClient = activeWorkspace?.type === 'client'
   const navigation = isClient ? clientNavigation : fullNavigation
 
-  async function handleAddWorkspace() {
-    const name = window.prompt(t('nav.newWorkspaceName'))
-    if (!name?.trim()) return
+  async function handleAddWorkspace(e: React.FormEvent) {
+    e.preventDefault()
+    if (!addWsName.trim()) return
+    setAddWsLoading(true)
     try {
       const { workspaceApi } = await import('@/lib/api/client')
-      await workspaceApi.create({ name: name.trim() })
+      await workspaceApi.create({ name: addWsName.trim() })
       await refreshWorkspaces()
+      setAddWsName('')
+      setAddWsOpen(false)
+      setWorkspaceOpen(false)
     } catch { /* ignore */ }
-    setWorkspaceOpen(false)
+    finally { setAddWsLoading(false) }
   }
 
   return (
+    <>
     <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col fixed inset-y-0 left-0 z-50">
 
       {/* Logo */}
@@ -125,7 +132,7 @@ export default function Sidebar() {
             </div>
             <div className="border-t border-slate-100 dark:border-slate-700 p-2">
               <button
-                onClick={handleAddWorkspace}
+                onClick={() => { setWorkspaceOpen(false); setAddWsOpen(true) }}
                 className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
               >
                 <Icon name="add" className="text-[16px]" />
@@ -198,5 +205,42 @@ export default function Sidebar() {
         </div>
       </div>
     </aside>
+
+    {/* Add Workspace Modal */}
+    {addWsOpen && (
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100] p-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+            <h2 className="text-base font-bold text-slate-900">{t('nav.addWorkspace')}</h2>
+            <button onClick={() => { setAddWsOpen(false); setAddWsName('') }} className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
+              <Icon name="close" className="text-[20px]" />
+            </button>
+          </div>
+          <form onSubmit={handleAddWorkspace} className="p-6 space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">{t('nav.newWorkspaceName')}</label>
+              <input
+                type="text"
+                required
+                autoFocus
+                value={addWsName}
+                onChange={e => setAddWsName(e.target.value)}
+                placeholder={t('nav.newWorkspaceName')}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] outline-none text-slate-900 text-sm transition-all"
+              />
+            </div>
+            <div className="flex justify-end gap-3 pt-1">
+              <button type="button" onClick={() => { setAddWsOpen(false); setAddWsName('') }} className="px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">
+                {t('common.cancel')}
+              </button>
+              <button type="submit" disabled={addWsLoading || !addWsName.trim()} className="px-5 py-2.5 text-sm font-bold text-white bg-[#1A56DB] rounded-xl hover:bg-[#1547b3] disabled:opacity-60 transition-colors">
+                {addWsLoading ? t('actions.saving') : t('nav.addWorkspace')}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+    </>
   )
 }

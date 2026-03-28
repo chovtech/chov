@@ -85,10 +85,10 @@ export const authApiExtended = {
 
 // Projects API
 export const projectApi = {
-  create: (data: { name: string; page_url: string; platform: string }) =>
+  create: (data: { name: string; page_url: string; platform: string; workspace_id?: string }) =>
     apiClient.post('/api/projects', data),
-  list: () =>
-    apiClient.get('/api/projects'),
+  list: (workspaceId?: string) =>
+    apiClient.get('/api/projects', { params: workspaceId ? { workspace_id: workspaceId } : {} }),
   get: (id: string) =>
     apiClient.get(`/api/projects/${id}`),
   update: (id: string, data: { name?: string; status?: string; script_verified?: boolean; page_url?: string; thumbnail_url?: string }) =>

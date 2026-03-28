@@ -84,7 +84,7 @@ async def invite_member(
     <p>Sign up or log in to accept your invitation.</p>
     <p><a href="https://app.usepagepersona.com/signup">Accept Invitation</a></p>
     """
-    await send_email(body.email, f"You've been invited to {ws['name']}", invite_html)
+    send_email(body.email, f"You've been invited to {ws['name']}", invite_html)
 
     return _fmt(member)
 

@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 import asyncpg
+from typing import Optional
 from app.database import get_db
 from app.core.security import get_current_user
 from app.schemas.projects import ProjectCreate, ProjectResponse, ProjectUpdate
@@ -21,10 +22,16 @@ async def create(
     current_user: dict = Depends(get_current_user)
 ):
     # Get workspace for this user
-    workspace = await db.fetchrow(
-        "SELECT id FROM workspaces WHERE owner_id = $1",
-        current_user['id']
-    )
+    if body.workspace_id:
+        workspace = await db.fetchrow(
+            "SELECT id FROM workspaces WHERE id = $1 AND owner_id = $2",
+            body.workspace_id, current_user['id']
+        )
+    else:
+        workspace = await db.fetchrow(
+            "SELECT id FROM workspaces WHERE owner_id = $1 ORDER BY created_at ASC LIMIT 1",
+            current_user['id']
+        )
     if not workspace:
         raise HTTPException(status_code=404, detail="Workspace not found")
 
@@ -40,13 +47,20 @@ async def create(
 
 @router.get("", response_model=list[ProjectResponse])
 async def list_projects(
+    workspace_id: Optional[str] = Query(None),
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    workspace = await db.fetchrow(
-        "SELECT id FROM workspaces WHERE owner_id = $1",
-        current_user['id']
-    )
+    if workspace_id:
+        workspace = await db.fetchrow(
+            "SELECT id FROM workspaces WHERE id = $1 AND owner_id = $2",
+            workspace_id, current_user['id']
+        )
+    else:
+        workspace = await db.fetchrow(
+            "SELECT id FROM workspaces WHERE owner_id = $1 ORDER BY created_at ASC LIMIT 1",
+            current_user['id']
+        )
     if not workspace:
         raise HTTPException(status_code=404, detail="Workspace not found")
 

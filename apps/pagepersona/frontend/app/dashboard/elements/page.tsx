@@ -7,6 +7,7 @@ import Sidebar from '@/components/layouts/Sidebar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { apiClient } from '@/lib/api/client'
+import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
 interface Popup {
   id: string
@@ -43,6 +44,7 @@ function getPopupPreviewImage(config: any): string | null {
 
 export default function ElementsPage() {
   const { t } = useTranslation('common')
+  const { activeWorkspace } = useWorkspace()
   const router = useRouter()
   const [tab, setTab] = useState(() => {
     if (typeof window !== 'undefined') return localStorage.getItem('pp_elements_tab') || 'popups'
@@ -59,15 +61,16 @@ export default function ElementsPage() {
   const [deletingCountdown, setDeletingCountdown] = useState(false)
 
   useEffect(() => {
-    apiClient.get('/api/popups')
+    const wsParam = activeWorkspace?.id ? `?workspace_id=${activeWorkspace.id}` : ''
+    apiClient.get(`/api/popups${wsParam}`)
       .then(res => setPopups(res.data))
       .catch(() => null)
       .finally(() => setLoading(false))
-    apiClient.get('/api/countdowns')
+    apiClient.get(`/api/countdowns${wsParam}`)
       .then(res => setCountdowns(res.data))
       .catch(() => null)
       .finally(() => setCountdownsLoading(false))
-  }, [])
+  }, [activeWorkspace?.id])
 
   const handleDelete = async () => {
     if (!deleteId) return

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 import asyncpg
 from pydantic import BaseModel
 from typing import Optional
@@ -45,10 +45,14 @@ async def create(
 
 @router.get("")
 async def list_all(
+    workspace_id: Optional[str] = Query(None),
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    workspace = await db.fetchrow("SELECT id FROM workspaces WHERE owner_id = $1", current_user['id'])
+    if workspace_id:
+        workspace = await db.fetchrow("SELECT id FROM workspaces WHERE id = $1 AND owner_id = $2", workspace_id, current_user['id'])
+    else:
+        workspace = await db.fetchrow("SELECT id FROM workspaces WHERE owner_id = $1 ORDER BY created_at ASC LIMIT 1", current_user['id'])
     if not workspace:
         raise HTTPException(404, "Workspace not found")
     return await get_countdowns(db, str(workspace['id']))

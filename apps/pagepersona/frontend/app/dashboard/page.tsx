@@ -6,23 +6,26 @@ import Icon from '@/components/ui/Icon'
 import NewProjectModal from '@/components/ui/NewProjectModal'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { projectApi } from '@/lib/api/client'
+import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
 const tabKeys = ['all', 'active', 'drafts', 'archived']
 
 export default function DashboardPage() {
   const { t } = useTranslation('common')
+  const { activeWorkspace } = useWorkspace()
   const [activeTab, setActiveTab] = useState('all')
   const [modalOpen, setModalOpen] = useState(false)
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
 
   const fetchProjects = async () => {
-    try { const res = await projectApi.list(); setProjects(res.data) }
+    setLoading(true)
+    try { const res = await projectApi.list(activeWorkspace?.id); setProjects(res.data) }
     catch { setProjects([]) }
     finally { setLoading(false) }
   }
 
-  useEffect(() => { fetchProjects() }, [])
+  useEffect(() => { fetchProjects() }, [activeWorkspace?.id])
 
   const hasProjects = projects.length > 0
 

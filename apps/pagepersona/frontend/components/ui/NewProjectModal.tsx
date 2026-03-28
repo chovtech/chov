@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { projectApi, apiClient } from '@/lib/api/client'
+import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
 interface Props {
   isOpen: boolean
@@ -25,6 +26,7 @@ const platforms = [
 
 export default function NewProjectModal({ isOpen, onClose }: Props) {
   const { t } = useTranslation('common')
+  const { activeWorkspace } = useWorkspace()
   const router = useRouter()
 
   const [step, setStep] = useState(1)
@@ -68,6 +70,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
         name: projectName,
         page_url: pageUrl,
         platform: platform || 'html',
+        workspace_id: activeWorkspace?.id,
       })
       setCreatedProjectId(res.data.id)
       setScriptId(res.data.script_id)

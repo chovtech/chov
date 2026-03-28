@@ -7,6 +7,7 @@ class ProjectCreate(BaseModel):
     name: str
     page_url: str
     platform: str = 'html'
+    workspace_id: Optional[str] = None
 
 class ProjectResponse(BaseModel):
     id: uuid.UUID

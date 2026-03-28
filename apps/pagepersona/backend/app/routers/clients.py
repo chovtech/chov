@@ -82,7 +82,7 @@ async def invite_client(
     <p><a href="{accept_url}" style="background:#1A56DB;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>
     <p style="color:#94a3b8;font-size:12px;">This link expires in 7 days.</p>
     """
-    await send_email(body.client_email, f"You've been invited to {agency_name}", invite_html)
+    send_email(body.client_email, f"You've been invited to {agency_name}", invite_html)
 
     return {
         "invite_id": str(invite['id']),
@@ -153,6 +153,6 @@ async def send_report(
     <p><a href="{report_url}" style="background:#1A56DB;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">View Dashboard</a></p>
     <p style="color:#94a3b8;font-size:12px;">Sent by {agency_name} via PagePersona</p>
     """
-    await send_email(client_ws['client_email'], f"Your PagePersona Report from {agency_name}", report_html)
+    send_email(client_ws['client_email'], f"Your PagePersona Report from {agency_name}", report_html)
 
     return {"ok": True}
