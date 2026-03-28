@@ -178,6 +178,12 @@ export default function SettingsPage() {
   const [wlLoading, setWlLoading] = useState(false)
   const [wlMsg, setWlMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  // Custom domain state
+  const [domainInput, setDomainInput] = useState('')
+  const [domainSaving, setDomainSaving] = useState(false)
+  const [domainVerifying, setDomainVerifying] = useState(false)
+  const [domainMsg, setDomainMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
   const tabs = [
     { key: 'general', label: t('settings.tabs.general'), icon: 'person' },
     { key: 'team', label: t('settings.tabs.team'), icon: 'group' },
@@ -199,6 +205,7 @@ export default function SettingsPage() {
         logo: activeWorkspace.white_label_logo || '',
         primary_color: activeWorkspace.white_label_primary_color || '#1A56DB',
       })
+      setDomainInput(activeWorkspace.custom_domain || '')
     }
   }, [activeWorkspace?.id])
 
@@ -219,6 +226,37 @@ export default function SettingsPage() {
       setWlMsg({ type: 'error', text: t('settings.whitelabel.save_error') })
     } finally {
       setWlLoading(false)
+    }
+  }
+
+  async function handleDomainSave(e: React.FormEvent) {
+    e.preventDefault()
+    if (!activeWorkspace) return
+    setDomainMsg(null)
+    setDomainSaving(true)
+    try {
+      await workspaceApi.update(activeWorkspace.id, { custom_domain: domainInput.trim() || undefined })
+      await refreshWorkspaces()
+      setDomainMsg({ type: 'success', text: t('settings.whitelabel.custom_domain_saved') })
+    } catch {
+      setDomainMsg({ type: 'error', text: t('settings.whitelabel.save_error') })
+    } finally {
+      setDomainSaving(false)
+    }
+  }
+
+  async function handleDomainVerify() {
+    if (!activeWorkspace) return
+    setDomainMsg(null)
+    setDomainVerifying(true)
+    try {
+      await workspaceApi.verifyDomain(activeWorkspace.id)
+      await refreshWorkspaces()
+      setDomainMsg({ type: 'success', text: t('settings.whitelabel.custom_domain_verified') })
+    } catch {
+      setDomainMsg({ type: 'error', text: t('settings.whitelabel.custom_domain_failed') })
+    } finally {
+      setDomainVerifying(false)
     }
   }
 
@@ -524,6 +562,68 @@ export default function SettingsPage() {
                     </button>
                   </div>
                 </form>
+              </div>
+
+              {/* Custom Domain */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+                <h2 className="text-base font-bold text-slate-900 dark:text-white mb-1">{t('settings.whitelabel.custom_domain')}</h2>
+                <p className="text-sm text-slate-500 mb-5">{t('settings.whitelabel.custom_domain_hint')}</p>
+                {domainMsg && <div className={msgClass(domainMsg.type)}>{domainMsg.text}</div>}
+
+                {/* DNS instruction box */}
+                <div className="mb-5 p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('settings.whitelabel.custom_domain_instructions')}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mb-1">{t('settings.whitelabel.custom_domain_cname')}</p>
+                  <code className="text-xs font-mono text-[#1A56DB] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded-lg">
+                    app.usepagepersona.com
+                  </code>
+                </div>
+
+                <form onSubmit={handleDomainSave} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.whitelabel.custom_domain')}</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={domainInput}
+                        onChange={e => setDomainInput(e.target.value)}
+                        placeholder={t('settings.whitelabel.custom_domain_placeholder')}
+                        className={inputClass + ' flex-1'}
+                      />
+                      <button type="submit" disabled={domainSaving} className="px-4 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors text-sm flex-shrink-0">
+                        {domainSaving ? t('actions.saving') : 'Save'}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+
+                {/* Verify row — only show when domain is set */}
+                {activeWorkspace?.custom_domain && (
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {activeWorkspace.custom_domain_verified ? (
+                        <>
+                          <Icon name="check_circle" className="text-green-500 text-[18px]" />
+                          <span className="text-sm text-green-600 font-medium">{t('settings.whitelabel.custom_domain_verified')}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Icon name="schedule" className="text-amber-500 text-[18px]" />
+                          <span className="text-sm text-amber-600 font-medium">{t('settings.whitelabel.custom_domain_unverified')}</span>
+                        </>
+                      )}
+                    </div>
+                    {!activeWorkspace.custom_domain_verified && (
+                      <button
+                        onClick={handleDomainVerify}
+                        disabled={domainVerifying}
+                        className="px-4 py-2 text-sm font-bold text-[#1A56DB] bg-[#1A56DB]/10 rounded-xl hover:bg-[#1A56DB]/20 disabled:opacity-60 transition-colors"
+                      >
+                        {domainVerifying ? t('settings.whitelabel.custom_domain_verifying') : t('settings.whitelabel.custom_domain_verify')}
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

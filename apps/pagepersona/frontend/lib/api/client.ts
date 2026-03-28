@@ -101,14 +101,34 @@ export const projectApi = {
 export const workspaceApi = {
   list: () =>
     apiClient.get('/api/workspaces'),
-  create: (data: { name: string; type?: string }) =>
+  create: (data: {
+    name: string
+    type?: string
+    parent_workspace_id?: string
+    client_name?: string
+    client_email?: string
+    client_access_level?: string
+  }) =>
     apiClient.post('/api/workspaces', data),
   get: (id: string) =>
     apiClient.get(`/api/workspaces/${id}`),
-  update: (id: string, data: { name?: string; white_label_brand_name?: string; white_label_logo?: string; white_label_primary_color?: string }) =>
+  update: (id: string, data: {
+    name?: string
+    white_label_brand_name?: string
+    white_label_logo?: string
+    white_label_primary_color?: string
+    custom_domain?: string
+    client_name?: string
+    client_email?: string
+    client_access_level?: string
+  }) =>
     apiClient.patch(`/api/workspaces/${id}`, data),
+  delete: (id: string) =>
+    apiClient.delete(`/api/workspaces/${id}`),
   listClients: (id: string) =>
     apiClient.get(`/api/workspaces/${id}/clients`),
+  verifyDomain: (id: string) =>
+    apiClient.post(`/api/workspaces/${id}/verify-domain`),
 }
 
 // Team API
@@ -127,6 +147,12 @@ export const teamApi = {
 export const clientsApi = {
   invite: (data: { client_email: string; workspace_id: string }) =>
     apiClient.post('/api/clients/invite', data),
+  inviteInfo: (token: string) =>
+    apiClient.get(`/api/clients/invite-info?token=${encodeURIComponent(token)}`),
+  accept: (data: { token: string; name: string; password: string }) =>
+    apiClient.post('/api/clients/accept', data),
+  revoke: (workspaceId: string) =>
+    apiClient.delete(`/api/clients/${workspaceId}/revoke`),
   sendReport: (data: { workspace_id: string; client_workspace_id: string; message?: string }) =>
     apiClient.post('/api/clients/report', data),
 }

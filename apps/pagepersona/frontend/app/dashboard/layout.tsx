@@ -5,6 +5,7 @@ import Sidebar from '@/components/layouts/Sidebar'
 import { authApi, authApiExtended } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { WorkspaceProvider } from '@/lib/context/WorkspaceContext'
+import { WhiteLabelProvider } from '@/lib/context/WhiteLabelContext'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation('common')
@@ -32,6 +33,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <WorkspaceProvider>
+    <WhiteLabelProvider>
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
       <Sidebar />
       <div className="ml-64">
@@ -70,6 +72,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {children}
       </div>
     </div>
+    </WhiteLabelProvider>
     </WorkspaceProvider>
   )
 }

@@ -16,7 +16,16 @@ const fullNavigation = [
   { key: 'settings', href: '/dashboard/settings', icon: 'settings', exact: false },
 ]
 
-const clientNavigation = [
+// Client with full access — everything except Agency and Billing (settings page still accessible)
+const clientFullNavigation = [
+  { key: 'dashboard', href: '/dashboard', icon: 'home', exact: true },
+  { key: 'elements', href: '/dashboard/elements', icon: 'widgets', exact: false },
+  { key: 'analytics', href: '/dashboard/analytics', icon: 'bar_chart', exact: false },
+  { key: 'settings', href: '/dashboard/settings', icon: 'settings', exact: false },
+]
+
+// Client with view-only access — dashboard and analytics only
+const clientViewNavigation = [
   { key: 'dashboard', href: '/dashboard', icon: 'home', exact: true },
   { key: 'analytics', href: '/dashboard/analytics', icon: 'bar_chart', exact: false },
 ]
@@ -56,8 +65,13 @@ export default function Sidebar() {
     ? `${(user.name || '').split(' ')[0]}'s ${t('nav.workspace')}`
     : t('nav.workspace'))
 
-  const isClient = activeWorkspace?.type === 'client'
-  const navigation = isClient ? clientNavigation : fullNavigation
+  const isClientUser = activeWorkspace?.member_role === 'client'
+  const isViewOnly = isClientUser && activeWorkspace?.client_access_level === 'view_only'
+  const navigation = isViewOnly
+    ? clientViewNavigation
+    : isClientUser
+      ? clientFullNavigation
+      : fullNavigation
 
   async function handleAddWorkspace(e: React.FormEvent) {
     e.preventDefault()
@@ -91,8 +105,8 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Workspace Switcher */}
-      <div className="px-3 pb-3">
+      {/* Workspace Switcher — hidden for client users */}
+      {!isClientUser && <div className="px-3 pb-3">
         <button
           onClick={() => setWorkspaceOpen(!workspaceOpen)}
           className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group"
@@ -141,7 +155,7 @@ export default function Sidebar() {
             </div>
           </div>
         )}
-      </div>
+      </div>}
 
       {/* Navigation */}
       <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
@@ -164,8 +178,8 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Plan card */}
-      <div className="px-3 py-4">
+      {/* Plan card — hidden for client users */}
+      {!isClientUser && <div className="px-3 py-4">
         <div className="bg-gradient-to-br from-[#1A56DB] to-[#1547b3] rounded-2xl p-4 text-white shadow-lg shadow-[#1A56DB]/25">
           <div className="flex items-center gap-2 mb-3">
             <div className="size-6 rounded-md bg-white/20 flex items-center justify-center">
@@ -181,7 +195,7 @@ export default function Sidebar() {
             {t('sidebar.upgradeNow')}
           </button>
         </div>
-      </div>
+      </div>}
 
       {/* User footer */}
       <div className="px-3 pb-4 border-t border-slate-100 dark:border-slate-800">

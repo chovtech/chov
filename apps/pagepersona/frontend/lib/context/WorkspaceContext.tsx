@@ -6,13 +6,25 @@ import { workspaceApi } from '@/lib/api/client'
 export interface Workspace {
   id: string
   name: string
-  slug: string
+  slug: string | null
   type: string
   owner_id: string
   parent_workspace_id: string | null
+  client_email: string | null
+  client_name: string | null
+  client_access_level: string
+  member_role: string
   white_label_logo: string | null
   white_label_brand_name: string | null
   white_label_primary_color: string
+  custom_domain: string | null
+  custom_domain_verified: boolean
+  created_at: string | null
+  project_count: number
+  active_rules_count: number
+  sessions_this_month: number
+  last_activity: string | null
+  invite_status: string
 }
 
 interface WorkspaceContextValue {
@@ -42,7 +54,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       const list: Workspace[] = res.data
       setWorkspaces(list)
 
-      // Restore persisted active workspace or default to first
       const stored = typeof window !== 'undefined' ? localStorage.getItem('active_workspace_id') : null
       const found = stored ? list.find(w => w.id === stored) : null
       const active = found || list[0] || null
@@ -53,7 +64,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch {
-      // Not logged in yet — ignore
+      // Not logged in yet
     } finally {
       setLoading(false)
     }
