@@ -207,7 +207,7 @@ export default function AgencyPage() {
           </div>
         )}
 
-        {!loading && (
+        {!loading && clients.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6" ref={dropdownRef}>
 
             {filtered.map(client => {

@@ -148,16 +148,25 @@ async def invite_client(
     accept_url = f"https://app.usepagepersona.com/accept?token={token}"
 
     from app.services.email_service import send_client_invite_email
-    send_client_invite_email(
-        to_email=body.client_email,
-        brand_name=brand_name,
-        logo_url=logo_url,
-        brand_color=brand_color,
-        accept_url=accept_url,
-    )
+    import logging
+    _log = logging.getLogger(__name__)
+    email_sent = False
+    try:
+        email_sent = send_client_invite_email(
+            to_email=body.client_email,
+            brand_name=brand_name,
+            logo_url=logo_url,
+            brand_color=brand_color,
+            accept_url=accept_url,
+        )
+        if not email_sent:
+            _log.error(f"send_client_invite_email returned False for {body.client_email}")
+    except Exception as exc:
+        _log.error(f"send_client_invite_email raised: {exc}")
 
     return {
         "invite_id": str(invite['id']),
+        "email_sent": email_sent,
         "client_workspace_id": str(client_ws['id']),
         "token": token,
         "status": "pending",

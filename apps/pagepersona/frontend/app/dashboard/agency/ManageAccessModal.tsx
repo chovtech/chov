@@ -75,8 +75,12 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
     if (!details.client_email) { flash('err', 'Client email is required to send an invite.'); return }
     setInviting(true)
     try {
-      await clientsApi.invite({ client_email: details.client_email, workspace_id: agencyWorkspaceId })
-      flash('ok', 'Invite sent!')
+      const res = await clientsApi.invite({ client_email: details.client_email, workspace_id: agencyWorkspaceId })
+      if (res.data.email_sent === false) {
+        flash('err', 'Invite created but email delivery failed — check backend logs.')
+      } else {
+        flash('ok', 'Invite sent!')
+      }
       onUpdated()
     } catch (err: any) {
       flash('err', err?.response?.data?.detail || 'Failed to send invite.')
