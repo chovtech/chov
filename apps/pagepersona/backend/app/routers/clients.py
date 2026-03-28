@@ -45,7 +45,7 @@ async def invite_client(
 
     # Check for existing pending invite
     existing = await db.fetchrow(
-        "SELECT id FROM client_invites WHERE workspace_id = $1 AND client_email = $2 AND status = 'pending'",
+        "SELECT id FROM client_invites WHERE workspace_id = $1 AND email = $2 AND status = 'pending'",
         body.workspace_id, body.client_email
     )
     if existing:
@@ -67,13 +67,13 @@ async def invite_client(
 
     token = str(uuid.uuid4())
     invite = await db.fetchrow(
-        """INSERT INTO client_invites (workspace_id, client_email, client_workspace_id, token)
+        """INSERT INTO client_invites (workspace_id, email, client_workspace_id, token)
            VALUES ($1, $2, $3, $4)
            RETURNING *""",
         body.workspace_id, body.client_email, client_ws['id'], token
     )
 
-    agency_name = agency_ws.get('white_label_brand_name') or agency_ws['name']
+    agency_name = agency_ws.get('brand_name') or agency_ws['name']
     accept_url = f"https://app.usepagepersona.com/accept-invite?token={token}"
     invite_html = f"""
     <p>Hi,</p>
@@ -112,7 +112,7 @@ async def accept_invite(
     )
     return {
         "ok": True,
-        "client_email": invite['client_email'],
+        "client_email": invite['email'],
         "client_workspace_id": str(invite['client_workspace_id'])
     }
 
@@ -142,7 +142,7 @@ async def send_report(
     if not client_ws.get('client_email'):
         raise HTTPException(status_code=400, detail="No client email on record")
 
-    agency_name = agency_ws.get('white_label_brand_name') or agency_ws['name']
+    agency_name = agency_ws.get('brand_name') or agency_ws['name']
     report_url = f"https://app.usepagepersona.com/dashboard/analytics"
     custom_msg = body.message or "Here is your latest personalisation report."
 
