@@ -75,7 +75,7 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
     if (!details.client_email) { flash('err', 'Client email is required to send an invite.'); return }
     setInviting(true)
     try {
-      const res = await clientsApi.invite({ client_email: details.client_email, workspace_id: agencyWorkspaceId })
+      const res = await clientsApi.invite({ client_email: details.client_email, workspace_id: agencyWorkspaceId, client_workspace_id: client.id })
       if (res.data.email_sent === false) {
         flash('err', 'Invite saved but email failed to deliver. Check that your AWS SES credentials are set correctly on the server.')
         setTimeout(() => onUpdated(), 4000)

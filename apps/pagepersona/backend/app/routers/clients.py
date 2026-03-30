@@ -14,6 +14,7 @@ router = APIRouter(prefix="/api/clients", tags=["clients"])
 class InviteClientRequest(BaseModel):
     client_email: EmailStr
     workspace_id: str
+    client_workspace_id: Optional[str] = None
 
 
 class AcceptInviteRequest(BaseModel):
@@ -117,10 +118,24 @@ async def invite_client(
         raise HTTPException(status_code=400, detail="This client has already accepted the invite.")
 
     # Find or create the client workspace
-    client_ws = await db.fetchrow(
-        "SELECT * FROM workspaces WHERE parent_workspace_id = $1 AND client_email = $2",
-        body.workspace_id, body.client_email
-    )
+    client_ws = None
+    if body.client_workspace_id:
+        # Direct lookup by ID — used when resending from ManageAccessModal
+        client_ws = await db.fetchrow(
+            "SELECT * FROM workspaces WHERE id = $1 AND parent_workspace_id = $2",
+            body.client_workspace_id, body.workspace_id
+        )
+        if client_ws and client_ws['client_email'] != body.client_email:
+            # Email was corrected — update it on the workspace
+            await db.execute(
+                "UPDATE workspaces SET client_email = $1 WHERE id = $2",
+                body.client_email, client_ws['id']
+            )
+    if not client_ws:
+        client_ws = await db.fetchrow(
+            "SELECT * FROM workspaces WHERE parent_workspace_id = $1 AND client_email = $2",
+            body.workspace_id, body.client_email
+        )
     if not client_ws:
         base_slug = _slugify(body.client_email.split('@')[0])
         slug = base_slug

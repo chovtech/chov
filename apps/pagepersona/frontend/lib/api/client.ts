@@ -145,7 +145,7 @@ export const teamApi = {
 
 // Clients API
 export const clientsApi = {
-  invite: (data: { client_email: string; workspace_id: string }) =>
+  invite: (data: { client_email: string; workspace_id: string; client_workspace_id?: string }) =>
     apiClient.post('/api/clients/invite', data),
   inviteInfo: (token: string) =>
     apiClient.get(`/api/clients/invite-info?token=${encodeURIComponent(token)}`),
