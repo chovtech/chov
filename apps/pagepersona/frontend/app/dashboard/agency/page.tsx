@@ -78,6 +78,13 @@ export default function AgencyPage() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [invitingId, setInvitingId] = useState<string | null>(null)
 
+  // Page-level toast
+  const [toast, setToast] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
+  function showToast(type: 'ok' | 'err', text: string) {
+    setToast({ type, text })
+    setTimeout(() => setToast(null), 5000)
+  }
+
   async function fetchClients() {
     if (!activeWorkspace) return
     setLoading(true)
@@ -132,13 +139,23 @@ export default function AgencyPage() {
   }
 
   async function handleSendInvite(client: ClientWorkspace) {
-    if (!activeWorkspace || !client.client_email) return
+    if (!activeWorkspace || !client.client_email) {
+      showToast('err', 'No client email on record — open Manage Access to add one first.')
+      return
+    }
     setInvitingId(client.id)
     try {
-      await clientsApi.invite({ client_email: client.client_email, workspace_id: activeWorkspace.id })
+      const res = await clientsApi.invite({ client_email: client.client_email, workspace_id: activeWorkspace.id })
+      if (res.data.email_sent === false) {
+        showToast('err', 'Invite saved but email failed to deliver — check server logs for SES errors.')
+      } else {
+        showToast('ok', `Invite sent to ${client.client_email}`)
+      }
       fetchClients()
-    } catch { /* ignore */ }
-    finally { setInvitingId(null) }
+    } catch (err: any) {
+      showToast('err', err?.response?.data?.detail || 'Failed to send invite.')
+    } finally {
+      setInvitingId(null) }
   }
 
   async function handleSendReport(e: React.FormEvent) {
@@ -177,6 +194,18 @@ export default function AgencyPage() {
   return (
     <>
       <Topbar workspaceName={activeWorkspace?.name || t('nav.workspace')} />
+
+      {/* Page toast */}
+      {toast && (
+        <div className={`fixed top-5 right-5 z-[200] flex items-start gap-3 px-4 py-3 rounded-xl shadow-xl border text-sm font-medium max-w-sm transition-all ${toast.type === 'ok' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
+          <span className="material-symbols-outlined text-[18px] mt-0.5 flex-shrink-0">{toast.type === 'ok' ? 'check_circle' : 'error'}</span>
+          <span>{toast.text}</span>
+          <button onClick={() => setToast(null)} className="ml-2 opacity-50 hover:opacity-100 flex-shrink-0">
+            <span className="material-symbols-outlined text-[16px]">close</span>
+          </button>
+        </div>
+      )}
+
       <div className="p-8 max-w-7xl mx-auto w-full">
 
         {/* Header */}

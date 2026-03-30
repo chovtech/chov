@@ -77,13 +77,14 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
     try {
       const res = await clientsApi.invite({ client_email: details.client_email, workspace_id: agencyWorkspaceId })
       if (res.data.email_sent === false) {
-        flash('err', 'Invite created but email delivery failed — check backend logs.')
+        flash('err', 'Invite saved but email failed to deliver. Check that your AWS SES credentials are set correctly on the server.')
+        setTimeout(() => onUpdated(), 4000)
       } else {
-        flash('ok', 'Invite sent!')
+        flash('ok', `Invite email sent to ${details.client_email}`)
+        setTimeout(() => onUpdated(), 2500)
       }
-      onUpdated()
     } catch (err: any) {
-      flash('err', err?.response?.data?.detail || 'Failed to send invite.')
+      flash('err', err?.response?.data?.detail || 'Failed to send invite. Check server logs.')
     } finally {
       setInviting(false)
     }
