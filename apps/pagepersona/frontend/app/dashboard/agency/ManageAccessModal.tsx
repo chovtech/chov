@@ -35,6 +35,7 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
 
   const inputClass = 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] outline-none text-slate-900 text-sm transition-all'
+  const emailLocked = client.invite_status !== 'none'
 
   function flash(type: 'ok' | 'err', text: string) {
     setMsg({ type, text })
@@ -149,13 +150,19 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
                 placeholder="Client name"
                 className={inputClass}
               />
-              <input
-                type="email"
-                value={details.client_email}
-                onChange={e => setDetails(p => ({ ...p, client_email: e.target.value }))}
-                placeholder="client@company.com"
-                className={inputClass}
-              />
+              <div className="relative">
+                <input
+                  type="email"
+                  value={details.client_email}
+                  onChange={e => !emailLocked && setDetails(p => ({ ...p, client_email: e.target.value }))}
+                  placeholder="client@company.com"
+                  readOnly={emailLocked}
+                  className={`${inputClass} ${emailLocked ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : ''}`}
+                />
+                {emailLocked && (
+                  <p className="text-[11px] text-slate-400 mt-1">Email cannot be changed after an invite is sent.</p>
+                )}
+              </div>
               <button type="submit" disabled={savingDetails} className="px-4 py-2 text-sm font-bold text-white bg-[#1A56DB] rounded-xl hover:bg-[#1547b3] disabled:opacity-60 transition-colors">
                 {savingDetails ? 'Saving...' : 'Save Details'}
               </button>
