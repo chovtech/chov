@@ -78,6 +78,15 @@ Then in terminal 4 (already SSH'd to VPS): `~/deploy.sh`
 - **Never edit the CDN pp.js directly** — always go through deploy.sh
 - `ssh chov-vps ~/deploy.sh` fails from Claude's terminal (no SSH key) — Chike always runs it manually in terminal 4
 
+### VPS process management:
+| Process | Manager | Name | Restart command |
+|---------|---------|------|-----------------|
+| Backend (FastAPI) | systemd | `pagepersona-api` | `sudo systemctl restart pagepersona-api` |
+| Frontend (Next.js) | PM2 | `pagepersona-app` | `pm2 restart pagepersona-app` |
+
+Logs: `sudo journalctl -u pagepersona-api -n 100 --no-pager`
+DB on VPS: `psql "postgresql://chov:chov_dev_password@localhost/chov"`
+
 ---
 
 ## 6. TECH STACK (locked)
@@ -138,29 +147,27 @@ cd ~/chov/apps/pagepersona/frontend && npm run dev
 | Database | `chov` |
 | Port | 5432 local, native on VPS |
 
-### Tables (local: 11, VPS: 10):
+### Tables (local + VPS unless noted):
 
-| Table | Key Columns |
-|-------|-------------|
-| users | id, email, name, language, avatar_url |
-| workspaces | id, owner_id, name |
-| entitlements | id, workspace_id, product, plan |
-| sessions | id, user_id, token |
-| verification_tokens | id, user_id, token |
-| password_reset_tokens | id, user_id, token |
-| pricing_tiers | id, country, currency, price |
-| projects | id, workspace_id, name, page_url, platform, script_id, script_verified, status, thumbnail_url |
-| rules | id, project_id, name, conditions JSONB, condition_operator, actions JSONB, priority, is_active |
-| popups | id, workspace_id, name, status, config JSONB, created_at, updated_at |
-| countdowns | id, workspace_id, name, ends_at, expiry_action, expiry_value, config JSONB, status, created_at |
-| page_visits | id, project_id, session_id, timestamp, country, country_code, continent, device, os, browser, referrer, utm_*, is_new_visitor, time_on_page, scroll_depth |
-| rule_events | id, rule_id, project_id, session_id, timestamp, country, device, time_on_page_at_fire, scroll_depth_at_fire |
+| Table | Key Columns | VPS? |
+|-------|-------------|------|
+| users | id, email, name, **password_hash**, language, avatar_url, google_id, email_verified | ✅ |
+| workspaces | id, owner_id, name, slug, **type**, **parent_workspace_id**, **client_name**, **client_email**, **client_access_level**, **brand_name**, **logo_url**, **brand_color**, **custom_domain**, **custom_domain_verified** | ✅ |
+| entitlements | id, workspace_id, product_id, plan, source, status, purchased_at, expires_at | ✅ |
+| sessions | id, user_id, token, expires_at | ✅ |
+| verification_tokens | id, user_id, token, type, expires_at, used_at | ✅ |
+| password_reset_tokens | id, user_id, token, expires_at, used_at | ✅ |
+| pricing_tiers | id, product_id, plan, country_code, currency, amount, billing_cycle, is_active | ✅ |
+| projects | id, workspace_id, name, page_url, platform, script_id, script_verified, status, thumbnail_url | ✅ |
+| rules | id, project_id, name, conditions JSONB, condition_operator, actions JSONB, priority, is_active | ✅ |
+| popups | id, workspace_id, name, status, config JSONB, created_at, updated_at | ✅ |
+| workspace_members | id, workspace_id, user_id, email, role ('owner'/'member'/'client'/'revoked'), status, invited_at, joined_at | ✅ |
+| client_invites | id, workspace_id (agency), client_workspace_id, email, token, status ('pending'/'active'/'revoked'), created_at, accepted_at | ✅ |
+| page_visits | id, project_id, session_id, timestamp, country, country_code, continent, device, os, browser, referrer, utm_*, is_new_visitor, time_on_page, scroll_depth | ✅ |
+| countdowns | id, workspace_id, name, ends_at, expiry_action, expiry_value, config JSONB, status, created_at | ⚠️ local only |
+| rule_events | id, rule_id, project_id, session_id, timestamp, country, device, time_on_page_at_fire, scroll_depth_at_fire | ⚠️ local only |
 
-> ⚠️ `countdowns` — table code is 100% done. Only needs `CREATE TABLE` run on VPS.
-> ⚠️ `page_visits` + `rule_events` — created locally. Only needs `CREATE TABLE` run on VPS.
-> ℹ️ `workspace_members` — exists locally only, not referenced by any backend code. Dormant — not blocking anything.
 
----
 
 ## 9. ENVIRONMENT VARIABLES
 
@@ -202,10 +209,10 @@ GOOGLE_REDIRECT_URI=https://api.usepagepersona.com/api/auth/google/callback
         core/           — config.py, security.py
         routers/        — auth.py, users.py, projects.py, rules.py, sdk.py,
                           upload.py, webhooks.py, google_auth.py, popups.py, countdowns.py,
-                          analytics.py, sdk_analytics.py
+                          analytics.py, sdk_analytics.py, workspaces.py, team.py, clients.py
         schemas/        — projects.py, users.py, rules.py
-        services/       — project_service.py, user_service.py,
-                          popup_service.py, countdown_service.py, email_service.py
+        services/       — auth_service.py, project_service.py,
+                          popup_service.py, countdown_service.py, email_service.py, mautic_service.py, rules_service.py
         database.py
         main.py
       static/
@@ -217,9 +224,15 @@ GOOGLE_REDIRECT_URI=https://api.usepagepersona.com/api/auth/google/callback
       app/
         (auth)/         — login, signup, verify-email, forgot-password, reset-password
         auth/google/callback/, auth/magic/
+        accept/page.tsx                       — client invite accept page (unauthenticated, white-label)
         dashboard/
           page.tsx                          — home dashboard (project cards + thumbnails)
           settings/page.tsx                 — profile, password, avatar upload
+          agency/
+            page.tsx                        — Clients page (list, invite, manage)
+            ManageAccessModal.tsx           — manage client access level, resend/revoke invite
+          analytics/page.tsx               — Analytics dashboard
+          billing/page.tsx                 — Billing page
           elements/
             page.tsx                        — Elements page (Popups tab + Countdown Timers tab)
             popups/
@@ -240,11 +253,13 @@ GOOGLE_REDIRECT_URI=https://api.usepagepersona.com/api/auth/google/callback
                 [rule_id]/edit/page.tsx     — edit rule
         page.tsx                            — redirects to /login
       components/
-        layouts/        — Topbar.tsx, Sidebar.tsx
+        layouts/        — Topbar.tsx, Sidebar.tsx, Footer.tsx
         ui/             — Icon.tsx, SignalLibraryModal.tsx, ImageUploader.tsx,
-                          NewProjectModal.tsx, CitySearchInput.tsx (built, dormant — geo_city removed)
+                          NewProjectModal.tsx, LanguageSwitcher.tsx,
+                          CitySearchInput.tsx (built, dormant — geo_city removed)
       lib/
-        api/client.ts
+        api/client.ts   — authApi, authApiExtended, userApi, projectApi, workspaceApi, teamApi, clientsApi, rulesApi
+        context/        — WorkspaceContext.tsx (workspaces[], activeWorkspace, setActiveWorkspaceId, refreshWorkspaces)
         hooks/          — useTranslation.ts, useLanguage.ts
         data/           — world-cities.ts (3000+ cities, built, dormant — geo_city removed)
       locales/
@@ -334,6 +349,10 @@ grep -n "t(el\.\|t(block\.\|t(action\.\|t(item\.\|t(a\.\|t(undefined" /path/to/f
 | Nginx body size | `client_max_body_size 10m` on `api.usepagepersona.com` |
 | `_geo_cache` in sdk.py | Module-level dict — in-memory, cleared on backend restart. No eviction. |
 | swap_text JSON format | When `{country}` token present, value is `{"text":"...","fallbacks":{"country":"..."}}`. pp.js tries JSON.parse first — plain strings still work (backward compat). |
+| `users.password_hash` | Column is `password_hash` NOT `hashed_password`. Added via ALTER TABLE — not in core.sql CREATE TABLE definition. |
+| VPS backend process | systemd: `sudo systemctl restart pagepersona-api` (NOT pm2). Frontend only is PM2: `pm2 restart pagepersona-app` |
+| CORS on VPS | `allow_origins` must list explicit origins + `allow_origin_regex`. Cannot use `"*"` with `allow_credentials=True` — browser rejects it. |
+| Client workspace type | `type='client'`, `parent_workspace_id=agency_ws_id`, `owner_id=agency_owner_id`. Client users access via `workspace_members` row with `role='client'`. |
 
 ---
 
@@ -483,8 +502,9 @@ pp.js detects when loaded inside the PagePersona iframe and skips all rule execu
 
 ## 20. NEXT TASKS
 
-### 1. Create 3 missing tables on VPS ← START HERE
-Everything is built locally. Run on VPS (terminal 4):
+### 1. Create 2 remaining missing tables on VPS
+`page_visits` ✅ done. `workspace_members` ✅ done. `client_invites` ✅ done.
+Still missing on VPS: `countdowns` and `rule_events`. Run on VPS (terminal 4):
 
 ```sql
 CREATE TABLE IF NOT EXISTS countdowns (
@@ -498,21 +518,6 @@ CREATE TABLE IF NOT EXISTS countdowns (
   status TEXT NOT NULL DEFAULT 'draft',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
-CREATE TABLE IF NOT EXISTS page_visits (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  session_id VARCHAR NOT NULL,
-  timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  country VARCHAR, country_code VARCHAR, continent VARCHAR,
-  device VARCHAR, os VARCHAR, browser VARCHAR,
-  referrer VARCHAR,
-  utm_source VARCHAR, utm_medium VARCHAR, utm_campaign VARCHAR, utm_content VARCHAR, utm_term VARCHAR,
-  is_new_visitor BOOLEAN NOT NULL DEFAULT false,
-  time_on_page INTEGER, scroll_depth INTEGER
-);
-CREATE INDEX IF NOT EXISTS idx_page_visits_project_id ON page_visits(project_id);
-CREATE INDEX IF NOT EXISTS idx_page_visits_timestamp ON page_visits(timestamp);
 
 CREATE TABLE IF NOT EXISTS rule_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -531,9 +536,47 @@ CREATE INDEX IF NOT EXISTS idx_rule_events_timestamp ON rule_events(timestamp);
 ### 2. End-to-end action testing
 All actions tested on `test.html` and SMI WordPress page.
 
+### 3. Client portal — in progress
+Client invite flow fully working (invite → email → accept → dashboard). Client sees workspace badge in sidebar, `clientFullNavigation` or `clientViewNavigation` based on access level. Next: verify client can view projects and analytics correctly.
+
 ---
 
-## 21. LOCKED DECISIONS (never revisit)
+## 21. CLIENT / AGENCY FEATURE
+
+### Data model:
+- Agency workspace: `type='agency'` (or 'personal'), `parent_workspace_id=NULL`
+- Client workspace: `type='client'`, `parent_workspace_id=<agency_ws_id>`, `owner_id=<agency_owner_id>`
+- Client access is tracked via `workspace_members` row with `role='client'`
+
+### Invite flow:
+1. Agency owner invites via `POST /api/clients/invite` → creates client workspace + `client_invites` row → sends SES email
+2. Client accepts via `POST /api/clients/accept` (unauthenticated) → creates user account → inserts `workspace_members` row
+3. Client logs in and sees workspace badge in sidebar (non-interactive), `clientFullNavigation` or `clientViewNavigation`
+
+### Access levels:
+| Level | What client can do |
+|-------|-------------------|
+| `full` | View dashboard, elements, analytics, settings |
+| `view_only` | View dashboard and analytics only |
+
+### Sidebar behaviour by user type:
+| User | Workspace switcher | Nav | Plan card |
+|------|--------------------|-----|-----------|
+| Agency owner (own ws) | ✅ shown | Full nav | ✅ shown |
+| Agency owner (in client ws) | ✅ shown | Full nav minus Clients | ✅ shown |
+| Client user | ❌ hidden — badge shown instead | clientFull or clientView nav | ❌ hidden |
+
+### Key identifiers:
+- `isClientUser = activeWorkspace?.member_role === 'client'`
+- `isViewOnly = isClientUser && activeWorkspace?.client_access_level === 'view_only'`
+- `isInClientWorkspace = !isClientUser && activeWorkspace?.parent_workspace_id !== null`
+
+### White-label:
+Each agency workspace can have `brand_name`, `logo_url`, `brand_color`, `custom_domain`. These are used on the invite accept page and in report emails.
+
+---
+
+## 22. LOCKED DECISIONS (never revisit)
 
 - No onboarding flow — JVZoo buyers are self-selected marketers
 - No 'Projects' in sidebar — Home shows all projects
@@ -562,7 +605,7 @@ All actions tested on `test.html` and SMI WordPress page.
 
 ---
 
-## 22. BIG PICTURE — CHOV ARCHITECTURE
+## 23. BIG PICTURE — CHOV ARCHITECTURE
 
 ### Three phases:
 1. **Phase 1** — Launch individual products on JVZoo (LTDs) — *we are here*
@@ -588,7 +631,7 @@ Every JVZoo product is simultaneously a brick in chov.ai. When enough products e
 
 ---
 
-## 23. SOPs IN PROJECT FILES
+## 24. SOPs IN PROJECT FILES
 > These files will be moved to the SOP folder Chike created.
 
 | File | Purpose |

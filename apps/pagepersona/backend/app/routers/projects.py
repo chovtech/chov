@@ -53,7 +53,13 @@ async def list_projects(
 ):
     if workspace_id:
         workspace = await db.fetchrow(
-            "SELECT id FROM workspaces WHERE id = $1 AND owner_id = $2",
+            """SELECT id FROM workspaces w WHERE w.id = $1 AND (
+                   w.owner_id = $2
+                   OR EXISTS (
+                       SELECT 1 FROM workspace_members wm
+                       WHERE wm.workspace_id = w.id AND wm.user_id = $2 AND wm.status = 'active'
+                   )
+               )""",
             workspace_id, current_user['id']
         )
     else:
@@ -68,20 +74,29 @@ async def list_projects(
     return projects
 
 
+async def _get_accessible_project(db: asyncpg.Connection, project_id: str, user_id) -> dict | None:
+    """Fetch a project the user can access — either as workspace owner or as a workspace member."""
+    return await db.fetchrow(
+        """SELECT p.* FROM projects p
+           JOIN workspaces w ON p.workspace_id = w.id
+           WHERE p.id = $1 AND (
+               w.owner_id = $2
+               OR EXISTS (
+                   SELECT 1 FROM workspace_members wm
+                   WHERE wm.workspace_id = w.id AND wm.user_id = $2 AND wm.status = 'active'
+               )
+           )""",
+        project_id, user_id
+    )
+
+
 @router.get("/{project_id}", response_model=ProjectResponse)
 async def get_one(
     project_id: str,
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    workspace = await db.fetchrow(
-        "SELECT id FROM workspaces WHERE owner_id = $1",
-        current_user['id']
-    )
-    if not workspace:
-        raise HTTPException(status_code=404, detail="Workspace not found")
-
-    project = await get_project(db, project_id, str(workspace['id']))
+    project = await _get_accessible_project(db, project_id, current_user['id'])
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     return project
@@ -94,20 +109,15 @@ async def update(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    workspace = await db.fetchrow(
-        "SELECT id FROM workspaces WHERE owner_id = $1",
-        current_user['id']
-    )
-    if not workspace:
-        raise HTTPException(status_code=404, detail="Workspace not found")
+    existing = await _get_accessible_project(db, project_id, current_user['id'])
+    if not existing:
+        raise HTTPException(status_code=404, detail="Project not found")
 
-    if body.thumbnail_url:
-        existing = await get_project(db, project_id, str(workspace['id']))
-        if existing and existing['thumbnail_url']:
-            delete_r2_image(existing['thumbnail_url'])
+    if body.thumbnail_url and existing['thumbnail_url']:
+        delete_r2_image(existing['thumbnail_url'])
 
     project = await update_project(
-        db, project_id, str(workspace['id']),
+        db, project_id, str(existing['workspace_id']),
         name=body.name,
         status=body.status,
         script_verified=body.script_verified,
@@ -125,14 +135,11 @@ async def delete(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    workspace = await db.fetchrow(
-        "SELECT id FROM workspaces WHERE owner_id = $1",
-        current_user['id']
-    )
-    if not workspace:
-        raise HTTPException(status_code=404, detail="Workspace not found")
+    existing = await _get_accessible_project(db, project_id, current_user['id'])
+    if not existing:
+        raise HTTPException(status_code=404, detail="Project not found")
 
-    deleted = await delete_project(db, project_id, str(workspace['id']))
+    deleted = await delete_project(db, project_id, str(existing['workspace_id']))
     if not deleted:
         raise HTTPException(status_code=404, detail="Project not found")
     return {"message": "Project deleted"}
@@ -148,13 +155,7 @@ async def send_install_email_endpoint(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    workspace = await db.fetchrow(
-        "SELECT id FROM workspaces WHERE owner_id = $1",
-        current_user['id']
-    )
-    if not workspace:
-        raise HTTPException(status_code=404, detail="Workspace not found")
-    project = await get_project(db, project_id, str(workspace['id']))
+    project = await _get_accessible_project(db, project_id, current_user['id'])
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     script_tag = f'<script async src="https://cdn.usepagepersona.com/pp.js?id={project["script_id"]}"></script>'
