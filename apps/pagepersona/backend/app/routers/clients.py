@@ -151,10 +151,10 @@ async def invite_client(
 
     token = str(uuid.uuid4())
     if existing and existing['status'] == 'pending':
-        # Resend: refresh token on the existing invite row
+        # Resend: refresh token and ensure client_workspace_id is current
         invite = await db.fetchrow(
-            "UPDATE client_invites SET token = $1, created_at = NOW() WHERE id = $2 RETURNING *",
-            token, existing['id']
+            "UPDATE client_invites SET token = $1, created_at = NOW(), client_workspace_id = $3 WHERE id = $2 RETURNING *",
+            token, existing['id'], client_ws['id']
         )
     else:
         invite = await db.fetchrow(
