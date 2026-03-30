@@ -222,7 +222,7 @@ async def accept_invite(
     else:
         hashed = hash_password(body.password)
         user = await db.fetchrow(
-            """INSERT INTO users (email, name, hashed_password, email_verified, language)
+            """INSERT INTO users (email, name, password_hash, email_verified, language)
                VALUES ($1, $2, $3, true, 'en')
                RETURNING *""",
             email, body.name, hashed
