@@ -169,8 +169,8 @@ cd ~/chov/apps/pagepersona/frontend && npm run dev
 DATABASE_URL=postgresql://chov:chov_dev_password@localhost:5432/chov
 SECRET_KEY=your_secret_key_here
 FRONTEND_URL=http://localhost:3000
-AWS_ACCESS_KEY_ID=<>
-AWS_SECRET_ACCESS_KEY=<>
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
 AWS_REGION=us-east-1
 SES_SENDER_EMAIL=noreply@usepagepersona.com
 R2_ACCOUNT_ID=38adfb8674a24ddd849978308933db09
