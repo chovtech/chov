@@ -1,5 +1,5 @@
 import boto3
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError, ClientError
 from app.core.config import settings
 from app.templates.emails.emails import (
     render_verification, render_welcome,
@@ -36,7 +36,13 @@ def send_email(to_email: str, subject: str, html_body: str, text_body: str = "")
         logger.info(f"Email sent to {to_email} — MessageId: {response['MessageId']}")
         return True
     except ClientError as e:
-        logger.error(f"SES error sending to {to_email}: {e.response['Error']['Message']}")
+        logger.error(f"SES ClientError sending to {to_email}: {e.response['Error']['Message']}")
+        return False
+    except BotoCoreError as e:
+        logger.error(f"SES BotoCoreError sending to {to_email}: {e}")
+        return False
+    except Exception as e:
+        logger.error(f"Unexpected error sending email to {to_email}: {e}")
         return False
 
 def _get_firstname(name: str, email: str) -> str:
