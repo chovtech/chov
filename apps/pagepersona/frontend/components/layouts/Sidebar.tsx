@@ -108,6 +108,21 @@ export default function Sidebar() {
         </div>
       </div>
 
+      {/* Workspace badge for client users — non-interactive */}
+      {isClientUser && activeWorkspace && (
+        <div className="px-3 pb-3">
+          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-[#14B8A6]/8 border border-[#14B8A6]/20">
+            <div className="size-7 rounded-lg bg-[#14B8A6]/15 flex items-center justify-center flex-shrink-0">
+              <Icon name="hub" className="text-[#14B8A6] text-[16px]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('nav.workspace')}</p>
+              <p className="text-xs font-semibold text-slate-700 truncate">{activeWorkspace.name}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Workspace Switcher — hidden for client users */}
       {!isClientUser && <div className="relative px-3 pb-3">
         <button
