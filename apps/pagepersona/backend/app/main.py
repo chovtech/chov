@@ -30,7 +30,12 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # SDK endpoints called from external sales pages
+    allow_origins=[
+        "https://app.usepagepersona.com",
+        "http://localhost:3000",
+        "http://localhost:3001",
+    ],
+    allow_origin_regex=r"https?://.*",  # SDK called from any external sales page
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
