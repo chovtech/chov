@@ -12,7 +12,7 @@ const fullNavigation = [
   { key: 'dashboard', href: '/dashboard', icon: 'home', exact: true },
   { key: 'elements', href: '/dashboard/elements', icon: 'widgets', exact: false },
   { key: 'analytics', href: '/dashboard/analytics', icon: 'bar_chart', exact: false },
-  { key: 'agency', href: '/dashboard/agency', icon: 'groups', exact: false },
+  { key: 'clients', href: '/dashboard/agency', icon: 'groups', exact: false },
   { key: 'settings', href: '/dashboard/settings', icon: 'settings', exact: false },
 ]
 
@@ -67,11 +67,14 @@ export default function Sidebar() {
 
   const isClientUser = activeWorkspace?.member_role === 'client'
   const isViewOnly = isClientUser && activeWorkspace?.client_access_level === 'view_only'
+  const isInClientWorkspace = !isClientUser && activeWorkspace?.parent_workspace_id !== null
   const navigation = isViewOnly
     ? clientViewNavigation
     : isClientUser
       ? clientFullNavigation
-      : fullNavigation
+      : isInClientWorkspace
+        ? fullNavigation.filter(item => item.key !== 'clients')
+        : fullNavigation
 
   async function handleAddWorkspace(e: React.FormEvent) {
     e.preventDefault()
@@ -106,7 +109,7 @@ export default function Sidebar() {
       </div>
 
       {/* Workspace Switcher — hidden for client users */}
-      {!isClientUser && <div className="px-3 pb-3">
+      {!isClientUser && <div className="relative px-3 pb-3">
         <button
           onClick={() => setWorkspaceOpen(!workspaceOpen)}
           className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group"
@@ -122,9 +125,11 @@ export default function Sidebar() {
         </button>
 
         {workspaceOpen && (
-          <div className="mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden">
-            <div className="p-2 space-y-0.5">
-              {workspaces.map(ws => {
+          <div className="absolute top-full left-3 right-3 z-50 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-80 overflow-y-auto">
+            <div className="p-2">
+              {/* My Workspace section */}
+              <p className="px-2 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('nav.myWorkspace')}</p>
+              {workspaces.filter(ws => ws.parent_workspace_id === null).map(ws => {
                 const isActivews = activeWorkspace?.id === ws.id
                 return (
                   <button
@@ -137,21 +142,47 @@ export default function Sidebar() {
                     </div>
                     <div className="flex-1 min-w-0 text-left">
                       <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{ws.name}</p>
-                      <p className="text-[10px] text-slate-400 capitalize">{ws.type}</p>
+                      <p className="text-[10px] text-slate-400">{t('nav.myWorkspace')}</p>
                     </div>
                     {isActivews && <Icon name="check" className="text-[#1A56DB] text-[16px] flex-shrink-0" />}
                   </button>
                 )
               })}
-            </div>
-            <div className="border-t border-slate-100 dark:border-slate-700 p-2">
-              <button
-                onClick={() => { setWorkspaceOpen(false); setAddWsOpen(true) }}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-              >
-                <Icon name="add" className="text-[16px]" />
-                {t('nav.addWorkspace')}
-              </button>
+
+              {/* Client Workspaces section — only if any exist */}
+              {workspaces.filter(ws => ws.parent_workspace_id !== null).length > 0 && <>
+                <div className="my-1.5 border-t border-slate-100 dark:border-slate-700" />
+                <p className="px-2 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('nav.clientWorkspaces')}</p>
+                {workspaces.filter(ws => ws.parent_workspace_id !== null).map(ws => {
+                  const isActivews = activeWorkspace?.id === ws.id
+                  return (
+                    <button
+                      key={ws.id}
+                      onClick={() => { setActiveWorkspaceId(ws.id); setWorkspaceOpen(false) }}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors ${isActivews ? 'bg-[#14B8A6]/5 border border-[#14B8A6]/10' : 'hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+                    >
+                      <div className="size-6 rounded-md bg-[#14B8A6] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                        {ws.name.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0 text-left">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{ws.name}</p>
+                        <p className="text-[10px] text-slate-400 truncate">{ws.client_name || ws.client_email || t('nav.clientWorkspaces')}</p>
+                      </div>
+                      {isActivews && <Icon name="check" className="text-[#14B8A6] text-[16px] flex-shrink-0" />}
+                    </button>
+                  )
+                })}
+              </>}
+
+              <div className="mt-1.5 border-t border-slate-100 dark:border-slate-700 pt-1.5">
+                <button
+                  onClick={() => { setWorkspaceOpen(false); setAddWsOpen(true) }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <Icon name="add" className="text-[16px]" />
+                  {t('nav.addWorkspace')}
+                </button>
+              </div>
             </div>
           </div>
         )}

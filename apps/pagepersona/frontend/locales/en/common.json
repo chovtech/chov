@@ -15,6 +15,9 @@
     "personalWorkspace": "Personal",
     "elements": "Elements",
     "agency": "Agency",
+    "clients": "Clients",
+    "myWorkspace": "My Workspace",
+    "clientWorkspaces": "Client Workspaces",
     "billing": "Billing",
     "newWorkspaceName": "Enter workspace name"
   },
