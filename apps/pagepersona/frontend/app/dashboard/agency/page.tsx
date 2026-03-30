@@ -76,6 +76,7 @@ export default function AgencyPage() {
   // Per-card dropdown
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const [invitingId, setInvitingId] = useState<string | null>(null)
 
   async function fetchClients() {
     if (!activeWorkspace) return
@@ -128,6 +129,16 @@ export default function AgencyPage() {
       await workspaceApi.delete(clientId)
       fetchClients()
     } catch { /* ignore */ }
+  }
+
+  async function handleSendInvite(client: ClientWorkspace) {
+    if (!activeWorkspace || !client.client_email) return
+    setInvitingId(client.id)
+    try {
+      await clientsApi.invite({ client_email: client.client_email, workspace_id: activeWorkspace.id })
+      fetchClients()
+    } catch { /* ignore */ }
+    finally { setInvitingId(null) }
   }
 
   async function handleSendReport(e: React.FormEvent) {
@@ -245,15 +256,15 @@ export default function AgencyPage() {
                                 Edit Client Details
                               </button>
                               {client.invite_status === 'none' && (
-                                <button onClick={() => { setManageClient(client); setOpenDropdown(null) }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors text-left">
+                                <button onClick={() => { handleSendInvite(client); setOpenDropdown(null) }} disabled={invitingId === client.id} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors text-left disabled:opacity-50">
                                   <Icon name="send" className="text-[18px] text-slate-400" />
-                                  Invite Client
+                                  {invitingId === client.id ? 'Sending...' : 'Invite Client'}
                                 </button>
                               )}
                               {client.invite_status === 'pending' && (
-                                <button onClick={() => { setManageClient(client); setOpenDropdown(null) }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors text-left">
+                                <button onClick={() => { handleSendInvite(client); setOpenDropdown(null) }} disabled={invitingId === client.id} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors text-left disabled:opacity-50">
                                   <Icon name="refresh" className="text-[18px] text-slate-400" />
-                                  Resend Invite
+                                  {invitingId === client.id ? 'Sending...' : 'Resend Invite'}
                                 </button>
                               )}
                               <button onClick={() => { setReportClient(client); setOpenDropdown(null) }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors text-left">

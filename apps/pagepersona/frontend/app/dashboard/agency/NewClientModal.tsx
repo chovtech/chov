@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Icon from '@/components/ui/Icon'
-import { workspaceApi } from '@/lib/api/client'
+import { workspaceApi, clientsApi } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
 interface Props {
@@ -20,6 +20,7 @@ export default function NewClientModal({ onClose, onCreated }: Props) {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [inviteMsg, setInviteMsg] = useState('')
 
   const inputClass = 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] outline-none text-slate-900 text-sm transition-all'
 
@@ -38,6 +39,20 @@ export default function NewClientModal({ onClose, onCreated }: Props) {
         client_email: form.client_email.trim() || undefined,
         client_access_level: form.client_access_level,
       })
+      // Auto-send invite if email was provided
+      if (form.client_email.trim()) {
+        try {
+          const invRes = await clientsApi.invite({
+            client_email: form.client_email.trim(),
+            workspace_id: activeWorkspace.id,
+          })
+          if (invRes.data.email_sent === false) {
+            setInviteMsg('Workspace created but invite email failed to deliver — check backend logs.')
+          }
+        } catch {
+          // Invite failure is non-fatal — workspace was created
+        }
+      }
       onCreated()
     } catch (err: any) {
       setError(err?.response?.data?.detail || 'Failed to create workspace. Please try again.')
@@ -129,6 +144,9 @@ export default function NewClientModal({ onClose, onCreated }: Props) {
             </div>
           </div>
 
+          {inviteMsg && (
+            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">{inviteMsg}</p>
+          )}
           {error && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
           )}
