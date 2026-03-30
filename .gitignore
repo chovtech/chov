@@ -26,6 +26,9 @@ Thumbs.db
 apps/pagepersona/backend/.env
 apps/pagepersona/backend/venv/
 
+# Local credentials (never commit)
+CLAUDE.local.md
+
 # Keep static SDK files
 !apps/pagepersona/backend/static/
 !apps/pagepersona/backend/static/**
