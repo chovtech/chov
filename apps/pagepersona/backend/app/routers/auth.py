@@ -121,6 +121,16 @@ async def login(
 
     workspace = await get_workspace_by_owner(db, str(user['id']))
     if not workspace:
+        # Client users don't own a workspace — look up via workspace_members
+        row = await db.fetchrow(
+            """SELECT w.* FROM workspaces w
+               JOIN workspace_members wm ON wm.workspace_id = w.id
+               WHERE wm.user_id = $1 AND wm.status = 'active'
+               ORDER BY wm.joined_at ASC LIMIT 1""",
+            user['id']
+        )
+        workspace = dict(row) if row else None
+    if not workspace:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Aucun espace de travail trouvé" if lang == "fr" else "No workspace found for this account"
