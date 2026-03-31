@@ -76,7 +76,7 @@ async def list_projects(
 
 async def _get_accessible_project(db: asyncpg.Connection, project_id: str, user_id) -> dict | None:
     """Fetch a project the user can access — either as workspace owner or as a workspace member."""
-    return await db.fetchrow(
+    row = await db.fetchrow(
         """SELECT p.* FROM projects p
            JOIN workspaces w ON p.workspace_id = w.id
            WHERE p.id = $1 AND (
@@ -88,6 +88,7 @@ async def _get_accessible_project(db: asyncpg.Connection, project_id: str, user_
            )""",
         project_id, user_id
     )
+    return dict(row) if row else None
 
 
 @router.get("/{project_id}", response_model=ProjectResponse)
