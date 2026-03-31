@@ -11,6 +11,7 @@ interface InviteInfo {
   white_label_brand_name: string | null
   white_label_logo: string | null
   white_label_primary_color: string
+  user_exists: boolean
 }
 
 function AcceptForm() {
@@ -19,7 +20,7 @@ function AcceptForm() {
   const token = searchParams.get('token') || ''
 
   const [info, setInfo] = useState<InviteInfo | null>(null)
-  const [state, setState] = useState<'loading' | 'form' | 'invalid' | 'accepted'>('loading')
+  const [state, setState] = useState<'loading' | 'form' | 'existing_user_form' | 'invalid' | 'accepted'>('loading')
   const [invalidMsg, setInvalidMsg] = useState('')
   const [form, setForm] = useState({ name: '', password: '', confirm: '' })
   const [submitting, setSubmitting] = useState(false)
@@ -28,7 +29,10 @@ function AcceptForm() {
   useEffect(() => {
     if (!token) { setState('invalid'); setInvalidMsg('No invite token found.'); return }
     clientsApi.inviteInfo(token)
-      .then(res => { setInfo(res.data); setState('form') })
+      .then(res => {
+        setInfo(res.data)
+        setState(res.data.user_exists ? 'existing_user_form' : 'form')
+      })
       .catch(err => {
         const status = err?.response?.status
         if (status === 409) { setState('accepted') }
@@ -45,6 +49,23 @@ function AcceptForm() {
     setSubmitting(true)
     try {
       const res = await clientsApi.accept({ token, name: form.name, password: form.password })
+      const { access_token, refresh_token } = res.data
+      localStorage.setItem('access_token', access_token)
+      localStorage.setItem('refresh_token', refresh_token)
+      document.cookie = `access_token=${access_token}; path=/; max-age=${60 * 60 * 24 * 30}`
+      router.push('/dashboard')
+    } catch (err: any) {
+      setError(err?.response?.data?.detail || 'Something went wrong. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleExistingUserAccept() {
+    setSubmitting(true)
+    setError('')
+    try {
+      const res = await clientsApi.accept({ token })
       const { access_token, refresh_token } = res.data
       localStorage.setItem('access_token', access_token)
       localStorage.setItem('refresh_token', refresh_token)
@@ -102,6 +123,59 @@ function AcceptForm() {
           <h1 className="text-xl font-bold text-slate-900 mb-2">Invalid invitation</h1>
           <p className="text-slate-500 text-sm mb-6">{invalidMsg}</p>
           <a href="/login" className="text-[#1A56DB] font-semibold text-sm hover:underline">Sign in instead</a>
+        </div>
+      </div>
+    )
+  }
+
+  if (state === 'existing_user_form') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-8">
+            {logo ? (
+              <img src={logo} alt={brandName} className="h-10 mx-auto mb-4 object-contain" />
+            ) : (
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ background: primaryColor }}>
+                <span className="material-symbols-outlined text-white text-2xl">layers</span>
+              </div>
+            )}
+            <h1 className="text-2xl font-bold text-slate-900">You've been invited!</h1>
+            <p className="text-slate-500 text-sm mt-1">
+              Access <strong>{info?.workspace_name}</strong> via your existing account
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+            <p className="text-sm text-slate-600 mb-6">
+              <strong>{brandName}</strong> has granted you access to their workspace. Since you already have a PagePersona account, just click below to accept — no new password needed.
+            </p>
+            <p className="text-xs text-slate-400 mb-6">Accepting as <span className="font-semibold text-slate-600">{info?.client_email}</span></p>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">{error}</div>
+            )}
+
+            <button
+              onClick={handleExistingUserAccept}
+              disabled={submitting}
+              className="w-full py-3 text-white rounded-xl font-bold text-sm disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
+              style={{ background: primaryColor }}
+            >
+              {submitting ? (
+                <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Accepting...</>
+              ) : 'Accept Invitation'}
+            </button>
+
+            <p className="text-center text-xs text-slate-400 mt-6">
+              Not you?{' '}
+              <a href="/login" className="font-semibold" style={{ color: primaryColor }}>Sign in with a different account</a>
+            </p>
+          </div>
+
+          {showPoweredBy && (
+            <p className="text-center text-xs text-slate-400 mt-6">Powered by PagePersona</p>
+          )}
         </div>
       </div>
     )

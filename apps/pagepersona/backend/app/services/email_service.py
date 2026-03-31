@@ -126,6 +126,33 @@ def send_client_invite_email(
     return send_email(to_email, subject, html)
 
 
+def send_client_invite_existing_user_email(
+    to_email: str,
+    brand_name: str,
+    logo_url: Optional[str],
+    brand_color: str,
+    accept_url: str,
+) -> bool:
+    """Invite email for users who already have a PagePersona account — no password setup needed."""
+    show_powered_by = brand_name == 'PagePersona'
+    logo_html = f'<img src="{logo_url}" alt="{brand_name}" style="max-height:50px;margin-bottom:16px"/><br/>' if logo_url else ''
+    footer_html = '<p style="color:#94a3b8;font-size:12px">Powered by PagePersona</p>' if show_powered_by else ''
+    subject = f"You've been invited to {brand_name} dashboard"
+    html = f"""
+    <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+      {logo_html}
+      <h2 style="color:{brand_color}">You're invited!</h2>
+      <p>Hi,</p>
+      <p><strong>{brand_name}</strong> has given you access to your personalisation dashboard.</p>
+      <p>Since you already have a PagePersona account, just click the button below to accept — no sign-up needed:</p>
+      <p><a href="{accept_url}" style="background:{brand_color};color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>
+      <p style="color:#94a3b8;font-size:12px">This link expires in 7 days. You'll be taken straight to the dashboard after accepting.</p>
+      {footer_html}
+    </body></html>
+    """
+    return send_email(to_email, subject, html)
+
+
 def send_install_email(to_email: str, script_tag: str, project_name: str, lang: str = "en") -> bool:
     subjects = {
         "en": f"PagePersona installation instructions for {project_name}",

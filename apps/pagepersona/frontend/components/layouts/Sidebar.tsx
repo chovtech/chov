@@ -108,8 +108,8 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Workspace badge for client users — non-interactive */}
-      {isClientUser && activeWorkspace && (
+      {/* Workspace badge for client users with only one workspace — non-interactive */}
+      {isClientUser && workspaces.length === 1 && activeWorkspace && (
         <div className="px-3 pb-3">
           <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-[#14B8A6]/8 border border-[#14B8A6]/20">
             <div className="size-7 rounded-lg bg-[#14B8A6]/15 flex items-center justify-center flex-shrink-0">
@@ -123,8 +123,8 @@ export default function Sidebar() {
         </div>
       )}
 
-      {/* Workspace Switcher — hidden for client users */}
-      {!isClientUser && <div className="relative px-3 pb-3">
+      {/* Workspace Switcher — always shown when user has 2+ workspaces */}
+      {(!isClientUser || workspaces.length > 1) && <div className="relative px-3 pb-3">
         <button
           onClick={() => setWorkspaceOpen(!workspaceOpen)}
           className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group"

@@ -19,8 +19,8 @@ class InviteClientRequest(BaseModel):
 
 class AcceptInviteRequest(BaseModel):
     token: str
-    name: str
-    password: str
+    name: Optional[str] = None
+    password: Optional[str] = None
 
 
 class SendReportRequest(BaseModel):
@@ -60,6 +60,8 @@ async def get_invite_info(
     if invite['status'] not in ('pending',):
         raise HTTPException(status_code=410, detail="This invitation link is invalid or has expired")
 
+    existing_user = await db.fetchrow("SELECT id FROM users WHERE email = $1", invite['email'])
+
     return {
         "workspace_name": invite['workspace_name'],
         "inviter_name": invite['inviter_name'],
@@ -67,6 +69,7 @@ async def get_invite_info(
         "white_label_brand_name": invite['brand_name'],
         "white_label_logo": invite['logo_url'],
         "white_label_primary_color": invite['brand_color'] or '#1A56DB',
+        "user_exists": existing_user is not None,
     }
 
 
@@ -109,13 +112,19 @@ async def invite_client(
     if not agency_ws:
         raise HTTPException(status_code=404, detail="Workspace not found")
 
-    # Block if already active (accepted). If pending, resend with a fresh token.
+    # Block if already active (accepted) — only count invites whose client workspace still exists.
+    # Orphaned invite rows from deleted workspaces are ignored so re-invite always works cleanly.
     existing = await db.fetchrow(
-        "SELECT id, status FROM client_invites WHERE workspace_id = $1 AND email = $2 AND status IN ('pending', 'active')",
+        """SELECT ci.id, ci.status FROM client_invites ci
+           JOIN workspaces w ON ci.client_workspace_id = w.id
+           WHERE ci.workspace_id = $1 AND ci.email = $2 AND ci.status IN ('pending', 'active')""",
         body.workspace_id, body.client_email
     )
     if existing and existing['status'] == 'active':
         raise HTTPException(status_code=400, detail="This client has already accepted the invite.")
+
+    # Check whether the invited email already has a PagePersona account
+    invited_user_exists = await db.fetchrow("SELECT id FROM users WHERE email = $1", body.client_email)
 
     # Find or create the client workspace
     client_ws = None
@@ -169,18 +178,27 @@ async def invite_client(
     brand_color = agency_ws.get('brand_color') or '#1A56DB'
     accept_url = f"https://app.usepagepersona.com/accept?token={token}"
 
-    from app.services.email_service import send_client_invite_email
+    from app.services.email_service import send_client_invite_email, send_client_invite_existing_user_email
     import logging
     _log = logging.getLogger(__name__)
     email_sent = False
     try:
-        email_sent = send_client_invite_email(
-            to_email=body.client_email,
-            brand_name=brand_name,
-            logo_url=logo_url,
-            brand_color=brand_color,
-            accept_url=accept_url,
-        )
+        if invited_user_exists:
+            email_sent = send_client_invite_existing_user_email(
+                to_email=body.client_email,
+                brand_name=brand_name,
+                logo_url=logo_url,
+                brand_color=brand_color,
+                accept_url=accept_url,
+            )
+        else:
+            email_sent = send_client_invite_email(
+                to_email=body.client_email,
+                brand_name=brand_name,
+                logo_url=logo_url,
+                brand_color=brand_color,
+                accept_url=accept_url,
+            )
         if not email_sent:
             _log.error(f"send_client_invite_email returned False for {body.client_email}")
     except Exception as exc:
@@ -220,6 +238,8 @@ async def accept_invite(
     if existing_user:
         user = existing_user
     else:
+        if not body.name or not body.password:
+            raise HTTPException(status_code=400, detail="Name and password are required to create your account.")
         hashed = hash_password(body.password)
         user = await db.fetchrow(
             """INSERT INTO users (email, name, password_hash, email_verified, language)
@@ -234,10 +254,17 @@ async def accept_invite(
     )
 
     existing_member = await db.fetchrow(
-        "SELECT id FROM workspace_members WHERE workspace_id = $1 AND user_id = $2",
+        "SELECT id, role FROM workspace_members WHERE workspace_id = $1 AND user_id = $2",
         invite['client_workspace_id'], user['id']
     )
-    if not existing_member:
+    if existing_member:
+        # Re-activate if previously revoked
+        if existing_member['role'] == 'revoked':
+            await db.execute(
+                "UPDATE workspace_members SET role = 'client', status = 'active', joined_at = $1 WHERE id = $2",
+                now, existing_member['id']
+            )
+    else:
         await db.execute(
             """INSERT INTO workspace_members (workspace_id, user_id, email, role, status, joined_at)
                VALUES ($1, $2, $3, 'client', 'active', $4)""",

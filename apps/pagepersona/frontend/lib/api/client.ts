@@ -149,7 +149,7 @@ export const clientsApi = {
     apiClient.post('/api/clients/invite', data),
   inviteInfo: (token: string) =>
     apiClient.get(`/api/clients/invite-info?token=${encodeURIComponent(token)}`),
-  accept: (data: { token: string; name: string; password: string }) =>
+  accept: (data: { token: string; name?: string; password?: string }) =>
     apiClient.post('/api/clients/accept', data),
   revoke: (workspaceId: string) =>
     apiClient.delete(`/api/clients/${workspaceId}/revoke`),

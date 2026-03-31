@@ -210,6 +210,9 @@ async def delete_workspace(
     )
     if not row:
         raise HTTPException(status_code=404, detail="Workspace not found")
+    # Explicitly clean up client_invites referencing this workspace as a client workspace
+    # before deletion so re-inviting the same email always starts fresh.
+    await db.execute("DELETE FROM client_invites WHERE client_workspace_id = $1", workspace_id)
     await db.execute("DELETE FROM workspaces WHERE id = $1", workspace_id)
     return {"ok": True}
 
