@@ -171,10 +171,32 @@ async def update_workspace(
         "SELECT * FROM workspaces WHERE id = $1 AND owner_id = $2",
         workspace_id, current_user['id']
     )
+
+    # Full-access clients can rename their own workspace (but nothing else)
+    is_client = False
+    if not row:
+        member = await db.fetchrow(
+            """SELECT wm.role FROM workspace_members wm
+               JOIN workspaces w ON wm.workspace_id = w.id
+               WHERE wm.workspace_id = $1 AND wm.user_id = $2
+               AND wm.status = 'active' AND wm.role = 'client'
+               AND w.client_access_level = 'full'""",
+            workspace_id, current_user['id']
+        )
+        if member:
+            row = await db.fetchrow("SELECT * FROM workspaces WHERE id = $1", workspace_id)
+            is_client = True
+
     if not row:
         raise HTTPException(status_code=404, detail="Workspace not found")
 
     updates = body.dict(exclude_none=True)
+    if not updates:
+        return _fmt(row)
+
+    # Clients can only update name — strip everything else
+    if is_client:
+        updates = {k: v for k, v in updates.items() if k == 'name'}
     if not updates:
         return _fmt(row)
 
@@ -192,8 +214,7 @@ async def update_workspace(
         return _fmt(row)
 
     values.append(workspace_id)
-    values.append(current_user['id'])
-    q = f"UPDATE workspaces SET {', '.join(set_parts)} WHERE id = ${i} AND owner_id = ${i+1} RETURNING *"
+    q = f"UPDATE workspaces SET {', '.join(set_parts)} WHERE id = ${i} RETURNING *"
     updated = await db.fetchrow(q, *values)
     return _fmt(updated)
 
