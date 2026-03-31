@@ -191,12 +191,13 @@ export default function SettingsPage() {
 
   const isClientUser = activeWorkspace?.member_role === 'client'
   const isViewOnly = isClientUser && activeWorkspace?.client_access_level === 'view_only'
+  const isClientWorkspace = !!activeWorkspace?.parent_workspace_id
 
   const tabs = [
     { key: 'general', label: t('settings.tabs.general'), icon: 'person' },
     { key: 'team', label: t('settings.tabs.team'), icon: 'group' },
     { key: 'billing', label: t('settings.tabs.billing'), icon: 'credit_card' },
-    ...(!isClientUser ? [{ key: 'whitelabel', label: t('settings.tabs.whitelabel'), icon: 'palette' }] : []),
+    ...(!isClientWorkspace ? [{ key: 'whitelabel', label: t('settings.tabs.whitelabel'), icon: 'palette' }] : []),
   ]
 
   useEffect(() => {
