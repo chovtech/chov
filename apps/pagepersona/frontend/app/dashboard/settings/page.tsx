@@ -189,11 +189,13 @@ export default function SettingsPage() {
   const [domainVerifying, setDomainVerifying] = useState(false)
   const [domainMsg, setDomainMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  const isClientUser = activeWorkspace?.member_role === 'client'
+
   const tabs = [
     { key: 'general', label: t('settings.tabs.general'), icon: 'person' },
     { key: 'team', label: t('settings.tabs.team'), icon: 'group' },
     { key: 'billing', label: t('settings.tabs.billing'), icon: 'credit_card' },
-    { key: 'whitelabel', label: t('settings.tabs.whitelabel'), icon: 'palette' },
+    ...(!isClientUser ? [{ key: 'whitelabel', label: t('settings.tabs.whitelabel'), icon: 'palette' }] : []),
   ]
 
   useEffect(() => {
@@ -461,8 +463,8 @@ export default function SettingsPage() {
                 </form>
               </div>
 
-              {/* Workspace name */}
-              {activeWorkspace && (
+              {/* Workspace name — hidden for client users (they don't own the workspace) */}
+              {activeWorkspace && !isClientUser && (
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
                   <h2 className="text-base font-bold text-slate-900 dark:text-white mb-1">{t('settings.workspace.title')}</h2>
                   <p className="text-sm text-slate-500 mb-5">{t('settings.workspace.desc')}</p>
