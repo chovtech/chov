@@ -427,7 +427,7 @@ export default function SettingsPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.profile.emailAddress')}</label>
-                    <input type="email" value={profileForm.email} onChange={e => setProfileForm(p => ({ ...p, email: e.target.value }))} className={inputClass} />
+                    <input type="email" value={profileForm.email} onChange={e => setProfileForm(p => ({ ...p, email: e.target.value }))} className={inputClass} disabled={isClientUser} />
                   </div>
                   <div className="flex justify-end pt-2">
                     <button type="submit" disabled={profileLoading} className="px-6 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
