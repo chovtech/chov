@@ -190,6 +190,7 @@ export default function SettingsPage() {
   const [domainMsg, setDomainMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const isClientUser = activeWorkspace?.member_role === 'client'
+  const isViewOnly = isClientUser && activeWorkspace?.client_access_level === 'view_only'
 
   const tabs = [
     { key: 'general', label: t('settings.tabs.general'), icon: 'person' },
@@ -463,8 +464,8 @@ export default function SettingsPage() {
                 </form>
               </div>
 
-              {/* Workspace name — hidden for client users (they don't own the workspace) */}
-              {activeWorkspace && !isClientUser && (
+              {/* Workspace name — hidden for view-only clients; full-access clients can rename */}
+              {activeWorkspace && !isViewOnly && (
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
                   <h2 className="text-base font-bold text-slate-900 dark:text-white mb-1">{t('settings.workspace.title')}</h2>
                   <p className="text-sm text-slate-500 mb-5">{t('settings.workspace.desc')}</p>
