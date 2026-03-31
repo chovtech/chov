@@ -173,6 +173,11 @@ export default function SettingsPage() {
   const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [passwordMsg, setPasswordMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  // Workspace rename state
+  const [wsNameForm, setWsNameForm] = useState('')
+  const [wsNameLoading, setWsNameLoading] = useState(false)
+  const [wsNameMsg, setWsNameMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
   // White label state
   const [wlForm, setWlForm] = useState({ brand_name: '', logo: '', primary_color: '#1A56DB' })
   const [wlLoading, setWlLoading] = useState(false)
@@ -200,6 +205,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (activeWorkspace) {
+      setWsNameForm(activeWorkspace.name)
       setWlForm({
         brand_name: activeWorkspace.white_label_brand_name || '',
         logo: activeWorkspace.white_label_logo || '',
@@ -208,6 +214,22 @@ export default function SettingsPage() {
       setDomainInput(activeWorkspace.custom_domain || '')
     }
   }, [activeWorkspace?.id])
+
+  async function handleWsNameSave(e: React.FormEvent) {
+    e.preventDefault()
+    if (!activeWorkspace || !wsNameForm.trim()) return
+    setWsNameMsg(null)
+    setWsNameLoading(true)
+    try {
+      await workspaceApi.update(activeWorkspace.id, { name: wsNameForm.trim() })
+      await refreshWorkspaces()
+      setWsNameMsg({ type: 'success', text: t('settings.workspace.saved') })
+    } catch {
+      setWsNameMsg({ type: 'error', text: t('settings.workspace.error') })
+    } finally {
+      setWsNameLoading(false)
+    }
+  }
 
   async function handleWlSave(e: React.FormEvent) {
     e.preventDefault()
@@ -438,6 +460,31 @@ export default function SettingsPage() {
                   </div>
                 </form>
               </div>
+
+              {/* Workspace name */}
+              {activeWorkspace && (
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white mb-1">{t('settings.workspace.title')}</h2>
+                  <p className="text-sm text-slate-500 mb-5">{t('settings.workspace.desc')}</p>
+                  {wsNameMsg && <div className={msgClass(wsNameMsg.type)}>{wsNameMsg.text}</div>}
+                  <form onSubmit={handleWsNameSave} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.workspace.label')}</label>
+                      <input
+                        type="text"
+                        value={wsNameForm}
+                        onChange={e => setWsNameForm(e.target.value)}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="flex justify-end pt-2">
+                      <button type="submit" disabled={wsNameLoading || !wsNameForm.trim()} className="px-6 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
+                        {wsNameLoading ? t('settings.workspace.saving') : t('settings.workspace.save')}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
             </div>
           )}
 

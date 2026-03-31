@@ -139,6 +139,15 @@
       "confirm_remove": "Êtes-vous sûr de vouloir retirer ce membre ?",
       "sending": "Envoi de l'invitation..."
     },
+    "workspace": {
+      "title": "Nom de l'espace de travail",
+      "desc": "Modifiez le nom d'affichage de votre espace de travail actif.",
+      "label": "Nom de l'espace de travail",
+      "save": "Enregistrer",
+      "saving": "Enregistrement...",
+      "saved": "Nom de l'espace de travail mis à jour.",
+      "error": "Impossible de mettre à jour le nom de l'espace de travail."
+    },
     "billing": {
       "title": "Facturation et plan",
       "desc": "Gérez votre abonnement et votre utilisation.",

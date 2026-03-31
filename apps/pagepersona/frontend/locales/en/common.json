@@ -142,6 +142,15 @@
       "confirm_remove": "Are you sure you want to remove this team member?",
       "sending": "Sending invite..."
     },
+    "workspace": {
+      "title": "Workspace name",
+      "desc": "Change the display name of your active workspace.",
+      "label": "Workspace name",
+      "save": "Save",
+      "saving": "Saving...",
+      "saved": "Workspace name updated.",
+      "error": "Failed to update workspace name."
+    },
     "billing": {
       "title": "Billing & plan",
       "desc": "Manage your subscription and usage.",

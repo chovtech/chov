@@ -6,6 +6,7 @@ import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { projectApi, apiClient } from '@/lib/api/client'
+import { useWorkspace } from '@/lib/context/WorkspaceContext'
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
@@ -317,6 +318,7 @@ export default function ProjectDashboardPage() {
   const params = useParams()
   const router = useRouter()
   const projectId = params.id as string
+  const { loading: workspaceLoading } = useWorkspace()
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
@@ -333,6 +335,7 @@ export default function ProjectDashboardPage() {
   const [analyticsError, setAnalyticsError] = useState(false)
 
   useEffect(() => {
+    if (!projectId || workspaceLoading) return
     const fetchProject = async () => {
       try {
         const res = await projectApi.get(projectId)
@@ -341,8 +344,8 @@ export default function ProjectDashboardPage() {
         if (e.response?.status === 404) setNotFound(true)
       } finally { setLoading(false) }
     }
-    if (projectId) fetchProject()
-  }, [projectId])
+    fetchProject()
+  }, [projectId, workspaceLoading])
 
   useEffect(() => {
     if (!projectId) return
