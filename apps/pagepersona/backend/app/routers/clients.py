@@ -321,9 +321,11 @@ async def restore_access(
     current_user: dict = Depends(get_current_user)
 ):
     """Restore a previously revoked client's access. Agency owner only."""
-    # Verify requester owns the parent workspace
+    # Verify requester owns the parent workspace; fetch client workspace name too
     ws = await db.fetchrow(
-        """SELECT w.id, w.client_email FROM workspaces w
+        """SELECT w.id, w.name AS workspace_name, w.client_email,
+                  parent.brand_name, parent.logo_url, parent.brand_color
+           FROM workspaces w
            JOIN workspaces parent ON w.parent_workspace_id = parent.id
            WHERE w.id = $1 AND parent.owner_id = $2""",
         workspace_id, current_user['id']
@@ -342,28 +344,19 @@ async def restore_access(
         workspace_id
     )
 
-    # Send restoration email if we have the client's email
+    # Send restoration email
     client_email = ws['client_email']
     if client_email:
-        # Get agency workspace branding
-        agency = await db.fetchrow(
-            """SELECT w.brand_name, w.logo_url, w.brand_color
-               FROM workspaces w
-               JOIN workspaces client_ws ON client_ws.parent_workspace_id = w.id
-               WHERE client_ws.id = $1""",
-            workspace_id
-        )
-        brand_name = (agency and agency['brand_name']) or 'PagePersona'
-        logo_url = agency and agency['logo_url']
-        brand_color = (agency and agency['brand_color']) or '#1A56DB'
         from app.core.config import settings
-        dashboard_url = f"{settings.FRONTEND_URL}/dashboard"
+        logo_url = ws['logo_url']
+        brand_color = ws['brand_color'] or '#1A56DB'
+        # Use agency branding for logo/colour but reference the client's own workspace name
         send_client_access_restored_email(
             to_email=client_email,
-            brand_name=brand_name,
+            workspace_name=ws['workspace_name'],
             logo_url=logo_url,
             brand_color=brand_color,
-            dashboard_url=dashboard_url,
+            dashboard_url=f"{settings.FRONTEND_URL}/dashboard",
         )
 
     return {"ok": True}

@@ -12,7 +12,7 @@ const tabKeys = ['all', 'active', 'drafts', 'archived']
 
 export default function DashboardPage() {
   const { t } = useTranslation('common')
-  const { activeWorkspace } = useWorkspace()
+  const { activeWorkspace, loading: wsLoading } = useWorkspace()
   const isViewOnly = activeWorkspace?.member_role === 'client' && activeWorkspace?.client_access_level === 'view_only'
   const [activeTab, setActiveTab] = useState('all')
   const [modalOpen, setModalOpen] = useState(false)
@@ -26,7 +26,10 @@ export default function DashboardPage() {
     finally { setLoading(false) }
   }
 
-  useEffect(() => { fetchProjects() }, [activeWorkspace?.id])
+  useEffect(() => {
+    if (wsLoading || !activeWorkspace?.id) return
+    fetchProjects()
+  }, [activeWorkspace?.id, wsLoading])
 
   const hasProjects = projects.length > 0
 
