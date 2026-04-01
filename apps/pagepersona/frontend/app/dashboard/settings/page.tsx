@@ -195,8 +195,8 @@ export default function SettingsPage() {
 
   const tabs = [
     { key: 'general', label: t('settings.tabs.general'), icon: 'person' },
-    { key: 'team', label: t('settings.tabs.team'), icon: 'group' },
-    { key: 'billing', label: t('settings.tabs.billing'), icon: 'credit_card' },
+    ...(!isViewOnly ? [{ key: 'team', label: t('settings.tabs.team'), icon: 'group' }] : []),
+    ...(!isViewOnly ? [{ key: 'billing', label: t('settings.tabs.billing'), icon: 'credit_card' }] : []),
     ...(!isClientWorkspace ? [{ key: 'whitelabel', label: t('settings.tabs.whitelabel'), icon: 'palette' }] : []),
   ]
 

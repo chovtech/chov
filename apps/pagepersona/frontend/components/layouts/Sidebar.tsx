@@ -28,6 +28,7 @@ const clientFullNavigation = [
 const clientViewNavigation = [
   { key: 'dashboard', href: '/dashboard', icon: 'home', exact: true },
   { key: 'analytics', href: '/dashboard/analytics', icon: 'bar_chart', exact: false },
+  { key: 'settings', href: '/dashboard/settings', icon: 'settings', exact: false },
 ]
 
 interface User { name?: string; email: string; avatar_url?: string }
