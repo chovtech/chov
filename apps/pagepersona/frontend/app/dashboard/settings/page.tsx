@@ -189,6 +189,10 @@ export default function SettingsPage() {
   const [domainVerifying, setDomainVerifying] = useState(false)
   const [domainMsg, setDomainMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  // Signup link copy state
+  const [linkCopied, setLinkCopied] = useState(false)
+  const [customLinkCopied, setCustomLinkCopied] = useState(false)
+
   const isClientUser = activeWorkspace?.member_role === 'client'
   const isViewOnly = isClientUser && activeWorkspace?.client_access_level === 'view_only'
   const isClientWorkspace = !!activeWorkspace?.parent_workspace_id
@@ -618,17 +622,41 @@ export default function SettingsPage() {
               {/* Custom Domain */}
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
                 <h2 className="text-base font-bold text-slate-900 dark:text-white mb-1">{t('settings.whitelabel.custom_domain')}</h2>
-                <p className="text-sm text-slate-500 mb-5">{t('settings.whitelabel.custom_domain_hint')}</p>
-                {domainMsg && <div className={msgClass(domainMsg.type)}>{domainMsg.text}</div>}
+                <p className="text-sm text-slate-500 mb-5">Use your own domain or subdomain so clients see your brand, not PagePersona.</p>
 
-                {/* DNS instruction box */}
-                <div className="mb-5 p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{t('settings.whitelabel.custom_domain_instructions')}</p>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 mb-1">{t('settings.whitelabel.custom_domain_cname')}</p>
-                  <code className="text-xs font-mono text-[#1A56DB] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-2 py-1 rounded-lg">
-                    app.usepagepersona.com
-                  </code>
+                {/* Step-by-step DNS instructions */}
+                <div className="mb-6 rounded-xl border border-blue-100 bg-blue-50 p-5 space-y-4">
+                  <p className="text-xs font-bold text-[#1A56DB] uppercase tracking-wider">How to set up your custom domain</p>
+                  <ol className="space-y-3 text-sm text-slate-700">
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1A56DB] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">1</span>
+                      <span>Log in to the company that manages your domain (e.g. GoDaddy, Namecheap, Cloudflare). This is where you bought your domain name.</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1A56DB] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">2</span>
+                      <div>
+                        <span>Find the <strong>DNS settings</strong> for your domain and add a new <strong>CNAME record</strong> with these values:</span>
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          <div className="bg-white border border-blue-100 rounded-lg p-2.5">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Name / Host</p>
+                            <code className="text-xs font-mono text-slate-800">clients <span className="text-slate-400">(or whatever subdomain you want)</span></code>
+                          </div>
+                          <div className="bg-white border border-blue-100 rounded-lg p-2.5">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Points to / Value</p>
+                            <code className="text-xs font-mono text-[#1A56DB]">app.usepagepersona.com</code>
+                          </div>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-2">Example: if your domain is <strong>acmeagency.com</strong> and you set the Name to <strong>clients</strong>, your signup link becomes <strong>clients.acmeagency.com</strong>. You can also use your root domain (acmeagency.com) — set the Name to <strong>@</strong> in that case.</p>
+                      </div>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1A56DB] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">3</span>
+                      <span>DNS changes can take a few minutes to a few hours to go live. Once done, enter your full domain below and click <strong>Verify</strong>.</span>
+                    </li>
+                  </ol>
                 </div>
+
+                {domainMsg && <div className={msgClass(domainMsg.type)}>{domainMsg.text}</div>}
 
                 <form onSubmit={handleDomainSave} className="space-y-4">
                   <div>
@@ -638,7 +666,7 @@ export default function SettingsPage() {
                         type="text"
                         value={domainInput}
                         onChange={e => setDomainInput(e.target.value)}
-                        placeholder={t('settings.whitelabel.custom_domain_placeholder')}
+                        placeholder="clients.yourdomain.com"
                         className={inputClass + ' flex-1'}
                       />
                       <button type="submit" disabled={domainSaving} className="px-4 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors text-sm flex-shrink-0">
@@ -676,6 +704,48 @@ export default function SettingsPage() {
                   </div>
                 )}
               </div>
+
+              {/* Client Signup Link */}
+              {activeWorkspace && (
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white mb-1">Client Signup Link</h2>
+                  <p className="text-sm text-slate-500 mb-5">Share this link with clients so they can create their own account directly under your workspace.</p>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-semibold text-slate-400 w-16 shrink-0">Default</span>
+                      <div className="flex-1 flex items-center gap-2 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
+                        <span className="text-xs text-slate-600 truncate flex-1 font-mono">{`https://app.usepagepersona.com/join/${activeWorkspace.slug}`}</span>
+                        <button
+                          onClick={() => { navigator.clipboard.writeText(`https://app.usepagepersona.com/join/${activeWorkspace.slug}`); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000) }}
+                          className="shrink-0 flex items-center gap-1 text-xs font-semibold text-[#1A56DB] hover:underline"
+                        >
+                          <Icon name={linkCopied ? 'check' : 'content_copy'} className="text-sm" />
+                          {linkCopied ? 'Copied!' : 'Copy'}
+                        </button>
+                      </div>
+                    </div>
+                    {activeWorkspace.custom_domain && activeWorkspace.custom_domain_verified ? (
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-semibold text-slate-400 w-16 shrink-0">Custom</span>
+                        <div className="flex-1 flex items-center gap-2 px-3 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl overflow-hidden">
+                          <span className="text-xs text-emerald-700 truncate flex-1 font-mono">{`https://${activeWorkspace.custom_domain}`}</span>
+                          <button
+                            onClick={() => { navigator.clipboard.writeText(`https://${activeWorkspace.custom_domain}`); setCustomLinkCopied(true); setTimeout(() => setCustomLinkCopied(false), 2000) }}
+                            className="shrink-0 flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:underline"
+                          >
+                            <Icon name={customLinkCopied ? 'check' : 'content_copy'} className="text-sm" />
+                            {customLinkCopied ? 'Copied!' : 'Copy'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-400 ml-[76px]">
+                        Once your custom domain is verified above, your branded signup link will appear here.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
