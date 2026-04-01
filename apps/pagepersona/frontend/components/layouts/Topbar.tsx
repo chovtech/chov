@@ -43,7 +43,7 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div className="flex items-center gap-1.5 text-slate-900 dark:text-white flex-shrink-0">
           <Icon name="hub" className="text-[#1A56DB] text-[18px]" />
-          <h2 className="text-sm font-bold truncate max-w-[140px]">{workspaceName}</h2>
+          <h2 className="text-sm font-bold truncate max-w-[140px]">{activeWorkspace?.name || workspaceName}</h2>
           <Icon name="unfold_more" className="text-slate-400 text-sm" />
         </div>
         <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 flex-shrink-0" />
