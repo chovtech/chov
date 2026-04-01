@@ -387,17 +387,15 @@ async def access_status(
 
     # Check for revoked membership
     revoked_row = await db.fetchrow(
-        """SELECT w.client_name, pw.brand_name
+        """SELECT w.name AS workspace_name
            FROM workspace_members wm
            JOIN workspaces w ON wm.workspace_id = w.id
-           JOIN workspaces pw ON w.parent_workspace_id = pw.id
            WHERE wm.user_id = $1 AND wm.role = 'revoked'
            LIMIT 1""",
         current_user['id']
     )
     if revoked_row:
-        agency_name = revoked_row['brand_name'] or 'your agency'
-        return {"revoked": True, "agency_name": agency_name}
+        return {"revoked": True, "workspace_name": revoked_row['workspace_name'] or 'your workspace'}
 
     return {"revoked": False}
 

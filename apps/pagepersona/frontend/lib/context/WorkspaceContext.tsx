@@ -66,7 +66,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           const statusRes = await clientsApi.accessStatus()
           if (statusRes.data.revoked) {
             setIsRevoked(true)
-            setRevokedByAgency(statusRes.data.agency_name || '')
+            setRevokedByAgency(statusRes.data.workspace_name || '')
           }
         } catch { /* ignore */ }
       } else {
