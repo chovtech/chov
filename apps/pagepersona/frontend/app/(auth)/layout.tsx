@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Icon from '@/components/ui/Icon'
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
@@ -12,29 +13,43 @@ interface Branding {
   brand_name: string
   logo_url: string | null
   brand_color: string
+  slug: string
 }
 
 const APP_DOMAIN = 'app.usepagepersona.com'
+
+function BrandingLoader({ onBranding }: { onBranding: (b: Branding | null) => void }) {
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const slug = searchParams.get('slug')
+    const host = window.location.hostname
+    const isCustomDomain = host !== APP_DOMAIN && host !== 'localhost' && !host.startsWith('127.')
+
+    if (slug) {
+      clientsApi.joinInfo({ slug })
+        .then(res => onBranding({ ...res.data, slug }))
+        .catch(() => onBranding(null))
+    } else if (isCustomDomain) {
+      clientsApi.joinInfo({ domain: host })
+        .then(res => onBranding({ ...res.data, slug: res.data.agency_slug }))
+        .catch(() => onBranding(null))
+    }
+  }, [])
+
+  return null
+}
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation('common')
   const [branding, setBranding] = useState<Branding | null>(null)
 
-  useEffect(() => {
-    const host = window.location.hostname
-    if (host !== APP_DOMAIN && host !== 'localhost' && !host.startsWith('127.')) {
-      clientsApi.joinInfo({ domain: host })
-        .then(res => setBranding({
-          brand_name: res.data.brand_name,
-          logo_url: res.data.logo_url,
-          brand_color: res.data.brand_color,
-        }))
-        .catch(() => null)
-    }
-  }, [])
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Suspense fallback={null}>
+        <BrandingLoader onBranding={setBranding} />
+      </Suspense>
+
       <header className="w-full px-6 py-4 flex items-center justify-between">
         {branding ? (
           <div className="flex items-center gap-2">

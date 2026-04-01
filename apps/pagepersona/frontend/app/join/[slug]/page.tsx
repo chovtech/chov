@@ -153,7 +153,7 @@ export default function JoinPage() {
 
           <p className="text-center text-xs text-slate-400 mt-6">
             Already have an account?{' '}
-            <a href="/login" className="font-semibold" style={{ color: primary }}>Log in</a>
+            <a href={`/login?slug=${slug}`} className="font-semibold" style={{ color: primary }}>Log in</a>
           </p>
         </div>
 

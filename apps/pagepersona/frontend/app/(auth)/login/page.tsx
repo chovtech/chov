@@ -6,6 +6,12 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { authApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 
+function SlugReader({ onSlug }: { onSlug: (s: string) => void }) {
+  const searchParams = useSearchParams()
+  useEffect(() => { const s = searchParams.get('slug'); if (s) onSlug(s) }, [])
+  return null
+}
+
 function SearchParamReader({ onError }: { onError: (msg: string) => void }) {
   const searchParams = useSearchParams()
   const { t } = useTranslation('auth')
@@ -25,6 +31,7 @@ export default function LoginPage() {
   const { t } = useTranslation('auth')
 
 
+  const [slug, setSlug] = useState('')
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -85,6 +92,7 @@ export default function LoginPage() {
     <>
       <Suspense fallback={null}>
         <SearchParamReader onError={setError} />
+        <SlugReader onSlug={setSlug} />
       </Suspense>
       <section className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('login.title')}</h1>
@@ -115,7 +123,7 @@ export default function LoginPage() {
               <label className="block text-sm font-semibold text-gray-700" htmlFor="password">
                 {t('login.passwordLabel')}
               </label>
-              <Link href="/forgot-password" className="text-xs text-[#1A56DB] hover:underline font-medium">
+              <Link href={slug ? `/forgot-password?slug=${slug}` : '/forgot-password'} className="text-xs text-[#1A56DB] hover:underline font-medium">
                 {t('login.forgotPassword')}
               </Link>
             </div>

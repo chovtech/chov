@@ -261,13 +261,19 @@ export default function SettingsPage() {
 
   async function handleDomainSave(e: React.FormEvent) {
     e.preventDefault()
-    if (!activeWorkspace) return
+    if (!activeWorkspace || !domainInput.trim()) return
     setDomainMsg(null)
     setDomainSaving(true)
     try {
-      await workspaceApi.update(activeWorkspace.id, { custom_domain: domainInput.trim() || undefined })
+      // Save domain first, then immediately verify
+      await workspaceApi.update(activeWorkspace.id, { custom_domain: domainInput.trim() })
+      const verifyRes = await workspaceApi.verifyDomain(activeWorkspace.id)
       await refreshWorkspaces()
-      setDomainMsg({ type: 'success', text: t('settings.whitelabel.custom_domain_saved') })
+      if (verifyRes.data.verified) {
+        setDomainMsg({ type: 'success', text: 'Domain verified and saved successfully.' })
+      } else {
+        setDomainMsg({ type: 'error', text: `Domain saved but not verified yet: ${verifyRes.data.message}. Check your DNS settings and try again.` })
+      }
     } catch {
       setDomainMsg({ type: 'error', text: t('settings.whitelabel.save_error') })
     } finally {
@@ -280,9 +286,13 @@ export default function SettingsPage() {
     setDomainMsg(null)
     setDomainVerifying(true)
     try {
-      await workspaceApi.verifyDomain(activeWorkspace.id)
+      const res = await workspaceApi.verifyDomain(activeWorkspace.id)
       await refreshWorkspaces()
-      setDomainMsg({ type: 'success', text: t('settings.whitelabel.custom_domain_verified') })
+      if (res.data.verified) {
+        setDomainMsg({ type: 'success', text: 'Domain verified successfully.' })
+      } else {
+        setDomainMsg({ type: 'error', text: res.data.message || t('settings.whitelabel.custom_domain_failed') })
+      }
     } catch {
       setDomainMsg({ type: 'error', text: t('settings.whitelabel.custom_domain_failed') })
     } finally {
@@ -651,7 +661,7 @@ export default function SettingsPage() {
                     </li>
                     <li className="flex gap-3">
                       <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1A56DB] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">3</span>
-                      <span>DNS changes can take a few minutes to a few hours to go live. Once done, enter your full domain below and click <strong>Verify</strong>.</span>
+                      <span>DNS changes can take a few minutes to a few hours to go live. Once done, enter your full domain below and click <strong>Verify & Save</strong>.</span>
                     </li>
                   </ol>
                 </div>
@@ -669,8 +679,8 @@ export default function SettingsPage() {
                         placeholder="clients.yourdomain.com"
                         className={inputClass + ' flex-1'}
                       />
-                      <button type="submit" disabled={domainSaving} className="px-4 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors text-sm flex-shrink-0">
-                        {domainSaving ? t('actions.saving') : 'Save'}
+                      <button type="submit" disabled={domainSaving || !domainInput.trim()} className="px-4 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors text-sm flex-shrink-0">
+                        {domainSaving ? 'Verifying...' : 'Verify & Save'}
                       </button>
                     </div>
                   </div>
@@ -698,7 +708,7 @@ export default function SettingsPage() {
                         disabled={domainVerifying}
                         className="px-4 py-2 text-sm font-bold text-[#1A56DB] bg-[#1A56DB]/10 rounded-xl hover:bg-[#1A56DB]/20 disabled:opacity-60 transition-colors"
                       >
-                        {domainVerifying ? t('settings.whitelabel.custom_domain_verifying') : t('settings.whitelabel.custom_domain_verify')}
+                        {domainVerifying ? 'Checking...' : 'Retry Verification'}
                       </button>
                     )}
                   </div>
