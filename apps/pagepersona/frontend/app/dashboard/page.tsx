@@ -13,6 +13,7 @@ const tabKeys = ['all', 'active', 'drafts', 'archived']
 export default function DashboardPage() {
   const { t } = useTranslation('common')
   const { activeWorkspace } = useWorkspace()
+  const isViewOnly = activeWorkspace?.member_role === 'client' && activeWorkspace?.client_access_level === 'view_only'
   const [activeTab, setActiveTab] = useState('all')
   const [modalOpen, setModalOpen] = useState(false)
   const [projects, setProjects] = useState([])
@@ -73,13 +74,13 @@ export default function DashboardPage() {
                 {t('dashboard.subheading')}
               </p>
             </div>
-            <button
+            {!isViewOnly && <button
               onClick={() => setModalOpen(true)}
               className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] text-white rounded-xl font-bold shadow-lg shadow-[#1A56DB]/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
               <Icon name="add" className="text-lg" />
               <span>{t('dashboard.new_project')}</span>
-            </button>
+            </button>}
           </div>
 
           {/* Tabs */}
@@ -173,7 +174,7 @@ export default function DashboardPage() {
             ))}
 
             {/* Add new project card */}
-            <div
+            {!isViewOnly && <div
               onClick={() => setModalOpen(true)}
               className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center p-8 text-center hover:border-[#1A56DB]/40 transition-colors cursor-pointer group"
             >
@@ -190,7 +191,7 @@ export default function DashboardPage() {
                 <Icon name="add" className="text-sm" />
                 {t('dashboard.empty_state.cta_primary')}
               </span>
-            </div>
+            </div>}
           </div>
         </div>
 
@@ -236,13 +237,13 @@ export default function DashboardPage() {
               {t('dashboard.empty_state.description')}
             </p>
             <div className="flex flex-col items-center gap-6">
-              <button
+              {!isViewOnly && <button
                 onClick={() => setModalOpen(true)}
                 className="flex items-center gap-2 rounded-xl bg-[#1A56DB] px-8 py-4 text-lg font-bold text-white shadow-lg shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 hover:-translate-y-0.5 transition-all"
               >
                 <span className="material-symbols-outlined">add_circle</span>
                 {t('dashboard.empty_state.cta_primary')}
-              </button>
+              </button>}
               <div className="flex flex-col sm:flex-row items-center gap-8">
                 <a href="#" className="group flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-[#1A56DB] font-medium transition-colors">
                   <span className="material-symbols-outlined text-slate-400 group-hover:text-[#1A56DB]">play_circle</span>
