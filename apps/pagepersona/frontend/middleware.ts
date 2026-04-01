@@ -17,6 +17,21 @@ export async function middleware(request: NextRequest) {
       : null
   )
 
+  // Custom domain — rewrite to /join/{slug} so the agency's signup page loads
+  if (customDomain && pathname === '/') {
+    try {
+      const res = await fetch(`${API_URL}/api/clients/join-info?domain=${encodeURIComponent(customDomain)}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.agency_slug) {
+          return NextResponse.rewrite(new URL(`/join/${data.agency_slug}`, request.url))
+        }
+      }
+    } catch {
+      // Domain not mapped — fall through to normal app
+    }
+  }
+
   const response = NextResponse.next()
 
   if (customDomain) {

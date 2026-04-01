@@ -30,6 +30,13 @@ class SendReportRequest(BaseModel):
     message: Optional[str] = None
 
 
+class SelfSignupRequest(BaseModel):
+    slug: str
+    name: str
+    email: EmailStr
+    password: str
+
+
 def _slugify(name: str) -> str:
     slug = name.lower().strip()
     slug = re.sub(r'[^a-z0-9]+', '-', slug)
@@ -95,6 +102,118 @@ async def resolve_domain(
         "white_label_brand_name": ws['brand_name'],
         "white_label_logo": ws['logo_url'],
         "white_label_primary_color": ws['brand_color'] or '#1A56DB',
+    }
+
+
+# ── Join info (unauthenticated) ───────────────────────────────────────────────
+
+@router.get("/join-info")
+async def join_info(
+    slug: Optional[str] = Query(None),
+    domain: Optional[str] = Query(None),
+    db: asyncpg.Connection = Depends(get_db)
+):
+    """Return agency branding for a self-signup page. No auth required.
+    Accepts either ?slug= or ?domain= (custom domain)."""
+    if not slug and not domain:
+        raise HTTPException(status_code=400, detail="slug or domain required")
+
+    if domain:
+        ws = await db.fetchrow(
+            """SELECT id, slug, name, brand_name, logo_url, brand_color
+               FROM workspaces
+               WHERE custom_domain = $1 AND custom_domain_verified = true""",
+            domain
+        )
+    else:
+        ws = await db.fetchrow(
+            """SELECT id, slug, name, brand_name, logo_url, brand_color
+               FROM workspaces WHERE slug = $1""",
+            slug
+        )
+
+    if not ws:
+        raise HTTPException(status_code=404, detail="Agency not found")
+
+    return {
+        "agency_workspace_id": str(ws['id']),
+        "agency_slug": ws['slug'],
+        "brand_name": ws['brand_name'] or ws['name'],
+        "logo_url": ws['logo_url'],
+        "brand_color": ws['brand_color'] or '#1A56DB',
+    }
+
+
+# ── Self-signup ───────────────────────────────────────────────────────────────
+
+@router.post("/self-signup")
+async def self_signup(
+    body: SelfSignupRequest,
+    db: asyncpg.Connection = Depends(get_db)
+):
+    """Public self-signup: create user + client workspace under agency."""
+    # Look up agency workspace by slug
+    agency = await db.fetchrow(
+        "SELECT id, owner_id, name, brand_name, logo_url, brand_color FROM workspaces WHERE slug = $1",
+        body.slug
+    )
+    if not agency:
+        raise HTTPException(status_code=404, detail="Agency not found")
+
+    # Check email not already registered
+    existing = await db.fetchrow("SELECT id FROM users WHERE email = $1", body.email)
+    if existing:
+        raise HTTPException(status_code=409, detail="An account with this email already exists. Please log in.")
+
+    if len(body.password) < 8:
+        raise HTTPException(status_code=422, detail="Password must be at least 8 characters.")
+
+    # Create user
+    user_id = str(uuid.uuid4())
+    pw_hash = hash_password(body.password)
+    await db.execute(
+        """INSERT INTO users (id, name, email, password_hash, email_verified)
+           VALUES ($1, $2, $3, $4, true)""",
+        user_id, body.name, body.email, pw_hash
+    )
+
+    # Create client workspace
+    agency_id = str(agency['id'])
+    ws_name = f"{body.name}'s Workspace"
+    ws_slug_base = re.sub(r'[^a-z0-9]+', '-', body.name.lower().strip()).strip('-')
+    ws_slug = ws_slug_base
+    count = await db.fetchval("SELECT COUNT(*) FROM workspaces WHERE slug = $1", ws_slug)
+    if count:
+        ws_slug = f"{ws_slug_base}-{str(uuid.uuid4())[:8]}"
+
+    client_ws_id = str(uuid.uuid4())
+    await db.execute(
+        """INSERT INTO workspaces (id, name, slug, owner_id, type, parent_workspace_id, client_email, client_access_level)
+           VALUES ($1, $2, $3, $4, 'client', $5, $6, 'full')""",
+        client_ws_id, ws_name, ws_slug, str(agency['owner_id']),
+        agency_id, body.email
+    )
+
+    # Create workspace_members row so client can access it
+    await db.execute(
+        """INSERT INTO workspace_members (workspace_id, user_id, email, role, status, joined_at)
+           VALUES ($1, $2, $3, 'client', 'active', NOW())""",
+        client_ws_id, user_id, body.email
+    )
+
+    # Issue tokens
+    access_token = create_access_token({"sub": user_id})
+    refresh_token = create_refresh_token({"sub": user_id})
+    await db.execute(
+        "INSERT INTO sessions (user_id, token, expires_at) VALUES ($1, $2, NOW() + INTERVAL '30 days')",
+        user_id, refresh_token
+    )
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "user": {"id": user_id, "name": body.name, "email": body.email},
+        "workspace_id": client_ws_id,
     }
 
 

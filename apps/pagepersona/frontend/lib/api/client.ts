@@ -157,6 +157,10 @@ export const clientsApi = {
     apiClient.post(`/api/clients/${workspaceId}/restore`),
   accessStatus: () =>
     apiClient.get('/api/clients/access-status'),
+  joinInfo: (params: { slug?: string; domain?: string }) =>
+    apiClient.get('/api/clients/join-info', { params }),
+  selfSignup: (data: { slug: string; name: string; email: string; password: string }) =>
+    apiClient.post('/api/clients/self-signup', data),
   sendReport: (data: { workspace_id: string; client_workspace_id: string; message?: string }) =>
     apiClient.post('/api/clients/report', data),
 }

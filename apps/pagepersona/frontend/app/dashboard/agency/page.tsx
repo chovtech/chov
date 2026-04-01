@@ -63,6 +63,10 @@ export default function AgencyPage() {
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<TabKey>('all')
 
+  // Signup link copy state
+  const [linkCopied, setLinkCopied] = useState(false)
+  const [customLinkCopied, setCustomLinkCopied] = useState(false)
+
   // Modals
   const [newOpen, setNewOpen] = useState(false)
   const [manageClient, setManageClient] = useState<ClientWorkspace | null>(null)
@@ -232,6 +236,57 @@ export default function AgencyPage() {
             {t('agency.add_client')}
           </button>
         </div>
+
+        {/* Client Signup Link */}
+        {activeWorkspace && (() => {
+          const defaultLink = `https://app.usepagepersona.com/join/${activeWorkspace.slug}`
+          const customLink = activeWorkspace.custom_domain && activeWorkspace.custom_domain_verified
+            ? `https://${activeWorkspace.custom_domain}`
+            : null
+          function copyLink(text: string, setter: (v: boolean) => void) {
+            navigator.clipboard.writeText(text)
+            setter(true)
+            setTimeout(() => setter(false), 2000)
+          }
+          return (
+            <div className="bg-white border border-slate-200 rounded-xl p-5 mb-8 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <Icon name="link" className="text-[#1A56DB]" />
+                <h3 className="font-bold text-slate-900 text-sm">Client Signup Link</h3>
+                <span className="text-xs text-slate-400 ml-1">Share this link so clients can create their own account</span>
+              </div>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-slate-400 w-20 shrink-0">Default</span>
+                  <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
+                    <span className="text-xs text-slate-600 truncate flex-1">{defaultLink}</span>
+                    <button onClick={() => copyLink(defaultLink, setLinkCopied)} className="shrink-0 flex items-center gap-1 text-xs font-semibold text-[#1A56DB] hover:underline">
+                      <Icon name={linkCopied ? 'check' : 'content_copy'} className="text-sm" />
+                      {linkCopied ? 'Copied' : 'Copy'}
+                    </button>
+                  </div>
+                </div>
+                {customLink && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-slate-400 w-20 shrink-0">Custom</span>
+                    <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg overflow-hidden">
+                      <span className="text-xs text-emerald-700 truncate flex-1">{customLink}</span>
+                      <button onClick={() => copyLink(customLink, setCustomLinkCopied)} className="shrink-0 flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:underline">
+                        <Icon name={customLinkCopied ? 'check' : 'content_copy'} className="text-sm" />
+                        {customLinkCopied ? 'Copied' : 'Copy'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {!customLink && (
+                  <p className="text-xs text-slate-400 ml-[88px]">
+                    Set up a custom domain in <a href="/dashboard/settings?tab=whitelabel" className="text-[#1A56DB] hover:underline font-medium">White-label settings</a> to use your own branded URL.
+                  </p>
+                )}
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Tabs */}
         <div className="flex border-b border-slate-200 mb-8 overflow-x-auto">
