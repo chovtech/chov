@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { workspaceApi } from '@/lib/api/client'
+import { workspaceApi, clientsApi } from '@/lib/api/client'
 
 export interface Workspace {
   id: string
@@ -33,6 +33,8 @@ interface WorkspaceContextValue {
   setActiveWorkspaceId: (id: string) => void
   refreshWorkspaces: () => Promise<void>
   loading: boolean
+  isRevoked: boolean
+  revokedByAgency: string
 }
 
 const WorkspaceContext = createContext<WorkspaceContextValue>({
@@ -41,18 +43,36 @@ const WorkspaceContext = createContext<WorkspaceContextValue>({
   setActiveWorkspaceId: () => {},
   refreshWorkspaces: async () => {},
   loading: true,
+  isRevoked: false,
+  revokedByAgency: '',
 })
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isRevoked, setIsRevoked] = useState(false)
+  const [revokedByAgency, setRevokedByAgency] = useState('')
 
   const refreshWorkspaces = useCallback(async () => {
     try {
       const res = await workspaceApi.list()
       const list: Workspace[] = res.data
       setWorkspaces(list)
+
+      if (list.length === 0) {
+        // No workspaces — check if access was revoked
+        try {
+          const statusRes = await clientsApi.accessStatus()
+          if (statusRes.data.revoked) {
+            setIsRevoked(true)
+            setRevokedByAgency(statusRes.data.agency_name || '')
+          }
+        } catch { /* ignore */ }
+      } else {
+        setIsRevoked(false)
+        setRevokedByAgency('')
+      }
 
       const stored = typeof window !== 'undefined' ? localStorage.getItem('active_workspace_id') : null
       const found = stored ? list.find(w => w.id === stored) : null
@@ -89,7 +109,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const activeWorkspace = workspaces.find(w => w.id === activeId) || workspaces[0] || null
 
   return (
-    <WorkspaceContext.Provider value={{ workspaces, activeWorkspace, setActiveWorkspaceId, refreshWorkspaces, loading }}>
+    <WorkspaceContext.Provider value={{ workspaces, activeWorkspace, setActiveWorkspaceId, refreshWorkspaces, loading, isRevoked, revokedByAgency }}>
       {children}
     </WorkspaceContext.Provider>
   )

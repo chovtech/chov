@@ -7,6 +7,7 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 from app.database import get_db
 from app.core.security import get_current_user, hash_password, create_access_token, create_refresh_token
+from app.services.email_service import send_client_access_restored_email
 
 router = APIRouter(prefix="/api/clients", tags=["clients"])
 
@@ -309,6 +310,103 @@ async def revoke_access(
         workspace_id
     )
     return {"ok": True}
+
+
+# ── Restore access ────────────────────────────────────────────────────────────
+
+@router.post("/{workspace_id}/restore")
+async def restore_access(
+    workspace_id: str,
+    db: asyncpg.Connection = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Restore a previously revoked client's access. Agency owner only."""
+    # Verify requester owns the parent workspace
+    ws = await db.fetchrow(
+        """SELECT w.id, w.client_email FROM workspaces w
+           JOIN workspaces parent ON w.parent_workspace_id = parent.id
+           WHERE w.id = $1 AND parent.owner_id = $2""",
+        workspace_id, current_user['id']
+    )
+    if not ws:
+        raise HTTPException(status_code=404, detail="Client workspace not found")
+
+    # Restore workspace_members role
+    await db.execute(
+        "UPDATE workspace_members SET role = 'client' WHERE workspace_id = $1 AND role = 'revoked'",
+        workspace_id
+    )
+    # Restore latest client_invite
+    await db.execute(
+        "UPDATE client_invites SET status = 'active' WHERE client_workspace_id = $1 AND status = 'revoked'",
+        workspace_id
+    )
+
+    # Send restoration email if we have the client's email
+    client_email = ws['client_email']
+    if client_email:
+        # Get agency workspace branding
+        agency = await db.fetchrow(
+            """SELECT w.brand_name, w.logo_url, w.brand_color
+               FROM workspaces w
+               JOIN workspaces client_ws ON client_ws.parent_workspace_id = w.id
+               WHERE client_ws.id = $1""",
+            workspace_id
+        )
+        brand_name = (agency and agency['brand_name']) or 'PagePersona'
+        logo_url = agency and agency['logo_url']
+        brand_color = (agency and agency['brand_color']) or '#1A56DB'
+        from app.core.config import settings
+        dashboard_url = f"{settings.FRONTEND_URL}/dashboard"
+        send_client_access_restored_email(
+            to_email=client_email,
+            brand_name=brand_name,
+            logo_url=logo_url,
+            brand_color=brand_color,
+            dashboard_url=dashboard_url,
+        )
+
+    return {"ok": True}
+
+
+# ── Access status (for revoked-wall detection) ────────────────────────────────
+
+@router.get("/access-status")
+async def access_status(
+    db: asyncpg.Connection = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Returns whether the current user has been revoked from all workspaces."""
+    # Check if they own any workspace
+    owns = await db.fetchval(
+        "SELECT COUNT(*) FROM workspaces WHERE owner_id = $1", current_user['id']
+    )
+    if owns:
+        return {"revoked": False}
+
+    # Check for active membership
+    active = await db.fetchval(
+        "SELECT COUNT(*) FROM workspace_members WHERE user_id = $1 AND status = 'active' AND role != 'revoked'",
+        current_user['id']
+    )
+    if active:
+        return {"revoked": False}
+
+    # Check for revoked membership
+    revoked_row = await db.fetchrow(
+        """SELECT w.client_name, pw.brand_name
+           FROM workspace_members wm
+           JOIN workspaces w ON wm.workspace_id = w.id
+           JOIN workspaces pw ON w.parent_workspace_id = pw.id
+           WHERE wm.user_id = $1 AND wm.role = 'revoked'
+           LIMIT 1""",
+        current_user['id']
+    )
+    if revoked_row:
+        agency_name = revoked_row['brand_name'] or 'your agency'
+        return {"revoked": True, "agency_name": agency_name}
+
+    return {"revoked": False}
 
 
 # ── Send report ───────────────────────────────────────────────────────────────

@@ -153,6 +153,10 @@ export const clientsApi = {
     apiClient.post('/api/clients/accept', data),
   revoke: (workspaceId: string) =>
     apiClient.delete(`/api/clients/${workspaceId}/revoke`),
+  restore: (workspaceId: string) =>
+    apiClient.post(`/api/clients/${workspaceId}/restore`),
+  accessStatus: () =>
+    apiClient.get('/api/clients/access-status'),
   sendReport: (data: { workspace_id: string; client_workspace_id: string; message?: string }) =>
     apiClient.post('/api/clients/report', data),
 }

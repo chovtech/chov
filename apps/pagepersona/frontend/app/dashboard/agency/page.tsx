@@ -130,6 +130,16 @@ export default function AgencyPage() {
     } catch { /* ignore */ }
   }
 
+  async function handleRestore(clientId: string) {
+    try {
+      await clientsApi.restore(clientId)
+      showToast('ok', 'Access restored. Client has been notified by email.')
+      fetchClients()
+    } catch {
+      showToast('err', 'Failed to restore access. Please try again.')
+    }
+  }
+
   async function handleDelete(clientId: string, name: string) {
     if (!window.confirm(`Delete "${name}"? This will permanently remove the workspace and all its projects. This cannot be undone.`)) return
     try {
@@ -304,6 +314,12 @@ export default function AgencyPage() {
                                 <button onClick={() => { handleRevoke(client.id); setOpenDropdown(null) }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors text-left">
                                   <Icon name="block" className="text-[18px]" />
                                   Revoke Access
+                                </button>
+                              )}
+                              {client.invite_status === 'revoked' && (
+                                <button onClick={() => { handleRestore(client.id); setOpenDropdown(null) }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-emerald-600 hover:bg-emerald-50 transition-colors text-left">
+                                  <Icon name="lock_open" className="text-[18px]" />
+                                  Restore Access
                                 </button>
                               )}
                               <div className="border-t border-slate-100 mt-1 pt-1">

@@ -1,14 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/layouts/Sidebar'
 import { authApi, authApiExtended } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
-import { WorkspaceProvider } from '@/lib/context/WorkspaceContext'
+import { WorkspaceProvider, useWorkspace } from '@/lib/context/WorkspaceContext'
 import { WhiteLabelProvider } from '@/lib/context/WhiteLabelContext'
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+function DashboardInner({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation('common')
+  const router = useRouter()
+  const { isRevoked, loading: wsLoading } = useWorkspace()
   const [emailVerified, setEmailVerified] = useState(true)
   const [userEmail, setUserEmail] = useState('')
   const [resent, setResent] = useState(false)
@@ -21,6 +24,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }).catch(() => null)
   }, [])
 
+  useEffect(() => {
+    if (!wsLoading && isRevoked) {
+      router.replace('/access-revoked')
+    }
+  }, [wsLoading, isRevoked, router])
+
   async function handleResend() {
     setResending(true)
     try {
@@ -31,9 +40,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }
 
+  if (!wsLoading && isRevoked) return null
+
   return (
-    <WorkspaceProvider>
-    <WhiteLabelProvider>
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
       <Sidebar />
       <div className="ml-64">
@@ -72,6 +81,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {children}
       </div>
     </div>
+  )
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <WorkspaceProvider>
+    <WhiteLabelProvider>
+      <DashboardInner>{children}</DashboardInner>
     </WhiteLabelProvider>
     </WorkspaceProvider>
   )
