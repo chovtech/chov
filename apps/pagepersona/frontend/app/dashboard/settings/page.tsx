@@ -291,7 +291,7 @@ export default function SettingsPage() {
     setProfileMsg(null)
     setProfileLoading(true)
     try {
-      const res = await userApi.updateProfile({ name: profileForm.name, email: profileForm.email, language, avatar_url: profileForm.avatar_url })
+      const res = await userApi.updateProfile({ name: profileForm.name, language, avatar_url: profileForm.avatar_url })
       setUser(res.data)
       setProfileMsg({ type: 'success', text: t('toast.profileUpdated') })
     } catch (err: unknown) {
@@ -429,7 +429,7 @@ export default function SettingsPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.profile.emailAddress')}</label>
-                    <input type="email" value={profileForm.email} onChange={e => setProfileForm(p => ({ ...p, email: e.target.value }))} className={inputClass} disabled={isClientUser} />
+                    <input type="email" value={profileForm.email} readOnly className={`${inputClass} cursor-not-allowed opacity-60`} />
                   </div>
                   <div className="flex justify-end pt-2">
                     <button type="submit" disabled={profileLoading} className="px-6 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
