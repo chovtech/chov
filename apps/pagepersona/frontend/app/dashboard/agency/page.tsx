@@ -67,11 +67,11 @@ export default function AgencyPage() {
   const [newOpen, setNewOpen] = useState(false)
   const [manageClient, setManageClient] = useState<ClientWorkspace | null>(null)
 
-  // Send report modal
-  const [reportClient, setReportClient] = useState<ClientWorkspace | null>(null)
-  const [reportMsg, setReportMsg] = useState('')
-  const [reportSending, setReportSending] = useState(false)
-  const [reportSent, setReportSent] = useState(false)
+  // Send report modal — commented out, build later
+  // const [reportClient, setReportClient] = useState<ClientWorkspace | null>(null)
+  // const [reportMsg, setReportMsg] = useState('')
+  // const [reportSending, setReportSending] = useState(false)
+  // const [reportSent, setReportSent] = useState(false)
 
   // Per-card dropdown
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
@@ -168,21 +168,21 @@ export default function AgencyPage() {
       setInvitingId(null) }
   }
 
-  async function handleSendReport(e: React.FormEvent) {
-    e.preventDefault()
-    if (!reportClient || !activeWorkspace) return
-    setReportSending(true)
-    try {
-      await clientsApi.sendReport({
-        workspace_id: activeWorkspace.id,
-        client_workspace_id: reportClient.id,
-        message: reportMsg || undefined,
-      })
-      setReportSent(true)
-      setTimeout(() => { setReportClient(null); setReportSent(false); setReportMsg('') }, 1500)
-    } catch { /* ignore */ }
-    finally { setReportSending(false) }
-  }
+  // async function handleSendReport(e: React.FormEvent) {
+  //   e.preventDefault()
+  //   if (!reportClient || !activeWorkspace) return
+  //   setReportSending(true)
+  //   try {
+  //     await clientsApi.sendReport({
+  //       workspace_id: activeWorkspace.id,
+  //       client_workspace_id: reportClient.id,
+  //       message: reportMsg || undefined,
+  //     })
+  //     setReportSent(true)
+  //     setTimeout(() => { setReportClient(null); setReportSent(false); setReportMsg('') }, 1500)
+  //   } catch { /* ignore */ }
+  //   finally { setReportSending(false) }
+  // }
 
   function openClientDashboard(clientId: string) {
     setActiveWorkspaceId(clientId)
@@ -306,10 +306,12 @@ export default function AgencyPage() {
                                   {invitingId === client.id ? 'Sending...' : 'Resend Invite'}
                                 </button>
                               )}
+                              {/* Send Report — build later
                               <button onClick={() => { setReportClient(client); setOpenDropdown(null) }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors text-left">
                                 <Icon name="bar_chart" className="text-[18px] text-slate-400" />
                                 {t('agency.send_report')}
                               </button>
+                              */}
                               {client.invite_status === 'active' && (
                                 <button onClick={() => { handleRevoke(client.id); setOpenDropdown(null) }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors text-left">
                                   <Icon name="block" className="text-[18px]" />
@@ -443,7 +445,7 @@ export default function AgencyPage() {
         />
       )}
 
-      {/* Send Report Modal */}
+      {/* Send Report Modal — build later
       {reportClient && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
@@ -486,6 +488,7 @@ export default function AgencyPage() {
           </div>
         </div>
       )}
+      */}
     </>
   )
 }
