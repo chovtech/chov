@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import Icon from '@/components/ui/Icon'
@@ -38,6 +38,7 @@ export default function Sidebar() {
   const [user, setUser] = useState<User | null>(null)
   const [workspaceOpen, setWorkspaceOpen] = useState(false)
   const { workspaces, activeWorkspace, setActiveWorkspaceId, refreshWorkspaces } = useWorkspace()
+  const router = useRouter()
   const [addWsOpen, setAddWsOpen] = useState(false)
   const [addWsName, setAddWsName] = useState('')
   const [addWsLoading, setAddWsLoading] = useState(false)
@@ -149,7 +150,7 @@ export default function Sidebar() {
                 return (
                   <button
                     key={ws.id}
-                    onClick={() => { setActiveWorkspaceId(ws.id); setWorkspaceOpen(false) }}
+                    onClick={() => { setActiveWorkspaceId(ws.id); setWorkspaceOpen(false); router.push('/dashboard') }}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors ${isActivews ? 'bg-[#1A56DB]/5 border border-[#1A56DB]/10' : 'hover:bg-slate-50 dark:hover:bg-slate-700'}`}
                   >
                     <div className="size-6 rounded-md bg-[#1A56DB] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
@@ -173,7 +174,7 @@ export default function Sidebar() {
                   return (
                     <button
                       key={ws.id}
-                      onClick={() => { setActiveWorkspaceId(ws.id); setWorkspaceOpen(false) }}
+                      onClick={() => { setActiveWorkspaceId(ws.id); setWorkspaceOpen(false); router.push('/dashboard') }}
                       className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors ${isActivews ? 'bg-[#14B8A6]/5 border border-[#14B8A6]/10' : 'hover:bg-slate-50 dark:hover:bg-slate-700'}`}
                     >
                       <div className="size-6 rounded-md bg-[#14B8A6] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
