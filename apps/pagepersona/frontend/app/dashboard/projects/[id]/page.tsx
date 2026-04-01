@@ -318,7 +318,8 @@ export default function ProjectDashboardPage() {
   const params = useParams()
   const router = useRouter()
   const projectId = params.id as string
-  const { loading: workspaceLoading } = useWorkspace()
+  const { loading: workspaceLoading, activeWorkspace } = useWorkspace()
+  const isViewOnly = activeWorkspace?.member_role === 'client' && activeWorkspace?.client_access_level === 'view_only'
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
@@ -419,8 +420,8 @@ export default function ProjectDashboardPage() {
           <div className="flex items-center gap-4">
             {/* Thumbnail */}
             <div className="relative group shrink-0">
-              <div className="w-16 h-16 rounded-xl border-2 border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center cursor-pointer"
-                onClick={() => thumbnailInputRef.current?.click()}>
+              <div className={`w-16 h-16 rounded-xl border-2 border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center${isViewOnly ? '' : ' cursor-pointer'}`}
+                onClick={() => !isViewOnly && thumbnailInputRef.current?.click()}>
                 {project.thumbnail_url ? (
                   <img src={project.thumbnail_url} alt={project.name} className="w-full h-full object-cover" />
                 ) : (
@@ -432,32 +433,43 @@ export default function ProjectDashboardPage() {
                   </div>
                 )}
               </div>
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#1A56DB] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                onClick={() => thumbnailInputRef.current?.click()}>
-                <Icon name="edit" className="text-white text-xs" />
-              </div>
-              <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
+              {!isViewOnly && (
+                <>
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#1A56DB] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    onClick={() => thumbnailInputRef.current?.click()}>
+                    <Icon name="edit" className="text-white text-xs" />
+                  </div>
+                  <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
+                </>
+              )}
             </div>
             <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-2xl font-black tracking-tight text-slate-900">{project.name}</h1>
-              <button onClick={() => setShowEdit(true)} className="p-1.5 text-slate-400 hover:text-[#1A56DB] hover:bg-[#1A56DB]/5 rounded-lg transition-colors" title={t('project.edit_project')}><Icon name="edit" className="text-base" /></button>
+              {!isViewOnly && <button onClick={() => setShowEdit(true)} className="p-1.5 text-slate-400 hover:text-[#1A56DB] hover:bg-[#1A56DB]/5 rounded-lg transition-colors" title={t('project.edit_project')}><Icon name="edit" className="text-base" /></button>}
               {project.status === 'active' ? (
                 <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase tracking-wider border border-green-200">{t('status.active')}</span>
               ) : (
                 <span className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full uppercase tracking-wider border border-slate-200">{t('status.draft')}</span>
               )}
-              <button onClick={() => setShowInstall(true)} className={project.script_verified ? 'flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition-colors' : 'flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 transition-colors'}>
-                <Icon name={project.script_verified ? 'check_circle' : 'warning'} className="text-sm" />
-                {project.script_verified ? t('project.script_live') : t('project.script_not_verified')}
-              </button>
+              {isViewOnly ? (
+                <span className={project.script_verified ? 'flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-emerald-50 border-emerald-200 text-emerald-700' : 'flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-amber-50 border-amber-200 text-amber-700'}>
+                  <Icon name={project.script_verified ? 'check_circle' : 'warning'} className="text-sm" />
+                  {project.script_verified ? t('project.script_live') : t('project.script_not_verified')}
+                </span>
+              ) : (
+                <button onClick={() => setShowInstall(true)} className={project.script_verified ? 'flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition-colors' : 'flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 transition-colors'}>
+                  <Icon name={project.script_verified ? 'check_circle' : 'warning'} className="text-sm" />
+                  {project.script_verified ? t('project.script_live') : t('project.script_not_verified')}
+                </button>
+              )}
             </div>
             <a href={project.page_url} target="_blank" rel="noopener noreferrer" className="text-sm text-slate-500 hover:text-[#1A56DB] flex items-center gap-1 transition-colors">
               <Icon name="link" className="text-sm" />{project.page_url}<Icon name="open_in_new" className="text-xs" />
             </a>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          {!isViewOnly && <div className="flex items-center gap-3">
             <button onClick={() => setShowDelete(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-200 text-slate-500 bg-white hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all">
               <Icon name="delete" className="text-base" />{t('project.delete_project')}
             </button>
@@ -479,7 +491,7 @@ export default function ProjectDashboardPage() {
                 </div>
               )}
             </div>
-          </div>
+          </div>}
         </div>
         {/* Tabs */}
         <div className="flex gap-2 mb-8">
@@ -749,14 +761,14 @@ export default function ProjectDashboardPage() {
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <h4 className="font-bold text-slate-900 mb-5">{t('project.quick_actions')}</h4>
             <div className="space-y-3">
-              <a href={'/dashboard/projects/' + project.id + '/rules'} className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#1A56DB]/30 transition-all">
+              {!isViewOnly && <a href={'/dashboard/projects/' + project.id + '/rules'} className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#1A56DB]/30 transition-all">
                 <div className="flex items-center gap-3"><Icon name="edit_note" className="text-slate-400 group-hover:text-[#1A56DB] transition-colors" /><span className="text-sm font-semibold text-slate-700">{t('project.actions.setup_rules')}</span></div>
                 <Icon name="chevron_right" className="text-slate-300 group-hover:text-[#1A56DB] transition-colors" />
-              </a>
-              <button onClick={() => setShowInstall(true)} className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#1A56DB]/30 transition-all">
+              </a>}
+              {!isViewOnly && <button onClick={() => setShowInstall(true)} className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#1A56DB]/30 transition-all">
                 <div className="flex items-center gap-3"><Icon name="code" className="text-slate-400 group-hover:text-[#1A56DB] transition-colors" /><span className="text-sm font-semibold text-slate-700">Installation</span></div>
                 <Icon name="chevron_right" className="text-slate-300 group-hover:text-[#1A56DB] transition-colors" />
-              </button>
+              </button>}
               <button onClick={() => setActiveTab('analytics')} className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#1A56DB]/30 transition-all">
                 <div className="flex items-center gap-3"><Icon name="leaderboard" className="text-slate-400 group-hover:text-[#1A56DB] transition-colors" /><span className="text-sm font-semibold text-slate-700">{t('project.actions.view_analytics')}</span></div>
                 <Icon name="chevron_right" className="text-slate-300 group-hover:text-[#1A56DB] transition-colors" />
