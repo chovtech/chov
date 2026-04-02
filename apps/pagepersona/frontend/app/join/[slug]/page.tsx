@@ -65,9 +65,12 @@ export default function JoinPage() {
     </div>
   )
 
+  // Show nothing until branding loads (prevents flash of unstyled content)
   if (!info) return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-      <span className="material-symbols-outlined text-4xl text-slate-300 animate-spin">sync</span>
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <header className="w-full px-6 py-4">
+        <div className="h-8 w-32 rounded-lg bg-slate-100 animate-pulse" />
+      </header>
     </div>
   )
 
@@ -75,94 +78,98 @@ export default function JoinPage() {
   const showPoweredBy = !info.hide_powered_by
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        {/* Brand header */}
-        <div className="text-center mb-8">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header — logo top-left */}
+      <header className="w-full px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
           {info.logo_url ? (
-            <img src={info.logo_url} alt={info.brand_name} className="h-12 mx-auto mb-4 object-contain" />
+            <img src={info.logo_url} alt={info.brand_name} className="h-8 object-contain" />
           ) : (
-            <div className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center text-white font-black text-xl"
+            <div className="size-8 rounded-lg flex items-center justify-center text-white font-bold text-sm"
               style={{ backgroundColor: primary }}>
-              {info.brand_name[0]}
+              {info.brand_name.slice(0, 2).toUpperCase()}
             </div>
           )}
-          <h1 className="text-2xl font-black text-slate-900">{info.brand_name}</h1>
-          <p className="text-slate-500 text-sm mt-1">Create your account to get started</p>
+          <span className="text-base font-bold text-slate-900">{info.brand_name}</span>
         </div>
+      </header>
 
-        {/* Form card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Full Name</label>
-              <input
-                type="text"
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="Jane Smith"
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all"
-                style={{ '--tw-ring-color': primary + '40' } as any}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Email</label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                placeholder="jane@company.com"
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Password</label>
-              <input
-                type="password"
-                value={form.password}
-                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                placeholder="Min. 8 characters"
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Confirm Password</label>
-              <input
-                type="password"
-                value={form.confirm}
-                onChange={e => setForm(f => ({ ...f, confirm: e.target.value }))}
-                placeholder="Repeat password"
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all"
-              />
-            </div>
+      {/* Form */}
+      <main className="flex-1 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md">
+          <section className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Create your account</h1>
+            <p className="text-sm text-gray-500 mb-6">Sign up to access {info.brand_name}</p>
 
             {error && (
-              <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
-                <span className="material-symbols-outlined text-red-500 text-sm shrink-0 mt-0.5">error</span>
-                <p className="text-xs text-red-600">{error}</p>
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full py-3 rounded-xl text-white text-sm font-bold disabled:opacity-50 transition-all hover:opacity-90"
-              style={{ backgroundColor: primary }}
-            >
-              {submitting ? 'Creating your account...' : 'Create Account'}
-            </button>
-          </form>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder="Jane Smith"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent transition-all outline-none text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  placeholder="jane@company.com"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent transition-all outline-none text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
+                <input
+                  type="password"
+                  value={form.password}
+                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                  placeholder="Min. 8 characters"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent transition-all outline-none text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Confirm Password</label>
+                <input
+                  type="password"
+                  value={form.confirm}
+                  onChange={e => setForm(f => ({ ...f, confirm: e.target.value }))}
+                  placeholder="Repeat password"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent transition-all outline-none text-gray-900"
+                />
+              </div>
 
-          <p className="text-center text-xs text-slate-400 mt-6">
-            Already have an account?{' '}
-            <a href={`/login?slug=${slug}`} className="font-semibold" style={{ color: primary }}>Log in</a>
-          </p>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-3 rounded-lg text-white text-sm font-semibold disabled:opacity-50 transition-all shadow-sm"
+                style={{ backgroundColor: primary }}
+              >
+                {submitting ? 'Creating your account...' : 'Create Account'}
+              </button>
+            </form>
+
+            <p className="text-center text-sm text-gray-600 mt-6">
+              Already have an account?{' '}
+              <a href={`/login?slug=${slug}`} className="font-semibold hover:underline" style={{ color: primary }}>Log in</a>
+            </p>
+          </section>
+
+          {showPoweredBy && (
+            <p className="text-center text-xs text-slate-400 mt-6">Powered by PagePersona</p>
+          )}
         </div>
-
-        {showPoweredBy && (
-          <p className="text-center text-xs text-slate-400 mt-6">Powered by PagePersona</p>
-        )}
-      </div>
+      </main>
     </div>
   )
 }

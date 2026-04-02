@@ -20,7 +20,7 @@ interface Branding {
 
 const APP_DOMAIN = 'app.usepagepersona.com'
 
-function BrandingLoader({ onBranding }: { onBranding: (b: Branding | null) => void }) {
+function BrandingLoader({ onResolved }: { onResolved: (b: Branding | null) => void }) {
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -30,12 +30,15 @@ function BrandingLoader({ onBranding }: { onBranding: (b: Branding | null) => vo
 
     if (slug) {
       clientsApi.joinInfo({ slug })
-        .then(res => onBranding({ ...res.data, slug }))
-        .catch(() => onBranding(null))
+        .then(res => onResolved({ ...res.data, slug }))
+        .catch(() => onResolved(null))
     } else if (isCustomDomain) {
       clientsApi.joinInfo({ domain: host })
-        .then(res => onBranding({ ...res.data, slug: res.data.agency_slug }))
-        .catch(() => onBranding(null))
+        .then(res => onResolved({ ...res.data, slug: res.data.agency_slug }))
+        .catch(() => onResolved(null))
+    } else {
+      // No slug, no custom domain — resolve immediately with default
+      onResolved(null)
     }
   }, [])
 
@@ -45,36 +48,46 @@ function BrandingLoader({ onBranding }: { onBranding: (b: Branding | null) => vo
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation('common')
   const [branding, setBranding] = useState<Branding | null>(null)
+  const [resolved, setResolved] = useState(false)
+
+  function handleResolved(b: Branding | null) {
+    setBranding(b)
+    setResolved(true)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Suspense fallback={null}>
-        <BrandingLoader onBranding={setBranding} />
+        <BrandingLoader onResolved={handleResolved} />
       </Suspense>
 
       <header className="w-full px-6 py-4 flex items-center justify-between">
-        {branding ? (
-          <div className="flex items-center gap-2">
-            {branding.logo_url ? (
-              <img src={branding.logo_url} alt={branding.brand_name} className="h-8 object-contain" />
-            ) : (
-              <div className="size-8 rounded-lg flex items-center justify-center text-white font-bold text-sm"
-                style={{ backgroundColor: branding.brand_color }}>
-                {branding.brand_name.slice(0, 2).toUpperCase()}
+        {resolved ? (
+          branding ? (
+            <div className="flex items-center gap-2">
+              {branding.logo_url ? (
+                <img src={branding.logo_url} alt={branding.brand_name} className="h-8 object-contain" />
+              ) : (
+                <div className="size-8 rounded-lg flex items-center justify-center text-white font-bold text-sm"
+                  style={{ backgroundColor: branding.brand_color }}>
+                  {branding.brand_name.slice(0, 2).toUpperCase()}
+                </div>
+              )}
+              <span className="text-base font-bold text-slate-900">{branding.brand_name}</span>
+            </div>
+          ) : (
+            <Link href="/" className="flex items-center gap-2">
+              <div className="size-8 bg-[#1A56DB] rounded-lg flex items-center justify-center text-white shadow-md shadow-[#1A56DB]/30">
+                <Icon name="layers" className="text-[18px]" />
               </div>
-            )}
-            <span className="text-base font-bold text-slate-900">{branding.brand_name}</span>
-          </div>
+              <div>
+                <h1 className="text-base font-bold leading-none text-slate-900">{t('app.name')}</h1>
+                <p className="text-[10px] text-slate-400 mt-0.5">{t('app.tagline')}</p>
+              </div>
+            </Link>
+          )
         ) : (
-          <Link href="/" className="flex items-center gap-2">
-            <div className="size-8 bg-[#1A56DB] rounded-lg flex items-center justify-center text-white shadow-md shadow-[#1A56DB]/30">
-              <Icon name="layers" className="text-[18px]" />
-            </div>
-            <div>
-              <h1 className="text-base font-bold leading-none text-slate-900">{t('app.name')}</h1>
-              <p className="text-[10px] text-slate-400 mt-0.5">{t('app.tagline')}</p>
-            </div>
-          </Link>
+          <div className="h-8 w-32 rounded-lg bg-slate-100 animate-pulse" />
         )}
         <LanguageSwitcher />
       </header>
