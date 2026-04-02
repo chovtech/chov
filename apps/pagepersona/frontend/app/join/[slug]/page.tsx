@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { clientsApi } from '@/lib/api/client'
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
+
+const JOIN_BRANDING_CACHE_KEY = 'pp_join_branding'
 
 interface JoinInfo {
   agency_workspace_id: string
@@ -25,8 +28,20 @@ export default function JoinPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    // Restore from cache immediately to avoid flash on language-switch reload
+    try {
+      const cached = sessionStorage.getItem(JOIN_BRANDING_CACHE_KEY)
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        if (parsed.agency_slug === slug) setInfo(parsed)
+      }
+    } catch { /* ignore */ }
+
     clientsApi.joinInfo({ slug })
-      .then(res => setInfo(res.data))
+      .then(res => {
+        sessionStorage.setItem(JOIN_BRANDING_CACHE_KEY, JSON.stringify(res.data))
+        setInfo(res.data)
+      })
       .catch(() => setNotFound(true))
   }, [slug])
 
@@ -68,8 +83,9 @@ export default function JoinPage() {
   // Show nothing until branding loads (prevents flash of unstyled content)
   if (!info) return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="w-full px-6 py-4">
+      <header className="w-full px-6 py-4 flex items-center justify-between">
         <div className="h-8 w-32 rounded-lg bg-slate-100 animate-pulse" />
+        <LanguageSwitcher />
       </header>
     </div>
   )
@@ -92,6 +108,7 @@ export default function JoinPage() {
           )}
           <span className="text-base font-bold text-slate-900">{info.brand_name}</span>
         </div>
+        <LanguageSwitcher />
       </header>
 
       {/* Form */}

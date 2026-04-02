@@ -20,6 +20,8 @@ interface Branding {
 
 const APP_DOMAIN = 'app.usepagepersona.com'
 
+const BRANDING_CACHE_KEY = 'pp_auth_branding'
+
 function BrandingLoader({ onResolved }: { onResolved: (b: Branding | null) => void }) {
   const searchParams = useSearchParams()
 
@@ -28,18 +30,37 @@ function BrandingLoader({ onResolved }: { onResolved: (b: Branding | null) => vo
     const host = window.location.hostname
     const isCustomDomain = host !== APP_DOMAIN && host !== 'localhost' && !host.startsWith('127.')
 
-    if (slug) {
-      clientsApi.joinInfo({ slug })
-        .then(res => onResolved({ ...res.data, slug }))
-        .catch(() => onResolved(null))
-    } else if (isCustomDomain) {
-      clientsApi.joinInfo({ domain: host })
-        .then(res => onResolved({ ...res.data, slug: res.data.agency_slug }))
-        .catch(() => onResolved(null))
-    } else {
-      // No slug, no custom domain — resolve immediately with default
+    if (!slug && !isCustomDomain) {
+      sessionStorage.removeItem(BRANDING_CACHE_KEY)
       onResolved(null)
+      return
     }
+
+    // Restore from cache immediately so there's no flash on language-switch reload
+    try {
+      const cached = sessionStorage.getItem(BRANDING_CACHE_KEY)
+      if (cached) {
+        const parsed = JSON.parse(cached) as Branding
+        if ((slug && parsed.slug === slug) || isCustomDomain) {
+          onResolved(parsed)
+        }
+      }
+    } catch { /* ignore */ }
+
+    // Always fetch fresh to keep cache current
+    const fetcher = slug
+      ? clientsApi.joinInfo({ slug }).then(res => ({ ...res.data, slug } as Branding))
+      : clientsApi.joinInfo({ domain: host }).then(res => ({ ...res.data, slug: res.data.agency_slug } as Branding))
+
+    fetcher
+      .then(b => {
+        sessionStorage.setItem(BRANDING_CACHE_KEY, JSON.stringify(b))
+        onResolved(b)
+      })
+      .catch(() => {
+        sessionStorage.removeItem(BRANDING_CACHE_KEY)
+        onResolved(null)
+      })
   }, [])
 
   return null

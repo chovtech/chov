@@ -58,10 +58,11 @@ def _fmt(ws) -> dict:
         "client_email": _get(ws, 'client_email'),
         "client_name": _get(ws, 'client_name'),
         "client_access_level": _get(ws, 'client_access_level', 'full'),
-        "white_label_logo": _get(ws, 'white_label_logo'),
-        "white_label_brand_name": _get(ws, 'white_label_brand_name'),
-        "white_label_primary_color": _get(ws, 'white_label_primary_color') or '#1A56DB',
-        "hide_powered_by": _get(ws, 'hide_powered_by') or False,
+        # Client workspaces use parent (agency) white-label settings
+        "white_label_logo": _get(ws, 'parent_logo') or _get(ws, 'white_label_logo') if _get(ws, 'type') == 'client' else _get(ws, 'white_label_logo'),
+        "white_label_brand_name": _get(ws, 'parent_brand_name') or _get(ws, 'white_label_brand_name') if _get(ws, 'type') == 'client' else _get(ws, 'white_label_brand_name'),
+        "white_label_primary_color": (_get(ws, 'parent_color') or _get(ws, 'white_label_primary_color') or '#1A56DB') if _get(ws, 'type') == 'client' else (_get(ws, 'white_label_primary_color') or '#1A56DB'),
+        "hide_powered_by": (_get(ws, 'parent_hide_powered_by') or _get(ws, 'hide_powered_by') or False) if _get(ws, 'type') == 'client' else (_get(ws, 'hide_powered_by') or False),
         "custom_domain": _get(ws, 'custom_domain'),
         "custom_domain_verified": _get(ws, 'custom_domain_verified') or False,
         "member_role": _get(ws, 'member_role', 'owner'),
@@ -95,11 +96,16 @@ async def list_workspaces(
         f"""
         SELECT
           w.*,
+          pw.white_label_brand_name as parent_brand_name,
+          pw.white_label_logo as parent_logo,
+          pw.white_label_primary_color as parent_color,
+          pw.hide_powered_by as parent_hide_powered_by,
           COALESCE(wm.role, 'owner') as member_role,
           (SELECT status FROM client_invites ci WHERE ci.workspace_id = w.id
            ORDER BY created_at DESC LIMIT 1) as invite_status,
           {_STATS_SUBQUERIES}
         FROM workspaces w
+        LEFT JOIN workspaces pw ON w.parent_workspace_id = pw.id
         LEFT JOIN workspace_members wm ON wm.workspace_id = w.id AND wm.user_id = $1 AND wm.status = 'active'
         WHERE w.owner_id = $1 OR (wm.id IS NOT NULL AND wm.role NOT IN ('revoked'))
         ORDER BY
