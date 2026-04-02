@@ -315,7 +315,7 @@ All emails: EN + FR bilingual, SES via boto3, `noreply@usepagepersona.com`
 
 | Item | Note |
 |------|------|
-| Send Report (frontend) | API endpoint done (`POST /api/clients/report`) — frontend button commented out on Agency tab |
+| Send Report | Intentionally skipped — clients can log in as view_only and see their own analytics directly |
 | Popup DnD reorder | Post-launch |
 | AI rule suggestions | Post-launch — coins model (see FUNNEL-ANALYSIS.md) |
 | Onboarding flow | Intentionally skipped — JVZoo buyers are self-selected |

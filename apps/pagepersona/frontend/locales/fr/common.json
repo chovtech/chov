@@ -216,7 +216,9 @@
       "dns_step2_body": "Dans les paramètres DNS, ajoutez un nouvel enregistrement avec les valeurs exactes du tableau ci-dessous. Cela indique à Internet : « quand quelqu'un visite mon sous-domaine, redirige-le vers PagePersona ».",
       "dns_step2_example": "Exemple : si votre domaine est acmeagency.com et que vous définissez l'hôte sur clients, votre lien d'inscription personnalisé devient clients.acmeagency.com. Vous voulez utiliser votre domaine racine ? Définissez l'hôte sur @ à la place.",
       "dns_step3_title": "Étape 3 — Attendez, puis vérifiez",
-      "dns_step3_body": "Les modifications DNS peuvent prendre de quelques minutes à 24 heures pour se propager. Une fois fait, entrez votre domaine complet dans le champ ci-dessous et cliquez sur Vérifier et enregistrer."
+      "dns_step3_body": "Les modifications DNS peuvent prendre de quelques minutes à 24 heures pour se propager. Une fois fait, entrez votre domaine complet dans le champ ci-dessous et cliquez sur Vérifier et enregistrer.",
+      "hide_powered_by": "Supprimer le pied de page « Propulsé par PagePersona »",
+      "hide_powered_by_hint": "Lorsqu'activé, vos pages client ne montreront aucune marque PagePersona."
     }
   },
   "common": {

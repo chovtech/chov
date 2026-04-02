@@ -18,6 +18,7 @@ class WorkspaceUpdate(BaseModel):
     white_label_brand_name: Optional[str] = None
     white_label_logo: Optional[str] = None
     white_label_primary_color: Optional[str] = None
+    hide_powered_by: Optional[bool] = None
     custom_domain: Optional[str] = None
 
 
@@ -57,9 +58,10 @@ def _fmt(ws) -> dict:
         "client_email": _get(ws, 'client_email'),
         "client_name": _get(ws, 'client_name'),
         "client_access_level": _get(ws, 'client_access_level', 'full'),
-        "white_label_logo": _get(ws, 'logo_url'),
-        "white_label_brand_name": _get(ws, 'brand_name'),
-        "white_label_primary_color": _get(ws, 'brand_color') or '#1A56DB',
+        "white_label_logo": _get(ws, 'white_label_logo'),
+        "white_label_brand_name": _get(ws, 'white_label_brand_name'),
+        "white_label_primary_color": _get(ws, 'white_label_primary_color') or '#1A56DB',
+        "hide_powered_by": _get(ws, 'hide_powered_by') or False,
         "custom_domain": _get(ws, 'custom_domain'),
         "custom_domain_verified": _get(ws, 'custom_domain_verified') or False,
         "member_role": _get(ws, 'member_role', 'owner'),
@@ -153,9 +155,10 @@ _PATCH_FIELD_MAP = {
     'client_name': 'client_name',
     'client_email': 'client_email',
     'client_access_level': 'client_access_level',
-    'white_label_brand_name': 'brand_name',
-    'white_label_logo': 'logo_url',
-    'white_label_primary_color': 'brand_color',
+    'white_label_brand_name': 'white_label_brand_name',
+    'white_label_logo': 'white_label_logo',
+    'white_label_primary_color': 'white_label_primary_color',
+    'hide_powered_by': 'hide_powered_by',
     'custom_domain': 'custom_domain',
 }
 

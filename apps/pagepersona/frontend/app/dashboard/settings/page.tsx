@@ -179,7 +179,7 @@ export default function SettingsPage() {
   const [wsNameMsg, setWsNameMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   // White label state
-  const [wlForm, setWlForm] = useState({ brand_name: '', logo: '', primary_color: '#1A56DB' })
+  const [wlForm, setWlForm] = useState({ brand_name: '', logo: '', primary_color: '#1A56DB', hide_powered_by: false })
   const [wlLoading, setWlLoading] = useState(false)
   const [wlMsg, setWlMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
@@ -218,6 +218,7 @@ export default function SettingsPage() {
         brand_name: activeWorkspace.white_label_brand_name || '',
         logo: activeWorkspace.white_label_logo || '',
         primary_color: activeWorkspace.white_label_primary_color || '#1A56DB',
+        hide_powered_by: activeWorkspace.hide_powered_by || false,
       })
       setDomainInput(activeWorkspace.custom_domain || '')
     }
@@ -249,6 +250,7 @@ export default function SettingsPage() {
         white_label_brand_name: wlForm.brand_name || undefined,
         white_label_logo: wlForm.logo || undefined,
         white_label_primary_color: wlForm.primary_color,
+        hide_powered_by: wlForm.hide_powered_by,
       })
       await refreshWorkspaces()
       setWlMsg({ type: 'success', text: t('settings.whitelabel.saved') })
@@ -609,6 +611,19 @@ export default function SettingsPage() {
                         />
                       </div>
                       <p className="text-xs text-slate-400 mt-1">{t('settings.whitelabel.color_hint')}</p>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{t('settings.whitelabel.hide_powered_by')}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{t('settings.whitelabel.hide_powered_by_hint')}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setWlForm(p => ({ ...p, hide_powered_by: !p.hide_powered_by }))}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ml-4 ${wlForm.hide_powered_by ? 'bg-[#1A56DB]' : 'bg-slate-300 dark:bg-slate-600'}`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${wlForm.hide_powered_by ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </button>
                     </div>
                     <div className="flex justify-end pt-2">
                       <button type="submit" disabled={wlLoading} className="px-6 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">

@@ -219,7 +219,9 @@
       "dns_step2_body": "Inside the DNS settings, add a new record with the exact values in the table below. Think of it as telling the internet: \"whenever someone visits my subdomain, send them to PagePersona\".",
       "dns_step2_example": "Example: if your domain is acmeagency.com and you set the Host to clients, your branded signup link becomes clients.acmeagency.com. Want to use your root domain? Set the Host to @ instead.",
       "dns_step3_title": "Step 3 — Wait, then verify",
-      "dns_step3_body": "DNS changes can take anywhere from a few minutes to 24 hours to spread across the internet. Once done, type your full domain in the field below and click Verify & Save."
+      "dns_step3_body": "DNS changes can take anywhere from a few minutes to 24 hours to spread across the internet. Once done, type your full domain in the field below and click Verify & Save.",
+      "hide_powered_by": "Remove \"Powered by PagePersona\" footer",
+      "hide_powered_by_hint": "When enabled, your branded client pages will not show any PagePersona branding."
     }
   },
   "language": {

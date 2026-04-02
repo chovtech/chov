@@ -17,6 +17,7 @@ export interface Workspace {
   white_label_logo: string | null
   white_label_brand_name: string | null
   white_label_primary_color: string
+  hide_powered_by: boolean
   custom_domain: string | null
   custom_domain_verified: boolean
   created_at: string | null

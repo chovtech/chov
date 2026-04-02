@@ -11,6 +11,7 @@ interface InviteInfo {
   white_label_brand_name: string | null
   white_label_logo: string | null
   white_label_primary_color: string
+  hide_powered_by: boolean
   user_exists: boolean
 }
 
@@ -81,7 +82,7 @@ function AcceptForm() {
   const brandName = info?.white_label_brand_name || 'PagePersona'
   const primaryColor = info?.white_label_primary_color || '#1A56DB'
   const logo = info?.white_label_logo
-  const showPoweredBy = !info?.white_label_brand_name
+  const showPoweredBy = !info?.hide_powered_by
 
   const inputClass = 'w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent outline-none text-gray-900 transition-all'
 

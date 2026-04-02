@@ -52,8 +52,8 @@ async def get_invite_info(
 ):
     """Return white label + workspace info for an invite token. No auth required."""
     invite = await db.fetchrow(
-        """SELECT ci.id, ci.status, ci.email,
-                  w.name as workspace_name, w.brand_name, w.logo_url, w.brand_color,
+        """SELECT ci.id, ci.status, ci.client_email as email,
+                  w.name as workspace_name, w.white_label_brand_name, w.white_label_logo, w.white_label_primary_color, w.hide_powered_by,
                   u.name as inviter_name
            FROM client_invites ci
            JOIN workspaces w ON ci.workspace_id = w.id
@@ -74,9 +74,10 @@ async def get_invite_info(
         "workspace_name": invite['workspace_name'],
         "inviter_name": invite['inviter_name'],
         "client_email": invite['email'],
-        "white_label_brand_name": invite['brand_name'],
-        "white_label_logo": invite['logo_url'],
-        "white_label_primary_color": invite['brand_color'] or '#1A56DB',
+        "white_label_brand_name": invite['white_label_brand_name'],
+        "white_label_logo": invite['white_label_logo'],
+        "white_label_primary_color": invite['white_label_primary_color'] or '#1A56DB',
+        "hide_powered_by": invite['hide_powered_by'] or False,
         "user_exists": existing_user is not None,
     }
 
@@ -90,7 +91,7 @@ async def resolve_domain(
 ):
     """Look up white label settings by custom domain. No auth required."""
     ws = await db.fetchrow(
-        """SELECT id, brand_name, logo_url, brand_color
+        """SELECT id, white_label_brand_name, white_label_logo, white_label_primary_color, hide_powered_by
            FROM workspaces
            WHERE custom_domain = $1 AND custom_domain_verified = true""",
         domain
@@ -99,9 +100,10 @@ async def resolve_domain(
         raise HTTPException(status_code=404, detail="Domain not found")
     return {
         "workspace_id": str(ws['id']),
-        "white_label_brand_name": ws['brand_name'],
-        "white_label_logo": ws['logo_url'],
-        "white_label_primary_color": ws['brand_color'] or '#1A56DB',
+        "white_label_brand_name": ws['white_label_brand_name'],
+        "white_label_logo": ws['white_label_logo'],
+        "white_label_primary_color": ws['white_label_primary_color'] or '#1A56DB',
+        "hide_powered_by": ws['hide_powered_by'] or False,
     }
 
 
@@ -120,14 +122,14 @@ async def join_info(
 
     if domain:
         ws = await db.fetchrow(
-            """SELECT id, slug, name, brand_name, logo_url, brand_color
+            """SELECT id, slug, name, white_label_brand_name, white_label_logo, white_label_primary_color, hide_powered_by
                FROM workspaces
                WHERE custom_domain = $1 AND custom_domain_verified = true""",
             domain
         )
     else:
         ws = await db.fetchrow(
-            """SELECT id, slug, name, brand_name, logo_url, brand_color
+            """SELECT id, slug, name, white_label_brand_name, white_label_logo, white_label_primary_color, hide_powered_by
                FROM workspaces WHERE slug = $1""",
             slug
         )
@@ -138,9 +140,10 @@ async def join_info(
     return {
         "agency_workspace_id": str(ws['id']),
         "agency_slug": ws['slug'],
-        "brand_name": ws['brand_name'] or ws['name'],
-        "logo_url": ws['logo_url'],
-        "brand_color": ws['brand_color'] or '#1A56DB',
+        "brand_name": ws['white_label_brand_name'] or ws['name'],
+        "logo_url": ws['white_label_logo'],
+        "brand_color": ws['white_label_primary_color'] or '#1A56DB',
+        "hide_powered_by": ws['hide_powered_by'] or False,
     }
 
 
@@ -154,7 +157,7 @@ async def self_signup(
     """Public self-signup: create user + client workspace under agency."""
     # Look up agency workspace by slug
     agency = await db.fetchrow(
-        "SELECT id, owner_id, name, brand_name, logo_url, brand_color FROM workspaces WHERE slug = $1",
+        "SELECT id, owner_id, name, white_label_brand_name, white_label_logo, white_label_primary_color FROM workspaces WHERE slug = $1",
         body.slug
     )
     if not agency:

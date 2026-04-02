@@ -117,6 +117,7 @@ export const workspaceApi = {
     white_label_brand_name?: string
     white_label_logo?: string
     white_label_primary_color?: string
+    hide_powered_by?: boolean
     custom_domain?: string
     client_name?: string
     client_email?: string

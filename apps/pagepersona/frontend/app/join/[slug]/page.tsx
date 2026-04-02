@@ -10,6 +10,7 @@ interface JoinInfo {
   brand_name: string
   logo_url: string | null
   brand_color: string
+  hide_powered_by: boolean
 }
 
 export default function JoinPage() {
@@ -71,6 +72,7 @@ export default function JoinPage() {
   )
 
   const primary = info.brand_color
+  const showPoweredBy = !info.hide_powered_by
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
@@ -157,7 +159,9 @@ export default function JoinPage() {
           </p>
         </div>
 
-        <p className="text-center text-xs text-slate-400 mt-6">Powered by PagePersona</p>
+        {showPoweredBy && (
+          <p className="text-center text-xs text-slate-400 mt-6">Powered by PagePersona</p>
+        )}
       </div>
     </div>
   )

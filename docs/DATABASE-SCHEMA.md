@@ -41,6 +41,7 @@ All 15 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | white_label_brand_name | TEXT | White-label brand name |
 | white_label_logo | TEXT | White-label logo (R2 URL) |
 | white_label_primary_color | TEXT | White-label primary colour hex — default `'#1A56DB'` |
+| hide_powered_by | BOOLEAN | Default `false` — when true, "Powered by PagePersona" hidden on client pages |
 | custom_domain | TEXT UNIQUE | e.g. `clients.acmeagency.com` |
 | custom_domain_verified | BOOLEAN | Default `false` |
 | created_at | TIMESTAMPTZ | Default `now()` |
