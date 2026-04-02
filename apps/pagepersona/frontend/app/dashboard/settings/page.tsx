@@ -669,19 +669,41 @@ export default function SettingsPage() {
                         <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{t('settings.whitelabel.custom_domain_instructions')}</span>
                         <Icon name="expand_more" className="transition-transform group-open:rotate-180 text-slate-400 text-[20px]" />
                       </summary>
-                      <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                        <p className="text-xs text-slate-600 dark:text-slate-400 mb-4 leading-relaxed font-medium">{t('settings.whitelabel.dns_note')}</p>
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{t('settings.whitelabel.dns_recommended')}</p>
-                          <div className="grid grid-cols-4 gap-2 p-3 bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-700 text-[11px]">
-                            <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_type')}</div>
-                            <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_host')}</div>
-                            <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_value')}</div>
-                            <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_ttl')}</div>
-                            <div className="font-bold text-slate-900 dark:text-white">CNAME</div>
-                            <div className="font-bold text-slate-900 dark:text-white">{domainInput ? domainInput.split('.')[0] : 'clients'}</div>
-                            <div className="font-bold text-[#1A56DB]">app.usepagepersona.com</div>
-                            <div className="text-slate-500">{t('settings.whitelabel.dns_automatic')}</div>
+                      <div className="p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 space-y-5">
+                        {/* Step 1 */}
+                        <div className="flex gap-3">
+                          <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1A56DB] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">1</span>
+                          <div>
+                            <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">{t('settings.whitelabel.dns_step1_title')}</p>
+                            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{t('settings.whitelabel.dns_step1_body')}</p>
+                          </div>
+                        </div>
+                        {/* Step 2 */}
+                        <div className="flex gap-3">
+                          <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1A56DB] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">2</span>
+                          <div className="flex-1">
+                            <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">{t('settings.whitelabel.dns_step2_title')}</p>
+                            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-3">{t('settings.whitelabel.dns_step2_body')}</p>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{t('settings.whitelabel.dns_recommended')}</p>
+                            <div className="grid grid-cols-4 gap-2 p-3 bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-700 text-[11px] mb-3">
+                              <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_type')}</div>
+                              <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_host')}</div>
+                              <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_value')}</div>
+                              <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_ttl')}</div>
+                              <div className="font-bold text-slate-900 dark:text-white">CNAME</div>
+                              <div className="font-bold text-slate-900 dark:text-white">{domainInput ? domainInput.split('.')[0] : 'clients'}</div>
+                              <div className="font-bold text-[#1A56DB]">app.usepagepersona.com</div>
+                              <div className="text-slate-500">{t('settings.whitelabel.dns_automatic')}</div>
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed italic">{t('settings.whitelabel.dns_step2_example')}</p>
+                          </div>
+                        </div>
+                        {/* Step 3 */}
+                        <div className="flex gap-3">
+                          <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1A56DB] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">3</span>
+                          <div>
+                            <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">{t('settings.whitelabel.dns_step3_title')}</p>
+                            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{t('settings.whitelabel.dns_step3_body')}</p>
                           </div>
                         </div>
                       </div>

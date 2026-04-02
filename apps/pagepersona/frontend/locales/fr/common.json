@@ -209,7 +209,14 @@
       "copy": "Copier",
       "copied": "Copié !",
       "domain_retry": "Réessayer la vérification",
-      "domain_checking": "Vérification..."
+      "domain_checking": "Vérification...",
+      "dns_step1_title": "Étape 1 — Connectez-vous à votre registraire de domaine",
+      "dns_step1_body": "C'est le site où vous avez acheté votre nom de domaine — ex. GoDaddy, Namecheap, Cloudflare. Cherchez une section appelée « DNS », « Gestion DNS » ou « Serveurs de noms ».",
+      "dns_step2_title": "Étape 2 — Ajoutez un enregistrement CNAME",
+      "dns_step2_body": "Dans les paramètres DNS, ajoutez un nouvel enregistrement avec les valeurs exactes du tableau ci-dessous. Cela indique à Internet : « quand quelqu'un visite mon sous-domaine, redirige-le vers PagePersona ».",
+      "dns_step2_example": "Exemple : si votre domaine est acmeagency.com et que vous définissez l'hôte sur clients, votre lien d'inscription personnalisé devient clients.acmeagency.com. Vous voulez utiliser votre domaine racine ? Définissez l'hôte sur @ à la place.",
+      "dns_step3_title": "Étape 3 — Attendez, puis vérifiez",
+      "dns_step3_body": "Les modifications DNS peuvent prendre de quelques minutes à 24 heures pour se propager. Une fois fait, entrez votre domaine complet dans le champ ci-dessous et cliquez sur Vérifier et enregistrer."
     }
   },
   "common": {
