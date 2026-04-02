@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { authApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { useLanguage } from '@/lib/hooks/useLanguage'
+import { useAuthBranding } from '@/lib/context/AuthBrandingContext'
 
 function SignUpForm() {
   const router = useRouter()
@@ -13,6 +14,9 @@ function SignUpForm() {
   const { language } = useLanguage()
   const searchParams = useSearchParams()
 
+  const branding = useAuthBranding()
+  const brandColor = branding?.brand_color || '#1A56DB'
+  const brandSlug = branding?.slug || ''
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -140,7 +144,8 @@ function SignUpForm() {
 
           <button
             type="submit" disabled={loading}
-            className="w-full py-3 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
+            className="w-full py-3 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
+            style={{ backgroundColor: brandColor }}
           >
             {loading ? (
               <>
@@ -174,7 +179,7 @@ function SignUpForm() {
       <footer className="mt-8 text-center">
         <p className="text-gray-600">
           {t('signup.hasAccount')}{' '}
-          <Link href="/login" className="text-[#1A56DB] font-semibold hover:underline">{t('signup.logIn')}</Link>
+          <Link href={brandSlug ? `/login?slug=${brandSlug}` : '/login'} className="font-semibold hover:underline" style={{ color: brandColor }}>{t('signup.logIn')}</Link>
         </p>
       </footer>
     </>

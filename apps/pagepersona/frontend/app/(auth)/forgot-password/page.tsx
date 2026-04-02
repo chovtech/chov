@@ -5,9 +5,12 @@ import Link from 'next/link'
 import Icon from '@/components/ui/Icon'
 import { userApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
+import { useAuthBranding } from '@/lib/context/AuthBrandingContext'
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation('auth')
+  const branding = useAuthBranding()
+  const brandColor = branding?.brand_color || '#1A56DB'
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
@@ -82,7 +85,8 @@ export default function ForgotPasswordPage() {
           <div className="space-y-3">
             <Link
               href="/login"
-              className="w-full flex items-center justify-center gap-2 py-3 bg-[#1A56DB] hover:bg-[#1547b3] text-white font-bold rounded-xl transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 text-white font-bold rounded-xl transition-colors"
+              style={{ backgroundColor: brandColor }}
             >
               <Icon name="arrow_back" className="text-lg" />
               {t('forgotPassword.backToLogin2')}
@@ -141,7 +145,8 @@ export default function ForgotPasswordPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-[#1A56DB]/20"
+          className="w-full py-3 disabled:opacity-60 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+          style={{ backgroundColor: brandColor }}
         >
           {loading ? (
             <>

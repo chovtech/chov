@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { authApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
+import { useAuthBranding } from '@/lib/context/AuthBrandingContext'
 
 function SlugReader({ onSlug }: { onSlug: (s: string) => void }) {
   const searchParams = useSearchParams()
@@ -31,6 +32,8 @@ export default function LoginPage() {
   const { t } = useTranslation('auth')
 
 
+  const branding = useAuthBranding()
+  const brandColor = branding?.brand_color || '#1A56DB'
   const [slug, setSlug] = useState('')
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
@@ -148,7 +151,8 @@ export default function LoginPage() {
 
           <button
             type="submit" disabled={loading}
-            className="w-full py-3 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
+            className="w-full py-3 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
+            style={{ backgroundColor: brandColor }}
           >
             {loading ? (
               <>
@@ -182,7 +186,7 @@ export default function LoginPage() {
       <footer className="mt-8 text-center">
         <p className="text-gray-600">
           {t('login.noAccount')}{' '}
-          <Link href="/signup" className="text-[#1A56DB] font-semibold hover:underline">{t('login.signUp')}</Link>
+          <Link href={slug ? `/signup?slug=${slug}` : '/signup'} className="font-semibold hover:underline" style={{ color: brandColor }}>{t('login.signUp')}</Link>
         </p>
       </footer>
     </>

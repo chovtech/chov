@@ -8,11 +8,13 @@ import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
 import Footer from '@/components/layouts/Footer'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { clientsApi } from '@/lib/api/client'
+import { AuthBrandingProvider } from '@/lib/context/AuthBrandingContext'
 
 interface Branding {
   brand_name: string
   logo_url: string | null
   brand_color: string
+  hide_powered_by: boolean
   slug: string
 }
 
@@ -79,11 +81,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
       <main className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
-          {children}
+          <AuthBrandingProvider value={branding}>
+            {children}
+          </AuthBrandingProvider>
         </div>
       </main>
 
-      <Footer />
+      {(!branding || !branding.hide_powered_by) && <Footer />}
     </div>
   )
 }
