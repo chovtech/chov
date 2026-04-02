@@ -363,9 +363,9 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="p-8 max-w-3xl">
+        <div className="p-8">
           {activeTab === 'general' && (
-            <div className="space-y-6">
+            <div className="max-w-3xl space-y-6">
               {/* Avatar */}
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
                 <h2 className="text-base font-bold text-slate-900 dark:text-white mb-4">{t('settings.profile.title')}</h2>
@@ -507,11 +507,13 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'team' && (
-            <TeamTab t={t} inputClass={inputClass} msgClass={msgClass} />
+            <div className="max-w-3xl">
+              <TeamTab t={t} inputClass={inputClass} msgClass={msgClass} />
+            </div>
           )}
 
           {activeTab === 'billing' && (
-            <div className="space-y-6">
+            <div className="max-w-3xl space-y-6">
               {/* Current plan card */}
               <div className="bg-gradient-to-br from-[#1A56DB] to-[#1547b3] rounded-2xl p-6 text-white shadow-lg shadow-[#1A56DB]/20">
                 <div className="flex items-start justify-between">
@@ -557,205 +559,252 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'whitelabel' && (
-            <div className="space-y-6">
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
-                <h2 className="text-base font-bold text-slate-900 dark:text-white mb-1">{t('settings.whitelabel.title')}</h2>
-                <p className="text-sm text-slate-500 mb-6">{t('settings.whitelabel.desc')}</p>
-                {wlMsg && <div className={msgClass(wlMsg.type)}>{wlMsg.text}</div>}
-                <form onSubmit={handleWlSave} className="space-y-5">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.whitelabel.brand_name')}</label>
-                    <input
-                      type="text"
-                      value={wlForm.brand_name}
-                      onChange={e => setWlForm(p => ({ ...p, brand_name: e.target.value }))}
-                      placeholder={t('settings.whitelabel.brand_name_placeholder')}
-                      className={inputClass}
-                    />
-                    <p className="text-xs text-slate-400 mt-1">{t('settings.whitelabel.brand_name_hint')}</p>
+            <div className="max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-10">
+              {/* Left: form sections */}
+              <div className="lg:col-span-2 space-y-8">
+
+                {/* Branding section */}
+                <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">{t('settings.whitelabel.branding_title')}</h3>
+                    <span className="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-wider">{t('settings.whitelabel.visual_identity')}</span>
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.whitelabel.logo')}</label>
-                    <ImageUploader
-                      value={wlForm.logo}
-                      onChange={url => setWlForm(p => ({ ...p, logo: url }))}
-                      placeholder={t('settings.whitelabel.logo_placeholder')}
-                    />
-                    <p className="text-xs text-slate-400 mt-1">{t('settings.whitelabel.logo_hint')}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.whitelabel.primary_color')}</label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="color"
-                        value={wlForm.primary_color}
-                        onChange={e => setWlForm(p => ({ ...p, primary_color: e.target.value }))}
-                        className="w-12 h-10 rounded-lg border border-slate-200 cursor-pointer p-0.5"
-                      />
+                  {wlMsg && <div className={msgClass(wlMsg.type)}>{wlMsg.text}</div>}
+                  <form onSubmit={handleWlSave} className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.whitelabel.brand_name')}</label>
                       <input
                         type="text"
-                        value={wlForm.primary_color}
-                        onChange={e => setWlForm(p => ({ ...p, primary_color: e.target.value }))}
-                        placeholder="#1A56DB"
-                        className={inputClass + ' font-mono'}
+                        value={wlForm.brand_name}
+                        onChange={e => setWlForm(p => ({ ...p, brand_name: e.target.value }))}
+                        placeholder={t('settings.whitelabel.brand_name_placeholder')}
+                        className={inputClass}
                       />
+                      <p className="text-xs text-slate-400 mt-1">{t('settings.whitelabel.brand_name_hint')}</p>
                     </div>
-                    <p className="text-xs text-slate-400 mt-1">{t('settings.whitelabel.color_hint')}</p>
-                  </div>
-                  {/* Preview */}
-                  <div className="rounded-xl border border-slate-200 p-4 bg-slate-50">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">{t('settings.whitelabel.preview')}</p>
-                    <div className="flex items-center gap-3">
-                      {wlForm.logo ? (
-                        <img src={wlForm.logo} alt="Logo" className="h-8 object-contain" />
-                      ) : (
-                        <div className="size-8 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{ background: wlForm.primary_color }}>
-                          {(wlForm.brand_name || 'WL').slice(0, 2).toUpperCase()}
-                        </div>
-                      )}
-                      <span className="text-sm font-bold text-slate-900">{wlForm.brand_name || t('settings.whitelabel.brand_name_placeholder')}</span>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('settings.whitelabel.logo')}</label>
+                      <ImageUploader
+                        value={wlForm.logo}
+                        onChange={url => setWlForm(p => ({ ...p, logo: url }))}
+                        placeholder={t('settings.whitelabel.logo_placeholder')}
+                      />
+                      <p className="text-xs text-slate-400 mt-1">{t('settings.whitelabel.logo_hint')}</p>
                     </div>
-                    <div className="mt-3 flex gap-2">
-                      <button type="button" className="px-4 py-1.5 text-white text-xs font-bold rounded-lg" style={{ background: wlForm.primary_color }}>
-                        {t('settings.whitelabel.preview_btn')}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex justify-end pt-2">
-                    <button type="submit" disabled={wlLoading} className="px-6 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
-                      {wlLoading ? t('settings.whitelabel.saving') : t('settings.whitelabel.save')}
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              {/* Custom Domain */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
-                <h2 className="text-base font-bold text-slate-900 dark:text-white mb-1">{t('settings.whitelabel.custom_domain')}</h2>
-                <p className="text-sm text-slate-500 mb-5">Use your own domain or subdomain so clients see your brand, not PagePersona.</p>
-
-                {/* Step-by-step DNS instructions */}
-                <div className="mb-6 rounded-xl border border-blue-100 bg-blue-50 p-5 space-y-4">
-                  <p className="text-xs font-bold text-[#1A56DB] uppercase tracking-wider">How to set up your custom domain</p>
-                  <ol className="space-y-3 text-sm text-slate-700">
-                    <li className="flex gap-3">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1A56DB] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">1</span>
-                      <span>Log in to the company that manages your domain (e.g. GoDaddy, Namecheap, Cloudflare). This is where you bought your domain name.</span>
-                    </li>
-                    <li className="flex gap-3">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1A56DB] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">2</span>
-                      <div>
-                        <span>Find the <strong>DNS settings</strong> for your domain and add a new <strong>CNAME record</strong> with these values:</span>
-                        <div className="mt-2 grid grid-cols-2 gap-2">
-                          <div className="bg-white border border-blue-100 rounded-lg p-2.5">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Name / Host</p>
-                            <code className="text-xs font-mono text-slate-800">clients <span className="text-slate-400">(or whatever subdomain you want)</span></code>
-                          </div>
-                          <div className="bg-white border border-blue-100 rounded-lg p-2.5">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Points to / Value</p>
-                            <code className="text-xs font-mono text-[#1A56DB]">app.usepagepersona.com</code>
-                          </div>
-                        </div>
-                        <p className="text-xs text-slate-500 mt-2">Example: if your domain is <strong>acmeagency.com</strong> and you set the Name to <strong>clients</strong>, your signup link becomes <strong>clients.acmeagency.com</strong>. You can also use your root domain (acmeagency.com) — set the Name to <strong>@</strong> in that case.</p>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('settings.whitelabel.primary_color')}</label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="color"
+                          value={wlForm.primary_color}
+                          onChange={e => setWlForm(p => ({ ...p, primary_color: e.target.value }))}
+                          className="w-12 h-10 rounded-lg border border-slate-200 cursor-pointer p-0.5 flex-shrink-0"
+                        />
+                        <input
+                          type="text"
+                          value={wlForm.primary_color}
+                          onChange={e => setWlForm(p => ({ ...p, primary_color: e.target.value }))}
+                          placeholder="#1A56DB"
+                          className={inputClass + ' font-mono flex-1'}
+                        />
                       </div>
-                    </li>
-                    <li className="flex gap-3">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1A56DB] text-white text-[10px] font-bold flex items-center justify-center mt-0.5">3</span>
-                      <span>DNS changes can take a few minutes to a few hours to go live. Once done, enter your full domain below and click <strong>Verify & Save</strong>.</span>
-                    </li>
-                  </ol>
-                </div>
-
-                {domainMsg && <div className={msgClass(domainMsg.type)}>{domainMsg.text}</div>}
-
-                <form onSubmit={handleDomainSave} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.whitelabel.custom_domain')}</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={domainInput}
-                        onChange={e => setDomainInput(e.target.value)}
-                        placeholder="clients.yourdomain.com"
-                        className={inputClass + ' flex-1'}
-                      />
-                      <button type="submit" disabled={domainSaving || !domainInput.trim()} className="px-4 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors text-sm flex-shrink-0">
-                        {domainSaving ? 'Verifying...' : 'Verify & Save'}
+                      <p className="text-xs text-slate-400 mt-1">{t('settings.whitelabel.color_hint')}</p>
+                    </div>
+                    <div className="flex justify-end pt-2">
+                      <button type="submit" disabled={wlLoading} className="px-6 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
+                        {wlLoading ? t('settings.whitelabel.saving') : t('settings.whitelabel.save_branding')}
                       </button>
                     </div>
-                  </div>
-                </form>
+                  </form>
+                </section>
 
-                {/* Verify row — only show when domain is set */}
-                {activeWorkspace?.custom_domain && (
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {activeWorkspace.custom_domain_verified ? (
-                        <>
-                          <Icon name="check_circle" className="text-green-500 text-[18px]" />
-                          <span className="text-sm text-green-600 font-medium">{t('settings.whitelabel.custom_domain_verified')}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Icon name="schedule" className="text-amber-500 text-[18px]" />
-                          <span className="text-sm text-amber-600 font-medium">{t('settings.whitelabel.custom_domain_unverified')}</span>
-                        </>
-                      )}
-                    </div>
-                    {!activeWorkspace.custom_domain_verified && (
-                      <button
-                        onClick={handleDomainVerify}
-                        disabled={domainVerifying}
-                        className="px-4 py-2 text-sm font-bold text-[#1A56DB] bg-[#1A56DB]/10 rounded-xl hover:bg-[#1A56DB]/20 disabled:opacity-60 transition-colors"
-                      >
-                        {domainVerifying ? 'Checking...' : 'Retry Verification'}
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
+                {/* URLs & Domain section */}
+                <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">{t('settings.whitelabel.urls_domain_title')}</h3>
+                  <p className="text-sm text-slate-500 mb-6">{t('settings.whitelabel.urls_domain_desc')}</p>
 
-              {/* Client Signup Link */}
-              {activeWorkspace && (
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
-                  <h2 className="text-base font-bold text-slate-900 dark:text-white mb-1">Client Signup Link</h2>
-                  <p className="text-sm text-slate-500 mb-5">Share this link with clients so they can create their own account directly under your workspace.</p>
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-semibold text-slate-400 w-16 shrink-0">Default</span>
-                      <div className="flex-1 flex items-center gap-2 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
-                        <span className="text-xs text-slate-600 truncate flex-1 font-mono">{`https://app.usepagepersona.com/join/${activeWorkspace.slug}`}</span>
+                  {/* Signup link */}
+                  {activeWorkspace && (
+                    <div className="mb-6">
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('settings.whitelabel.signup_link_label')}</label>
+                      <div className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
+                        <span className="text-xs text-slate-600 dark:text-slate-400 truncate flex-1 font-mono">{`https://app.usepagepersona.com/join/${activeWorkspace.slug}`}</span>
                         <button
+                          type="button"
                           onClick={() => { navigator.clipboard.writeText(`https://app.usepagepersona.com/join/${activeWorkspace.slug}`); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000) }}
                           className="shrink-0 flex items-center gap-1 text-xs font-semibold text-[#1A56DB] hover:underline"
                         >
                           <Icon name={linkCopied ? 'check' : 'content_copy'} className="text-sm" />
-                          {linkCopied ? 'Copied!' : 'Copy'}
+                          {linkCopied ? t('settings.whitelabel.copied') : t('settings.whitelabel.copy')}
                         </button>
                       </div>
-                    </div>
-                    {activeWorkspace.custom_domain && activeWorkspace.custom_domain_verified ? (
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-semibold text-slate-400 w-16 shrink-0">Custom</span>
-                        <div className="flex-1 flex items-center gap-2 px-3 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl overflow-hidden">
+                      {activeWorkspace.custom_domain && activeWorkspace.custom_domain_verified && (
+                        <div className="flex items-center gap-2 px-3 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl mt-2">
                           <span className="text-xs text-emerald-700 truncate flex-1 font-mono">{`https://${activeWorkspace.custom_domain}`}</span>
                           <button
+                            type="button"
                             onClick={() => { navigator.clipboard.writeText(`https://${activeWorkspace.custom_domain}`); setCustomLinkCopied(true); setTimeout(() => setCustomLinkCopied(false), 2000) }}
                             className="shrink-0 flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:underline"
                           >
                             <Icon name={customLinkCopied ? 'check' : 'content_copy'} className="text-sm" />
-                            {customLinkCopied ? 'Copied!' : 'Copy'}
+                            {customLinkCopied ? t('settings.whitelabel.copied') : t('settings.whitelabel.copy')}
                           </button>
                         </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="border-t border-slate-100 dark:border-slate-800 my-6" />
+
+                  {/* Custom domain */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{t('settings.whitelabel.custom_domain')}</label>
+                      <p className="text-xs text-slate-500">{t('settings.whitelabel.custom_domain_hint')}</p>
+                    </div>
+
+                    {/* DNS instructions collapsible */}
+                    <details className="group border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 overflow-hidden">
+                      <summary className="flex items-center justify-between p-4 cursor-pointer select-none">
+                        <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{t('settings.whitelabel.custom_domain_instructions')}</span>
+                        <Icon name="expand_more" className="transition-transform group-open:rotate-180 text-slate-400 text-[20px]" />
+                      </summary>
+                      <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mb-4 leading-relaxed font-medium">{t('settings.whitelabel.dns_note')}</p>
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{t('settings.whitelabel.dns_recommended')}</p>
+                          <div className="grid grid-cols-4 gap-2 p-3 bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-700 text-[11px]">
+                            <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_type')}</div>
+                            <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_host')}</div>
+                            <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_value')}</div>
+                            <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_ttl')}</div>
+                            <div className="font-bold text-slate-900 dark:text-white">CNAME</div>
+                            <div className="font-bold text-slate-900 dark:text-white">{domainInput ? domainInput.split('.')[0] : 'clients'}</div>
+                            <div className="font-bold text-[#1A56DB]">app.usepagepersona.com</div>
+                            <div className="text-slate-500">{t('settings.whitelabel.dns_automatic')}</div>
+                          </div>
+                        </div>
                       </div>
-                    ) : (
-                      <p className="text-xs text-slate-400 ml-[76px]">
-                        Once your custom domain is verified above, your branded signup link will appear here.
-                      </p>
+                    </details>
+
+                    {domainMsg && <div className={msgClass(domainMsg.type)}>{domainMsg.text}</div>}
+
+                    <form onSubmit={handleDomainSave}>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={domainInput}
+                          onChange={e => setDomainInput(e.target.value)}
+                          placeholder="clients.yourdomain.com"
+                          className={inputClass + ' flex-1'}
+                        />
+                        <button
+                          type="submit"
+                          disabled={domainSaving || !domainInput.trim()}
+                          className="px-4 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors text-sm flex-shrink-0"
+                        >
+                          {domainSaving ? t('settings.whitelabel.custom_domain_verifying') : t('settings.whitelabel.custom_domain_verify')}
+                        </button>
+                      </div>
+                    </form>
+
+                    {/* Domain status */}
+                    {activeWorkspace?.custom_domain && (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {activeWorkspace.custom_domain_verified ? (
+                            <>
+                              <Icon name="check_circle" className="text-green-500 text-[18px]" />
+                              <span className="text-sm text-green-600 font-medium">{t('settings.whitelabel.custom_domain_verified')}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Icon name="schedule" className="text-amber-500 text-[18px]" />
+                              <span className="text-sm text-amber-600 font-medium">{t('settings.whitelabel.custom_domain_unverified')}</span>
+                            </>
+                          )}
+                        </div>
+                        {!activeWorkspace.custom_domain_verified && (
+                          <button
+                            type="button"
+                            onClick={handleDomainVerify}
+                            disabled={domainVerifying}
+                            className="px-4 py-2 text-sm font-bold text-[#1A56DB] bg-[#1A56DB]/10 rounded-xl hover:bg-[#1A56DB]/20 disabled:opacity-60 transition-colors"
+                          >
+                            {domainVerifying ? t('settings.whitelabel.domain_checking') : t('settings.whitelabel.domain_retry')}
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
+                </section>
+
+              </div>
+
+              {/* Right: Live preview */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold uppercase text-slate-400 tracking-widest">{t('settings.whitelabel.live_preview')}</h3>
+                  <span className="size-2 rounded-full bg-green-500 animate-pulse inline-block" />
                 </div>
-              )}
+                <div className="sticky top-24 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-xl bg-white dark:bg-slate-900">
+                  {/* Topbar mockup */}
+                  <div className="h-12 flex items-center px-4 justify-between" style={{ background: wlForm.primary_color }}>
+                    <div className="flex items-center gap-2">
+                      {wlForm.logo ? (
+                        <img src={wlForm.logo} alt="Logo" className="h-6 object-contain max-w-[120px]" />
+                      ) : (
+                        <>
+                          <div className="size-6 rounded-md bg-white/20 flex items-center justify-center">
+                            <span className="text-white font-bold text-[10px]">{(wlForm.brand_name || 'PP').slice(0, 2).toUpperCase()}</span>
+                          </div>
+                          <span className="text-white text-sm font-bold truncate max-w-[100px]">{wlForm.brand_name || 'Your Brand'}</span>
+                        </>
+                      )}
+                    </div>
+                    <div className="size-6 rounded-full bg-white/20" />
+                  </div>
+                  {/* Sidebar + content mockup */}
+                  <div className="flex" style={{ height: '300px' }}>
+                    <div className="w-14 bg-white dark:bg-slate-800 border-r border-slate-100 dark:border-slate-700 p-2 flex flex-col gap-3 shrink-0">
+                      <div className="w-full h-1 bg-slate-100 dark:bg-slate-700 rounded-full mt-2" />
+                      <div className="w-full h-1 rounded-full" style={{ background: wlForm.primary_color + '30' }} />
+                      <div className="w-full h-1 bg-slate-100 dark:bg-slate-700 rounded-full" />
+                      <div className="w-full h-1 bg-slate-100 dark:bg-slate-700 rounded-full" />
+                      <div className="w-full h-1 rounded-full" style={{ background: wlForm.primary_color + '60' }} />
+                      <div className="mt-auto pb-2">
+                        <div className="w-full h-4 rounded-md" style={{ background: wlForm.primary_color + 'CC' }} />
+                      </div>
+                    </div>
+                    <div className="flex-1 p-4 space-y-3 bg-slate-50 dark:bg-slate-950 overflow-hidden">
+                      <div className="space-y-1">
+                        <div className="w-24 h-2.5 bg-slate-900 dark:bg-white rounded-full" />
+                        <div className="w-36 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="h-16 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-2 space-y-2">
+                          <div className="w-1/2 h-1 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                          <div className="w-full h-2 rounded-full" style={{ background: wlForm.primary_color + '20' }} />
+                        </div>
+                        <div className="h-16 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-2 space-y-2">
+                          <div className="w-1/2 h-1 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                          <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full" />
+                        </div>
+                      </div>
+                      <div className="h-24 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-3 space-y-2">
+                        <div className="w-1/3 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full" />
+                        <div className="w-full h-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-full" />
+                        <div className="w-full h-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-full" />
+                        <div className="w-2/3 h-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-full" />
+                      </div>
+                      <div className="h-16 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800" />
+                    </div>
+                  </div>
+                  <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800 text-center">
+                    <p className="text-[10px] font-semibold text-slate-400">{t('settings.whitelabel.preview_subtitle')}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

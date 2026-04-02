@@ -190,7 +190,26 @@
       "custom_domain_verified": "Domaine vérifié",
       "custom_domain_unverified": "Pas encore vérifié",
       "custom_domain_failed": "Échec de la vérification — enregistrement DNS introuvable",
-      "custom_domain_saved": "Domaine personnalisé enregistré"
+      "custom_domain_saved": "Domaine personnalisé enregistré",
+      "branding_title": "Image de marque",
+      "visual_identity": "Identité visuelle",
+      "save_branding": "Enregistrer l'identité",
+      "urls_domain_title": "URLs & Domaine",
+      "urls_domain_desc": "Définissez le lien d'inscription de votre agence et connectez un domaine personnalisé.",
+      "signup_link_label": "Lien d'inscription client",
+      "live_preview": "Aperçu en direct",
+      "preview_subtitle": "Ainsi votre marque apparaît aux clients.",
+      "dns_note": "Ajoutez un enregistrement CNAME chez votre registraire de domaine pointant vers nos serveurs.",
+      "dns_recommended": "Recommandé : enregistrement CNAME",
+      "dns_col_type": "Type",
+      "dns_col_host": "Hôte",
+      "dns_col_value": "Valeur",
+      "dns_col_ttl": "TTL",
+      "dns_automatic": "Automatique",
+      "copy": "Copier",
+      "copied": "Copié !",
+      "domain_retry": "Réessayer la vérification",
+      "domain_checking": "Vérification..."
     }
   },
   "common": {

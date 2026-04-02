@@ -193,7 +193,26 @@
       "custom_domain_verified": "Domain verified",
       "custom_domain_unverified": "Not yet verified",
       "custom_domain_failed": "Verification failed — DNS record not found",
-      "custom_domain_saved": "Custom domain saved"
+      "custom_domain_saved": "Custom domain saved",
+      "branding_title": "Branding",
+      "visual_identity": "Visual Identity",
+      "save_branding": "Save Branding",
+      "urls_domain_title": "URLs & Domain",
+      "urls_domain_desc": "Set your agency's signup link and connect a custom domain so clients see your brand.",
+      "signup_link_label": "Client Signup Link",
+      "live_preview": "Live Preview",
+      "preview_subtitle": "How your branding appears to clients.",
+      "dns_note": "Add a CNAME record in your domain registrar pointing to our servers.",
+      "dns_recommended": "Recommended: CNAME Record",
+      "dns_col_type": "Type",
+      "dns_col_host": "Host",
+      "dns_col_value": "Value",
+      "dns_col_ttl": "TTL",
+      "dns_automatic": "Automatic",
+      "copy": "Copy",
+      "copied": "Copied!",
+      "domain_retry": "Retry Verification",
+      "domain_checking": "Checking..."
     }
   },
   "language": {
