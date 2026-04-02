@@ -1,5 +1,10 @@
 # CLAUDE.md — Chov Monorepo
-> Info desk only. Read this first, then pull the doc you need for the task.
+
+## HOW TO USE THIS FILE
+
+**Before starting any task:** Read this file first. Find the section relevant to the task and open that doc to get the detail you need. This file is the main branch — it points you to everything else.
+
+**After finishing any task:** Look at which docs are affected by what you built. Update them so the documentation stays fresh and accurate.
 
 ---
 
