@@ -12,6 +12,7 @@ interface JoinInfo {
   agency_slug: string
   brand_name: string
   logo_url: string | null
+  icon_url: string | null
   brand_color: string
   hide_powered_by: boolean
 }
@@ -44,6 +45,13 @@ export default function JoinPage() {
       })
       .catch(() => setNotFound(true))
   }, [slug])
+
+  useEffect(() => {
+    if (!info) return
+    document.title = info.brand_name
+    const link = document.querySelector<HTMLLinkElement>('link[rel~="icon"]')
+    if (link) link.href = info.icon_url || '/favicon.ico'
+  }, [info])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
