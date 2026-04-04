@@ -704,7 +704,7 @@ export default function SettingsPage() {
                           <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_ttl')}</div>
                           <div className="font-bold text-slate-900 dark:text-white">CNAME</div>
                           <div className="font-bold text-slate-900 dark:text-white">{domainInput ? domainInput.split('.')[0] : 'clients'}</div>
-                          <div className="font-bold text-brand">app.usepagepersona.com</div>
+                          <div className="font-bold text-brand">cname.usepagepersona.com</div>
                           <div className="text-slate-500">{t('settings.whitelabel.dns_automatic')}</div>
                         </div>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{t('settings.whitelabel.dns_root_label')}</p>
@@ -715,7 +715,7 @@ export default function SettingsPage() {
                           <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_ttl')}</div>
                           <div className="font-bold text-slate-900 dark:text-white">ALIAS</div>
                           <div className="font-bold text-slate-900 dark:text-white">@</div>
-                          <div className="font-bold text-brand">app.usepagepersona.com</div>
+                          <div className="font-bold text-brand">cname.usepagepersona.com</div>
                           <div className="text-slate-500">{t('settings.whitelabel.dns_automatic')}</div>
                         </div>
                         <p className="text-xs text-slate-500 italic mb-4">{t('settings.whitelabel.dns_root_note')}</p>

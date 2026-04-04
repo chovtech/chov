@@ -322,9 +322,9 @@ async def verify_domain(
     try:
         domain_ip = socket.gethostbyname(custom_domain)
         try:
-            target_ip = socket.gethostbyname('app.usepagepersona.com')
+            target_ip = socket.gethostbyname('cname.usepagepersona.com')
             verified = domain_ip == target_ip
-            message = "Domain verified successfully" if verified else "Domain does not point to app.usepagepersona.com"
+            message = "Domain verified successfully" if verified else "Domain does not point to cname.usepagepersona.com"
         except socket.gaierror:
             verified = bool(domain_ip)
             message = "Domain resolves — could not verify target IP"
