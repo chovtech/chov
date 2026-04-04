@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 import asyncpg
+import asyncio
 import re
 import socket
+import subprocess
 from pydantic import BaseModel
 from typing import Optional
 from app.database import get_db
@@ -284,9 +286,23 @@ async def list_clients(
     return [_fmt(r) for r in rows]
 
 
+def _provision_domain_ssl(domain: str) -> None:
+    """Run the SSL provisioning script for a verified custom domain.
+    Executed in a background thread so it doesn't block the API response."""
+    try:
+        subprocess.run(
+            ['sudo', '/home/chike/chov/scripts/provision_domain.sh', domain],
+            timeout=120,
+            capture_output=True
+        )
+    except Exception:
+        pass  # Provisioning failures are non-fatal — user can retry from the dashboard
+
+
 @router.post("/{workspace_id}/verify-domain")
 async def verify_domain(
     workspace_id: str,
+    background_tasks: BackgroundTasks,
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
@@ -320,4 +336,8 @@ async def verify_domain(
         "UPDATE workspaces SET custom_domain_verified = $1 WHERE id = $2",
         verified, workspace_id
     )
+
+    if verified:
+        background_tasks.add_task(_provision_domain_ssl, custom_domain)
+
     return {"verified": verified, "message": message}
