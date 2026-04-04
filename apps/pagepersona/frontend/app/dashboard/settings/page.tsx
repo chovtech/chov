@@ -179,7 +179,7 @@ export default function SettingsPage() {
   const [wsNameMsg, setWsNameMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   // White label state
-  const [wlForm, setWlForm] = useState({ brand_name: '', logo: '', primary_color: '#1A56DB', hide_powered_by: false })
+  const [wlForm, setWlForm] = useState({ brand_name: '', logo: '', icon: '', primary_color: '#1A56DB', hide_powered_by: false })
   const [wlLoading, setWlLoading] = useState(false)
   const [wlMsg, setWlMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
@@ -217,6 +217,7 @@ export default function SettingsPage() {
       setWlForm({
         brand_name: activeWorkspace.white_label_brand_name || '',
         logo: activeWorkspace.white_label_logo || '',
+        icon: activeWorkspace.white_label_icon || '',
         primary_color: activeWorkspace.white_label_primary_color || 'var(--color-primary)',
         hide_powered_by: activeWorkspace.hide_powered_by || false,
       })
@@ -247,8 +248,9 @@ export default function SettingsPage() {
     setWlLoading(true)
     try {
       await workspaceApi.update(activeWorkspace.id, {
-        white_label_brand_name: wlForm.brand_name || undefined,
-        white_label_logo: wlForm.logo || undefined,
+        white_label_brand_name: wlForm.brand_name.trim() || null,
+        white_label_logo: wlForm.logo.trim() || null,
+        white_label_icon: wlForm.icon.trim() || null,
         white_label_primary_color: wlForm.primary_color,
         hide_powered_by: wlForm.hide_powered_by,
       })
@@ -592,6 +594,15 @@ export default function SettingsPage() {
                         placeholder={t('settings.whitelabel.logo_placeholder')}
                       />
                       <p className="text-xs text-slate-400 mt-1">{t('settings.whitelabel.logo_hint')}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('settings.whitelabel.icon')}</label>
+                      <ImageUploader
+                        value={wlForm.icon}
+                        onChange={url => setWlForm(p => ({ ...p, icon: url }))}
+                        placeholder={t('settings.whitelabel.icon_placeholder')}
+                      />
+                      <p className="text-xs text-slate-400 mt-1">{t('settings.whitelabel.icon_hint')}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('settings.whitelabel.primary_color')}</label>

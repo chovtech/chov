@@ -69,7 +69,7 @@ export default function Sidebar() {
     ? `${(user.name || '').split(' ')[0]}'s ${t('nav.workspace')}`
     : t('nav.workspace'))
 
-  const { brandName, logo, primaryColor } = useWhiteLabel()
+  const { brandName, logo, icon, primaryColor } = useWhiteLabel()
 
   const isClientUser = activeWorkspace?.member_role === 'client'
   const isViewOnly = isClientUser && activeWorkspace?.client_access_level === 'view_only'
@@ -107,11 +107,13 @@ export default function Sidebar() {
           {logo ? (
             <img src={logo} alt={brandName} className="h-8 object-contain" />
           ) : (
-            <div className="size-8 rounded-lg flex items-center justify-center text-white shadow-md"
+            <div className="size-8 rounded-lg flex items-center justify-center text-white shadow-md overflow-hidden"
               style={{ backgroundColor: primaryColor }}>
-              {brandName === 'PagePersona'
-                ? <Icon name="layers" className="text-[18px]" />
-                : <span className="text-sm font-bold">{brandName.slice(0, 2).toUpperCase()}</span>
+              {icon
+                ? <img src={icon} alt={brandName} className="w-full h-full object-cover" />
+                : brandName === 'PagePersona'
+                  ? <Icon name="layers" className="text-[18px]" />
+                  : <span className="text-sm font-bold">{brandName.slice(0, 2).toUpperCase()}</span>
               }
             </div>
           )}

@@ -6,12 +6,14 @@ import { useWorkspace } from './WorkspaceContext'
 interface WhiteLabelValue {
   brandName: string
   logo: string | null
+  icon: string | null
   primaryColor: string
 }
 
 const WhiteLabelContext = createContext<WhiteLabelValue>({
   brandName: 'PagePersona',
   logo: null,
+  icon: null,
   primaryColor: '#1A56DB',
 })
 
@@ -20,6 +22,7 @@ export function WhiteLabelProvider({ children }: { children: React.ReactNode }) 
 
   const brandName = activeWorkspace?.white_label_brand_name || 'PagePersona'
   const logo = activeWorkspace?.white_label_logo || null
+  const icon = activeWorkspace?.white_label_icon || null
   const primaryColor = activeWorkspace?.white_label_primary_color || '#1A56DB'
 
   useEffect(() => {
@@ -27,7 +30,7 @@ export function WhiteLabelProvider({ children }: { children: React.ReactNode }) 
   }, [primaryColor])
 
   return (
-    <WhiteLabelContext.Provider value={{ brandName, logo, primaryColor }}>
+    <WhiteLabelContext.Provider value={{ brandName, logo, icon, primaryColor }}>
       {children}
     </WhiteLabelContext.Provider>
   )

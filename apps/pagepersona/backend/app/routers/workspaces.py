@@ -17,6 +17,7 @@ class WorkspaceUpdate(BaseModel):
     client_access_level: Optional[str] = None
     white_label_brand_name: Optional[str] = None
     white_label_logo: Optional[str] = None
+    white_label_icon: Optional[str] = None
     white_label_primary_color: Optional[str] = None
     hide_powered_by: Optional[bool] = None
     custom_domain: Optional[str] = None
@@ -61,6 +62,7 @@ def _fmt(ws) -> dict:
         "client_access_level": _get(ws, 'client_access_level', 'full'),
         # Client workspaces use parent (agency) white-label settings
         "white_label_logo": _get(ws, 'parent_logo') or _get(ws, 'white_label_logo') if _get(ws, 'type') == 'client' else _get(ws, 'white_label_logo'),
+        "white_label_icon": _get(ws, 'parent_icon') or _get(ws, 'white_label_icon') if _get(ws, 'type') == 'client' else _get(ws, 'white_label_icon'),
         "white_label_brand_name": _get(ws, 'parent_brand_name') or _get(ws, 'white_label_brand_name') if _get(ws, 'type') == 'client' else _get(ws, 'white_label_brand_name'),
         "white_label_primary_color": (_get(ws, 'parent_color') or _get(ws, 'white_label_primary_color') or '#1A56DB') if _get(ws, 'type') == 'client' else (_get(ws, 'white_label_primary_color') or '#1A56DB'),
         "hide_powered_by": (_get(ws, 'parent_hide_powered_by') or _get(ws, 'hide_powered_by') or False) if _get(ws, 'type') == 'client' else (_get(ws, 'hide_powered_by') or False),
@@ -100,6 +102,7 @@ async def list_workspaces(
           pw.slug as parent_slug,
           pw.white_label_brand_name as parent_brand_name,
           pw.white_label_logo as parent_logo,
+          pw.white_label_icon as parent_icon,
           pw.white_label_primary_color as parent_color,
           pw.hide_powered_by as parent_hide_powered_by,
           COALESCE(wm.role, 'owner') as member_role,
@@ -165,6 +168,7 @@ _PATCH_FIELD_MAP = {
     'client_access_level': 'client_access_level',
     'white_label_brand_name': 'white_label_brand_name',
     'white_label_logo': 'white_label_logo',
+    'white_label_icon': 'white_label_icon',
     'white_label_primary_color': 'white_label_primary_color',
     'hide_powered_by': 'hide_powered_by',
     'custom_domain': 'custom_domain',
@@ -201,7 +205,7 @@ async def update_workspace(
     if not row:
         raise HTTPException(status_code=404, detail="Workspace not found")
 
-    updates = body.dict(exclude_none=True)
+    updates = body.dict(exclude_unset=True)
     if not updates:
         return _fmt(row)
 

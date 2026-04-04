@@ -16,6 +16,7 @@ export interface Workspace {
   client_access_level: string
   member_role: string
   white_label_logo: string | null
+  white_label_icon: string | null
   white_label_brand_name: string | null
   white_label_primary_color: string
   hide_powered_by: boolean

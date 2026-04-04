@@ -115,7 +115,8 @@ export const workspaceApi = {
   update: (id: string, data: {
     name?: string
     white_label_brand_name?: string
-    white_label_logo?: string
+    white_label_logo?: string | null
+    white_label_icon?: string | null
     white_label_primary_color?: string
     hide_powered_by?: boolean
     custom_domain?: string
