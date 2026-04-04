@@ -291,7 +291,7 @@ def _provision_domain_ssl(domain: str) -> None:
     Executed in a background thread so it doesn't block the API response."""
     try:
         subprocess.run(
-            ['sudo', '/home/chike/chov/scripts/provision_domain.sh', domain],
+            ['sudo', 'bash', '/home/chike/chov/scripts/provision_domain.sh', domain],
             timeout=120,
             capture_output=True
         )
