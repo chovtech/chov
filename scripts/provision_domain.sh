@@ -60,6 +60,14 @@ server {
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
+    # SDK script — served directly from the CDN file, branded under this domain
+    location = /pp.js {
+        alias /var/www/cdn/pp.js;
+        add_header Content-Type "application/javascript";
+        add_header Access-Control-Allow-Origin "*";
+        add_header Cache-Control "public, max-age=300";
+    }
+
     location / {
         proxy_pass http://localhost:$BACKEND_PORT;
         proxy_http_version 1.1;

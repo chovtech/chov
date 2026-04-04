@@ -25,7 +25,7 @@ interface Project {
   updated_at: string
 }
 
-function InstallModal({ project, onClose, onVerified }: { project: Project; onClose: () => void; onVerified: () => void }) {
+function InstallModal({ project, cdnBase, onClose, onVerified }: { project: Project; cdnBase: string; onClose: () => void; onVerified: () => void }) {
   const { t } = useTranslation('common')
   const [copied, setCopied] = useState(false)
   const [verifying, setVerifying] = useState(false)
@@ -35,7 +35,7 @@ function InstallModal({ project, onClose, onVerified }: { project: Project; onCl
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [sendError, setSendError] = useState('')
-  const scriptTag = `<script async src="https://cdn.usepagepersona.com/pp.js?id=${project.script_id}"></script>`
+  const scriptTag = `<script async src="${cdnBase}/pp.js?id=${project.script_id}"></script>`
   const handleCopy = () => {
     navigator.clipboard.writeText(scriptTag)
     setCopied(true)
@@ -407,7 +407,7 @@ export default function ProjectDashboardPage() {
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
       <Topbar workspaceName="Marketing Team Workspace" />
-      {showInstall && <InstallModal project={project} onClose={() => setShowInstall(false)} onVerified={() => setProject(p => p ? { ...p, script_verified: true } : p)} />}
+      {showInstall && <InstallModal project={project} cdnBase={activeWorkspace?.custom_domain && activeWorkspace?.custom_domain_verified ? `https://${activeWorkspace.custom_domain}` : 'https://cdn.usepagepersona.com'} onClose={() => setShowInstall(false)} onVerified={() => setProject(p => p ? { ...p, script_verified: true } : p)} />}
       {showEdit && <EditProjectModal project={project} onClose={() => setShowEdit(false)} onSaved={(updated) => { setProject(updated); setShowEdit(false) }} />}
       {showDelete && <DeleteProjectModal project={project} onClose={() => setShowDelete(false)} onDeleted={() => router.push('/dashboard')} />}
       <div className="p-8 max-w-7xl mx-auto w-full">
