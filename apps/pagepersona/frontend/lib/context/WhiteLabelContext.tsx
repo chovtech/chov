@@ -29,6 +29,13 @@ export function WhiteLabelProvider({ children }: { children: React.ReactNode }) 
     document.documentElement.style.setProperty('--color-primary', primaryColor)
   }, [primaryColor])
 
+  useEffect(() => {
+    const link = document.querySelector<HTMLLinkElement>('link[rel~="icon"]')
+    if (link) {
+      link.href = icon || '/favicon.ico'
+    }
+  }, [icon])
+
   return (
     <WhiteLabelContext.Provider value={{ brandName, logo, icon, primaryColor }}>
       {children}
