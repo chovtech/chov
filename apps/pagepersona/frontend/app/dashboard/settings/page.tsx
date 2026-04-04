@@ -707,6 +707,18 @@ export default function SettingsPage() {
                           <div className="font-bold text-brand">app.usepagepersona.com</div>
                           <div className="text-slate-500">{t('settings.whitelabel.dns_automatic')}</div>
                         </div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{t('settings.whitelabel.dns_root_label')}</p>
+                        <div className="grid grid-cols-4 gap-2 p-3 bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-700 text-[11px] mb-2">
+                          <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_type')}</div>
+                          <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_host')}</div>
+                          <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_value')}</div>
+                          <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_ttl')}</div>
+                          <div className="font-bold text-slate-900 dark:text-white">ALIAS</div>
+                          <div className="font-bold text-slate-900 dark:text-white">@</div>
+                          <div className="font-bold text-brand">app.usepagepersona.com</div>
+                          <div className="text-slate-500">{t('settings.whitelabel.dns_automatic')}</div>
+                        </div>
+                        <p className="text-xs text-slate-500 italic mb-4">{t('settings.whitelabel.dns_root_note')}</p>
                         <div className="space-y-2 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                           <p><span className="font-bold text-slate-700 dark:text-slate-300">{t('settings.whitelabel.dns_step1_title')}:</span> {t('settings.whitelabel.dns_step1_body')}</p>
                           <p><span className="font-bold text-slate-700 dark:text-slate-300">{t('settings.whitelabel.dns_step2_title')}:</span> {t('settings.whitelabel.dns_step2_body')}</p>
