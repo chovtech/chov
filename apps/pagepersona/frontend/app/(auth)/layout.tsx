@@ -13,6 +13,7 @@ import { AuthBrandingProvider } from '@/lib/context/AuthBrandingContext'
 interface Branding {
   brand_name: string
   logo_url: string | null
+  icon_url: string | null
   brand_color: string
   hide_powered_by: boolean
   slug: string
@@ -83,6 +84,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     document.title = branding?.brand_name || 'PagePersona'
+    const link = document.querySelector<HTMLLinkElement>('link[rel~="icon"]')
+    if (link) link.href = branding?.icon_url || '/favicon.ico'
   }, [branding])
 
   function handleResolved(b: Branding | null) {

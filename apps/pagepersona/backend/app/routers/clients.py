@@ -122,14 +122,14 @@ async def join_info(
 
     if domain:
         ws = await db.fetchrow(
-            """SELECT id, slug, name, white_label_brand_name, white_label_logo, white_label_primary_color, hide_powered_by
+            """SELECT id, slug, name, white_label_brand_name, white_label_logo, white_label_icon, white_label_primary_color, hide_powered_by
                FROM workspaces
                WHERE custom_domain = $1 AND custom_domain_verified = true""",
             domain
         )
     else:
         ws = await db.fetchrow(
-            """SELECT id, slug, name, white_label_brand_name, white_label_logo, white_label_primary_color, hide_powered_by
+            """SELECT id, slug, name, white_label_brand_name, white_label_logo, white_label_icon, white_label_primary_color, hide_powered_by
                FROM workspaces WHERE slug = $1""",
             slug
         )
@@ -142,6 +142,7 @@ async def join_info(
         "agency_slug": ws['slug'],
         "brand_name": ws['white_label_brand_name'] or ws['name'],
         "logo_url": ws['white_label_logo'],
+        "icon_url": ws['white_label_icon'],
         "brand_color": ws['white_label_primary_color'] or '#1A56DB',
         "hide_powered_by": ws['hide_powered_by'] or False,
     }
