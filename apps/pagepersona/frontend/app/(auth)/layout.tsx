@@ -30,36 +30,46 @@ function BrandingLoader({ onResolved }: { onResolved: (b: Branding | null) => vo
     const host = window.location.hostname
     const isCustomDomain = host !== APP_DOMAIN && host !== 'localhost' && !host.startsWith('127.')
 
-    if (!slug && !isCustomDomain) {
-      sessionStorage.removeItem(BRANDING_CACHE_KEY)
+    // Read cached branding from localStorage (survives browser restarts)
+    let cached: Branding | null = null
+    try {
+      const raw = localStorage.getItem(BRANDING_CACHE_KEY)
+      if (raw) cached = JSON.parse(raw) as Branding
+    } catch { /* ignore */ }
+
+    // If no slug in URL and not a custom domain, fall back to the remembered slug
+    // so clients who bookmarked /login without ?slug still see their agency's branding
+    const effectiveSlug = slug || (!isCustomDomain ? (cached?.slug ?? null) : null)
+
+    if (!effectiveSlug && !isCustomDomain) {
+      // Visiting as a direct PP user with no prior agency context
+      localStorage.removeItem(BRANDING_CACHE_KEY)
       onResolved(null)
       return
     }
 
-    // Restore from cache immediately so there's no flash on language-switch reload
-    try {
-      const cached = sessionStorage.getItem(BRANDING_CACHE_KEY)
-      if (cached) {
-        const parsed = JSON.parse(cached) as Branding
-        if ((slug && parsed.slug === slug) || isCustomDomain) {
-          onResolved(parsed)
-        }
-      }
-    } catch { /* ignore */ }
+    // Show cached immediately — no flash while the fresh fetch lands
+    if (cached && (isCustomDomain || cached.slug === effectiveSlug)) {
+      onResolved(cached)
+    }
 
     // Always fetch fresh to keep cache current
-    const fetcher = slug
-      ? clientsApi.joinInfo({ slug }).then(res => ({ ...res.data, slug } as Branding))
-      : clientsApi.joinInfo({ domain: host }).then(res => ({ ...res.data, slug: res.data.agency_slug } as Branding))
+    const fetcher = isCustomDomain
+      ? clientsApi.joinInfo({ domain: host }).then(res => ({ ...res.data, slug: res.data.agency_slug } as Branding))
+      : clientsApi.joinInfo({ slug: effectiveSlug! }).then(res => ({ ...res.data, slug: effectiveSlug } as Branding))
 
     fetcher
       .then(b => {
-        sessionStorage.setItem(BRANDING_CACHE_KEY, JSON.stringify(b))
+        localStorage.setItem(BRANDING_CACHE_KEY, JSON.stringify(b))
         onResolved(b)
       })
       .catch(() => {
-        sessionStorage.removeItem(BRANDING_CACHE_KEY)
-        onResolved(null)
+        // Only wipe cache if we had an explicit context (bad slug/domain) — keep showing
+        // cached branding on intermittent network errors so the page isn't blank
+        if (slug || isCustomDomain) {
+          localStorage.removeItem(BRANDING_CACHE_KEY)
+          onResolved(null)
+        }
       })
   }, [])
 
