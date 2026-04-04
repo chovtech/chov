@@ -81,6 +81,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   const [branding, setBranding] = useState<Branding | null>(null)
   const [resolved, setResolved] = useState(false)
 
+  useEffect(() => {
+    document.title = branding?.brand_name || 'PagePersona'
+  }, [branding])
+
   function handleResolved(b: Branding | null) {
     setBranding(b)
     setResolved(true)

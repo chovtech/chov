@@ -42,6 +42,10 @@ export function WhiteLabelProvider({ children }: { children: React.ReactNode }) 
   }, [activeWorkspace?.id, live?.brandName, live?.logo, live?.icon, live?.primaryColor])
 
   useEffect(() => {
+    document.title = display.brandName
+  }, [display.brandName])
+
+  useEffect(() => {
     document.documentElement.style.setProperty('--color-primary', display.primaryColor)
   }, [display.primaryColor])
 
