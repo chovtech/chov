@@ -91,7 +91,7 @@ function PopupPicker({ value, onChange, popups, loadingPopups }: { value: string
     <div className="flex flex-col gap-2 p-4 bg-slate-50 border border-slate-200 rounded-xl">
       <p className="text-xs font-bold text-slate-500">{t('rules.popup_none')}</p>
       <p className="text-xs text-slate-400">{t('rules.popup_none_desc')}</p>
-      <a href="/dashboard/elements/popups/new" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline">{t('rules.popup_go_create')}</a>
+      <a href="/dashboard/elements/popups/new" target="_blank" className="text-xs font-bold text-brand hover:underline">{t('rules.popup_go_create')}</a>
     </div>
   )
 
@@ -107,20 +107,20 @@ function PopupPicker({ value, onChange, popups, loadingPopups }: { value: string
           <button
             key={popup.id}
             onClick={() => onChange(JSON.stringify({ popup_id: popup.id, config: popup.config }))}
-            className={"flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all " + (selected?.id === popup.id ? 'border-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-100 hover:border-slate-300')}
+            className={"flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all " + (selected?.id === popup.id ? 'border-brand bg-brand/5' : 'border-slate-100 hover:border-slate-300')}
           >
-            <div className="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ background: popup.config?.bg_color || '#1A56DB' }}>
+            <div className="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ background: popup.config?.bg_color || 'var(--color-primary)' }}>
               <Icon name="web_asset" className="text-white text-base" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className={"text-sm font-bold truncate " + (selected?.id === popup.id ? 'text-[#1A56DB]' : 'text-slate-700')}>{popup.name}</p>
+              <p className={"text-sm font-bold truncate " + (selected?.id === popup.id ? 'text-brand' : 'text-slate-700')}>{popup.name}</p>
               <p className="text-[11px] text-slate-400">{popup.config?.position || 'center'}</p>
             </div>
-            {selected?.id === popup.id && <Icon name="check_circle" className="text-[#1A56DB] text-base flex-shrink-0" />}
+            {selected?.id === popup.id && <Icon name="check_circle" className="text-brand text-base flex-shrink-0" />}
           </button>
         ))}
       </div>
-      <a href="/dashboard/elements/popups/new" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline mt-1">{t('rules.popup_go_create')}</a>
+      <a href="/dashboard/elements/popups/new" target="_blank" className="text-xs font-bold text-brand hover:underline mt-1">{t('rules.popup_go_create')}</a>
     </div>
   )
 }
@@ -139,7 +139,7 @@ function CountdownPicker({ value, onChange, countdowns, loadingCountdowns }: { v
     <div className="flex flex-col gap-2 p-4 bg-slate-50 border border-slate-200 rounded-xl">
       <p className="text-xs font-bold text-slate-500">{t('rules.countdown_none')}</p>
       <p className="text-xs text-slate-400">{t('rules.countdown_none_desc')}</p>
-      <a href="/dashboard/elements/countdowns/new" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline">{t('rules.countdown_go_create')}</a>
+      <a href="/dashboard/elements/countdowns/new" target="_blank" className="text-xs font-bold text-brand hover:underline">{t('rules.countdown_go_create')}</a>
     </div>
   )
 
@@ -155,20 +155,20 @@ function CountdownPicker({ value, onChange, countdowns, loadingCountdowns }: { v
           <button
             key={countdown.id}
             onClick={() => onChange(JSON.stringify({ countdown_id: countdown.id, ends_at: countdown.ends_at, expiry_action: countdown.expiry_action, expiry_value: countdown.expiry_value, config: countdown.config }))}
-            className={"flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all " + (selected?.id === countdown.id ? 'border-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-100 hover:border-slate-300')}
+            className={"flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all " + (selected?.id === countdown.id ? 'border-brand bg-brand/5' : 'border-slate-100 hover:border-slate-300')}
           >
-            <div className="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ background: countdown.config?.digit_bg || '#1A56DB' }}>
+            <div className="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ background: countdown.config?.digit_bg || 'var(--color-primary)' }}>
               <Icon name="timer" className="text-white text-base" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className={"text-sm font-bold truncate " + (selected?.id === countdown.id ? 'text-[#1A56DB]' : 'text-slate-700')}>{countdown.name}</p>
+              <p className={"text-sm font-bold truncate " + (selected?.id === countdown.id ? 'text-brand' : 'text-slate-700')}>{countdown.name}</p>
               <p className="text-[11px] text-slate-400">{countdown.ends_at ? new Date(countdown.ends_at).toLocaleString() : '—'}</p>
             </div>
-            {selected?.id === countdown.id && <Icon name="check_circle" className="text-[#1A56DB] text-base flex-shrink-0" />}
+            {selected?.id === countdown.id && <Icon name="check_circle" className="text-brand text-base flex-shrink-0" />}
           </button>
         ))}
       </div>
-      <a href="/dashboard/elements/countdowns/new" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline mt-1">{t('rules.countdown_go_create')}</a>
+      <a href="/dashboard/elements/countdowns/new" target="_blank" className="text-xs font-bold text-brand hover:underline mt-1">{t('rules.countdown_go_create')}</a>
     </div>
   )
 }
@@ -374,11 +374,11 @@ function EditRulePageInner() {
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
-          <button onClick={() => router.push('/dashboard')} className="hover:text-[#1A56DB] transition-colors">{t('dashboard.heading')}</button>
+          <button onClick={() => router.push('/dashboard')} className="hover:text-brand transition-colors">{t('dashboard.heading')}</button>
           <Icon name="chevron_right" className="text-base" />
-          <button onClick={() => router.push('/dashboard/projects/' + projectId)} className="hover:text-[#1A56DB] transition-colors">{projectName}</button>
+          <button onClick={() => router.push('/dashboard/projects/' + projectId)} className="hover:text-brand transition-colors">{projectName}</button>
           <Icon name="chevron_right" className="text-base" />
-          <button onClick={() => router.push('/dashboard/projects/' + projectId + '/rules')} className="hover:text-[#1A56DB] transition-colors">{t('rules.heading')}</button>
+          <button onClick={() => router.push('/dashboard/projects/' + projectId + '/rules')} className="hover:text-brand transition-colors">{t('rules.heading')}</button>
           <Icon name="chevron_right" className="text-base" />
           <span className="text-slate-900 font-semibold">Edit Rule</span>
         </div>
@@ -397,7 +397,7 @@ function EditRulePageInner() {
             value={ruleName}
             onChange={e => setRuleName(e.target.value)}
             placeholder={t('rules.rule_name_placeholder')}
-            className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+            className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
           />
         </div>
 
@@ -405,7 +405,7 @@ function EditRulePageInner() {
         <div className="bg-white border border-slate-200 rounded-xl p-6 mb-6">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
-              <span className="px-3 py-1 bg-[#1A56DB]/10 text-[#1A56DB] text-xs font-bold rounded-full uppercase tracking-wider">IF</span>
+              <span className="px-3 py-1 bg-brand/10 text-brand text-xs font-bold rounded-full uppercase tracking-wider">IF</span>
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">{t('rules.trigger_conditions')}</h3>
             </div>
             {conditions.length > 1 && (
@@ -414,7 +414,7 @@ function EditRulePageInner() {
                   <button
                     key={op}
                     onClick={() => setConditionOperator(op as any)}
-                    className={'px-3 py-1 text-xs font-bold rounded-md transition-all ' + (conditionOperator === op ? 'bg-white shadow text-[#1A56DB]' : 'text-slate-500')}
+                    className={'px-3 py-1 text-xs font-bold rounded-md transition-all ' + (conditionOperator === op ? 'bg-white shadow text-brand' : 'text-slate-500')}
                   >
                     {op}
                   </button>
@@ -435,7 +435,7 @@ function EditRulePageInner() {
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Signal</label>
                     <button
                       onClick={() => openSignalModal(condition.id)}
-                      className="w-full flex items-center justify-between px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm hover:border-[#1A56DB] transition-colors"
+                      className="w-full flex items-center justify-between px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm hover:border-brand transition-colors"
                     >
                       <span className={condition.signal ? 'text-slate-900 font-medium' : 'text-slate-400'}>
                         {condition.signal_label || 'Pick a signal...'}
@@ -450,7 +450,7 @@ function EditRulePageInner() {
                         value={condition.operator}
                         onChange={e => updateCondition(condition.id, 'operator', e.target.value)}
                         disabled={!condition.signal}
-                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] disabled:opacity-40 transition-all"
+                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand disabled:opacity-40 transition-all"
                       >
                         {condition.operators.map(op => (
                           <option key={op} value={op}>{op}</option>
@@ -468,7 +468,7 @@ function EditRulePageInner() {
                         <select
                           value={condition.value}
                           onChange={e => updateCondition(condition.id, 'value', e.target.value)}
-                          className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+                          className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
                         >
                           <option value="">Select...</option>
                           {(condition.options || []).map(opt => (
@@ -484,7 +484,7 @@ function EditRulePageInner() {
                         onChange={e => updateCondition(condition.id, 'value', e.target.value)}
                         disabled={!condition.signal}
                         placeholder={t('rules.value_placeholder')}
-                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] disabled:opacity-40 transition-all"
+                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand disabled:opacity-40 transition-all"
                       />
                     )}
                   </div>
@@ -499,7 +499,7 @@ function EditRulePageInner() {
           </div>
           <button
             onClick={() => openSignalModal()}
-            className="flex items-center gap-1.5 text-[#1A56DB] text-sm font-semibold hover:underline"
+            className="flex items-center gap-1.5 text-brand text-sm font-semibold hover:underline"
           >
             <Icon name="add" className="text-base" />
             {t('rules.add_condition')}
@@ -516,7 +516,7 @@ function EditRulePageInner() {
             <div className="relative">
               <button
                 onClick={() => setActionMenuOpen(!actionMenuOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1A56DB]/10 text-[#1A56DB] text-xs font-bold rounded-lg hover:bg-[#1A56DB]/20 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand/10 text-brand text-xs font-bold rounded-lg hover:bg-brand/20 transition-colors"
               >
                 <Icon name="add" className="text-base" />
                 {t('rules.add_action')}
@@ -549,7 +549,7 @@ function EditRulePageInner() {
                 <div key={action.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                      <Icon name={ACTION_TYPES.find(a => a.key === action.type)?.icon || 'bolt'} className="text-[#1A56DB]" />
+                      <Icon name={ACTION_TYPES.find(a => a.key === action.type)?.icon || 'bolt'} className="text-brand" />
                       {action.type_label}
                     </span>
                     <button onClick={() => removeAction(action.id)} className="p-1.5 hover:bg-red-50 hover:text-red-500 text-slate-300 rounded-lg transition-colors">
@@ -565,11 +565,11 @@ function EditRulePageInner() {
                           value={action.target_block}
                           onChange={e => updateAction(action.id, 'target_block', e.target.value)}
                           placeholder="e.g. headline-01"
-                          className="flex-1 px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+                          className="flex-1 px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
                         />
                         <button
                           onClick={() => openPicker(actions.findIndex(a => a.id === action.id))}
-                          className="flex items-center gap-1.5 px-3 py-2.5 border border-[#1A56DB]/30 bg-[#1A56DB]/5 text-[#1A56DB] text-xs font-bold rounded-lg hover:bg-[#1A56DB]/10 transition-colors whitespace-nowrap">
+                          className="flex items-center gap-1.5 px-3 py-2.5 border border-brand/30 bg-brand/5 text-brand text-xs font-bold rounded-lg hover:bg-brand/10 transition-colors whitespace-nowrap">
                           <Icon name="ads_click" className="text-sm" />
                           {t('rules.pick_from_page')}
                         </button>
@@ -590,7 +590,7 @@ function EditRulePageInner() {
                           onChange={e => onTextChange(e.target.value)}
                           placeholder="Enter the content to show this visitor segment..."
                           rows={3}
-                          className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+                          className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
                         />
                         <div className="mt-2">
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">{t('picker.insert_token')}</p>
@@ -601,7 +601,7 @@ function EditRulePageInner() {
                                 onClick={() => injectToken(action.id, token)}
                                 className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-colors"
                               >
-                                <span className="text-[#1A56DB]/70">{'{'}</span>{token.slice(1,-1)}<span className="text-[#1A56DB]/70">{'}'}</span>
+                                <span className="text-brand/70">{'{'}</span>{token.slice(1,-1)}<span className="text-brand/70">{'}'}</span>
                               </button>
                             ))}
                           </div>
@@ -612,7 +612,7 @@ function EditRulePageInner() {
                             <div className="flex flex-col gap-2">
                               {detected.map(token => (
                                 <div key={token} className="flex items-center gap-2">
-                                  <span className="text-xs text-slate-500 w-28 shrink-0">{t('picker.fallback_for')} <span className="font-mono text-[#1A56DB]">{'{' + token + '}'}</span></span>
+                                  <span className="text-xs text-slate-500 w-28 shrink-0">{t('picker.fallback_for')} <span className="font-mono text-brand">{'{' + token + '}'}</span></span>
                                   <input
                                     type="text"
                                     value={parts.fallbacks[token] ?? TOKEN_DEFAULTS[token] ?? ''}
@@ -635,7 +635,7 @@ function EditRulePageInner() {
                         value={action.value}
                         onChange={e => updateAction(action.id, 'value', e.target.value)}
                         placeholder={t('picker.new_url_placeholder')}
-                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
                       />
                     </div>
                   )}
@@ -673,7 +673,7 @@ function EditRulePageInner() {
           <button
             onClick={handleSave}
             disabled={!canSave || saving}
-            className="flex items-center gap-2 px-8 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="flex items-center gap-2 px-8 py-2.5 bg-brand text-white text-sm font-bold rounded-xl shadow-md shadow-brand/20 hover:bg-brand/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           >
             <Icon name="save" className="text-base" />
             {saving ? t('actions.saving') : t('rules.save_rule')}
@@ -689,7 +689,7 @@ export default function EditRulePage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center h-screen bg-slate-50">
-        <div className="w-8 h-8 border-2 border-[#1A56DB] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
       </div>
     }>
       <EditRulePageInner />

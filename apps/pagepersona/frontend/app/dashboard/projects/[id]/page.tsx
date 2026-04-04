@@ -109,7 +109,7 @@ function InstallModal({ project, onClose, onVerified }: { project: Project; onCl
             </div>
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
-            <button onClick={handleVerify} disabled={verifying} className="flex items-center gap-2 bg-[#1A56DB] hover:bg-[#1A56DB]/90 disabled:opacity-60 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm">
+            <button onClick={handleVerify} disabled={verifying} className="flex items-center gap-2 bg-brand hover:bg-brand/90 disabled:opacity-60 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm">
               <Icon name={verifying ? 'sync' : 'refresh'} className={verifying ? 'animate-spin text-sm' : 'text-sm'} />
               {verifying ? t('project.installation_verifying') : t('project.installation_verify')}
             </button>
@@ -143,12 +143,12 @@ function InstallModal({ project, onClose, onVerified }: { project: Project; onCl
                 value={devEmail}
                 onChange={e => setDevEmail(e.target.value)}
                 placeholder={t('project.installation_send_to_dev_placeholder')}
-                className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/30 focus:border-[#1A56DB]"
+                className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
               />
               <button
                 onClick={handleSendToDev}
                 disabled={sending || !devEmail}
-                className="flex items-center gap-1.5 px-4 py-2 bg-[#1A56DB] hover:bg-[#1A56DB]/90 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-all"
+                className="flex items-center gap-1.5 px-4 py-2 bg-brand hover:bg-brand/90 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-all"
               >
                 <Icon name={sending ? 'sync' : 'send'} className={sending ? 'animate-spin text-sm' : 'text-sm'} />
                 {sending ? t('project.installation_sending') : t('project.installation_send_to_dev')}
@@ -216,7 +216,7 @@ function EditProjectModal({ project, onClose, onSaved }: { project: Project; onC
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
             />
           </div>
           <div>
@@ -231,7 +231,7 @@ function EditProjectModal({ project, onClose, onSaved }: { project: Project; onC
                 type="url"
                 value={pageUrl}
                 onChange={e => setPageUrl(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
               />
             )}
             <p className="text-xs text-slate-400 mt-1.5">
@@ -257,7 +257,7 @@ function EditProjectModal({ project, onClose, onSaved }: { project: Project; onC
             <button
               onClick={handleSave}
               disabled={saving || !name.trim() || !pageUrl.trim()}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] hover:bg-blue-700 disabled:opacity-40 text-white text-sm font-bold rounded-xl transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-brand hover:bg-blue-700 disabled:opacity-40 text-white text-sm font-bold rounded-xl transition-colors"
             >
               {saving ? t('project.saving') : t('project.save_changes')}
             </button>
@@ -367,7 +367,7 @@ export default function ProjectDashboardPage() {
         ) : (
           <div className="text-center">
             <p className="text-slate-500 mb-4">Project not found.</p>
-            <button onClick={() => router.push('/dashboard')} className="text-[#1A56DB] font-semibold hover:underline">Back to dashboard</button>
+            <button onClick={() => router.push('/dashboard')} className="text-brand font-semibold hover:underline">Back to dashboard</button>
           </div>
         )}
       </div>
@@ -412,7 +412,7 @@ export default function ProjectDashboardPage() {
       {showDelete && <DeleteProjectModal project={project} onClose={() => setShowDelete(false)} onDeleted={() => router.push('/dashboard')} />}
       <div className="p-8 max-w-7xl mx-auto w-full">
         <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
-          <button onClick={() => router.push('/dashboard')} className="hover:text-[#1A56DB] transition-colors">{t('dashboard.heading')}</button>
+          <button onClick={() => router.push('/dashboard')} className="hover:text-brand transition-colors">{t('dashboard.heading')}</button>
           <Icon name="chevron_right" className="text-base" />
           <span className="text-slate-900 font-semibold">{project.name}</span>
         </div>
@@ -429,13 +429,13 @@ export default function ProjectDashboardPage() {
                 )}
                 {thumbnailUploading && (
                   <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-                    <Icon name="sync" className="text-[#1A56DB] animate-spin" />
+                    <Icon name="sync" className="text-brand animate-spin" />
                   </div>
                 )}
               </div>
               {!isViewOnly && (
                 <>
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#1A56DB] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-brand rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                     onClick={() => thumbnailInputRef.current?.click()}>
                     <Icon name="edit" className="text-white text-xs" />
                   </div>
@@ -446,7 +446,7 @@ export default function ProjectDashboardPage() {
             <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-2xl font-black tracking-tight text-slate-900">{project.name}</h1>
-              {!isViewOnly && <button onClick={() => setShowEdit(true)} className="p-1.5 text-slate-400 hover:text-[#1A56DB] hover:bg-[#1A56DB]/5 rounded-lg transition-colors" title={t('project.edit_project')}><Icon name="edit" className="text-base" /></button>}
+              {!isViewOnly && <button onClick={() => setShowEdit(true)} className="p-1.5 text-slate-400 hover:text-brand hover:bg-brand/5 rounded-lg transition-colors" title={t('project.edit_project')}><Icon name="edit" className="text-base" /></button>}
               {project.status === 'active' ? (
                 <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase tracking-wider border border-green-200">{t('status.active')}</span>
               ) : (
@@ -464,7 +464,7 @@ export default function ProjectDashboardPage() {
                 </button>
               )}
             </div>
-            <a href={project.page_url} target="_blank" rel="noopener noreferrer" className="text-sm text-slate-500 hover:text-[#1A56DB] flex items-center gap-1 transition-colors">
+            <a href={project.page_url} target="_blank" rel="noopener noreferrer" className="text-sm text-slate-500 hover:text-brand flex items-center gap-1 transition-colors">
               <Icon name="link" className="text-sm" />{project.page_url}<Icon name="open_in_new" className="text-xs" />
             </a>
             </div>
@@ -473,7 +473,7 @@ export default function ProjectDashboardPage() {
             <button onClick={() => setShowDelete(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-200 text-slate-500 bg-white hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all">
               <Icon name="delete" className="text-base" />{t('project.delete_project')}
             </button>
-            <button onClick={handlePublishToggle} disabled={publishing} className={project.status === 'active' ? 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 disabled:opacity-50 transition-all' : 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-[#1A56DB]/30 text-[#1A56DB] bg-[#1A56DB]/5 hover:bg-[#1A56DB]/10 disabled:opacity-50 transition-all'}>
+            <button onClick={handlePublishToggle} disabled={publishing} className={project.status === 'active' ? 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 disabled:opacity-50 transition-all' : 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-brand/30 text-brand bg-brand/5 hover:bg-brand/10 disabled:opacity-50 transition-all'}>
               <Icon name={project.status === 'active' ? 'cloud_off' : 'cloud_upload'} className="text-base" />
               {publishing ? '...' : project.status === 'active' ? t('project.unpublish') : t('project.publish')}
             </button>
@@ -481,7 +481,7 @@ export default function ProjectDashboardPage() {
               <button
                 onClick={() => { if (project.script_verified) router.push('/dashboard/projects/' + project.id + '/rules') }}
                 disabled={!project.script_verified}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white text-sm font-bold rounded-xl shadow-md shadow-brand/20 hover:bg-brand/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
                 <Icon name="add" className="text-base" />{t('project.cta_rules_btn')}
               </button>
               {!project.script_verified && (
@@ -497,13 +497,13 @@ export default function ProjectDashboardPage() {
         <div className="flex gap-2 mb-8">
           <button
             onClick={() => setActiveTab('overview')}
-            className={'px-6 py-2.5 text-sm font-semibold rounded-xl border-2 transition-all ' + (activeTab === 'overview' ? 'border-[#1A56DB] text-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-200 text-slate-500 hover:border-slate-300 bg-white')}
+            className={'px-6 py-2.5 text-sm font-semibold rounded-xl border-2 transition-all ' + (activeTab === 'overview' ? 'border-brand text-brand bg-brand/5' : 'border-slate-200 text-slate-500 hover:border-slate-300 bg-white')}
           >
             {t('project.tab_overview')}
           </button>
           <button
             onClick={() => setActiveTab('analytics')}
-            className={'px-6 py-2.5 text-sm font-semibold rounded-xl border-2 transition-all ' + (activeTab === 'analytics' ? 'border-[#1A56DB] text-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-200 text-slate-500 hover:border-slate-300 bg-white')}
+            className={'px-6 py-2.5 text-sm font-semibold rounded-xl border-2 transition-all ' + (activeTab === 'analytics' ? 'border-brand text-brand bg-brand/5' : 'border-slate-200 text-slate-500 hover:border-slate-300 bg-white')}
           >
             {t('analytics.tab')}
           </button>
@@ -532,7 +532,7 @@ export default function ProjectDashboardPage() {
               <div className="flex items-center justify-end gap-2">
                 {[7, 30, 90].map(p => (
                   <button key={p} onClick={() => setAnalyticsPeriod(p)}
-                    className={'px-4 py-1.5 text-xs font-semibold rounded-lg border transition-all ' + (analyticsPeriod === p ? 'bg-[#1A56DB] text-white border-[#1A56DB]' : 'bg-white text-slate-600 border-slate-200 hover:border-[#1A56DB]/40')}>
+                    className={'px-4 py-1.5 text-xs font-semibold rounded-lg border transition-all ' + (analyticsPeriod === p ? 'bg-brand text-white border-brand' : 'bg-white text-slate-600 border-slate-200 hover:border-brand/40')}>
                     {t(`analytics.period_${p}`)}
                   </button>
                 ))}
@@ -557,8 +557,8 @@ export default function ProjectDashboardPage() {
                     ].map(card => (
                       <div key={card.label} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
                         <div className="flex items-center gap-2 mb-3">
-                          <div className="w-8 h-8 rounded-lg bg-[#1A56DB]/10 flex items-center justify-center">
-                            <Icon name={card.icon} className="text-[#1A56DB] text-base" />
+                          <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center">
+                            <Icon name={card.icon} className="text-brand text-base" />
                           </div>
                           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{card.label}</p>
                         </div>
@@ -741,7 +741,7 @@ export default function ProjectDashboardPage() {
           <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
               <h4 className="font-bold text-slate-900">{t('project.recent_activity')}</h4>
-              <button className="text-[#1A56DB] text-sm font-semibold hover:underline">{t('project.view_all')}</button>
+              <button className="text-brand text-sm font-semibold hover:underline">{t('project.view_all')}</button>
             </div>
             <div>
               {activityItems.map((item, i) => (
@@ -761,21 +761,21 @@ export default function ProjectDashboardPage() {
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <h4 className="font-bold text-slate-900 mb-5">{t('project.quick_actions')}</h4>
             <div className="space-y-3">
-              {!isViewOnly && <a href={'/dashboard/projects/' + project.id + '/rules'} className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#1A56DB]/30 transition-all">
-                <div className="flex items-center gap-3"><Icon name="edit_note" className="text-slate-400 group-hover:text-[#1A56DB] transition-colors" /><span className="text-sm font-semibold text-slate-700">{t('project.actions.setup_rules')}</span></div>
-                <Icon name="chevron_right" className="text-slate-300 group-hover:text-[#1A56DB] transition-colors" />
+              {!isViewOnly && <a href={'/dashboard/projects/' + project.id + '/rules'} className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-brand/30 transition-all">
+                <div className="flex items-center gap-3"><Icon name="edit_note" className="text-slate-400 group-hover:text-brand transition-colors" /><span className="text-sm font-semibold text-slate-700">{t('project.actions.setup_rules')}</span></div>
+                <Icon name="chevron_right" className="text-slate-300 group-hover:text-brand transition-colors" />
               </a>}
-              {!isViewOnly && <button onClick={() => setShowInstall(true)} className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#1A56DB]/30 transition-all">
-                <div className="flex items-center gap-3"><Icon name="code" className="text-slate-400 group-hover:text-[#1A56DB] transition-colors" /><span className="text-sm font-semibold text-slate-700">Installation</span></div>
-                <Icon name="chevron_right" className="text-slate-300 group-hover:text-[#1A56DB] transition-colors" />
+              {!isViewOnly && <button onClick={() => setShowInstall(true)} className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-brand/30 transition-all">
+                <div className="flex items-center gap-3"><Icon name="code" className="text-slate-400 group-hover:text-brand transition-colors" /><span className="text-sm font-semibold text-slate-700">Installation</span></div>
+                <Icon name="chevron_right" className="text-slate-300 group-hover:text-brand transition-colors" />
               </button>}
-              <button onClick={() => setActiveTab('analytics')} className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#1A56DB]/30 transition-all">
-                <div className="flex items-center gap-3"><Icon name="leaderboard" className="text-slate-400 group-hover:text-[#1A56DB] transition-colors" /><span className="text-sm font-semibold text-slate-700">{t('project.actions.view_analytics')}</span></div>
-                <Icon name="chevron_right" className="text-slate-300 group-hover:text-[#1A56DB] transition-colors" />
+              <button onClick={() => setActiveTab('analytics')} className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-brand/30 transition-all">
+                <div className="flex items-center gap-3"><Icon name="leaderboard" className="text-slate-400 group-hover:text-brand transition-colors" /><span className="text-sm font-semibold text-slate-700">{t('project.actions.view_analytics')}</span></div>
+                <Icon name="chevron_right" className="text-slate-300 group-hover:text-brand transition-colors" />
               </button>
-              <a href={project.page_url} target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-[#1A56DB]/30 transition-all">
-                <div className="flex items-center gap-3"><Icon name="preview" className="text-slate-400 group-hover:text-[#1A56DB] transition-colors" /><span className="text-sm font-semibold text-slate-700">{t('project.actions.preview_page')}</span></div>
-                <Icon name="chevron_right" className="text-slate-300 group-hover:text-[#1A56DB] transition-colors" />
+              <a href={project.page_url} target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-brand/30 transition-all">
+                <div className="flex items-center gap-3"><Icon name="preview" className="text-slate-400 group-hover:text-brand transition-colors" /><span className="text-sm font-semibold text-slate-700">{t('project.actions.preview_page')}</span></div>
+                <Icon name="chevron_right" className="text-slate-300 group-hover:text-brand transition-colors" />
               </a>
             </div>
           </div>
@@ -785,7 +785,7 @@ export default function ProjectDashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h4 className="font-bold text-slate-900">{t('project.trend.heading')}</h4>
               <div className="flex gap-3">
-                <span className="flex items-center gap-1.5 text-xs text-slate-500"><span className="w-2.5 h-2.5 rounded-full bg-[#1A56DB]" />{t('analytics.visits')}</span>
+                <span className="flex items-center gap-1.5 text-xs text-slate-500"><span className="w-2.5 h-2.5 rounded-full bg-brand" />{t('analytics.visits')}</span>
                 <span className="flex items-center gap-1.5 text-xs text-slate-500"><span className="w-2.5 h-2.5 rounded-full bg-[#14B8A6]" />{t('analytics.rules_fired_over_time')}</span>
               </div>
             </div>
@@ -807,7 +807,7 @@ export default function ProjectDashboardPage() {
               </div>
             )}
           </div>
-          <div className="bg-gradient-to-br from-[#1A56DB] to-blue-700 p-6 rounded-xl text-white shadow-lg shadow-[#1A56DB]/20 flex flex-col">
+          <div className="bg-gradient-to-br from-brand to-blue-700 p-6 rounded-xl text-white shadow-lg shadow-brand/20 flex flex-col">
             <Icon name="lightbulb" className="text-3xl mb-4" />
             <h5 className="font-bold text-lg mb-2">{t('project.ai_tips.heading')}</h5>
             <p className="text-blue-100 text-sm leading-relaxed mb-6 flex-1">{t('project.ai_tips.tip1')}</p>
@@ -817,7 +817,7 @@ export default function ProjectDashboardPage() {
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-8">
           <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
             <h4 className="font-bold text-slate-900">{t('project.visitors.heading')}</h4>
-            <button onClick={() => setActiveTab('analytics')} className="text-[#1A56DB] text-sm font-semibold hover:underline">{t('project.visitors.view_all')}</button>
+            <button onClick={() => setActiveTab('analytics')} className="text-brand text-sm font-semibold hover:underline">{t('project.visitors.view_all')}</button>
           </div>
           <div className="overflow-x-auto">
             {analyticsData && analyticsData.recent_visits && analyticsData.recent_visits.length > 0 ? (

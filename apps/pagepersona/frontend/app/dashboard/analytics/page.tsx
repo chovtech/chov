@@ -43,7 +43,7 @@ export default function AnalyticsPage() {
           <div className="flex items-center gap-2">
             {[7, 30, 90].map(p => (
               <button key={p} onClick={() => setPeriod(p)}
-                className={'px-4 py-2 text-sm font-semibold rounded-lg border-2 transition-all ' + (period === p ? 'bg-[#1A56DB] text-white border-[#1A56DB]' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300')}>
+                className={'px-4 py-2 text-sm font-semibold rounded-lg border-2 transition-all ' + (period === p ? 'bg-brand text-white border-brand' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300')}>
                 {t(`analytics.period_${p}`)}
               </button>
             ))}
@@ -87,8 +87,8 @@ export default function AnalyticsPage() {
                 ].map(card => (
                   <div key={card.label} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 rounded-lg bg-[#1A56DB]/10 flex items-center justify-center">
-                        <Icon name={card.icon} className="text-[#1A56DB] text-base" />
+                      <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center">
+                        <Icon name={card.icon} className="text-brand text-base" />
                       </div>
                       <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{card.label}</p>
                     </div>
@@ -101,7 +101,7 @@ export default function AnalyticsPage() {
               <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
                 <h4 className="font-bold text-slate-900 mb-1">{t('analytics.visits_over_time')}</h4>
                 <div className="flex items-center gap-4 mb-5">
-                  <span className="flex items-center gap-1.5 text-xs text-slate-500"><span className="w-2.5 h-2.5 rounded-full bg-[#1A56DB]" />{t('analytics.personalised')}</span>
+                  <span className="flex items-center gap-1.5 text-xs text-slate-500"><span className="w-2.5 h-2.5 rounded-full bg-brand" />{t('analytics.personalised')}</span>
                   <span className="flex items-center gap-1.5 text-xs text-slate-500"><span className="w-2.5 h-2.5 rounded-full bg-slate-200" />{t('analytics.unpersonalised')}</span>
                 </div>
                 <ResponsiveContainer width="100%" height={220}>

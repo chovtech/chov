@@ -199,7 +199,7 @@ export default function AgencyPage() {
     : tab === 'active' ? clients.filter(c => c.invite_status === 'active')
     : clients.filter(c => c.invite_status !== 'active')
 
-  const inputClass = 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] outline-none text-slate-900 text-sm transition-all'
+  const inputClass = 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none text-slate-900 text-sm transition-all'
 
   return (
     <>
@@ -226,7 +226,7 @@ export default function AgencyPage() {
           </div>
           <button
             onClick={() => setNewOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] text-white rounded-xl font-bold shadow-lg shadow-[#1A56DB]/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl font-bold shadow-lg shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
             <Icon name="person_add" className="text-lg" />
             {t('agency.add_client')}
@@ -240,11 +240,11 @@ export default function AgencyPage() {
               key={key}
               onClick={() => setTab(key)}
               className={`px-6 py-4 text-sm whitespace-nowrap border-b-2 transition-colors flex items-center gap-2 ${
-                tab === key ? 'font-bold border-[#1A56DB] text-[#1A56DB]' : 'font-medium text-slate-500 hover:text-slate-700 border-transparent'
+                tab === key ? 'font-bold border-brand text-brand' : 'font-medium text-slate-500 hover:text-slate-700 border-transparent'
               }`}
             >
               {t(`agency.tabs.${key}`)}
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${tab === key ? 'bg-[#1A56DB] text-white' : 'bg-slate-100 text-slate-500'}`}>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${tab === key ? 'bg-brand text-white' : 'bg-slate-100 text-slate-500'}`}>
                 {tabCount(key)}
               </span>
             </button>
@@ -271,7 +271,7 @@ export default function AgencyPage() {
                   <div className="p-5 pb-0">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <div className="size-10 rounded-full bg-[#1A56DB]/10 flex items-center justify-center text-[#1A56DB] font-bold text-sm flex-shrink-0">
+                        <div className="size-10 rounded-full bg-brand/10 flex items-center justify-center text-brand font-bold text-sm flex-shrink-0">
                           {initials}
                         </div>
                         <div className="min-w-0">
@@ -360,7 +360,7 @@ export default function AgencyPage() {
                       </div>
                       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-[#1A56DB] rounded-full transition-all"
+                          className="h-full bg-brand rounded-full transition-all"
                           style={{ width: `${sessionsPercent}%` }}
                         />
                       </div>
@@ -371,7 +371,7 @@ export default function AgencyPage() {
                   <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
                     <button
                       onClick={() => setManageClient(client)}
-                      className="text-xs font-semibold text-slate-500 hover:text-[#1A56DB] transition-colors flex items-center gap-1"
+                      className="text-xs font-semibold text-slate-500 hover:text-brand transition-colors flex items-center gap-1"
                     >
                       <Icon name="manage_accounts" className="text-[16px]" />
                       {t('agency.manage_access')}
@@ -379,7 +379,7 @@ export default function AgencyPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => openClientDashboard(client.id)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#1A56DB] bg-[#1A56DB]/10 rounded-lg hover:bg-[#1A56DB]/20 transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-brand bg-brand/10 rounded-lg hover:bg-brand/20 transition-colors"
                       >
                         <Icon name="folder_open" className="text-[14px]" />
                         {t('agency.open_projects')}
@@ -400,10 +400,10 @@ export default function AgencyPage() {
             {/* Add new client card */}
             <div
               onClick={() => setNewOpen(true)}
-              className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-10 text-center hover:border-[#1A56DB]/40 hover:bg-[#1A56DB]/5 transition-all cursor-pointer group"
+              className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-10 text-center hover:border-brand/40 hover:bg-brand/5 transition-all cursor-pointer group"
             >
               <div className="size-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Icon name="person_add" className="text-3xl text-slate-300 group-hover:text-[#1A56DB]" />
+                <Icon name="person_add" className="text-3xl text-slate-300 group-hover:text-brand" />
               </div>
               <h4 className="text-sm font-bold text-slate-700">{t('agency.add_new_client')}</h4>
               <p className="text-xs text-slate-400 mt-1 max-w-[200px]">{t('agency.add_new_client_desc')}</p>
@@ -421,7 +421,7 @@ export default function AgencyPage() {
             <p className="text-sm text-slate-400 max-w-sm mb-6">{t('agency.no_clients_sub')}</p>
             <button
               onClick={() => setNewOpen(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] text-white rounded-xl font-bold shadow shadow-[#1A56DB]/20 hover:bg-[#1547b3] transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl font-bold shadow shadow-brand/20 hover:bg-brand/90 transition-colors"
             >
               <Icon name="person_add" className="text-lg" />
               {t('agency.add_first_client')}
@@ -466,7 +466,7 @@ export default function AgencyPage() {
                   onChange={e => setReportMsg(e.target.value)}
                   placeholder={t('agency.report_message_placeholder')}
                   rows={3}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] outline-none text-slate-900 text-sm transition-all resize-none"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none text-slate-900 text-sm transition-all resize-none"
                 />
               </div>
               {reportSent && (
@@ -479,7 +479,7 @@ export default function AgencyPage() {
                 <button type="button" onClick={() => setReportClient(null)} className="px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">
                   {t('common.cancel')}
                 </button>
-                <button type="submit" disabled={reportSending || reportSent} className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-[#1A56DB] rounded-xl hover:bg-[#1547b3] disabled:opacity-60 transition-colors">
+                <button type="submit" disabled={reportSending || reportSent} className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-brand rounded-xl hover:bg-brand/90 disabled:opacity-60 transition-colors">
                   <Icon name="send" className="text-[16px]" />
                   {reportSending ? t('agency.sending') : t('agency.send_report')}
                 </button>

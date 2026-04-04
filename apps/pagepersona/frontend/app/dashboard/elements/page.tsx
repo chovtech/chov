@@ -126,7 +126,7 @@ export default function ElementsPage() {
             {tab === 'popups' && (
               <button
                 onClick={() => router.push('/dashboard/elements/popups/new')}
-                className="flex items-center gap-2 px-4 py-2.5 bg-[#1A56DB] hover:bg-[#1A56DB]/90 text-white text-sm font-bold rounded-xl transition-all shadow-sm"
+                className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-brand/90 text-white text-sm font-bold rounded-xl transition-all shadow-sm"
               >
                 <Icon name="add" className="text-base" />
                 {t('elements.popup_new')}
@@ -135,7 +135,7 @@ export default function ElementsPage() {
             {tab === 'countdown' && (
               <button
                 onClick={() => router.push('/dashboard/elements/countdowns/new')}
-                className="flex items-center gap-2 px-4 py-2.5 bg-[#1A56DB] hover:bg-[#1A56DB]/90 text-white text-sm font-bold rounded-xl transition-all shadow-sm"
+                className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-brand/90 text-white text-sm font-bold rounded-xl transition-all shadow-sm"
               >
                 <Icon name="add" className="text-base" />
                 {t('elements.countdown_new')}
@@ -173,7 +173,7 @@ export default function ElementsPage() {
                   <p className="text-sm text-slate-500 mb-6 max-w-sm">{t('elements.popup_empty_desc')}</p>
                   <button
                     onClick={() => router.push('/dashboard/elements/popups/new')}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] hover:bg-[#1A56DB]/90 text-white text-sm font-bold rounded-xl transition-all"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-brand hover:bg-brand/90 text-white text-sm font-bold rounded-xl transition-all"
                   >
                     <Icon name="add" className="text-base" />
                     {t('elements.popup_create_first')}
@@ -186,7 +186,7 @@ export default function ElementsPage() {
                       {(() => {
                         const previewImg = getPopupPreviewImage(popup.config)
                         return (
-                          <div className="h-36 relative overflow-hidden" style={{ background: popup.config?.bg_color || '#1A56DB' }}>
+                          <div className="h-36 relative overflow-hidden" style={{ background: popup.config?.bg_color || 'var(--color-primary)' }}>
                             {previewImg && (
                               <img src={previewImg} alt="" className="absolute inset-0 w-full h-full object-cover" />
                             )}
@@ -244,7 +244,7 @@ export default function ElementsPage() {
                   <p className="text-sm text-slate-500 mb-6 max-w-sm">{t('elements.countdown_empty_desc')}</p>
                   <button
                     onClick={() => router.push('/dashboard/elements/countdowns/new')}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] hover:bg-[#1A56DB]/90 text-white text-sm font-bold rounded-xl transition-all"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-brand hover:bg-brand/90 text-white text-sm font-bold rounded-xl transition-all"
                   >
                     <Icon name="add" className="text-base" />
                     {t('elements.countdown_create_first')}
@@ -254,11 +254,11 @@ export default function ElementsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {countdowns.map(countdown => (
                     <div key={countdown.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                      <div className="h-36 relative overflow-hidden flex items-center justify-center" style={{ background: countdown.config?.digit_bg || '#1A56DB' }}>
+                      <div className="h-36 relative overflow-hidden flex items-center justify-center" style={{ background: countdown.config?.digit_bg || 'var(--color-primary)' }}>
                         <div className="flex items-end gap-2">
                           {['00', '12', '34', '56'].map((n, i) => (
                             <div key={i} className="flex flex-col items-center gap-1">
-                              <div style={{ background: countdown.config?.digit_color || '#ffffff', color: countdown.config?.digit_bg || '#1A56DB', fontSize: 20, fontWeight: 800, padding: '6px 9px', borderRadius: countdown.config?.digit_radius || 8, minWidth: 36, textAlign: 'center', lineHeight: 1 }}>{n}</div>
+                              <div style={{ background: countdown.config?.digit_color || '#ffffff', color: countdown.config?.digit_bg || 'var(--color-primary)', fontSize: 20, fontWeight: 800, padding: '6px 9px', borderRadius: countdown.config?.digit_radius || 8, minWidth: 36, textAlign: 'center', lineHeight: 1 }}>{n}</div>
                               {countdown.config?.show_labels !== false && <span style={{ fontSize: 8, fontWeight: 700, color: countdown.config?.digit_color || '#ffffff', opacity: 0.7 }}>{'DHMS'[i]}</span>}
                             </div>
                           ))}

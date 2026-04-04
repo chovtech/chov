@@ -55,6 +55,7 @@ def _fmt(ws) -> dict:
         "type": _get(ws, 'type', 'personal'),
         "owner_id": str(ws['owner_id']),
         "parent_workspace_id": str(ws['parent_workspace_id']) if _get(ws, 'parent_workspace_id') else None,
+        "parent_slug": _get(ws, 'parent_slug'),
         "client_email": _get(ws, 'client_email'),
         "client_name": _get(ws, 'client_name'),
         "client_access_level": _get(ws, 'client_access_level', 'full'),
@@ -96,6 +97,7 @@ async def list_workspaces(
         f"""
         SELECT
           w.*,
+          pw.slug as parent_slug,
           pw.white_label_brand_name as parent_brand_name,
           pw.white_label_logo as parent_logo,
           pw.white_label_primary_color as parent_color,

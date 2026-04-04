@@ -223,11 +223,11 @@ export default function RulesPage() {
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
-          <button onClick={() => router.push("/dashboard")} className="hover:text-[#1A56DB] transition-colors">
+          <button onClick={() => router.push("/dashboard")} className="hover:text-brand transition-colors">
             {t("dashboard.heading")}
           </button>
           <Icon name="chevron_right" className="text-base" />
-          <button onClick={() => router.push("/dashboard/projects/" + projectId)} className="hover:text-[#1A56DB] transition-colors">
+          <button onClick={() => router.push("/dashboard/projects/" + projectId)} className="hover:text-brand transition-colors">
             {project?.name}
           </button>
           <Icon name="chevron_right" className="text-base" />
@@ -264,7 +264,7 @@ export default function RulesPage() {
               <button
                 onClick={() => { if (project?.script_verified) router.push("/dashboard/projects/" + projectId + "/rules/new") }}
                 disabled={!project?.script_verified}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white text-sm font-bold rounded-xl shadow-md shadow-brand/20 hover:bg-brand/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
                 <Icon name="add" className="text-base" />
                 {t("rules.new_rule")}
               </button>
@@ -308,7 +308,7 @@ export default function RulesPage() {
                     onDragEnd={handleDragEnd}
                     className={
                       (draggingId === rule.id ? "opacity-40 " : "") +
-                      (dragOverId === rule.id && draggingId !== rule.id ? "border-t-2 border-[#1A56DB] " : "") +
+                      (dragOverId === rule.id && draggingId !== rule.id ? "border-t-2 border-brand " : "") +
                       (i % 2 === 0 ? "bg-white" : "bg-slate-50/50") +
                       " hover:bg-slate-50 transition-colors cursor-default"
                     }>
@@ -327,7 +327,7 @@ export default function RulesPage() {
                             {rule.conditions.length > 2 && (
                               <button
                                 onClick={() => toggleExpand(rule.id)}
-                                className="text-xs text-[#1A56DB] font-semibold hover:underline text-left">
+                                className="text-xs text-brand font-semibold hover:underline text-left">
                                 {expandedRows.has(rule.id) ? t("rules.show_less") : t("rules.show_more").replace("{count}", String(rule.conditions.length - 2))}
                               </button>
                             )}
@@ -346,7 +346,7 @@ export default function RulesPage() {
                             {rule.actions.length > 2 && (
                               <button
                                 onClick={() => toggleExpand(rule.id)}
-                                className="text-xs text-[#1A56DB] font-semibold hover:underline text-left">
+                                className="text-xs text-brand font-semibold hover:underline text-left">
                                 {expandedRows.has(rule.id) ? t("rules.show_less") : t("rules.show_more").replace("{count}", String(rule.actions.length - 2))}
                               </button>
                             )}
@@ -365,20 +365,20 @@ export default function RulesPage() {
                           onChange={() => handleToggle(rule.id, rule.is_active)}
                           className="sr-only peer"
                         />
-                        <div className={(togglingId === rule.id ? "opacity-50 " : "") + "w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1A56DB]"}></div>
+                        <div className={(togglingId === rule.id ? "opacity-50 " : "") + "w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"}></div>
                       </label>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => router.push("/dashboard/projects/" + projectId + "/rules/" + rule.id + "/edit")}
-                          className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:text-[#1A56DB]">
+                          className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:text-brand">
                           <Icon name="edit" className="text-xl" />
                         </button>
                           <button
                             onClick={() => handleDuplicate(rule)}
                             disabled={duplicatingId === rule.id}
-                            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:text-[#1A56DB] disabled:opacity-40">
+                            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:text-brand disabled:opacity-40">
                             {duplicatingId === rule.id
                               ? <span className="material-symbols-outlined text-xl animate-spin">sync</span>
                               : <Icon name="content_copy" className="text-xl" />}
@@ -420,9 +420,9 @@ export default function RulesPage() {
           /* EMPTY STATE */
           <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-white py-20 px-8 text-center">
             <div className="flex items-center justify-center mb-6">
-              <div className="flex size-48 items-center justify-center rounded-full bg-[#1A56DB]/5">
-                <div className="flex size-36 items-center justify-center rounded-full bg-[#1A56DB]/10">
-                  <div className="flex size-24 items-center justify-center rounded-full bg-[#1A56DB] shadow-xl shadow-[#1A56DB]/20">
+              <div className="flex size-48 items-center justify-center rounded-full bg-brand/5">
+                <div className="flex size-36 items-center justify-center rounded-full bg-brand/10">
+                  <div className="flex size-24 items-center justify-center rounded-full bg-brand shadow-xl shadow-brand/20">
                     <Icon name="settings_suggest" className="text-white text-5xl" />
                   </div>
                 </div>
@@ -433,7 +433,7 @@ export default function RulesPage() {
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <button
                 onClick={() => router.push("/dashboard/projects/" + projectId + "/rules/new")}
-                className="flex items-center gap-2 px-6 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-lg shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 transition-all">
+                className="flex items-center gap-2 px-6 py-2.5 bg-brand text-white text-sm font-bold rounded-xl shadow-lg shadow-brand/20 hover:bg-brand/90 transition-all">
                 {t("rules.empty_cta")}
               </button>
               <button className="flex items-center gap-2 px-6 py-2.5 border border-slate-200 bg-white text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-50 transition-all">
@@ -442,15 +442,15 @@ export default function RulesPage() {
             </div>
             <div className="mt-12 flex items-center gap-8 text-slate-400">
               <div className="flex items-center gap-2">
-                <Icon name="verified_user" className="text-[#1A56DB] text-lg" />
+                <Icon name="verified_user" className="text-brand text-lg" />
                 <span className="text-xs font-medium">Secure</span>
               </div>
               <div className="flex items-center gap-2">
-                <Icon name="bolt" className="text-[#1A56DB] text-lg" />
+                <Icon name="bolt" className="text-brand text-lg" />
                 <span className="text-xs font-medium">Real-time</span>
               </div>
               <div className="flex items-center gap-2">
-                <Icon name="data_thresholding" className="text-[#1A56DB] text-lg" />
+                <Icon name="data_thresholding" className="text-brand text-lg" />
                 <span className="text-xs font-medium">Analytics</span>
               </div>
             </div>

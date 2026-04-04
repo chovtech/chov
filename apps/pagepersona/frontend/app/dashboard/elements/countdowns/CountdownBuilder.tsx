@@ -272,9 +272,9 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
           </button>
           {editingName ? (
             <input value={name} onChange={e => setName(e.target.value)} onBlur={() => setEditingName(false)} onKeyDown={e => e.key === 'Enter' && setEditingName(false)} autoFocus
-              className="text-sm font-bold text-slate-900 border-b-2 border-[#1A56DB] outline-none bg-transparent min-w-[200px]" />
+              className="text-sm font-bold text-slate-900 border-b-2 border-brand outline-none bg-transparent min-w-[200px]" />
           ) : (
-            <button onClick={() => setEditingName(true)} className="flex items-center gap-1.5 text-sm font-bold text-slate-900 hover:text-[#1A56DB] transition-colors">
+            <button onClick={() => setEditingName(true)} className="flex items-center gap-1.5 text-sm font-bold text-slate-900 hover:text-brand transition-colors">
               {name || t('countdown_builder.untitled')}
               <Icon name="edit" className="text-sm text-slate-400" />
             </button>
@@ -294,7 +294,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
             </div>
           )}
           {saveError && <p className="text-xs text-red-500">{saveError}</p>}
-          <button onClick={handleSave} disabled={saving || showTemplates} className="flex items-center gap-2 px-5 py-2 bg-[#1A56DB] hover:bg-[#1A56DB]/90 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-all">
+          <button onClick={handleSave} disabled={saving || showTemplates} className="flex items-center gap-2 px-5 py-2 bg-brand hover:bg-brand/90 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-all">
             <Icon name={saving ? 'sync' : 'save'} className={saving ? 'animate-spin text-sm' : 'text-sm'} />
             {saving ? t('countdown_builder.saving') : t('countdown_builder.save')}
           </button>
@@ -325,7 +325,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   {TEMPLATES.map(tpl => (
                     <button key={tpl.key} onClick={() => applyTemplate(tpl)}
-                      className="group rounded-xl border-2 border-slate-100 hover:border-[#1A56DB] transition-all text-left overflow-hidden shadow-sm hover:shadow-md"
+                      className="group rounded-xl border-2 border-slate-100 hover:border-brand transition-all text-left overflow-hidden shadow-sm hover:shadow-md"
                     >
                       <div className="h-32 flex items-center justify-center p-4" style={{ background: tpl.config.bg_color }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
@@ -341,8 +341,8 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                         </div>
                       </div>
                       <div className="px-3 py-2.5 border-t border-slate-100 flex items-center justify-between">
-                        <p className="text-sm font-bold text-slate-700 group-hover:text-[#1A56DB]">{tpl.label}</p>
-                        <Icon name="arrow_forward" className="text-slate-300 group-hover:text-[#1A56DB] text-sm transition-colors" />
+                        <p className="text-sm font-bold text-slate-700 group-hover:text-brand">{tpl.label}</p>
+                        <Icon name="arrow_forward" className="text-slate-300 group-hover:text-brand text-sm transition-colors" />
                       </div>
                     </button>
                   ))}
@@ -387,7 +387,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('countdown_builder.ends_at')}</label>
                     <input type="datetime-local" value={endsAt} onChange={e => setEndsAt(e.target.value)}
-                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all" />
+                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all" />
                     <p className="text-[10px] text-slate-400 mt-1">{t('countdown_builder.ends_at_hint')}</p>
                   </div>
                 ) : (
@@ -395,9 +395,9 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('countdown_builder.duration_value_label')}</label>
                     <div className="flex gap-2">
                       <input type="number" min={1} max={999} value={durationValue} onChange={e => setC('duration_value', parseInt(e.target.value) || 1)}
-                        className="w-24 px-3 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB]" />
+                        className="w-24 px-3 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand" />
                       <select value={durationUnit} onChange={e => setC('duration_unit', e.target.value)}
-                        className="flex-1 px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB]">
+                        className="flex-1 px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand">
                         <option value="minutes">{t('countdown_builder.unit_minutes')}</option>
                         <option value="hours">{t('countdown_builder.unit_hours')}</option>
                         <option value="days">{t('countdown_builder.unit_days')}</option>
@@ -414,11 +414,11 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                 <div className="flex flex-col gap-1.5">
                   {(['hide', 'redirect', 'message'] as const).map(action => (
                     <button key={action} onClick={() => setExpiryAction(action)}
-                      className={"flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-sm font-medium text-left transition-all " + (expiryAction === action ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-600 hover:border-slate-300')}
+                      className={"flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-sm font-medium text-left transition-all " + (expiryAction === action ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-600 hover:border-slate-300')}
                     >
                       <Icon name={action === 'hide' ? 'visibility_off' : action === 'redirect' ? 'open_in_new' : 'chat_bubble'} className="text-base" />
                       {t(`countdown_builder.expiry_${action}`)}
-                      {expiryAction === action && <Icon name="check_circle" className="ml-auto text-[#1A56DB] text-base" />}
+                      {expiryAction === action && <Icon name="check_circle" className="ml-auto text-brand text-base" />}
                     </button>
                   ))}
                 </div>
@@ -426,14 +426,14 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                   <div className="mt-3">
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('countdown_builder.expiry_url')}</label>
                     <input type="url" value={expiryValue} onChange={e => setExpiryValue(e.target.value)} placeholder={t('countdown_builder.expiry_url_placeholder')}
-                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB]" />
+                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand" />
                   </div>
                 )}
                 {expiryAction === 'message' && (
                   <div className="mt-3">
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('countdown_builder.expiry_message_text')}</label>
                     <input type="text" value={expiryValue} onChange={e => setExpiryValue(e.target.value)} placeholder={t('countdown_builder.expiry_message_placeholder')}
-                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB]" />
+                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand" />
                   </div>
                 )}
               </div>
@@ -447,7 +447,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('countdown_builder.bg_color_label')}</label>
                     <div className="flex items-center gap-2">
                       <button onClick={() => setC('bg_color', config.bg_color === 'transparent' ? '#ffffff' : 'transparent')}
-                        className={"px-2 py-1 rounded-lg border text-[10px] font-bold transition-all " + (config.bg_color === 'transparent' ? 'border-[#1A56DB] text-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-200 text-slate-400')}>
+                        className={"px-2 py-1 rounded-lg border text-[10px] font-bold transition-all " + (config.bg_color === 'transparent' ? 'border-brand text-brand bg-brand/5' : 'border-slate-200 text-slate-400')}>
                         {t('countdown_builder.transparent')}
                       </button>
                       {config.bg_color !== 'transparent' && (
@@ -464,9 +464,9 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                     <div className="flex gap-2">
                       <input type="number" min={200} max={1200} value={typeof config.width === 'number' ? config.width : 480}
                         onChange={e => setC('width', parseInt(e.target.value) || 480)}
-                        className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+                        className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
                       <button onClick={() => setC('width', config.width === 'auto' ? 480 : 'auto')}
-                        className={"px-2.5 py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.width === 'auto' ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500')}>
+                        className={"px-2.5 py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.width === 'auto' ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-500')}>
                         Auto
                       </button>
                     </div>
@@ -477,9 +477,9 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                     <div className="flex gap-2">
                       <input type="number" min={60} max={600} value={typeof config.height === 'number' ? config.height : 120}
                         onChange={e => setC('height', parseInt(e.target.value) || 120)}
-                        className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+                        className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
                       <button onClick={() => setC('height', config.height === 'auto' ? 120 : 'auto')}
-                        className={"px-2.5 py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.height === 'auto' ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500')}>
+                        className={"px-2.5 py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.height === 'auto' ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-500')}>
                         Auto
                       </button>
                     </div>
@@ -487,7 +487,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                   {/* Padding */}
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{t('countdown_builder.padding_label')} — {config.padding}px</label>
-                    <input type="range" min={0} max={80} value={config.padding} onChange={e => setC('padding', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
+                    <input type="range" min={0} max={80} value={config.padding} onChange={e => setC('padding', parseInt(e.target.value))} className="w-full accent-brand" />
                   </div>
                 </div>
               </div>
@@ -499,7 +499,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                   {PRESETS.map(p => (
                     <button key={p.key}
                       onClick={() => setConfig(prev => ({ ...prev, digit_bg: p.digit_bg, digit_color: p.digit_color, label_color: p.label_color, bg_color: p.bg_color }))}
-                      className={"flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 transition-all " + (config.digit_bg === p.digit_bg && config.bg_color === p.bg_color ? 'border-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-100 hover:border-slate-300')}
+                      className={"flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 transition-all " + (config.digit_bg === p.digit_bg && config.bg_color === p.bg_color ? 'border-brand bg-brand/5' : 'border-slate-100 hover:border-slate-300')}
                     >
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-black" style={{ background: p.digit_bg, color: p.digit_color }}>00</div>
                       <span className="text-[9px] font-bold text-slate-500 uppercase">{p.label}</span>
@@ -537,12 +537,12 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                     <div>
                       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{t('countdown_builder.digit_size')}</label>
                       <input type="number" min={20} max={80} value={config.digit_size} onChange={e => setC('digit_size', parseInt(e.target.value) || 36)}
-                        className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+                        className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
                     </div>
                     <div>
                       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{t('countdown_builder.digit_radius')}</label>
                       <input type="number" min={0} max={32} value={config.digit_radius} onChange={e => setC('digit_radius', parseInt(e.target.value) || 8)}
-                        className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+                        className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
                     </div>
                   </div>
                 </div>
@@ -556,7 +556,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
                     <label key={key} className="flex items-center justify-between py-2 border-b border-slate-50">
                       <span className="text-sm font-medium text-slate-700">{t(`countdown_builder.${key}`)}</span>
                       <button onClick={() => setC(key, !config[key])}
-                        className={"relative w-10 h-5 rounded-full transition-colors " + (config[key] ? 'bg-[#1A56DB]' : 'bg-slate-200')}>
+                        className={"relative w-10 h-5 rounded-full transition-colors " + (config[key] ? 'bg-brand' : 'bg-slate-200')}>
                         <span className={"absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform " + (config[key] ? 'translate-x-5' : 'translate-x-0.5')} />
                       </button>
                     </label>

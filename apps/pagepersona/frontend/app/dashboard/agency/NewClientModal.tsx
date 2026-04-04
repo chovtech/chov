@@ -22,7 +22,7 @@ export default function NewClientModal({ onClose, onCreated }: Props) {
   const [error, setError] = useState('')
   const [inviteMsg, setInviteMsg] = useState('')
 
-  const inputClass = 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] outline-none text-slate-900 text-sm transition-all'
+  const inputClass = 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none text-slate-900 text-sm transition-all'
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -117,24 +117,24 @@ export default function NewClientModal({ onClose, onCreated }: Props) {
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">Access Level</label>
             <div className="space-y-2">
-              <label className="flex items-start gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-[#1A56DB] has-[:checked]:bg-[#1A56DB]/5">
+              <label className="flex items-start gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-brand has-[:checked]:bg-brand/5">
                 <input
                   type="radio" name="access_level" value="full"
                   checked={form.client_access_level === 'full'}
                   onChange={() => setForm(p => ({ ...p, client_access_level: 'full' }))}
-                  className="mt-0.5 accent-[#1A56DB]"
+                  className="mt-0.5 accent-brand"
                 />
                 <div>
                   <p className="text-sm font-semibold text-slate-900">Full Access</p>
                   <p className="text-xs text-slate-500 mt-0.5">Client can manage projects, rules, and elements</p>
                 </div>
               </label>
-              <label className="flex items-start gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-[#1A56DB] has-[:checked]:bg-[#1A56DB]/5">
+              <label className="flex items-start gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-brand has-[:checked]:bg-brand/5">
                 <input
                   type="radio" name="access_level" value="view_only"
                   checked={form.client_access_level === 'view_only'}
                   onChange={() => setForm(p => ({ ...p, client_access_level: 'view_only' }))}
-                  className="mt-0.5 accent-[#1A56DB]"
+                  className="mt-0.5 accent-brand"
                 />
                 <div>
                   <p className="text-sm font-semibold text-slate-900">View Only</p>
@@ -155,7 +155,7 @@ export default function NewClientModal({ onClose, onCreated }: Props) {
             <button type="button" onClick={onClose} className="px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">
               Cancel
             </button>
-            <button type="submit" disabled={loading || !form.name.trim() || !form.client_name.trim()} className="px-5 py-2.5 text-sm font-bold text-white bg-[#1A56DB] rounded-xl hover:bg-[#1547b3] disabled:opacity-60 transition-colors">
+            <button type="submit" disabled={loading || !form.name.trim() || !form.client_name.trim()} className="px-5 py-2.5 text-sm font-bold text-white bg-brand rounded-xl hover:bg-brand/90 disabled:opacity-60 transition-colors">
               {loading ? 'Creating...' : 'Create Workspace'}
             </button>
           </div>

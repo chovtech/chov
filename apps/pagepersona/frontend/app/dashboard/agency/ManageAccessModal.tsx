@@ -34,7 +34,7 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
   const [revoking, setRevoking] = useState(false)
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
 
-  const inputClass = 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] outline-none text-slate-900 text-sm transition-all'
+  const inputClass = 'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none text-slate-900 text-sm transition-all'
   const emailLocked = client.invite_status !== 'none'
 
   function flash(type: 'ok' | 'err', text: string) {
@@ -163,7 +163,7 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
                   <p className="text-[11px] text-slate-400 mt-1">Email cannot be changed after an invite is sent.</p>
                 )}
               </div>
-              <button type="submit" disabled={savingDetails} className="px-4 py-2 text-sm font-bold text-white bg-[#1A56DB] rounded-xl hover:bg-[#1547b3] disabled:opacity-60 transition-colors">
+              <button type="submit" disabled={savingDetails} className="px-4 py-2 text-sm font-bold text-white bg-brand rounded-xl hover:bg-brand/90 disabled:opacity-60 transition-colors">
                 {savingDetails ? 'Saving...' : 'Save Details'}
               </button>
             </form>
@@ -182,13 +182,13 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
                 { value: 'full', label: 'Full Access', desc: 'Can manage projects, rules and elements' },
                 { value: 'view_only', label: 'View Only', desc: 'Can only view dashboard and analytics' },
               ].map(opt => (
-                <label key={opt.value} className="flex items-start gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-[#1A56DB] has-[:checked]:bg-[#1A56DB]/5">
+                <label key={opt.value} className="flex items-start gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-brand has-[:checked]:bg-brand/5">
                   <input
                     type="radio" name="modal_access"
                     value={opt.value}
                     checked={accessLevel === opt.value}
                     onChange={() => setAccessLevel(opt.value)}
-                    className="mt-0.5 accent-[#1A56DB]"
+                    className="mt-0.5 accent-brand"
                   />
                   <div>
                     <p className="text-sm font-semibold text-slate-900">{opt.label}</p>
@@ -197,7 +197,7 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
                 </label>
               ))}
             </div>
-            <button onClick={handleSaveAccess} disabled={savingAccess} className="px-4 py-2 text-sm font-bold text-white bg-[#1A56DB] rounded-xl hover:bg-[#1547b3] disabled:opacity-60 transition-colors">
+            <button onClick={handleSaveAccess} disabled={savingAccess} className="px-4 py-2 text-sm font-bold text-white bg-brand rounded-xl hover:bg-brand/90 disabled:opacity-60 transition-colors">
               {savingAccess ? 'Saving...' : 'Save Access Level'}
             </button>
           </section>
@@ -222,7 +222,7 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
               {(client.invite_status === 'none' || client.invite_status === 'revoked') && (
                 <button
                   onClick={handleInvite} disabled={inviting}
-                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white bg-[#1A56DB] rounded-xl hover:bg-[#1547b3] disabled:opacity-60 transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white bg-brand rounded-xl hover:bg-brand/90 disabled:opacity-60 transition-colors"
                 >
                   <Icon name="send" className="text-[16px]" />
                   {inviting ? 'Sending...' : 'Send Invitation'}
@@ -231,7 +231,7 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
               {client.invite_status === 'pending' && (
                 <button
                   onClick={handleInvite} disabled={inviting}
-                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-[#1A56DB] bg-[#1A56DB]/10 rounded-xl hover:bg-[#1A56DB]/20 disabled:opacity-60 transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-brand bg-brand/10 rounded-xl hover:bg-brand/20 disabled:opacity-60 transition-colors"
                 >
                   <Icon name="refresh" className="text-[16px]" />
                   {inviting ? 'Sending...' : 'Resend Invitation'}

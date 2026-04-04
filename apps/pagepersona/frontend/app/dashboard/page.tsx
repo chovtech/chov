@@ -79,7 +79,7 @@ export default function DashboardPage() {
             </div>
             {!isViewOnly && <button
               onClick={() => setModalOpen(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] text-white rounded-xl font-bold shadow-lg shadow-[#1A56DB]/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl font-bold shadow-lg shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
               <Icon name="add" className="text-lg" />
               <span>{t('dashboard.new_project')}</span>
@@ -94,7 +94,7 @@ export default function DashboardPage() {
                 onClick={() => setActiveTab(key)}
                 className={`px-6 py-4 text-sm whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === key
-                    ? 'font-bold border-[#1A56DB] text-[#1A56DB]'
+                    ? 'font-bold border-brand text-brand'
                     : 'font-medium text-slate-500 hover:text-slate-700 border-transparent'
                 }`}
               >
@@ -117,7 +117,7 @@ export default function DashboardPage() {
                   ) : (
                     <div className={`absolute inset-0 flex items-center justify-center ${
                       project.status === 'active'
-                        ? 'bg-gradient-to-br from-[#1A56DB]/5 to-[#1A56DB]/20'
+                        ? 'bg-gradient-to-br from-brand/5 to-brand/20'
                         : 'bg-gradient-to-tr from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800'
                     }`}>
                       <Icon name="web" className="text-5xl text-slate-300" />
@@ -136,7 +136,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="p-5">
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 group-hover:text-[#1A56DB] transition-colors">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 group-hover:text-brand transition-colors">
                     {project.name}
                   </h3>
                   <p className="text-xs text-slate-500 mb-4 flex items-center gap-1">
@@ -164,10 +164,10 @@ export default function DashboardPage() {
                   <div className="flex items-center justify-between text-[11px] text-slate-400">
                     <span>{t('dashboard.project_card.edited')} {formatDate(project.updated_at)}</span>
                     <div className="flex gap-2">
-                      <button className="hover:text-[#1A56DB] transition-colors">
+                      <button className="hover:text-brand transition-colors">
                         <Icon name="edit" className="text-[18px]" />
                       </button>
-                      <button className="hover:text-[#1A56DB] transition-colors">
+                      <button className="hover:text-brand transition-colors">
                         <Icon name="more_vert" className="text-[18px]" />
                       </button>
                     </div>
@@ -179,10 +179,10 @@ export default function DashboardPage() {
             {/* Add new project card */}
             {!isViewOnly && <div
               onClick={() => setModalOpen(true)}
-              className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center p-8 text-center hover:border-[#1A56DB]/40 transition-colors cursor-pointer group"
+              className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center p-8 text-center hover:border-brand/40 transition-colors cursor-pointer group"
             >
               <div className="size-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Icon name="post_add" className="text-3xl text-slate-300 group-hover:text-[#1A56DB]" />
+                <Icon name="post_add" className="text-3xl text-slate-300 group-hover:text-brand" />
               </div>
               <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">
                 {t('dashboard.new_project')}
@@ -190,7 +190,7 @@ export default function DashboardPage() {
               <p className="text-xs text-slate-500 mt-2 max-w-[200px]">
                 {t('dashboard.add_another_desc')}
               </p>
-              <span className="mt-4 text-xs font-bold text-[#1A56DB] flex items-center gap-1">
+              <span className="mt-4 text-xs font-bold text-brand flex items-center gap-1">
                 <Icon name="add" className="text-sm" />
                 {t('dashboard.empty_state.cta_primary')}
               </span>
@@ -205,16 +205,16 @@ export default function DashboardPage() {
           <div className="w-full max-w-2xl text-center">
             <div className="mb-10 flex justify-center">
               <div className="relative">
-                <div className="absolute inset-0 scale-150 rounded-full bg-[#1A56DB]/5 blur-3xl" />
+                <div className="absolute inset-0 scale-150 rounded-full bg-brand/5 blur-3xl" />
                 <div className="relative flex h-64 w-64 items-center justify-center rounded-3xl bg-white dark:bg-slate-900 shadow-xl border border-slate-100 dark:border-slate-800">
                   <div className="flex flex-col gap-3 w-4/5">
                     <div className="h-3 w-3/4 rounded bg-slate-100 dark:bg-slate-800" />
                     <div className="grid grid-cols-3 gap-3">
-                      <div className="h-20 rounded-xl bg-[#1A56DB]/5 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[#1A56DB]/40">person</span>
+                      <div className="h-20 rounded-xl bg-brand/5 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-brand/40">person</span>
                       </div>
-                      <div className="h-20 rounded-xl bg-[#1A56DB]/10 flex items-center justify-center border border-[#1A56DB]/20">
-                        <span className="material-symbols-outlined text-[#1A56DB]/60">web</span>
+                      <div className="h-20 rounded-xl bg-brand/10 flex items-center justify-center border border-brand/20">
+                        <span className="material-symbols-outlined text-brand/60">web</span>
                       </div>
                       <div className="h-20 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
                         <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">settings</span>
@@ -224,7 +224,7 @@ export default function DashboardPage() {
                       <span className="material-symbols-outlined text-slate-300 dark:text-slate-600">add</span>
                     </div>
                   </div>
-                  <div className="absolute -top-6 -right-6 h-16 w-16 rounded-full bg-[#1A56DB] flex items-center justify-center text-white shadow-lg shadow-[#1A56DB]/30 animate-bounce">
+                  <div className="absolute -top-6 -right-6 h-16 w-16 rounded-full bg-brand flex items-center justify-center text-white shadow-lg shadow-brand/30 animate-bounce">
                     <span className="material-symbols-outlined text-3xl">magic_button</span>
                   </div>
                   <div className="absolute -bottom-4 -left-4 h-12 w-12 rounded-xl bg-[#14B8A6] flex items-center justify-center text-white shadow-lg shadow-[#14B8A6]/20">
@@ -242,19 +242,19 @@ export default function DashboardPage() {
             <div className="flex flex-col items-center gap-6">
               {!isViewOnly && <button
                 onClick={() => setModalOpen(true)}
-                className="flex items-center gap-2 rounded-xl bg-[#1A56DB] px-8 py-4 text-lg font-bold text-white shadow-lg shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 hover:-translate-y-0.5 transition-all"
+                className="flex items-center gap-2 rounded-xl bg-brand px-8 py-4 text-lg font-bold text-white shadow-lg shadow-brand/20 hover:bg-brand/90 hover:-translate-y-0.5 transition-all"
               >
                 <span className="material-symbols-outlined">add_circle</span>
                 {t('dashboard.empty_state.cta_primary')}
               </button>}
               <div className="flex flex-col sm:flex-row items-center gap-8">
-                <a href="#" className="group flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-[#1A56DB] font-medium transition-colors">
-                  <span className="material-symbols-outlined text-slate-400 group-hover:text-[#1A56DB]">play_circle</span>
+                <a href="#" className="group flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-brand font-medium transition-colors">
+                  <span className="material-symbols-outlined text-slate-400 group-hover:text-brand">play_circle</span>
                   {t('dashboard.empty_state.cta_demo')}
                 </a>
                 <div className="hidden sm:block h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
-                <a href="#" className="group flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-[#1A56DB] font-medium transition-colors">
-                  <span className="material-symbols-outlined text-slate-400 group-hover:text-[#1A56DB]">menu_book</span>
+                <a href="#" className="group flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-brand font-medium transition-colors">
+                  <span className="material-symbols-outlined text-slate-400 group-hover:text-brand">menu_book</span>
                   {t('dashboard.empty_state.cta_docs')}
                 </a>
               </div>

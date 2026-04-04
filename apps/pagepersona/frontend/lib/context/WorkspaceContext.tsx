@@ -10,6 +10,7 @@ export interface Workspace {
   type: string
   owner_id: string
   parent_workspace_id: string | null
+  parent_slug: string | null
   client_email: string | null
   client_name: string | null
   client_access_level: string

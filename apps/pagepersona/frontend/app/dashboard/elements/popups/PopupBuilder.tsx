@@ -530,10 +530,10 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
                 onBlur={() => setEditingName(false)}
                 onKeyDown={e => e.key === 'Enter' && setEditingName(false)}
                 autoFocus
-                className="text-sm font-bold text-slate-900 border-b-2 border-[#1A56DB] outline-none bg-transparent min-w-[160px]"
+                className="text-sm font-bold text-slate-900 border-b-2 border-brand outline-none bg-transparent min-w-[160px]"
               />
             ) : (
-              <button onClick={() => setEditingName(true)} className="flex items-center gap-1.5 text-sm font-bold text-slate-900 hover:text-[#1A56DB] transition-colors">
+              <button onClick={() => setEditingName(true)} className="flex items-center gap-1.5 text-sm font-bold text-slate-900 hover:text-brand transition-colors">
                 {name || t('popup_builder.untitled')}
                 <Icon name="edit" className="text-sm text-slate-400" />
               </button>
@@ -554,7 +554,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
             </div>
           )}
           {saveError && <p className="text-xs text-red-500">{saveError}</p>}
-          <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2 bg-[#1A56DB] hover:bg-[#1A56DB]/90 disabled:opacity-60 text-white text-sm font-bold rounded-xl transition-all">
+          <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2 bg-brand hover:bg-brand/90 disabled:opacity-60 text-white text-sm font-bold rounded-xl transition-all">
             <Icon name={saving ? 'sync' : 'save'} className={saving ? 'animate-spin text-sm' : 'text-sm'} />
             {saving ? t('popup_builder.saving') : t('popup_builder.save')}
           </button>
@@ -568,7 +568,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
           <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-2">{t('popup_builder.elements_panel')}</p>
           {ELEMENT_TYPES.map(el => (
             <button key={el.type} onClick={() => addBlock(el.type)}
-              className="flex flex-col items-center gap-1 w-14 h-14 rounded-xl hover:bg-[#1A56DB]/5 border-2 border-transparent hover:border-[#1A56DB]/20 text-slate-500 hover:text-[#1A56DB] transition-all justify-center"
+              className="flex flex-col items-center gap-1 w-14 h-14 rounded-xl hover:bg-brand/5 border-2 border-transparent hover:border-brand/20 text-slate-500 hover:text-brand transition-all justify-center"
             >
               <Icon name={el.icon} className="text-xl" />
               <span className="text-[9px] font-bold uppercase leading-tight text-center">{el.label}</span>
@@ -576,13 +576,13 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
           ))}
           <div className="mt-auto flex flex-col items-center gap-1">
             <button onClick={() => { setSelectedBlockId(null); setRightPanel('global') }}
-              className={"flex flex-col items-center gap-1 w-14 h-14 rounded-xl border-2 transition-all justify-center " + (rightPanel === 'global' ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-transparent text-slate-400 hover:text-slate-600')}
+              className={"flex flex-col items-center gap-1 w-14 h-14 rounded-xl border-2 transition-all justify-center " + (rightPanel === 'global' ? 'border-brand bg-brand/5 text-brand' : 'border-transparent text-slate-400 hover:text-slate-600')}
             >
               <Icon name="tune" className="text-xl" />
               <span className="text-[9px] font-bold uppercase">{t('popup_builder.style_panel')}</span>
             </button>
             <button onClick={() => { setSelectedBlockId(null); setRightPanel('behaviour') }}
-              className={"flex flex-col items-center gap-1 w-14 h-14 rounded-xl border-2 transition-all justify-center " + (rightPanel === 'behaviour' ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-transparent text-slate-400 hover:text-slate-600')}
+              className={"flex flex-col items-center gap-1 w-14 h-14 rounded-xl border-2 transition-all justify-center " + (rightPanel === 'behaviour' ? 'border-brand bg-brand/5 text-brand' : 'border-transparent text-slate-400 hover:text-slate-600')}
             >
               <Icon name="settings" className="text-xl" />
               <span className="text-[9px] font-bold uppercase">{t('popup_builder.behaviour_short')}</span>
@@ -613,7 +613,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
                 <div className="grid grid-cols-2 gap-4">
                   {TEMPLATES.map(tpl => (
                     <button key={tpl.key} onClick={() => applyTemplate(tpl)}
-                      className="group rounded-xl border-2 border-slate-100 hover:border-[#1A56DB] transition-all text-left overflow-hidden shadow-sm hover:shadow-md"
+                      className="group rounded-xl border-2 border-slate-100 hover:border-brand transition-all text-left overflow-hidden shadow-sm hover:shadow-md"
                     >
                       {/* Preview */}
                       <div className="relative overflow-hidden" style={{
@@ -674,15 +674,15 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
                         {/* Badges */}
                         <div className="absolute top-2 left-2 flex gap-1">
                           {tpl.config.layout === 'two-column' && (
-                            <span className="px-1.5 py-0.5 bg-[#1A56DB]/80 text-white text-[9px] font-bold rounded">2-COL</span>
+                            <span className="px-1.5 py-0.5 bg-brand/80 text-white text-[9px] font-bold rounded">2-COL</span>
                           )}
                           <span className="px-1.5 py-0.5 bg-black/30 text-white text-[9px] font-bold rounded capitalize">{tpl.config.position as string}</span>
                         </div>
                       </div>
                       {/* Label */}
                       <div className="px-3 py-2.5 border-t border-slate-100 flex items-center justify-between">
-                        <p className="text-sm font-bold text-slate-700 group-hover:text-[#1A56DB]">{tpl.label}</p>
-                        <Icon name="arrow_forward" className="text-slate-300 group-hover:text-[#1A56DB] text-sm transition-colors" />
+                        <p className="text-sm font-bold text-slate-700 group-hover:text-brand">{tpl.label}</p>
+                        <Icon name="arrow_forward" className="text-slate-300 group-hover:text-brand text-sm transition-colors" />
                       </div>
                     </button>
                   ))}
@@ -728,7 +728,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
 
             {/* Popup URL hint */}
             {config.popup_url && (
-              <div className="absolute top-3 left-3 z-10 px-2 py-0.5 bg-[#1A56DB]/80 rounded text-white text-[9px] font-bold">{t('popup_builder.clickable_badge')}</div>
+              <div className="absolute top-3 left-3 z-10 px-2 py-0.5 bg-brand/80 rounded text-white text-[9px] font-bold">{t('popup_builder.clickable_badge')}</div>
             )}
 
             {/* Blocks */}
@@ -893,7 +893,7 @@ function BlockPreview({ block, isBar, t }: { block: Block; isBar: boolean; t: an
           <span style={{
             display: 'inline-block',
             background: block.btn_color || '#ffffff',
-            color: block.btn_text_color || '#1A56DB',
+            color: block.btn_text_color || 'var(--color-primary)',
             padding: '10px 24px',
             borderRadius: block.btn_radius || 10,
             fontWeight: block.btn_bold ? 700 : 400,
@@ -925,7 +925,7 @@ function BlockPreview({ block, isBar, t }: { block: Block; isBar: boolean; t: an
       )
     case 'countdown': {
       const cfg = block.countdown_config || {}
-      const bg = cfg.digit_bg || '#1A56DB'
+      const bg = cfg.digit_bg || 'var(--color-primary)'
       const fg = cfg.digit_color || '#ffffff'
       const radius = cfg.digit_radius ?? 6
       const size = Math.min(cfg.digit_size || 28, 28)
@@ -991,14 +991,14 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('popup_builder.label_content')}</label>
             <textarea value={block.text || ''} onChange={e => onTextChange(e.target.value)} rows={3}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB]" />
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand" />
             <div className="mt-2">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('picker.insert_token')}</p>
               <div className="flex flex-wrap gap-1.5">
                 {POPUP_TOKENS.map(tok => (
                   <button key={tok} type="button" onClick={() => insertToken(tok)}
                     className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-colors">
-                    <span className="text-[#1A56DB]/70">{'{'}</span>{tok.slice(1,-1)}<span className="text-[#1A56DB]/70">{'}'}</span>
+                    <span className="text-brand/70">{'{'}</span>{tok.slice(1,-1)}<span className="text-brand/70">{'}'}</span>
                   </button>
                 ))}
               </div>
@@ -1009,7 +1009,7 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
                 <div className="flex flex-col gap-1.5">
                   {detectedTokens.map(key => (
                     <div key={key} className="flex items-center gap-2">
-                      <span className="text-[10px] text-slate-500 w-20 shrink-0 font-mono text-[#1A56DB]">{'{' + key + '}'}</span>
+                      <span className="text-[10px] text-slate-500 w-20 shrink-0 font-mono text-brand">{'{' + key + '}'}</span>
                       <input type="text" value={(block.text_fallbacks || {})[key] ?? POPUP_TOKEN_DEFAULTS[key] ?? ''}
                         onChange={e => updateFallback(key, e.target.value)}
                         className="flex-1 px-2 py-1 bg-white border border-amber-200 rounded-lg text-xs focus:outline-none focus:border-amber-400 transition-all" />
@@ -1023,12 +1023,12 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
             <div>
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Size</label>
               <input type="number" min={10} max={80} value={block.font_size || 14} onChange={e => onUpdate({ font_size: parseInt(e.target.value) })}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
             </div>
             <div>
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Weight</label>
               <select value={block.font_weight || '400'} onChange={e => onUpdate({ font_weight: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20">
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20">
                 <option value="300">{t('popup_builder.weight_light')}</option>
                 <option value="400">{t('popup_builder.weight_regular')}</option>
                 <option value="600">{t('popup_builder.weight_semibold')}</option>
@@ -1042,9 +1042,9 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Format</label>
             <div className="flex gap-1">
               <button onClick={() => onUpdate({ text_italic: !block.text_italic })}
-                className={"flex-1 py-2 rounded-lg border-2 text-sm font-bold transition-all italic " + (block.text_italic ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500')}>I</button>
+                className={"flex-1 py-2 rounded-lg border-2 text-sm font-bold transition-all italic " + (block.text_italic ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-500')}>I</button>
               <button onClick={() => onUpdate({ text_underline: !block.text_underline })}
-                className={"flex-1 py-2 rounded-lg border-2 text-sm font-bold transition-all underline " + (block.text_underline ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500')}>U</button>
+                className={"flex-1 py-2 rounded-lg border-2 text-sm font-bold transition-all underline " + (block.text_underline ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-500')}>U</button>
             </div>
           </div>
           <div>
@@ -1052,7 +1052,7 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
             <div className="flex gap-1">
               {['left','center','right'].map(a => (
                 <button key={a} onClick={() => onUpdate({ text_align: a })}
-                  className={"flex-1 py-2 rounded-lg border-2 transition-all " + (block.text_align === a ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-400 hover:border-slate-300')}>
+                  className={"flex-1 py-2 rounded-lg border-2 transition-all " + (block.text_align === a ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-400 hover:border-slate-300')}>
                   <Icon name={'format_align_' + a} className="text-base" />
                 </button>
               ))}
@@ -1078,14 +1078,14 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
           </div>
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Height — {block.image_height || 160}px</label>
-            <input type="range" min={60} max={600} value={block.image_height || 160} onChange={e => onUpdate({ image_height: parseInt(e.target.value) })} className="w-full accent-[#1A56DB]" />
+            <input type="range" min={60} max={600} value={block.image_height || 160} onChange={e => onUpdate({ image_height: parseInt(e.target.value) })} className="w-full accent-brand" />
           </div>
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Fit</label>
             <div className="flex gap-2">
               {(['cover','contain'] as const).map(f => (
                 <button key={f} onClick={() => onUpdate({ image_fit: f })}
-                  className={"flex-1 py-2 rounded-lg border-2 text-xs font-bold capitalize transition-all " + (block.image_fit === f ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
+                  className={"flex-1 py-2 rounded-lg border-2 text-xs font-bold capitalize transition-all " + (block.image_fit === f ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
                   {f}
                 </button>
               ))}
@@ -1094,7 +1094,7 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Link URL (optional)</label>
             <input type="url" value={block.image_link || ''} onChange={e => onUpdate({ image_link: e.target.value })} placeholder="https://..."
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
           </div>
         </>
       )}
@@ -1105,15 +1105,15 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Label</label>
             <input type="text" value={block.btn_label || ''} onChange={e => onUpdate({ btn_label: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
           </div>
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Format</label>
             <div className="flex gap-1">
               <button onClick={() => onUpdate({ btn_bold: !block.btn_bold })}
-                className={"flex-1 py-2 rounded-lg border-2 text-sm font-black transition-all " + (block.btn_bold ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500')}>B</button>
+                className={"flex-1 py-2 rounded-lg border-2 text-sm font-black transition-all " + (block.btn_bold ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-500')}>B</button>
               <button onClick={() => onUpdate({ btn_italic: !block.btn_italic })}
-                className={"flex-1 py-2 rounded-lg border-2 text-sm font-bold italic transition-all " + (block.btn_italic ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500')}>I</button>
+                className={"flex-1 py-2 rounded-lg border-2 text-sm font-bold italic transition-all " + (block.btn_italic ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-500')}>I</button>
             </div>
           </div>
           <div>
@@ -1121,7 +1121,7 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
             <div className="flex gap-2">
               {(['link','close'] as const).map(a => (
                 <button key={a} onClick={() => onUpdate({ btn_action: a })}
-                  className={"flex-1 py-2 rounded-lg border-2 text-xs font-bold capitalize transition-all " + (block.btn_action === a ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
+                  className={"flex-1 py-2 rounded-lg border-2 text-xs font-bold capitalize transition-all " + (block.btn_action === a ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
                   {a === 'link' ? t('popup_builder.btn_action_link') : t('popup_builder.btn_action_close')}
                 </button>
               ))}
@@ -1131,7 +1131,7 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
             <div>
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">URL</label>
               <input type="url" value={block.btn_url || ''} onChange={e => onUpdate({ btn_url: e.target.value })} placeholder="https://..."
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
             </div>
           )}
           <div className="flex items-center justify-between">
@@ -1145,12 +1145,12 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Text Colour</label>
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-md border border-slate-200" style={{ background: block.btn_text_color }} />
-              <input type="color" value={block.btn_text_color || '#1A56DB'} onChange={e => onUpdate({ btn_text_color: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
+              <input type="color" value={block.btn_text_color || 'var(--color-primary)'} onChange={e => onUpdate({ btn_text_color: e.target.value })} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
             </div>
           </div>
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Border Radius — {block.btn_radius || 10}px</label>
-            <input type="range" min={0} max={32} value={block.btn_radius || 10} onChange={e => onUpdate({ btn_radius: parseInt(e.target.value) })} className="w-full accent-[#1A56DB]" />
+            <input type="range" min={0} max={32} value={block.btn_radius || 10} onChange={e => onUpdate({ btn_radius: parseInt(e.target.value) })} className="w-full accent-brand" />
           </div>
         </>
       )}
@@ -1161,7 +1161,7 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Label</label>
             <input type="text" value={block.no_thanks_label || 'No thanks'} onChange={e => onUpdate({ no_thanks_label: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
           </div>
           <div className="flex items-center justify-between">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Colour</label>
@@ -1173,7 +1173,7 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
           <div className="flex items-center justify-between">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Don't show again</label>
             <button onClick={() => onUpdate({ no_thanks_dont_show: !block.no_thanks_dont_show })}
-              className={"w-10 h-5 rounded-full transition-colors relative " + (block.no_thanks_dont_show ? 'bg-[#1A56DB]' : 'bg-slate-200')}>
+              className={"w-10 h-5 rounded-full transition-colors relative " + (block.no_thanks_dont_show ? 'bg-brand' : 'bg-slate-200')}>
               <span className={"absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all " + (block.no_thanks_dont_show ? 'left-5' : 'left-0.5')} />
             </button>
           </div>
@@ -1186,7 +1186,7 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
         <div>
           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">HTML / Embed Code</label>
           <textarea value={block.embed_code || ''} onChange={e => onUpdate({ embed_code: e.target.value })} rows={7}
-            placeholder="<form>...</form>" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono resize-none focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB]" />
+            placeholder="<form>...</form>" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-mono resize-none focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand" />
           <p className="text-[10px] text-slate-400 mt-1">Paste Mailchimp, ConvertKit, or any HTML here.</p>
         </div>
       )}
@@ -1206,7 +1206,7 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
             ) : !countdowns || countdowns.length === 0 ? (
               <div className="flex flex-col gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl">
                 <p className="text-xs text-slate-500">{t('popup_builder.countdown_block_none')}</p>
-                <a href="/dashboard/elements/countdowns/new" target="_blank" className="text-xs font-bold text-[#1A56DB] hover:underline">Create countdown →</a>
+                <a href="/dashboard/elements/countdowns/new" target="_blank" className="text-xs font-bold text-brand hover:underline">Create countdown →</a>
               </div>
             ) : (
               <div className="flex flex-col gap-1.5">
@@ -1214,14 +1214,14 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
                   <button
                     key={cd.id}
                     onClick={() => onUpdate({ countdown_id: cd.id, countdown_ends_at: cd.ends_at, countdown_expiry_action: cd.expiry_action, countdown_expiry_value: cd.expiry_value, countdown_config: cd.config })}
-                    className={"flex items-center gap-2.5 p-2.5 rounded-xl border-2 text-left transition-all " + (block.countdown_id === cd.id ? 'border-[#1A56DB] bg-[#1A56DB]/5' : 'border-slate-100 hover:border-slate-300')}
+                    className={"flex items-center gap-2.5 p-2.5 rounded-xl border-2 text-left transition-all " + (block.countdown_id === cd.id ? 'border-brand bg-brand/5' : 'border-slate-100 hover:border-slate-300')}
                   >
-                    <div className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center text-white text-sm" style={{ background: cd.config?.digit_bg || '#1A56DB' }}>⏱</div>
+                    <div className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center text-white text-sm" style={{ background: cd.config?.digit_bg || 'var(--color-primary)' }}>⏱</div>
                     <div className="flex-1 min-w-0">
-                      <p className={"text-xs font-bold truncate " + (block.countdown_id === cd.id ? 'text-[#1A56DB]' : 'text-slate-700')}>{cd.name}</p>
+                      <p className={"text-xs font-bold truncate " + (block.countdown_id === cd.id ? 'text-brand' : 'text-slate-700')}>{cd.name}</p>
                       <p className="text-[10px] text-slate-400">{cd.ends_at ? new Date(cd.ends_at).toLocaleDateString() : '—'}</p>
                     </div>
-                    {block.countdown_id === cd.id && <span className="text-[#1A56DB] text-xs">✓</span>}
+                    {block.countdown_id === cd.id && <span className="text-brand text-xs">✓</span>}
                   </button>
                 ))}
               </div>
@@ -1246,7 +1246,7 @@ function GlobalProperties({ config, setC, isBar, isFullscreen, t }: any) {
         <div className="flex gap-2">
           {([{k:'single',l:t('popup_builder.layout_single'),i:'view_stream'},{k:'two-column',l:t('popup_builder.layout_two_column'),i:'view_column'}]).map(l => (
             <button key={l.k} onClick={() => setC('layout', l.k)}
-              className={"flex-1 flex items-center gap-1.5 justify-center py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.layout === l.k ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
+              className={"flex-1 flex items-center gap-1.5 justify-center py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.layout === l.k ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
               <Icon name={l.i} className="text-sm" />{l.l}
             </button>
           ))}
@@ -1259,7 +1259,7 @@ function GlobalProperties({ config, setC, isBar, isFullscreen, t }: any) {
           <div className="flex flex-col gap-1.5">
             {(['50-50','40-60','60-40'] as const).map(s => (
               <button key={s} onClick={() => setC('col_split', s)}
-                className={"flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.col_split === s ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
+                className={"flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.col_split === s ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
                 <Icon name={config.col_split === s ? 'radio_button_checked' : 'radio_button_unchecked'} className="text-sm" />
                 {s}
               </button>
@@ -1282,7 +1282,7 @@ function GlobalProperties({ config, setC, isBar, isFullscreen, t }: any) {
         {config.bg_image && (
           <div className="mt-2">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Colour Overlay — {config.bg_image_opacity || 40}%</label>
-            <input type="range" min={0} max={90} value={config.bg_image_opacity || 40} onChange={e => setC('bg_image_opacity', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
+            <input type="range" min={0} max={90} value={config.bg_image_opacity || 40} onChange={e => setC('bg_image_opacity', parseInt(e.target.value))} className="w-full accent-brand" />
           </div>
         )}
       </div>
@@ -1294,9 +1294,9 @@ function GlobalProperties({ config, setC, isBar, isFullscreen, t }: any) {
             <div className="flex gap-2">
               <input type="number" min={200} max={1200} value={typeof config.width === 'number' ? config.width : 480}
                 onChange={e => setC('width', parseInt(e.target.value))}
-                className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+                className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
               <button onClick={() => setC('width', config.width === '100%' ? 480 : '100%')}
-                className={"px-2 py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.width === '100%' ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500')}>100%</button>
+                className={"px-2 py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.width === '100%' ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-500')}>100%</button>
             </div>
           </div>
           <div>
@@ -1306,29 +1306,29 @@ function GlobalProperties({ config, setC, isBar, isFullscreen, t }: any) {
                 value={typeof config.height === 'number' ? config.height : ''}
                 placeholder="Auto"
                 onChange={e => setC('height', e.target.value ? parseInt(e.target.value) : 'auto')}
-                className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+                className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
               <button onClick={() => setC('height', config.height === '100%' ? 'auto' : '100%')}
-                className={"px-2 py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.height === '100%' ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500')}>100%</button>
+                className={"px-2 py-2 rounded-lg border-2 text-xs font-bold transition-all " + (config.height === '100%' ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-500')}>100%</button>
             </div>
           </div>
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Padding — {config.padding}px</label>
-            <input type="range" min={0} max={80} value={config.padding} onChange={e => setC('padding', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
+            <input type="range" min={0} max={80} value={config.padding} onChange={e => setC('padding', parseInt(e.target.value))} className="w-full accent-brand" />
           </div>
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Border Radius — {config.border_radius}px</label>
-            <input type="range" min={0} max={40} value={config.border_radius} onChange={e => setC('border_radius', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
+            <input type="range" min={0} max={40} value={config.border_radius} onChange={e => setC('border_radius', parseInt(e.target.value))} className="w-full accent-brand" />
           </div>
           <div className="flex items-center justify-between">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Overlay</label>
-            <button onClick={() => setC('overlay', !config.overlay)} className={"w-10 h-5 rounded-full transition-colors relative " + (config.overlay ? 'bg-[#1A56DB]' : 'bg-slate-200')}>
+            <button onClick={() => setC('overlay', !config.overlay)} className={"w-10 h-5 rounded-full transition-colors relative " + (config.overlay ? 'bg-brand' : 'bg-slate-200')}>
               <span className={"absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all " + (config.overlay ? 'left-5' : 'left-0.5')} />
             </button>
           </div>
           {config.overlay && (
             <div>
               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Overlay Opacity — {config.overlay_opacity}%</label>
-              <input type="range" min={10} max={90} value={config.overlay_opacity} onChange={e => setC('overlay_opacity', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
+              <input type="range" min={10} max={90} value={config.overlay_opacity} onChange={e => setC('overlay_opacity', parseInt(e.target.value))} className="w-full accent-brand" />
             </div>
           )}
         </>
@@ -1337,7 +1337,7 @@ function GlobalProperties({ config, setC, isBar, isFullscreen, t }: any) {
       <div>
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Popup Link (click anywhere)</label>
         <input type="url" value={config.popup_url || ''} onChange={e => setC('popup_url', e.target.value)} placeholder="https://... (optional)"
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20" />
+          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
       </div>
 
       <div>
@@ -1345,7 +1345,7 @@ function GlobalProperties({ config, setC, isBar, isFullscreen, t }: any) {
         <div className="grid grid-cols-2 gap-1.5">
           {POSITIONS.map(pos => (
             <button key={pos.key} onClick={() => setC('position', pos.key)}
-              className={"flex items-center gap-2 px-2.5 py-2 rounded-lg border-2 text-xs font-medium transition-all " + (config.position === pos.key ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
+              className={"flex items-center gap-2 px-2.5 py-2 rounded-lg border-2 text-xs font-medium transition-all " + (config.position === pos.key ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
               <Icon name={pos.icon} className="text-sm" />
               <span className="text-[10px]">{pos.label}</span>
             </button>
@@ -1358,7 +1358,7 @@ function GlobalProperties({ config, setC, isBar, isFullscreen, t }: any) {
         <div className="flex flex-col gap-1.5">
           {[{k:'fade',l:t('popup_builder.anim_fade')},{k:'slide',l:t('popup_builder.anim_slide')},{k:'zoom',l:t('popup_builder.anim_zoom')}].map(a => (
             <button key={a.k} onClick={() => setC('animation', a.k)}
-              className={"flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-xs font-medium transition-all " + (config.animation === a.k ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
+              className={"flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-xs font-medium transition-all " + (config.animation === a.k ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
               <Icon name={config.animation === a.k ? 'radio_button_checked' : 'radio_button_unchecked'} className="text-sm" />{a.l}
             </button>
           ))}
@@ -1376,28 +1376,28 @@ function BehaviourProperties({ config, setC, isBar, t }: any) {
       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('popup_builder.behaviour')}</h3>
       <div className="flex items-center justify-between">
         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Close Button</label>
-        <button onClick={() => setC('close_button', !config.close_button)} className={"w-10 h-5 rounded-full transition-colors relative " + (config.close_button ? 'bg-[#1A56DB]' : 'bg-slate-200')}>
+        <button onClick={() => setC('close_button', !config.close_button)} className={"w-10 h-5 rounded-full transition-colors relative " + (config.close_button ? 'bg-brand' : 'bg-slate-200')}>
           <span className={"absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all " + (config.close_button ? 'left-5' : 'left-0.5')} />
         </button>
       </div>
       {!isBar && (
         <div className="flex items-center justify-between">
           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Close on Overlay</label>
-          <button onClick={() => setC('close_on_overlay', !config.close_on_overlay)} className={"w-10 h-5 rounded-full transition-colors relative " + (config.close_on_overlay ? 'bg-[#1A56DB]' : 'bg-slate-200')}>
+          <button onClick={() => setC('close_on_overlay', !config.close_on_overlay)} className={"w-10 h-5 rounded-full transition-colors relative " + (config.close_on_overlay ? 'bg-brand' : 'bg-slate-200')}>
             <span className={"absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all " + (config.close_on_overlay ? 'left-5' : 'left-0.5')} />
           </button>
         </div>
       )}
       <div>
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Delay — {config.delay}s</label>
-        <input type="range" min={0} max={30} value={config.delay} onChange={e => setC('delay', parseInt(e.target.value))} className="w-full accent-[#1A56DB]" />
+        <input type="range" min={0} max={30} value={config.delay} onChange={e => setC('delay', parseInt(e.target.value))} className="w-full accent-brand" />
       </div>
       <div>
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Frequency</label>
         <div className="flex flex-col gap-1.5">
           {[{k:'every',l:t('popup_builder.freq_every')},{k:'once',l:t('popup_builder.freq_once')},{k:'session',l:t('popup_builder.freq_session')}].map(f => (
             <button key={f.k} onClick={() => setC('frequency', f.k)}
-              className={"flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 text-xs font-medium transition-all " + (config.frequency === f.k ? 'border-[#1A56DB] bg-[#1A56DB]/5 text-[#1A56DB]' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
+              className={"flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 text-xs font-medium transition-all " + (config.frequency === f.k ? 'border-brand bg-brand/5 text-brand' : 'border-slate-100 text-slate-500 hover:border-slate-300')}>
               <Icon name={config.frequency === f.k ? 'radio_button_checked' : 'radio_button_unchecked'} className="text-sm" />{f.l}
             </button>
           ))}

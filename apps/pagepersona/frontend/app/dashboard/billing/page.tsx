@@ -28,7 +28,7 @@ export default function BillingPage() {
         </div>
 
         {/* Current plan card */}
-        <div className="bg-gradient-to-br from-[#1A56DB] to-[#1547b3] rounded-2xl p-6 text-white mb-6 shadow-lg shadow-[#1A56DB]/20">
+        <div className="bg-gradient-to-br from-brand to-brand/90 rounded-2xl p-6 text-white mb-6 shadow-lg shadow-brand/20">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-white/60 mb-1">{t('billing.current_plan')}</p>

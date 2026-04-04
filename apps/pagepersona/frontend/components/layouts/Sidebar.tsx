@@ -53,7 +53,8 @@ export default function Sidebar() {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     document.cookie = 'access_token=; path=/; max-age=0'
-    window.location.href = '/login'
+    const slug = activeWorkspace?.parent_slug
+    window.location.href = slug ? `/login?slug=${slug}` : '/login'
   }
 
   const initials = user?.name
@@ -142,8 +143,8 @@ export default function Sidebar() {
           onClick={() => setWorkspaceOpen(!workspaceOpen)}
           className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group"
         >
-          <div className="size-7 rounded-lg bg-[#1A56DB]/10 flex items-center justify-center flex-shrink-0">
-            <Icon name="hub" className="text-[#1A56DB] text-[16px]" />
+          <div className="size-7 rounded-lg bg-brand/10 flex items-center justify-center flex-shrink-0">
+            <Icon name="hub" className="text-brand text-[16px]" />
           </div>
           <div className="flex-1 text-left min-w-0">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('nav.workspace')}</p>
@@ -163,16 +164,16 @@ export default function Sidebar() {
                   <button
                     key={ws.id}
                     onClick={() => { setActiveWorkspaceId(ws.id); setWorkspaceOpen(false); router.push('/dashboard') }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors ${isActivews ? 'bg-[#1A56DB]/5 border border-[#1A56DB]/10' : 'hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors ${isActivews ? 'bg-brand/5 border border-brand/10' : 'hover:bg-slate-50 dark:hover:bg-slate-700'}`}
                   >
-                    <div className="size-6 rounded-md bg-[#1A56DB] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                    <div className="size-6 rounded-md bg-brand flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
                       {ws.name.slice(0, 2).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0 text-left">
                       <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{ws.name}</p>
                       <p className="text-[10px] text-slate-400">{t('nav.myWorkspace')}</p>
                     </div>
-                    {isActivews && <Icon name="check" className="text-[#1A56DB] text-[16px] flex-shrink-0" />}
+                    {isActivews && <Icon name="check" className="text-brand text-[16px] flex-shrink-0" />}
                   </button>
                 )
               })}
@@ -240,7 +241,7 @@ export default function Sidebar() {
 
       {/* Plan card — hidden for client users */}
       {!isClientUser && <div className="px-3 py-4">
-        <div className="bg-gradient-to-br from-[#1A56DB] to-[#1547b3] rounded-2xl p-4 text-white shadow-lg shadow-[#1A56DB]/25">
+        <div className="bg-gradient-to-br from-brand to-brand/90 rounded-2xl p-4 text-white shadow-lg shadow-brand/25">
           <div className="flex items-center gap-2 mb-3">
             <div className="size-6 rounded-md bg-white/20 flex items-center justify-center">
               <Icon name="workspace_premium" className="text-[14px] text-white" />
@@ -251,7 +252,7 @@ export default function Sidebar() {
             </div>
           </div>
           <p className="text-[10px] text-white/70 mb-3 leading-relaxed">{t('sidebar.upgradeDescription')}</p>
-          <button className="w-full py-2 bg-white text-[#1A56DB] rounded-xl text-xs font-bold hover:bg-white/90 transition-colors">
+          <button className="w-full py-2 bg-white text-brand rounded-xl text-xs font-bold hover:bg-white/90 transition-colors">
             {t('sidebar.upgradeNow')}
           </button>
         </div>
@@ -260,7 +261,7 @@ export default function Sidebar() {
       {/* User footer */}
       <div className="px-3 pb-4 border-t border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-3 px-3 py-3">
-          <div className="size-8 rounded-full bg-[#1A56DB]/10 border-2 border-[#1A56DB]/20 flex items-center justify-center text-[#1A56DB] font-bold text-xs flex-shrink-0 overflow-hidden">
+          <div className="size-8 rounded-full bg-brand/10 border-2 border-brand/20 flex items-center justify-center text-brand font-bold text-xs flex-shrink-0 overflow-hidden">
             {user?.avatar_url ? (
               <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display="none"; }} />
             ) : initials}
@@ -300,14 +301,14 @@ export default function Sidebar() {
                 value={addWsName}
                 onChange={e => setAddWsName(e.target.value)}
                 placeholder={t('nav.newWorkspaceName')}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] outline-none text-slate-900 text-sm transition-all"
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none text-slate-900 text-sm transition-all"
               />
             </div>
             <div className="flex justify-end gap-3 pt-1">
               <button type="button" onClick={() => { setAddWsOpen(false); setAddWsName('') }} className="px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">
                 {t('common.cancel')}
               </button>
-              <button type="submit" disabled={addWsLoading || !addWsName.trim()} className="px-5 py-2.5 text-sm font-bold text-white bg-[#1A56DB] rounded-xl hover:bg-[#1547b3] disabled:opacity-60 transition-colors">
+              <button type="submit" disabled={addWsLoading || !addWsName.trim()} className="px-5 py-2.5 text-sm font-bold text-white bg-brand rounded-xl hover:bg-brand/90 disabled:opacity-60 transition-colors">
                 {addWsLoading ? t('actions.saving') : t('nav.addWorkspace')}
               </button>
             </div>

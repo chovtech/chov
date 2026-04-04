@@ -69,7 +69,7 @@ function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgC
           </div>
           <button
             onClick={() => { setInviteMsg(null); setInviteOpen(true) }}
-            className="flex items-center gap-2 px-4 py-2 bg-[#1A56DB] text-white text-sm font-bold rounded-xl hover:bg-[#1547b3] transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm font-bold rounded-xl hover:bg-brand/90 transition-colors"
           >
             <Icon name="person_add" className="text-[18px]" />
             {t('settings.team.invite_btn')}
@@ -93,7 +93,7 @@ function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgC
             {members.map(m => (
               <div key={m.id} className="flex items-center justify-between px-6 py-4">
                 <div className="flex items-center gap-3">
-                  <div className="size-8 rounded-full bg-[#1A56DB]/10 flex items-center justify-center text-[#1A56DB] font-bold text-xs">
+                  <div className="size-8 rounded-full bg-brand/10 flex items-center justify-center text-brand font-bold text-xs">
                     {m.email.slice(0, 2).toUpperCase()}
                   </div>
                   <div>
@@ -148,7 +148,7 @@ function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgC
                 <button type="button" onClick={() => setInviteOpen(false)} className="px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">
                   {t('common.cancel')}
                 </button>
-                <button type="submit" disabled={inviteLoading} className="px-5 py-2.5 text-sm font-bold text-white bg-[#1A56DB] rounded-xl hover:bg-[#1547b3] disabled:opacity-60 transition-colors">
+                <button type="submit" disabled={inviteLoading} className="px-5 py-2.5 text-sm font-bold text-white bg-brand rounded-xl hover:bg-brand/90 disabled:opacity-60 transition-colors">
                   {inviteLoading ? t('settings.team.sending') : t('settings.team.invite_btn')}
                 </button>
               </div>
@@ -217,7 +217,7 @@ export default function SettingsPage() {
       setWlForm({
         brand_name: activeWorkspace.white_label_brand_name || '',
         logo: activeWorkspace.white_label_logo || '',
-        primary_color: activeWorkspace.white_label_primary_color || '#1A56DB',
+        primary_color: activeWorkspace.white_label_primary_color || 'var(--color-primary)',
         hide_powered_by: activeWorkspace.hide_powered_by || false,
       })
       setDomainInput(activeWorkspace.custom_domain || '')
@@ -339,7 +339,7 @@ export default function SettingsPage() {
   const initials = user?.name
     ? (user.name || '').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?'
 
-  const inputClass = "w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] outline-none text-slate-900 dark:text-white transition-all"
+  const inputClass = "w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none text-slate-900 dark:text-white transition-all"
   const msgClass = (type: string) => `mb-5 p-3 rounded-lg border text-sm ${type === 'success' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-600'}`
 
   return (
@@ -355,7 +355,7 @@ export default function SettingsPage() {
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold border-b-2 transition-colors ${
-                  activeTab === tab.key ? 'border-[#1A56DB] text-[#1A56DB]' : 'border-transparent text-slate-500 hover:text-slate-700'
+                  activeTab === tab.key ? 'border-brand text-brand' : 'border-transparent text-slate-500 hover:text-slate-700'
                 }`}
               >
                 <Icon name={tab.icon} className="text-[18px]" />
@@ -374,9 +374,9 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-5">
                   <div className="relative size-16 flex-shrink-0 group cursor-pointer" onClick={() => document.getElementById('avatar-upload')?.click()}>
                     {profileForm.avatar_url ? (
-                      <img src={profileForm.avatar_url} alt="Avatar" className="size-16 rounded-full object-cover border-2 border-[#1A56DB]/20" />
+                      <img src={profileForm.avatar_url} alt="Avatar" className="size-16 rounded-full object-cover border-2 border-brand/20" />
                     ) : (
-                      <div className="size-16 rounded-full bg-[#1A56DB]/10 border-2 border-[#1A56DB]/20 flex items-center justify-center text-[#1A56DB] font-bold text-xl">{initials}</div>
+                      <div className="size-16 rounded-full bg-brand/10 border-2 border-brand/20 flex items-center justify-center text-brand font-bold text-xl">{initials}</div>
                     )}
                     {/* Pencil overlay */}
                     <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -448,7 +448,7 @@ export default function SettingsPage() {
                     <input type="email" value={profileForm.email} readOnly className={`${inputClass} cursor-not-allowed opacity-60`} />
                   </div>
                   <div className="flex justify-end pt-2">
-                    <button type="submit" disabled={profileLoading} className="px-6 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
+                    <button type="submit" disabled={profileLoading} className="px-6 py-2.5 bg-brand hover:bg-brand/90 disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
                       {profileLoading ? t('settings.profile.saving') : t('settings.profile.save')}
                     </button>
                   </div>
@@ -474,7 +474,7 @@ export default function SettingsPage() {
                     <input type="password" value={passwordForm.confirm} onChange={e => setPasswordForm(p => ({ ...p, confirm: e.target.value }))} className={inputClass} />
                   </div>
                   <div className="flex justify-end pt-2">
-                    <button type="submit" disabled={passwordLoading} className="px-6 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
+                    <button type="submit" disabled={passwordLoading} className="px-6 py-2.5 bg-brand hover:bg-brand/90 disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
                       {passwordLoading ? t('settings.password.updating') : t('settings.password.update')}
                     </button>
                   </div>
@@ -498,7 +498,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div className="flex justify-end pt-2">
-                      <button type="submit" disabled={wsNameLoading || !wsNameForm.trim()} className="px-6 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
+                      <button type="submit" disabled={wsNameLoading || !wsNameForm.trim()} className="px-6 py-2.5 bg-brand hover:bg-brand/90 disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
                         {wsNameLoading ? t('settings.workspace.saving') : t('settings.workspace.save')}
                       </button>
                     </div>
@@ -517,7 +517,7 @@ export default function SettingsPage() {
           {activeTab === 'billing' && (
             <div className="max-w-3xl space-y-6">
               {/* Current plan card */}
-              <div className="bg-gradient-to-br from-[#1A56DB] to-[#1547b3] rounded-2xl p-6 text-white shadow-lg shadow-[#1A56DB]/20">
+              <div className="bg-gradient-to-br from-brand to-brand/90 rounded-2xl p-6 text-white shadow-lg shadow-brand/20">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-widest text-white/60 mb-1">{t('billing.current_plan')}</p>
@@ -620,13 +620,13 @@ export default function SettingsPage() {
                       <button
                         type="button"
                         onClick={() => setWlForm(p => ({ ...p, hide_powered_by: !p.hide_powered_by }))}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ml-4 ${wlForm.hide_powered_by ? 'bg-[#1A56DB]' : 'bg-slate-300 dark:bg-slate-600'}`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ml-4 ${wlForm.hide_powered_by ? 'bg-brand' : 'bg-slate-300 dark:bg-slate-600'}`}
                       >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${wlForm.hide_powered_by ? 'translate-x-6' : 'translate-x-1'}`} />
                       </button>
                     </div>
                     <div className="flex justify-end pt-2">
-                      <button type="submit" disabled={wlLoading} className="px-6 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
+                      <button type="submit" disabled={wlLoading} className="px-6 py-2.5 bg-brand hover:bg-brand/90 disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
                         {wlLoading ? t('settings.whitelabel.saving') : t('settings.whitelabel.save_branding')}
                       </button>
                     </div>
@@ -647,7 +647,7 @@ export default function SettingsPage() {
                         <button
                           type="button"
                           onClick={() => { navigator.clipboard.writeText(`https://app.usepagepersona.com/join/${activeWorkspace.slug}`); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000) }}
-                          className="shrink-0 flex items-center gap-1 text-xs font-semibold text-[#1A56DB] hover:underline"
+                          className="shrink-0 flex items-center gap-1 text-xs font-semibold text-brand hover:underline"
                         >
                           <Icon name={linkCopied ? 'check' : 'content_copy'} className="text-sm" />
                           {linkCopied ? t('settings.whitelabel.copied') : t('settings.whitelabel.copy')}
@@ -693,7 +693,7 @@ export default function SettingsPage() {
                           <div className="font-bold text-slate-400 uppercase tracking-tighter">{t('settings.whitelabel.dns_col_ttl')}</div>
                           <div className="font-bold text-slate-900 dark:text-white">CNAME</div>
                           <div className="font-bold text-slate-900 dark:text-white">{domainInput ? domainInput.split('.')[0] : 'clients'}</div>
-                          <div className="font-bold text-[#1A56DB]">app.usepagepersona.com</div>
+                          <div className="font-bold text-brand">app.usepagepersona.com</div>
                           <div className="text-slate-500">{t('settings.whitelabel.dns_automatic')}</div>
                         </div>
                         <div className="space-y-2 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -719,7 +719,7 @@ export default function SettingsPage() {
                         <button
                           type="submit"
                           disabled={domainSaving || !domainInput.trim()}
-                          className="px-4 py-2.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-semibold rounded-xl transition-colors text-sm flex-shrink-0"
+                          className="px-4 py-2.5 bg-brand hover:bg-brand/90 disabled:opacity-60 text-white font-semibold rounded-xl transition-colors text-sm flex-shrink-0"
                         >
                           {domainSaving ? t('settings.whitelabel.custom_domain_verifying') : t('settings.whitelabel.custom_domain_verify')}
                         </button>
@@ -747,7 +747,7 @@ export default function SettingsPage() {
                             type="button"
                             onClick={handleDomainVerify}
                             disabled={domainVerifying}
-                            className="px-4 py-2 text-sm font-bold text-[#1A56DB] bg-[#1A56DB]/10 rounded-xl hover:bg-[#1A56DB]/20 disabled:opacity-60 transition-colors"
+                            className="px-4 py-2 text-sm font-bold text-brand bg-brand/10 rounded-xl hover:bg-brand/20 disabled:opacity-60 transition-colors"
                           >
                             {domainVerifying ? t('settings.whitelabel.domain_checking') : t('settings.whitelabel.domain_retry')}
                           </button>
