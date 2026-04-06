@@ -25,6 +25,30 @@ interface Project {
   updated_at: string
 }
 
+const platformSteps: Record<string, string[]> = {
+  html:         ['Open your HTML file.', 'Paste the script tag inside the <head> section.', 'Save and publish your page.'],
+  wordpress:    ['Download the plugin using the button below.', 'Go to WordPress Admin → Plugins → Add New → Upload Plugin.', 'Upload the ZIP, activate it — done. Your script loads automatically on the right page.'],
+  shopify:      ['Go to Online Store → Themes → Edit code.', 'Open theme.liquid and find the <head> tag.', 'Paste the script just before </head> and click Save.'],
+  webflow:      ['Go to Project Settings → Custom Code.', 'Paste the script in the Head Code section.', 'Publish your site.'],
+  framer:       ['Go to Site Settings → General → Custom Code.', 'Paste the script in the Start of <head> tag field.', 'Publish your site.'],
+  wix:          ['Go to Settings → Custom Code.', 'Click Add Custom Code, paste the script.', 'Set it to load in the Head and apply to All Pages. Save.'],
+  squarespace:  ['Go to Settings → Advanced → Code Injection.', 'Paste the script in the Header field.', 'Save and publish.'],
+  gohighlevel:  ['Open your Funnel or Website in the builder.', 'Go to Settings → Tracking Codes.', 'Paste the script in the Head Tracking Code field and save.'],
+  clickfunnels: ['Open your Funnel and go to Settings.', 'Find the Head Tracking Code section.', 'Paste the script there and save.'],
+  systeme:      ['Go to Settings → Custom Scripts.', 'Paste the script in the Head Scripts field.', 'Save your changes.'],
+  kajabi:       ['Go to your Site settings → Code Snippets.', 'Paste the script in the Header Code field.', 'Save and publish.'],
+  kartra:       ['Edit your page and open Page Settings.', 'Find the Head Tracking section.', 'Paste the script and save.'],
+  leadpages:    ['Open your page in the editor.', 'Go to Page Settings → Analytics & Tracking.', 'Paste the script in the Head Scripts field and save.'],
+  other:        ['Locate where you can add custom code to your page header.', 'Paste the script inside the <head> section.', 'Save and publish your page.'],
+}
+
+const platformLabels: Record<string, string> = {
+  html: 'HTML', wordpress: 'WordPress', shopify: 'Shopify', webflow: 'Webflow',
+  framer: 'Framer', wix: 'Wix', squarespace: 'Squarespace', gohighlevel: 'GoHighLevel',
+  clickfunnels: 'ClickFunnels', systeme: 'Systeme.io', kajabi: 'Kajabi',
+  kartra: 'Kartra', leadpages: 'Leadpages', other: 'your site',
+}
+
 function InstallModal({ project, cdnBase, onClose, onVerified }: { project: Project; cdnBase: string; onClose: () => void; onVerified: () => void }) {
   const { t } = useTranslation('common')
   const [copied, setCopied] = useState(false)
@@ -35,6 +59,8 @@ function InstallModal({ project, cdnBase, onClose, onVerified }: { project: Proj
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [sendError, setSendError] = useState('')
+  const [showWpCode, setShowWpCode] = useState(false)
+  const [downloading, setDownloading] = useState(false)
   const scriptTag = `<script async src="${cdnBase}/pp.js?id=${project.script_id}"></script>`
   const handleCopy = () => {
     navigator.clipboard.writeText(scriptTag)
@@ -76,10 +102,19 @@ function InstallModal({ project, cdnBase, onClose, onVerified }: { project: Proj
     } finally { setSending(false) }
   }
 
+  const handleDownloadPlugin = async () => {
+    setDownloading(true)
+    try { await projectApi.downloadWordPressPlugin(project.id) }
+    catch { /* ignore */ } finally { setDownloading(false) }
+  }
+
+  const steps = platformSteps[project.platform] || platformSteps.other
+  const platformLabel = platformLabels[project.platform] || 'your site'
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      <div className="w-full max-w-[560px] rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+      <div className="w-full max-w-[560px] rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between shrink-0">
           <div>
             <h2 className="text-lg font-bold text-slate-900">{t('project.installation')}</h2>
             <p className="text-sm text-slate-500 mt-0.5">{t('project.installation_subtitle')} <span className="font-semibold">{project.name}</span></p>
@@ -88,7 +123,7 @@ function InstallModal({ project, cdnBase, onClose, onVerified }: { project: Proj
             <Icon name="close" />
           </button>
         </div>
-        <div className="px-6 py-6 flex flex-col gap-5">
+        <div className="px-6 py-6 flex flex-col gap-5 overflow-y-auto">
           <div>
             <p className="text-xs text-slate-500 mb-2">{t('project.installation_paste_hint')}</p>
             <div className="rounded-xl bg-[#0F172A] p-5">
@@ -107,6 +142,46 @@ function InstallModal({ project, cdnBase, onClose, onVerified }: { project: Proj
                 <code>{scriptTag}</code>
               </pre>
             </div>
+          </div>
+          {/* Platform-specific install steps */}
+          <div className="bg-white rounded-xl border border-slate-200 p-4">
+            <p className="text-xs font-bold text-slate-700 mb-3">How to install on {platformLabel}</p>
+            <ol className="flex flex-col gap-2">
+              {steps.map((s, i) => (
+                <li key={i} className="flex items-start gap-2.5">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-brand/10 text-brand text-[10px] font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
+                  <span className="text-xs text-slate-600 leading-relaxed">{s}</span>
+                </li>
+              ))}
+            </ol>
+            {project.platform === 'wordpress' && (
+              <div className="mt-4 flex flex-col gap-2">
+                <button
+                  onClick={handleDownloadPlugin}
+                  disabled={downloading}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 bg-[#21759B] hover:bg-[#21759B]/90 disabled:opacity-60 text-white text-xs font-bold rounded-xl transition-colors"
+                >
+                  <Icon name={downloading ? 'sync' : 'download'} className={downloading ? 'animate-spin text-sm' : 'text-sm'} />
+                  {downloading ? 'Preparing download…' : 'Download WordPress Plugin'}
+                </button>
+                <button
+                  onClick={() => setShowWpCode(v => !v)}
+                  className="text-xs text-slate-400 hover:text-slate-600 underline text-center transition-colors"
+                >
+                  {showWpCode ? 'Hide' : 'Already using WPCode? Install manually instead'}
+                </button>
+                {showWpCode && (
+                  <ol className="flex flex-col gap-2 mt-1 pt-3 border-t border-slate-100">
+                    {['Install the free WPCode plugin from WordPress.org.', 'Go to Code Snippets → Header & Footer.', 'Paste the script tag above in the Header box and click Save.'].map((s, i) => (
+                      <li key={i} className="flex items-start gap-2.5">
+                        <span className="flex-shrink-0 w-5 h-5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
+                        <span className="text-xs text-slate-600 leading-relaxed">{s}</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
             <button onClick={handleVerify} disabled={verifying} className="flex items-center gap-2 bg-brand hover:bg-brand/90 disabled:opacity-60 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm">

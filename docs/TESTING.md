@@ -133,10 +133,10 @@
 ### Manual Checklist
 
 #### Create
-- [ ] 3-step wizard opens correctly (name+URL → platform → install)
-- [ ] Project created with unique `PP-XXXXXX` script ID
-- [ ] Script install instructions shown correctly
-- [ ] "Send to developer" email sends with correct script tag
+- [x] 3-step wizard opens correctly (name+URL → platform → install)
+- [x] Project created with unique `PP-XXXXXX` script ID
+- [x] Script install instructions shown correctly
+- [x] "Send to developer" email sends with correct script tag
 
 #### Manage
 - [ ] Project list shows all projects for workspace
