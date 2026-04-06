@@ -49,7 +49,7 @@ const platformLabels: Record<string, string> = {
   kartra: 'Kartra', leadpages: 'Leadpages', other: 'your site',
 }
 
-function InstallModal({ project, cdnBase, onClose, onVerified }: { project: Project; cdnBase: string; onClose: () => void; onVerified: () => void }) {
+function InstallModal({ project, cdnBase, onClose, onVerified, onUnverified }: { project: Project; cdnBase: string; onClose: () => void; onVerified: () => void; onUnverified: () => void }) {
   const { t } = useTranslation('common')
   const [copied, setCopied] = useState(false)
   const [verifying, setVerifying] = useState(false)
@@ -72,10 +72,12 @@ function InstallModal({ project, cdnBase, onClose, onVerified }: { project: Proj
     setVerifyError('')
     try {
       const res = await apiClient.post('/api/sdk/verify/' + project.id)
-      if (res.data.verified || res.data.already_verified) {
+      if (res.data.verified) {
         setVerified(true)
         onVerified()
       } else {
+        setVerified(false)
+        onUnverified()
         setVerifyError(t('project.installation_error_not_found'))
       }
     } catch (e: any) {
@@ -482,7 +484,7 @@ export default function ProjectDashboardPage() {
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
       <Topbar workspaceName="Marketing Team Workspace" />
-      {showInstall && <InstallModal project={project} cdnBase={activeWorkspace?.custom_domain && activeWorkspace?.custom_domain_verified ? `https://${activeWorkspace.custom_domain}` : 'https://cdn.usepagepersona.com'} onClose={() => setShowInstall(false)} onVerified={() => setProject(p => p ? { ...p, script_verified: true } : p)} />}
+      {showInstall && <InstallModal project={project} cdnBase={activeWorkspace?.custom_domain && activeWorkspace?.custom_domain_verified ? `https://${activeWorkspace.custom_domain}` : 'https://cdn.usepagepersona.com'} onClose={() => setShowInstall(false)} onVerified={() => setProject(p => p ? { ...p, script_verified: true } : p)} onUnverified={() => setProject(p => p ? { ...p, script_verified: false } : p)} />}
       {showEdit && <EditProjectModal project={project} onClose={() => setShowEdit(false)} onSaved={(updated) => { setProject(updated); setShowEdit(false) }} />}
       {showDelete && <DeleteProjectModal project={project} onClose={() => setShowDelete(false)} onDeleted={() => router.push('/dashboard')} />}
       <div className="p-8 max-w-7xl mx-auto w-full">
