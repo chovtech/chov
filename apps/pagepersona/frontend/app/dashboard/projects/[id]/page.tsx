@@ -417,7 +417,18 @@ export default function ProjectDashboardPage() {
     const fetchProject = async () => {
       try {
         const res = await projectApi.get(projectId)
-        setProject(res.data)
+        const p = res.data
+        setProject(p)
+        // Silent background re-verify — only if previously verified
+        if (p.script_verified) {
+          apiClient.post(`/api/sdk/verify/${projectId}`)
+            .then(vRes => {
+              if (!vRes.data.verified) {
+                setProject(prev => prev ? { ...prev, script_verified: false } : prev)
+              }
+            })
+            .catch(() => { /* network error — leave state as-is */ })
+        }
       } catch (e: any) {
         if (e.response?.status === 404) setNotFound(true)
       } finally { setLoading(false) }
@@ -570,6 +581,17 @@ export default function ProjectDashboardPage() {
             </div>
           </div>}
         </div>
+        {/* Script removed warning banner */}
+        {!project.script_verified && (
+          <div className="mb-6 flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <Icon name="warning" className="text-amber-500 text-xl shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-bold text-amber-800">Script not detected on your page</p>
+              <p className="text-xs text-amber-700 mt-0.5">PagePersona checked your page and could not find the script. Personalization is paused until the script is reinstalled.</p>
+            </div>
+            <button onClick={() => setShowInstall(true)} className="shrink-0 text-xs font-bold text-amber-800 underline hover:text-amber-900 transition-colors">Fix it</button>
+          </div>
+        )}
         {/* Tabs */}
         <div className="flex gap-2 mb-8">
           <button
