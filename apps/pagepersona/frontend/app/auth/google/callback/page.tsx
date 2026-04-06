@@ -22,19 +22,31 @@ function GoogleCallbackContent() {
     if (refresh_token) localStorage.setItem('refresh_token', refresh_token)
     document.cookie = `access_token=${access_token}; path=/; max-age=${60 * 60 * 24 * 30}`
 
-    // Sync DB language to localStorage — DB is source of truth
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const meRes = await fetch(`${apiUrl}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${access_token}` }
-      })
-      if (meRes.ok) {
-        const me = await meRes.json()
-        if (me?.language) localStorage.setItem('pp_language', me.language)
-      }
-    } catch { /* silent */ }
-
-    router.push('/dashboard')
+    // Sync DB language to localStorage
+    const syncLanguage = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+        const meRes = await fetch(`${apiUrl}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${access_token}` }
+        })
+        if (meRes.ok) {
+          const me = await meRes.json()
+          const localLang = localStorage.getItem('pp_language')
+          if (me?.language && !localLang) {
+            localStorage.setItem('pp_language', me.language)
+          } else if (localLang && me?.language && localLang !== me.language) {
+            // localStorage wins — push to DB
+            fetch(`${apiUrl}/api/users/profile`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${access_token}` },
+              body: JSON.stringify({ language: localLang })
+            }).catch(() => null)
+          }
+        }
+      } catch { /* silent */ }
+      router.push('/dashboard')
+    }
+    syncLanguage()
   }, [searchParams, router])
 
   return (
