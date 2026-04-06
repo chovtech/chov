@@ -65,27 +65,43 @@
     }
   }
 
-  function setCache(scriptId, rulesHash, rules, geo) {
+  function setCache(scriptId, rulesHash, rules, geo, pageUrl) {
     try {
       localStorage.setItem(CACHE_PREFIX + scriptId, JSON.stringify({
         ts: Date.now(),
         rules_hash: rulesHash,
         rules: rules,
-        geo: geo || null
+        geo: geo || null,
+        page_url: pageUrl || null
       }));
     } catch (e) {}
   }
 
   // ─── LOAD RULES ────────────────────────────────────────────────────────────
+  function urlMatches(projectUrl) {
+    if (!projectUrl) return true; // no URL registered — allow
+    try {
+      var current = window.location.href.split('?')[0].replace(/\/$/, '');
+      var registered = projectUrl.split('?')[0].replace(/\/$/, '');
+      return current === registered;
+    } catch (e) {
+      return true;
+    }
+  }
+
   function loadRules(scriptId, callback) {
     var cached = getCached(scriptId);
 
     if (cached) {
+      if (!urlMatches(cached.page_url)) {
+        warn('URL mismatch — pp.js not active on this page.');
+        return;
+      }
       callback({ rules: cached.rules, geo: cached.geo || null });
       pingHash(scriptId, function (serverHash) {
         if (serverHash && serverHash !== cached.rules_hash) {
           fetchRules(scriptId, function (data) {
-            if (data) setCache(scriptId, data.rules_hash, data.rules, data.geo);
+            if (data) setCache(scriptId, data.rules_hash, data.rules, data.geo, data.page_url);
           });
         }
       });
@@ -94,7 +110,12 @@
 
     fetchRules(scriptId, function (data) {
       if (!data) return;
-      setCache(scriptId, data.rules_hash, data.rules, data.geo);
+      if (!urlMatches(data.page_url)) {
+        warn('URL mismatch — pp.js not active on this page.');
+        setCache(scriptId, data.rules_hash, data.rules, data.geo, data.page_url);
+        return;
+      }
+      setCache(scriptId, data.rules_hash, data.rules, data.geo, data.page_url);
       callback({ rules: data.rules, geo: data.geo || null });
     });
   }

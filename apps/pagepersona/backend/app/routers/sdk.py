@@ -131,6 +131,7 @@ async def sdk_rules(
         'rules_hash': rules_hash,
         'rules': rules,
         'geo': geo,
+        'page_url': project['page_url'],
     })
     response.headers['Cache-Control'] = 'public, max-age=30'
     response.headers['Access-Control-Allow-Origin'] = '*'
