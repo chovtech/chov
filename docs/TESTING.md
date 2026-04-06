@@ -151,6 +151,13 @@
 - [ ] Script verify detects installed script on page
 - [ ] Uninstalled script shows correct "not found" state
 
+#### URL Guard (SDK)
+- [ ] pp.js only fires on the exact registered page URL
+- [ ] pp.js silently exits on any other page (blog, about, etc.) with same script installed
+- [ ] WordPress plugin downloads as ZIP with correct script ID pre-filled
+- [ ] WordPress plugin settings page shows page URL → Script ID mapping table
+- [ ] White-labeled plugin uses agency brand name when workspace has brand set
+
 ### Bugs Found
 | # | Description | Fixed | Test written |
 |---|-------------|-------|-------------|

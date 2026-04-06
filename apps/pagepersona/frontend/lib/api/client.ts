@@ -137,6 +137,17 @@ export const projectApi = {
     apiClient.put(`/api/projects/${id}`, data),
   delete: (id: string) =>
     apiClient.delete(`/api/projects/${id}`),
+  downloadWordPressPlugin: async (id: string) => {
+    const res = await apiClient.get(`/api/projects/${id}/wordpress-plugin`, { responseType: 'blob' })
+    const url = window.URL.createObjectURL(new Blob([res.data]))
+    const a = document.createElement('a')
+    a.href = url
+    const disposition = res.headers['content-disposition'] || ''
+    const match = disposition.match(/filename="?([^"]+)"?/)
+    a.download = match ? match[1] : 'pagepersona-plugin.zip'
+    a.click()
+    window.URL.revokeObjectURL(url)
+  },
 }
 
 // Workspace API

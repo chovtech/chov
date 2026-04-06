@@ -31,7 +31,7 @@ const platforms = [
 
 const platformSteps: Record<string, string[]> = {
   html:         ['Open your HTML file.', 'Paste the script tag inside the <head> section.', 'Save and publish your page.'],
-  wordpress:    ['Install the free WPCode plugin from WordPress.org.', 'Go to Code Snippets → Header & Footer.', 'Paste the script in the Header box and click Save.'],
+  wordpress:    ['Download the plugin using the button below.', 'Go to WordPress Admin → Plugins → Add New → Upload Plugin.', 'Upload the ZIP, activate it — done. Your script loads automatically on the right page.'],
   shopify:      ['Go to Online Store → Themes → Edit code.', 'Open theme.liquid and find the <head> tag.', 'Paste the script just before </head> and click Save.'],
   webflow:      ['Go to Project Settings → Custom Code.', 'Paste the script in the Head Code section.', 'Publish your site.'],
   framer:       ['Go to Site Settings → General → Custom Code.', 'Paste the script in the Start of <head> tag field.', 'Publish your site.'],
@@ -64,6 +64,8 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
   const [scriptId, setScriptId] = useState<string>('')
   const [error, setError] = useState('')
   const [verifyError, setVerifyError] = useState('')
+  const [showWpCode, setShowWpCode] = useState(false)
+  const [downloading, setDownloading] = useState(false)
 
   if (!isOpen) return null
 
@@ -124,6 +126,16 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
     }
   }
 
+  const handleDownloadPlugin = async () => {
+    if (!createdProjectId) return
+    setDownloading(true)
+    try {
+      await projectApi.downloadWordPressPlugin(createdProjectId)
+    } catch { /* ignore */ } finally {
+      setDownloading(false)
+    }
+  }
+
   const handleLaunch = async () => {
     if (!createdProjectId) return
     setLaunching(true)
@@ -150,6 +162,8 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
     setScriptId('')
     setError('')
     setVerifyError('')
+    setShowWpCode(false)
+    setDownloading(false)
     onClose()
   }
 
@@ -310,6 +324,36 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                     </li>
                   ))}
                 </ol>
+
+                {/* WordPress: Download Plugin button + WPCode toggle */}
+                {platform === 'wordpress' && (
+                  <div className="mt-4 flex flex-col gap-2">
+                    <button
+                      onClick={handleDownloadPlugin}
+                      disabled={downloading}
+                      className="flex items-center justify-center gap-2 w-full py-2.5 bg-[#21759B] hover:bg-[#21759B]/90 disabled:opacity-60 text-white text-xs font-bold rounded-xl transition-colors"
+                    >
+                      <Icon name={downloading ? 'sync' : 'download'} className={downloading ? 'animate-spin text-sm' : 'text-sm'} />
+                      {downloading ? 'Preparing download…' : 'Download WordPress Plugin'}
+                    </button>
+                    <button
+                      onClick={() => setShowWpCode(v => !v)}
+                      className="text-xs text-slate-400 hover:text-slate-600 underline text-center transition-colors"
+                    >
+                      {showWpCode ? 'Hide' : 'Already using WPCode? Install manually instead'}
+                    </button>
+                    {showWpCode && (
+                      <ol className="flex flex-col gap-2 mt-1 pt-3 border-t border-slate-100">
+                        {['Install the free WPCode plugin from WordPress.org.', 'Go to Code Snippets → Header & Footer.', 'Paste the script tag above in the Header box and click Save.'].map((s, i) => (
+                          <li key={i} className="flex items-start gap-2.5">
+                            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
+                            <span className="text-xs text-slate-600 leading-relaxed">{s}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Verify */}
