@@ -409,9 +409,10 @@ export default function SettingsPage() {
                           const uploadRes = await apiClient.post('/api/upload/image', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
                           const url = uploadRes.data.url
                           // Auto-save avatar immediately
-                          await userApi.updateProfile({ avatar_url: url })
+                          const avatarRes = await userApi.updateProfile({ avatar_url: url })
                           setProfileForm(prev => ({ ...prev, avatar_url: url }))
                           setUser(prev => prev ? { ...prev, avatar_url: url } : prev)
+                          window.dispatchEvent(new CustomEvent('profileUpdated', { detail: avatarRes.data }))
                           setProfileMsg({ type: 'success', text: 'Profile photo updated' })
                           setTimeout(() => setProfileMsg(null), 3000)
                         } catch {

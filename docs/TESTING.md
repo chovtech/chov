@@ -75,19 +75,19 @@
 - [x] `test_login_with_correct_credentials`
 - [x] `test_login_wrong_password_fails`
 - [x] `test_login_unknown_email_fails`
-- [ ] `test_email_verification_success`
-- [ ] `test_email_verification_invalid_token`
-- [ ] `test_forgot_password_sends_email`
-- [ ] `test_reset_password_success`
-- [ ] `test_magic_link_login`
+- [x] `test_email_verification_success`
+- [x] `test_email_verification_invalid_token`
+- [x] `test_forgot_password_sends_email`
+- [x] `test_reset_password_success`
+- [x] `test_magic_link_login`
 
 -----------------------------
 
 ## MODULE 2 — USER PROFILE
 
 ### Manual Checklist
-- [ ] Update name saves correctly
-- [ ] Update email saves correctly (update email not allowed)
+- [x] Update name saves correctly
+- [x] Ensure email update is disabled (update email not allowed)
 - [ ] Avatar upload works (image shows in sidebar/header)
 - [ ] Change password — correct current password required
 - [ ] Change password — wrong current password rejected

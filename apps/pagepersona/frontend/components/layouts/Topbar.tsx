@@ -23,6 +23,13 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
 
   useEffect(() => {
     authApi.me().then(res => setUser(res.data)).catch(() => null)
+
+    const onProfileUpdated = (e: Event) => {
+      const updated = (e as CustomEvent).detail
+      if (updated) setUser(updated)
+    }
+    window.addEventListener('profileUpdated', onProfileUpdated)
+    return () => window.removeEventListener('profileUpdated', onProfileUpdated)
   }, [])
 
   useEffect(() => {
