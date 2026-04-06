@@ -179,9 +179,7 @@ async def sdk_verify_project(
     )
     if not project:
         raise HTTPException(status_code=404, detail='Project not found')
-    if project['script_verified']:
-        return {'verified': True, 'already_verified': True}
-    # Fetch the user's page and check for script tag
+    # Always do a live check — never trust cached script_verified state
     page_url = project['page_url']
     script_id = project['script_id']
     try:
@@ -194,13 +192,13 @@ async def sdk_verify_project(
         raise HTTPException(status_code=422, detail=f'Could not fetch page: {str(e)}')
     # Check for script tag with matching script_id
     found = script_id in html and 'pagepersona' in html.lower()
-    if found:
-        await db.execute(
-            'UPDATE projects SET script_verified = true WHERE id = $1',
-            project_id
-        )
+    await db.execute(
+        'UPDATE projects SET script_verified = $1 WHERE id = $2',
+        found, project_id
+    )
     return {
         'verified': found,
+        'already_verified': project['script_verified'] and found,
         'page_url': page_url,
         'script_id': script_id,
     }

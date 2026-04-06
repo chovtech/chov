@@ -139,13 +139,13 @@
 - [x] "Send to developer" email sends with correct script tag
 
 #### Manage
-- [ ] Project list shows all projects for workspace
-- [ ] Edit project name works
-- [ ] Edit project URL works (only if script not yet verified)
-- [ ] URL field locked after script verified
-- [ ] Status toggle: Draft ↔ Active works
-- [ ] Thumbnail upload works
-- [ ] Delete project (with confirmation) works
+- [x] Project list shows all projects for workspace
+- [x] Edit project name works
+- [x] Edit project URL works (only if script not yet verified)
+- [x] URL field locked after script verified
+- [x] Status toggle: Draft ↔ Active works
+- [x] Thumbnail upload works
+- [x] Delete project (with confirmation) works
 
 #### Script Verification
 - [ ] Script verify detects installed script on page
