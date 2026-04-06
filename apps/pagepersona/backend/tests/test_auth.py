@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch, AsyncMock, MagicMock
 import uuid
 
 
@@ -14,7 +14,7 @@ def unique_email():
 
 async def signup(client, email, password=TEST_PASSWORD, name=TEST_NAME):
     """Sign up a user, mocking email + Mautic so no real side-effects."""
-    with patch("app.routers.auth.send_verification_email", new_callable=AsyncMock), \
+    with patch("app.routers.auth.send_verification_email", new_callable=MagicMock), \
          patch("app.routers.auth.subscribe_contact", new_callable=AsyncMock):
         return await client.post("/api/auth/signup", json={
             "email": email,
