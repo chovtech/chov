@@ -29,6 +29,23 @@ const platforms = [
   { key: 'other',        label: 'Other',            logo: null },
 ]
 
+const platformSteps: Record<string, string[]> = {
+  html:         ['Open your page's HTML file.', 'Paste the script tag inside the <head> section.', 'Save and publish your page.'],
+  wordpress:    ['Install the free WPCode plugin from WordPress.org.', 'Go to Code Snippets → Header & Footer.', 'Paste the script in the Header box and click Save.'],
+  shopify:      ['Go to Online Store → Themes → Edit code.', 'Open theme.liquid and find the <head> tag.', 'Paste the script just before </head> and click Save.'],
+  webflow:      ['Go to Project Settings → Custom Code.', 'Paste the script in the Head Code section.', 'Publish your site.'],
+  framer:       ['Go to Site Settings → General → Custom Code.', 'Paste the script in the Start of <head> tag field.', 'Publish your site.'],
+  wix:          ['Go to Settings → Custom Code.', 'Click Add Custom Code, paste the script.', 'Set it to load in the Head and apply to All Pages. Save.'],
+  squarespace:  ['Go to Settings → Advanced → Code Injection.', 'Paste the script in the Header field.', 'Save and publish.'],
+  gohighlevel:  ['Open your Funnel or Website in the builder.', 'Go to Settings → Tracking Codes.', 'Paste the script in the Head Tracking Code field and save.'],
+  clickfunnels: ['Open your Funnel and go to Settings.', 'Find the Head Tracking Code section.', 'Paste the script there and save.'],
+  systeme:      ['Go to Settings → Custom Scripts.', 'Paste the script in the Head Scripts field.', 'Save your changes.'],
+  kajabi:       ['Go to your Site settings → Code Snippets.', 'Paste the script in the Header Code field.', 'Save and publish.'],
+  kartra:       ['Edit your page and open Page Settings.', 'Find the Head Tracking section.', 'Paste the script and save.'],
+  leadpages:    ['Open your page in the editor.', 'Go to Page Settings → Analytics & Tracking.', 'Paste the script in the Head Scripts field and save.'],
+  other:        ['Locate where you can add custom code to your page header.', 'Paste the script inside the <head> section.', 'Save and publish your page.'],
+}
+
 export default function NewProjectModal({ isOpen, onClose }: Props) {
   const { t } = useTranslation('common')
   const { activeWorkspace } = useWorkspace()
@@ -67,7 +84,6 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // Step 1 → Step 2: create project in DB, get script ID
   const handleStep1Next = async () => {
     setError('')
     try {
@@ -85,30 +101,29 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
     }
   }
 
-    const handleVerify = async () => {
-      if (!createdProjectId) return
-      setVerifying(true)
-      setVerifyError('')
-      try {
-        const res = await apiClient.post('/api/sdk/verify/' + createdProjectId)
-        if (res.data.verified || res.data.already_verified) {
-          setVerified(true)
-        } else {
-          setVerifyError('Script tag not found on your page. Make sure you pasted it before the </body> tag and the page is publicly accessible.')
-        }
-      } catch (e: any) {
-        const detail = e.response?.data?.detail || ''
-        if (detail.includes('Could not fetch page')) {
-          setVerifyError('Could not reach your page. Make sure the URL is publicly accessible.')
-        } else {
-          setVerifyError('Verification failed. Please try again.')
-        }
-      } finally {
-        setVerifying(false)
+  const handleVerify = async () => {
+    if (!createdProjectId) return
+    setVerifying(true)
+    setVerifyError('')
+    try {
+      const res = await apiClient.post('/api/sdk/verify/' + createdProjectId)
+      if (res.data.verified || res.data.already_verified) {
+        setVerified(true)
+      } else {
+        setVerifyError('Script tag not found on your page. Make sure you pasted it in the head section and the page is publicly accessible.')
       }
+    } catch (e: any) {
+      const detail = e.response?.data?.detail || ''
+      if (detail.includes('Could not fetch page')) {
+        setVerifyError('Could not reach your page. Make sure the URL is publicly accessible.')
+      } else {
+        setVerifyError('Verification failed. Please try again.')
+      }
+    } finally {
+      setVerifying(false)
     }
+  }
 
-  // Launch Project → update status to active, route to project dashboard
   const handleLaunch = async () => {
     if (!createdProjectId) return
     setLaunching(true)
@@ -134,45 +149,43 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
     setCreatedProjectId(null)
     setScriptId('')
     setError('')
-      setVerifyError('')
+    setVerifyError('')
     onClose()
   }
 
   const canProceedStep1 = projectName.trim().length > 0 && urlValid === true
   const canProceedStep2 = platform !== ''
+  const currentSteps = platformSteps[platform] || platformSteps.other
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      <div className="w-full max-w-[600px] rounded-2xl bg-[#F8FAFC] shadow-2xl border border-slate-200 overflow-hidden">
+      <div className="w-full max-w-[580px] rounded-2xl bg-[#F8FAFC] shadow-2xl border border-slate-200 overflow-hidden">
 
         {/* Header */}
-        <div className="px-8 pt-8 pb-6 bg-white border-b border-slate-100">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-slate-900">{t('wizard.title')}</h2>
+        <div className="px-6 pt-5 pb-4 bg-white border-b border-slate-100">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold text-slate-900">{t('wizard.title')}</h2>
             <button onClick={handleClose} className="text-slate-400 hover:text-slate-600 transition-colors">
               <Icon name="close" />
             </button>
           </div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-semibold text-[#1A56DB]">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-semibold text-[#1A56DB]">
               {t('wizard.step')} {step} {t('wizard.of')} {totalSteps}: {t(`wizard.steps.step${step}`)}
             </span>
-            <span className="text-xs text-slate-500">{progress}% {t('wizard.complete')}</span>
+            <span className="text-xs text-slate-400">{progress}%</span>
           </div>
-          <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
-            <div
-              className="h-full bg-[#1A56DB] rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
+          <div className="h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
+            <div className="h-full bg-[#1A56DB] rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
           </div>
         </div>
 
         {/* Body */}
-        <div className="px-8 py-6">
+        <div className="px-6 py-5">
 
           {/* ── STEP 1: Name & URL ── */}
           {step === 1 && (
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-semibold text-slate-700">{t('wizard.step1.name_label')}</label>
                 <input
@@ -180,7 +193,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                   value={projectName}
                   onChange={e => setProjectName(e.target.value)}
                   placeholder={t('wizard.step1.name_placeholder')}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-[#1A56DB] focus:ring-2 focus:ring-[#1A56DB]/20 outline-none transition-all text-sm"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-[#1A56DB] focus:ring-2 focus:ring-[#1A56DB]/20 outline-none transition-all text-sm"
                 />
               </div>
               <div className="flex flex-col gap-1.5">
@@ -191,22 +204,14 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                     value={pageUrl}
                     onChange={e => validateUrl(e.target.value)}
                     placeholder={t('wizard.step1.url_placeholder')}
-                    className={`w-full rounded-xl border bg-white px-4 py-3 pr-10 text-slate-900 placeholder:text-slate-400 focus:ring-2 outline-none transition-all text-sm ${
+                    className={`w-full rounded-xl border bg-white px-4 py-2.5 pr-10 text-slate-900 placeholder:text-slate-400 focus:ring-2 outline-none transition-all text-sm ${
                       urlValid === true ? 'border-emerald-400 focus:ring-emerald-400/20'
                       : urlValid === false ? 'border-red-400 focus:ring-red-400/20'
                       : 'border-slate-200 focus:border-[#1A56DB] focus:ring-[#1A56DB]/20'
                     }`}
                   />
-                  {urlValid === true && (
-                    <div className="absolute inset-y-0 right-3 flex items-center text-emerald-500">
-                      <Icon name="check_circle" />
-                    </div>
-                  )}
-                  {urlValid === false && (
-                    <div className="absolute inset-y-0 right-3 flex items-center text-red-400">
-                      <Icon name="cancel" />
-                    </div>
-                  )}
+                  {urlValid === true && <div className="absolute inset-y-0 right-3 flex items-center text-emerald-500"><Icon name="check_circle" /></div>}
+                  {urlValid === false && <div className="absolute inset-y-0 right-3 flex items-center text-red-400"><Icon name="cancel" /></div>}
                 </div>
                 <p className="text-xs text-slate-500 flex items-center gap-1">
                   <Icon name="info" className="text-sm" />
@@ -224,149 +229,132 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
 
           {/* ── STEP 2: Platform Picker ── */}
           {step === 2 && (
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1">{t('wizard.step2.heading')}</h3>
-                <p className="text-sm text-slate-500">{t('wizard.step2.subheading')}</p>
+                <h3 className="text-sm font-bold text-slate-900 mb-0.5">{t('wizard.step2.heading')}</h3>
+                <p className="text-xs text-slate-500">{t('wizard.step2.subheading')}</p>
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-4 gap-2">
                 {platforms.map(p => (
                   <button
                     key={p.key}
                     onClick={() => setPlatform(p.key)}
-                    className={`relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all text-center ${
+                    className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center ${
                       platform === p.key
                         ? 'border-[#1A56DB] bg-[#1A56DB]/5'
                         : 'border-slate-200 bg-white hover:border-[#1A56DB]/40'
                     }`}
                   >
                     {platform === p.key && (
-                      <div className="absolute top-2 right-2 text-[#1A56DB]">
-                        <Icon name="check_circle" className="text-base" />
+                      <div className="absolute top-1.5 right-1.5 text-[#1A56DB]">
+                        <Icon name="check_circle" className="text-sm" />
                       </div>
                     )}
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white">
+                    <div className="w-8 h-8 flex items-center justify-center">
                       {p.logo
-                        ? <img src={p.logo} alt={p.label} className="w-8 h-8 object-contain" />
-                        : <Icon name="more_horiz" className="text-2xl text-slate-500" />
+                        ? <img src={p.logo} alt={p.label} className="w-7 h-7 object-contain" />
+                        : <Icon name="more_horiz" className="text-xl text-slate-500" />
                       }
                     </div>
-                    <span className={`text-xs font-bold ${platform === p.key ? 'text-[#1A56DB]' : 'text-slate-700'}`}>
+                    <span className={`text-[10px] font-bold leading-tight ${platform === p.key ? 'text-[#1A56DB]' : 'text-slate-700'}`}>
                       {p.label}
                     </span>
                   </button>
                 ))}
               </div>
-              {platform && (
-                <div className="flex items-start gap-3 rounded-xl border border-[#1A56DB]/20 bg-[#1A56DB]/5 p-4">
-                  <Icon name="info" className="text-[#1A56DB] mt-0.5 shrink-0" />
-                  <p className="text-sm text-slate-700">
-                    {platform === 'wordpress'
-                      ? t('wizard.step2.install_note_wordpress')
-                      : t('wizard.step2.install_note_html')}
-                  </p>
-                </div>
-              )}
             </div>
           )}
 
           {/* ── STEP 3: Install Script ── */}
           {step === 3 && (
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4">
+              {/* Script tag */}
               <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1">{t('wizard.step3.heading')}</h3>
-                <p className="text-sm text-slate-500">
-                  {platform === 'wordpress'
-                    ? t('wizard.step3.subheading_wordpress')
-                    : t('wizard.step3.subheading_html')}
-                </p>
+                <p className="text-xs font-semibold text-slate-500 mb-2">Paste this in the <code className="bg-slate-100 px-1 rounded">{'<head>'}</code> of your page</p>
+                <div className="rounded-xl bg-[#0F172A] p-4 relative">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-500/50" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-green-500/50" />
+                    </div>
+                    <button
+                      onClick={handleCopy}
+                      className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold rounded-lg transition-colors"
+                    >
+                      <Icon name={copied ? 'check' : 'content_copy'} className="text-xs" />
+                      {copied ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                  <pre className="text-blue-400 font-mono text-xs leading-relaxed whitespace-pre-wrap break-all">
+                    <code>{scriptTag}</code>
+                  </pre>
+                </div>
               </div>
 
-              {platform === 'wordpress' ? (
-                <div className="rounded-xl border-2 border-dashed border-slate-200 bg-white p-6 flex flex-col items-center gap-4 text-center">
-                  <div className="w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center">
-                    <img src="/platforms/wordpress.svg" alt="WordPress" className="w-9 h-9 object-contain" />
-                  </div>
-                  <button className="flex items-center gap-2 bg-[#1A56DB] hover:bg-[#1A56DB]/90 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md shadow-[#1A56DB]/20">
-                    <Icon name="extension" />
-                    {t('wizard.step3.connect_wordpress')}
-                  </button>
-                  <p className="text-xs text-slate-500 max-w-sm">{t('wizard.step3.connect_wordpress_note')}</p>
+              {/* Platform-specific steps */}
+              <div className="bg-white rounded-xl border border-slate-200 p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  {platforms.find(p => p.key === platform)?.logo && (
+                    <img src={platforms.find(p => p.key === platform)!.logo!} alt={platform} className="w-5 h-5 object-contain" />
+                  )}
+                  <p className="text-xs font-bold text-slate-700">
+                    How to install on {platforms.find(p => p.key === platform)?.label || 'your site'}
+                  </p>
                 </div>
-              ) : (
-                <div>
-                  <p className="text-xs text-slate-500 mb-2">{t('wizard.step3.paste_instruction')}</p>
-                  <div className="rounded-xl bg-[#0F172A] p-5 relative">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex gap-1.5">
-                        <div className="w-3 h-3 rounded-full bg-red-500/50" />
-                        <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
-                        <div className="w-3 h-3 rounded-full bg-green-500/50" />
-                      </div>
-                      <button
-                        onClick={handleCopy}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold rounded-lg transition-colors"
-                      >
-                        <Icon name={copied ? 'check' : 'content_copy'} className="text-sm" />
-                        {copied ? t('wizard.step3.copied') : t('wizard.step3.copy')}
-                      </button>
-                    </div>
-                    <pre className="text-blue-400 font-mono text-xs leading-relaxed whitespace-pre-wrap break-all">
-                      <code>{scriptTag}</code>
-                    </pre>
-                  </div>
-                </div>
-              )}
+                <ol className="flex flex-col gap-2">
+                  {currentSteps.map((s, i) => (
+                    <li key={i} className="flex items-start gap-2.5">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1A56DB]/10 text-[#1A56DB] text-[10px] font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
+                      <span className="text-xs text-slate-600 leading-relaxed">{s}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
 
               {/* Verify */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <div className="flex items-center justify-between gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
                 <button
                   onClick={handleVerify}
                   disabled={verifying || verified}
-                  className="flex items-center gap-2 bg-[#1A56DB] hover:bg-[#1A56DB]/90 disabled:opacity-60 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition-all shadow-sm"
+                  className="flex items-center gap-1.5 bg-[#1A56DB] hover:bg-[#1A56DB]/90 disabled:opacity-60 text-white font-bold py-2 px-4 rounded-xl text-xs transition-all shadow-sm"
                 >
-                  <Icon name={verifying ? 'sync' : 'refresh'} className={verifying ? 'animate-spin text-sm' : 'text-sm'} />
-                  {verifying ? t('wizard.step3.verifying') : t('wizard.step3.verify')}
+                  <Icon name={verifying ? 'sync' : 'verified'} className={verifying ? 'animate-spin text-sm' : 'text-sm'} />
+                  {verifying ? 'Verifying…' : 'Verify Installation'}
                 </button>
                 {verified ? (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold border border-emerald-200">
-                    <Icon name="check_circle" className="text-base" />
-                    {t('wizard.step3.detected')}
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold border border-emerald-200">
+                    <Icon name="check_circle" className="text-sm" />
+                    Script detected
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-500 rounded-full text-sm font-medium border border-slate-200">
-                    <Icon name="radio_button_unchecked" className="text-base" />
-                    {t('wizard.step3.not_verified')}
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-400 rounded-full text-xs font-medium border border-slate-200">
+                    <Icon name="radio_button_unchecked" className="text-sm" />
+                    Not verified yet
                   </div>
                 )}
               </div>
 
-                {verifyError && (
-                  <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
-                    <Icon name="error" className="text-red-500 text-sm shrink-0 mt-0.5" />
-                    <p className="text-xs text-red-600">{verifyError}</p>
-                  </div>
-                )}
-
-              {/* Tip */}
-              <div className="flex gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100 text-blue-800">
-                <Icon name="lightbulb" className="text-xl shrink-0 mt-0.5" />
-                <p className="text-xs leading-relaxed">{t('wizard.step3.tip')}</p>
-              </div>
+              {verifyError && (
+                <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+                  <Icon name="error" className="text-red-500 text-sm shrink-0 mt-0.5" />
+                  <p className="text-xs text-red-600">{verifyError}</p>
+                </div>
+              )}
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="px-8 py-5 bg-white border-t border-slate-100 flex items-center justify-between">
+        <div className="px-6 py-4 bg-white border-t border-slate-100 flex items-center justify-between">
           {step === 1 ? (
-            <button onClick={handleClose} className="px-5 py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors">
+            <button onClick={handleClose} className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 transition-colors">
               {t('actions.cancel')}
             </button>
           ) : (
             <button
               onClick={() => setStep(s => s - 1)}
-              className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
             >
               <Icon name="arrow_back" className="text-sm" />
               {t('actions.back')}
@@ -377,28 +365,26 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
             <button
               onClick={handleStep1Next}
               disabled={!canProceedStep1}
-              className="flex items-center gap-1.5 px-7 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="flex items-center gap-1.5 px-6 py-2 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
-              {t('actions.next')}
-              <Icon name="arrow_forward" className="text-sm" />
+              {t('actions.next')} <Icon name="arrow_forward" className="text-sm" />
             </button>
           ) : step === 2 ? (
             <button
               onClick={() => setStep(3)}
               disabled={!canProceedStep2}
-              className="flex items-center gap-1.5 px-7 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="flex items-center gap-1.5 px-6 py-2 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
-              {t('actions.next')}
-              <Icon name="arrow_forward" className="text-sm" />
+              {t('actions.next')} <Icon name="arrow_forward" className="text-sm" />
             </button>
           ) : (
             <button
               disabled={!verified || launching}
               onClick={handleLaunch}
-              className="flex items-center gap-1.5 px-7 py-2.5 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="flex items-center gap-1.5 px-6 py-2 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               <Icon name="rocket_launch" className="text-sm" />
-              {launching ? 'Launching...' : t('wizard.done')}
+              {launching ? 'Launching…' : t('wizard.done')}
             </button>
           )}
         </div>
