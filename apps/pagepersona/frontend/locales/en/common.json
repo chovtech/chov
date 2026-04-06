@@ -271,7 +271,7 @@
     },
     "step1": {
       "name_label": "Project name",
-      "name_placeholder": "e.g. School Management Sales Page",
+      "name_placeholder": "e.g. Black Friday Landing Page",
       "url_label": "Page URL",
       "url_placeholder": "https://example.com/landing-page",
       "url_hint": "Enter the full URL of the page you want to personalise"

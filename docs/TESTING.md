@@ -122,9 +122,9 @@
 |---|-------------|-------|-------------|
 
 ### Automated Tests — `tests/test_workspaces.py`
-- [ ] `test_default_workspace_created_on_signup`
-- [ ] `test_list_workspaces`
-- [ ] `test_rename_workspace`
+- [X] `test_default_workspace_created_on_signup`
+- [X] `test_list_workspaces`
+- [X] `test_rename_workspace`
 
 ---
 

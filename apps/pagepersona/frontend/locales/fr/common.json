@@ -271,7 +271,7 @@
     },
     "step1": {
       "name_label": "Nom du projet",
-      "name_placeholder": "ex. Page de vente School Management",
+      "name_placeholder": "ex. Page de vente Black Friday",
       "url_label": "URL de la page",
       "url_placeholder": "https://exemple.com/page-de-vente",
       "url_hint": "Entrez l'URL complète de la page que vous souhaitez personnaliser"
