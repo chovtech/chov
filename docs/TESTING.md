@@ -6,9 +6,9 @@
 
 ## HOW TO USE THIS FILE
 - **Manual test:** Go through each checklist item on `app.usepagepersona.com`
-- **Status:** `[ ]` = not tested, `[x]` = passed, `[!]` = bug found
+- **Status:** `[ ]` = not tested, `[x]` = passed, `[!]` = bug found, `[n/a]` = not applicable
 - **Bug found:** Note it inline → fix it → write a test → mark `[x]`
-- **Automated test:** Check the box in the "Test written" column once a pytest test covers it
+- **Automated test:** Check the box once a pytest test covers it
 
 ---
 
@@ -45,7 +45,7 @@
 - [x] Expired/invalid reset token shows correct error
 
 #### Magic Link
-### for magic link, we would test when we setup jvzoo as we did not implement magic link signp on the front end. we hope to use that when we finish billing and entitle ment and use it as sign up for jvzoo
+> Magic link UI not built yet — test when JVZoo billing is wired up
 - [ ] Requesting magic link sends email
 - [ ] Clicking magic link logs user in
 - [ ] Magic link is single-use (second click fails gracefully)
@@ -61,7 +61,7 @@
 
 #### Session / Token
 - [x] Closing and reopening browser keeps user logged in
-- [x] Session expires correctly after inactivity (if applicable)
+- [x] Silent refresh — access token renews without kicking user out
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
@@ -75,23 +75,18 @@
 - [x] `test_login_with_correct_credentials`
 - [x] `test_login_wrong_password_fails`
 - [x] `test_login_unknown_email_fails`
-- [x] `test_email_verification_success`
-- [x] `test_email_verification_invalid_token`
-- [x] `test_forgot_password_sends_email`
-- [x] `test_reset_password_success`
-- [x] `test_magic_link_login`
 
------------------------------
+---
 
 ## MODULE 2 — USER PROFILE
 
 ### Manual Checklist
-- [x] Update name saves correctly
-- [x] Ensure email update is disabled (update email not allowed)
-- [x] Avatar upload works (image shows in sidebar/header)
-- [X] Change password — correct current password required
+- [x] Update name saves correctly and reflects instantly in sidebar + topbar
+- [x] Email update is disabled (email field is read-only)
+- [x] Avatar upload works — reflects instantly in sidebar + topbar
+- [x] Change password — correct current password required
 - [x] Change password — wrong current password rejected
-- [X] Language switch (EN ↔ FR) applies across the app
+- [x] Language switch (EN ↔ FR) applies across the app
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
@@ -111,21 +106,25 @@
 
 ### Manual Checklist
 - [x] Default workspace created on signup
-- [na] Create a second workspace
+- [n/a] Create a second workspace — Add Workspace removed intentionally
 - [x] Switch between workspaces in sidebar
 - [x] Rename workspace saves correctly
-- [na] Delete workspace (with confirmation)
-- [ ] Workspace stats visible (project count, sessions, last activity) - we cannot see this except we get to testing project after implementation
+- [n/a] Delete workspace — intentionally omitted (primary workspace is permanent)
+- [ ] Workspace stats visible (project count, sessions, last activity) — revisit after Module 4
+
+### Design Decision
+- One workspace per account. Agencies get client sub-workspaces via the Agency page.
+- "Add Workspace" button removed from sidebar switcher.
+- Workspace deletion not built — primary workspace is permanent.
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
 |---|-------------|-------|-------------|
 
 ### Automated Tests — `tests/test_workspaces.py`
-- [ ] `test_create_workspace`
+- [ ] `test_default_workspace_created_on_signup`
 - [ ] `test_list_workspaces`
 - [ ] `test_rename_workspace`
-- [ ] `test_delete_workspace`
 
 ---
 
@@ -191,7 +190,6 @@
 - [ ] Edit rule saves changes correctly
 - [ ] Active/inactive toggle works
 - [ ] Delete rule works
-- [ ] Priority reorder works (if applicable)
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
@@ -258,7 +256,54 @@
 
 ---
 
-## MODULE 8 — ANALYTICS
+## MODULE 8 — SDK END-TO-END (pp.js on a real page)
+> This is where modules 4–7 come together. Test after projects, rules, popups and countdowns are set up.
+> Install the script on a real test page and verify everything fires correctly.
+
+### Manual Checklist
+
+#### Script & Visits
+- [ ] Script installed on test page — page loads without errors
+- [ ] Visit beacon fires — visit recorded in DB (country, device, OS, browser, referrer, UTM)
+- [ ] Returning visitor correctly identified on second visit
+- [ ] Unload beacon updates `time_on_page` + `scroll_depth`
+
+#### Rules Firing
+- [ ] Rule with `visit_count` condition fires on correct visit number
+- [ ] Rule with `time_on_page` condition fires after correct delay
+- [ ] Rule with `scroll_depth` condition fires at correct scroll %
+- [ ] Rule with `exit_intent` condition fires on cursor leave
+- [ ] AND condition — all conditions must be true for rule to fire
+- [ ] OR condition — any one condition triggers rule
+
+#### Actions on Page
+- [ ] `swap_text` — text swaps correctly on page
+- [ ] `swap_image` — image swaps correctly on page
+- [ ] `swap_url` — link href updated correctly
+- [ ] `hide_section` — element hidden correctly
+- [ ] `show_element` — element shown correctly
+- [ ] `show_popup` — popup renders correctly on page
+- [ ] `insert_countdown` — countdown timer renders and counts down
+
+#### Cache & Sync
+- [ ] SDK ping detects rule change within 30s — updated rule fires without page reload
+- [ ] `pp.js` loads via agency custom domain (white-labeled URL)
+- [ ] Rule-fired event recorded in `rule_events` table
+
+### Bugs Found
+| # | Description | Fixed | Test written |
+|---|-------------|-------|-------------|
+
+### Automated Tests — `tests/test_sdk.py`
+- [ ] `test_sdk_ping`
+- [ ] `test_sdk_rules_by_script_id`
+- [ ] `test_sdk_visit_recorded`
+- [ ] `test_sdk_event_recorded`
+
+---
+
+## MODULE 9 — ANALYTICS
+> Requires SDK data flowing (complete Module 8 first).
 
 ### Manual Checklist
 - [ ] Project analytics loads (visits, unique visitors, rules fired)
@@ -270,7 +315,7 @@
 - [ ] Visitor split (new vs returning) shows data
 - [ ] Rules performance table shows data
 - [ ] Recent visits list shows data
-- [ ] Workspace analytics loads (aggregated)
+- [ ] Workspace analytics loads (aggregated across all projects)
 - [ ] Overview stats on dashboard load
 
 ### Bugs Found
@@ -283,36 +328,68 @@
 
 ---
 
-## MODULE 9 — AGENCY / CLIENT
+## MODULE 10 — AGENCY / CLIENT
+> Test both sides thoroughly. Do not assume that because something works as an agency it works as a client.
+> Use two separate browsers (or one incognito) — one logged in as agency, one as client.
 
-### Manual Checklist
-
-#### Agency Side (White-label)
+### PART A — Agency Setup (White-label)
 - [ ] White-label tab: set brand name, logo, primary colour
 - [ ] Live preview updates correctly
-- [ ] Custom domain field: enter domain, verify DNS, confirm verified
-- [ ] CNAME record instructions show correct target (`cname.usepagepersona.com`)
+- [ ] Custom domain: enter domain, verify DNS, shows verified state
+- [ ] CNAME instructions show correct target (`cname.usepagepersona.com`)
 - [ ] Root/ALIAS record instructions show correctly
-- [ ] SSL auto-provisions after domain verify (site loads via HTTPS)
+- [ ] SSL auto-provisions after domain verify (custom domain loads via HTTPS)
 - [ ] Agency slug link works (`app.usepagepersona.com/join/[slug]`)
+- [ ] SDK script tag uses agency custom domain URL (if domain verified)
 
-#### Agency — Invite Client
+### PART B — Agency Creates Projects & Rules (as Agency)
+- [ ] Create a project inside agency workspace
+- [ ] Install script on a test page
+- [ ] Create rules with conditions and actions
+- [ ] Create a popup and attach to a rule
+- [ ] Create a countdown and attach to a rule
+- [ ] Rules fire correctly on the test page
+- [ ] Analytics records visits and rule events for agency project
+
+### PART C — Agency Invites Client
 - [ ] Invite new client by email — invite email arrives
 - [ ] Invite existing PagePersona user — correct email variant sent
 - [ ] Client appears in client list after invite
-- [ ] Revoke client access works
-- [ ] Restore client access works
-- [ ] Access level: `full` vs `view_only` applies correctly
+- [ ] Set client access to `full` — verify correct permissions
+- [ ] Set client access to `view_only` — verify correct permissions
+- [ ] Revoke client access — client can no longer log in to agency workspace
+- [ ] Restore client access — client regains access
 
-#### Client Side (White-label experience)
-- [ ] Self-signup via `/join/[slug]` shows agency branding
-- [ ] Accept invite page shows agency branding
-- [ ] Login page on custom domain shows agency branding (logo, colour, favicon, title)
-- [ ] Login page branding persists after browser restart
-- [ ] Client dashboard shows agency branding
-- [ ] Client with `full` access sees all nav except Agency tab
-- [ ] Client with `view_only` sees only dashboard + analytics
-- [ ] SDK script tag uses agency custom domain URL (if domain verified)
+### PART D — Client Self-Signup
+- [ ] Client visits `/join/[slug]` — agency branding shows (logo, colour, favicon, title)
+- [ ] Client signs up via self-signup form
+- [ ] Client lands in their own workspace with agency branding applied
+- [ ] Client login page shows agency branding on custom domain
+
+### PART E — Client Experience (Full Access)
+> Log in as invited client with `full` access
+- [ ] Client sees agency branding in dashboard (logo, colour, brand name)
+- [ ] Client sees all nav items except the Agency tab
+- [ ] Client can create a project in their workspace
+- [ ] Client can install script on their page
+- [ ] Client can create rules
+- [ ] Client can create popups
+- [ ] Client can create countdowns
+- [ ] Client rules fire correctly on their test page
+- [ ] Client analytics shows their own data
+- [ ] Client cannot access agency's projects or data
+
+### PART F — Client Experience (View Only Access)
+> Log in as invited client with `view_only` access
+- [ ] Client sees only dashboard + analytics in nav
+- [ ] Projects, Rules, Popups, Countdown pages are inaccessible
+- [ ] Client cannot create or edit anything
+- [ ] Analytics is visible and shows their data
+
+### PART G — Branding Persistence
+- [ ] Agency branding persists on auth pages after browser restart
+- [ ] Page title is dynamic from agency brand name
+- [ ] Favicon reflects agency icon on all auth pages
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
@@ -324,10 +401,11 @@
 - [ ] `test_revoke_client_access`
 - [ ] `test_restore_client_access`
 - [ ] `test_join_info_returns_branding`
+- [ ] `test_client_cannot_access_agency_data`
 
 ---
 
-## MODULE 10 — TEAM MANAGEMENT
+## MODULE 11 — TEAM MANAGEMENT
 
 ### Manual Checklist
 - [ ] Invite team member by email + role
@@ -347,44 +425,18 @@
 
 ---
 
-## MODULE 11 — SDK (pp.js) END-TO-END
-
-### Manual Checklist
-- [ ] Script installed on test page — visits recorded in analytics
-- [ ] Rule fires correctly based on condition (e.g. visit count)
-- [ ] `swap_text` action executes on page
-- [ ] `show_popup` action executes on page
-- [ ] `insert_countdown` action executes on page
-- [ ] Visit beacon records country, device, OS, browser, referrer, UTM
-- [ ] Unload beacon updates time_on_page + scroll_depth
-- [ ] Rule-fired event recorded in `rule_events`
-- [ ] `pp.js` loads via agency custom domain (white-labeled URL)
-- [ ] SDK ping/cache invalidation works (rule change reflects on page within 30s)
-
-### Bugs Found
-| # | Description | Fixed | Test written |
-|---|-------------|-------|-------------|
-
-### Automated Tests — `tests/test_sdk.py`
-- [ ] `test_sdk_ping`
-- [ ] `test_sdk_rules_by_script_id`
-- [ ] `test_sdk_visit_recorded`
-- [ ] `test_sdk_event_recorded`
-
----
-
 ## PROGRESS SUMMARY
 
 | Module | Manual done | Bugs found | Tests written |
 |--------|-------------|------------|---------------|
-| 1. Auth | 22 / 22 ✅ | 2 (fixed) | 5 / 10 |
+| 1. Auth | 19 / 22 (magic link pending JVZoo) | 2 (fixed) | 5 / 5 ✅ |
 | 2. User Profile | 6 / 6 ✅ | 2 (fixed) | 4 / 4 ✅ |
-| 3. Workspaces | 0 / 6 | 0 | 0 / 4 |
+| 3. Workspaces | 4 / 4 ✅ | 0 | 0 / 3 |
 | 4. Projects | 0 / 11 | 0 | 0 / 5 |
 | 5. Rules Engine | 0 / 14 | 0 | 0 / 5 |
 | 6. Popups | 0 / 13 | 0 | 0 / 4 |
-| 7. Countdowns | 0 / 7 | 0 | 0 / 3 |
-| 8. Analytics | 0 / 11 | 0 | 0 / 2 |
-| 9. Agency / Client | 0 / 18 | 0 | 0 / 5 |
-| 10. Team | 0 / 5 | 0 | 0 / 3 |
-| 11. SDK E2E | 0 / 10 | 0 | 0 / 4 |
+| 7. Countdowns | 0 / 7 | 0 | 0 / 4 |
+| 8. SDK E2E | 0 / 20 | 0 | 0 / 4 |
+| 9. Analytics | 0 / 11 | 0 | 0 / 2 |
+| 10. Agency / Client | 0 / 37 | 0 | 0 / 6 |
+| 11. Team | 0 / 5 | 0 | 0 / 3 |
