@@ -20,20 +20,62 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
-// Handle 401 — token expired, redirect to login
+// Handle 401 — try refresh first, only redirect to login if refresh fails
+let isRefreshing = false
+let refreshQueue: Array<(token: string) => void> = []
+
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      const url = error.config?.url || ''
-      const isAuthEndpoint = url.includes('/api/auth/login') || url.includes('/api/auth/signup')
-      if (!isAuthEndpoint && typeof window !== 'undefined') {
+  async (error) => {
+    const url = error.config?.url || ''
+    const isAuthEndpoint = url.includes('/api/auth/login') || url.includes('/api/auth/signup') || url.includes('/api/auth/refresh')
+
+    if (error.response?.status === 401 && !isAuthEndpoint && typeof window !== 'undefined') {
+      const refreshToken = localStorage.getItem('refresh_token')
+
+      if (!refreshToken) {
+        // No refresh token — clear and redirect
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         document.cookie = 'access_token=; path=/; max-age=0'
         window.location.href = '/login'
+        return Promise.reject(error)
+      }
+
+      if (isRefreshing) {
+        // Another refresh is in flight — queue this request
+        return new Promise((resolve) => {
+          refreshQueue.push((newToken: string) => {
+            error.config.headers.Authorization = `Bearer ${newToken}`
+            resolve(apiClient(error.config))
+          })
+        })
+      }
+
+      isRefreshing = true
+      try {
+        const res = await axios.post(`${API_URL}/api/auth/refresh`, { refresh_token: refreshToken })
+        const newAccessToken = res.data.access_token
+        localStorage.setItem('access_token', newAccessToken)
+        document.cookie = `access_token=${newAccessToken}; path=/; max-age=${60 * 60 * 24 * 30}`
+        // Flush queued requests
+        refreshQueue.forEach((cb) => cb(newAccessToken))
+        refreshQueue = []
+        // Retry the original request
+        error.config.headers.Authorization = `Bearer ${newAccessToken}`
+        return apiClient(error.config)
+      } catch {
+        // Refresh failed — clear everything and redirect
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        document.cookie = 'access_token=; path=/; max-age=0'
+        window.location.href = '/login'
+        return Promise.reject(error)
+      } finally {
+        isRefreshing = false
       }
     }
+
     return Promise.reject(error)
   }
 )

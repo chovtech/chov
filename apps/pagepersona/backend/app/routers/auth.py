@@ -300,6 +300,33 @@ async def verify_magic_link(
         workspace=format_workspace(workspace)
     )
 
+# ── REFRESH TOKEN ─────────────────────────────────────
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+@router.post("/refresh")
+async def refresh_token(
+    data: RefreshRequest,
+    db: asyncpg.Connection = Depends(get_db)
+):
+    payload = decode_token(data.refresh_token)
+    if not payload or payload.get("type") != "refresh":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
+
+    user_id = payload.get("sub")
+
+    # Verify token exists in sessions and is not expired
+    session = await db.fetchrow(
+        "SELECT id FROM sessions WHERE token = $1 AND expires_at > NOW()",
+        data.refresh_token
+    )
+    if not session:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session expired or not found")
+
+    from app.core.security import create_access_token
+    new_access_token = create_access_token({"sub": user_id})
+    return {"access_token": new_access_token}
+
 # ── FORGOT PASSWORD ────────────────────────────────────
 @router.post("/forgot-password", response_model=MessageResponse)
 async def forgot_password(
