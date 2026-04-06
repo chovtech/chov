@@ -13,15 +13,20 @@ interface Props {
 }
 
 const platforms = [
-  { key: 'html',         label: 'Native HTML/JS', logo: '/platforms/html.svg' },
-  { key: 'wordpress',    label: 'WordPress',       logo: '/platforms/wordpress.svg' },
-  { key: 'shopify',      label: 'Shopify',         logo: '/platforms/shopify.svg' },
-  { key: 'webflow',      label: 'Webflow',         logo: '/platforms/webflow.svg' },
-  { key: 'gohighlevel',  label: 'GoHighLevel',     logo: '/platforms/gohighlevel.svg' },
-  { key: 'clickfunnels', label: 'ClickFunnels',    logo: '/platforms/clickfunnels.svg' },
-  { key: 'systeme',      label: 'Systeme.io',      logo: '/platforms/systeme.svg' },
-  { key: 'framer',       label: 'Framer',          logo: '/platforms/framer.svg' },
-  { key: 'other',        label: 'Other',           logo: null },
+  { key: 'html',         label: 'HTML / JS',       logo: '/platforms/html.svg' },
+  { key: 'wordpress',    label: 'WordPress',        logo: '/platforms/wordpress.svg' },
+  { key: 'shopify',      label: 'Shopify',          logo: '/platforms/shopify.svg' },
+  { key: 'webflow',      label: 'Webflow',          logo: '/platforms/webflow.svg' },
+  { key: 'framer',       label: 'Framer',           logo: '/platforms/framer.svg' },
+  { key: 'wix',          label: 'Wix',              logo: '/platforms/wix.svg' },
+  { key: 'squarespace',  label: 'Squarespace',      logo: '/platforms/squarespace.svg' },
+  { key: 'gohighlevel',  label: 'GoHighLevel',      logo: '/platforms/gohighlevel.svg' },
+  { key: 'clickfunnels', label: 'ClickFunnels',     logo: '/platforms/clickfunnels.svg' },
+  { key: 'systeme',      label: 'Systeme.io',       logo: '/platforms/systeme.svg' },
+  { key: 'kajabi',       label: 'Kajabi',           logo: '/platforms/kajabi.svg' },
+  { key: 'kartra',       label: 'Kartra',           logo: '/platforms/kartra.svg' },
+  { key: 'leadpages',    label: 'Leadpages',        logo: '/platforms/leadpages.svg' },
+  { key: 'other',        label: 'Other',            logo: null },
 ]
 
 export default function NewProjectModal({ isOpen, onClose }: Props) {
