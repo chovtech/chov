@@ -88,32 +88,34 @@
 ### Manual Checklist
 - [x] Update name saves correctly
 - [x] Ensure email update is disabled (update email not allowed)
-- [ ] Avatar upload works (image shows in sidebar/header)
-- [ ] Change password — correct current password required
-- [ ] Change password — wrong current password rejected
-- [ ] Language switch (EN ↔ FR) applies across the app
+- [x] Avatar upload works (image shows in sidebar/header)
+- [X] Change password — correct current password required
+- [x] Change password — wrong current password rejected
+- [X] Language switch (EN ↔ FR) applies across the app
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
 |---|-------------|-------|-------------|
+| 1 | Name/avatar change not reflected in sidebar + topbar until refresh | ✅ | — |
+| 2 | Password fields had no show/hide toggle | ✅ | — |
 
 ### Automated Tests — `tests/test_users.py`
-- [ ] `test_update_profile_name`
-- [ ] `test_update_profile_email`
-- [ ] `test_change_password_success`
-- [ ] `test_change_password_wrong_current`
+- [x] `test_update_profile_name`
+- [x] `test_update_profile_email_duplicate_rejected`
+- [x] `test_change_password_success`
+- [x] `test_change_password_wrong_current`
 
 ---
 
 ## MODULE 3 — WORKSPACES
 
 ### Manual Checklist
-- [ ] Default workspace created on signup
-- [ ] Create a second workspace
-- [ ] Switch between workspaces in sidebar
-- [ ] Rename workspace saves correctly
-- [ ] Delete workspace (with confirmation)
-- [ ] Workspace stats visible (project count, sessions, last activity)
+- [x] Default workspace created on signup
+- [na] Create a second workspace
+- [x] Switch between workspaces in sidebar
+- [x] Rename workspace saves correctly
+- [na] Delete workspace (with confirmation)
+- [ ] Workspace stats visible (project count, sessions, last activity) - we cannot see this except we get to testing project after implementation
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
@@ -376,7 +378,7 @@
 | Module | Manual done | Bugs found | Tests written |
 |--------|-------------|------------|---------------|
 | 1. Auth | 22 / 22 ✅ | 2 (fixed) | 5 / 10 |
-| 2. User Profile | 0 / 6 | 0 | 0 / 4 |
+| 2. User Profile | 6 / 6 ✅ | 2 (fixed) | 4 / 4 ✅ |
 | 3. Workspaces | 0 / 6 | 0 | 0 / 4 |
 | 4. Projects | 0 / 11 | 0 | 0 / 5 |
 | 5. Rules Engine | 0 / 14 | 0 | 0 / 5 |
