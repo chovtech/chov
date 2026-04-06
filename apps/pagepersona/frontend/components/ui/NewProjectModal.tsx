@@ -13,15 +13,15 @@ interface Props {
 }
 
 const platforms = [
-  { key: 'html',         label: 'Native HTML/JS', icon: 'code' },
-  { key: 'wordpress',    label: 'WordPress',       icon: 'web_asset' },
-  { key: 'shopify',      label: 'Shopify',         icon: 'shopping_bag' },
-  { key: 'webflow',      label: 'Webflow',         icon: 'dashboard_customize' },
-  { key: 'gohighlevel',  label: 'GoHighLevel',     icon: 'rocket_launch' },
-  { key: 'clickfunnels', label: 'ClickFunnels',    icon: 'filter_alt' },
-  { key: 'systeme',      label: 'Systeme.io',      icon: 'hub' },
-  { key: 'framer',       label: 'Framer',          icon: 'animation' },
-  { key: 'other',        label: 'Other',           icon: 'more_horiz' },
+  { key: 'html',         label: 'Native HTML/JS', logo: '/platforms/html.svg' },
+  { key: 'wordpress',    label: 'WordPress',       logo: '/platforms/wordpress.svg' },
+  { key: 'shopify',      label: 'Shopify',         logo: '/platforms/shopify.svg' },
+  { key: 'webflow',      label: 'Webflow',         logo: '/platforms/webflow.svg' },
+  { key: 'gohighlevel',  label: 'GoHighLevel',     logo: '/platforms/gohighlevel.svg' },
+  { key: 'clickfunnels', label: 'ClickFunnels',    logo: '/platforms/clickfunnels.svg' },
+  { key: 'systeme',      label: 'Systeme.io',      logo: '/platforms/systeme.svg' },
+  { key: 'framer',       label: 'Framer',          logo: '/platforms/framer.svg' },
+  { key: 'other',        label: 'Other',           logo: null },
 ]
 
 export default function NewProjectModal({ isOpen, onClose }: Props) {
@@ -240,10 +240,11 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                         <Icon name="check_circle" className="text-base" />
                       </div>
                     )}
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      platform === p.key ? 'bg-[#1A56DB]/10' : 'bg-slate-100'
-                    }`}>
-                      <Icon name={p.icon} className={`text-2xl ${platform === p.key ? 'text-[#1A56DB]' : 'text-slate-500'}`} />
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white">
+                      {p.logo
+                        ? <img src={p.logo} alt={p.label} className="w-8 h-8 object-contain" />
+                        : <Icon name="more_horiz" className="text-2xl text-slate-500" />
+                      }
                     </div>
                     <span className={`text-xs font-bold ${platform === p.key ? 'text-[#1A56DB]' : 'text-slate-700'}`}>
                       {p.label}
@@ -278,8 +279,8 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
 
               {platform === 'wordpress' ? (
                 <div className="rounded-xl border-2 border-dashed border-slate-200 bg-white p-6 flex flex-col items-center gap-4 text-center">
-                  <div className="w-14 h-14 rounded-full bg-[#1A56DB]/10 flex items-center justify-center">
-                    <Icon name="web_asset" className="text-3xl text-[#1A56DB]" />
+                  <div className="w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center">
+                    <img src="/platforms/wordpress.svg" alt="WordPress" className="w-9 h-9 object-contain" />
                   </div>
                   <button className="flex items-center gap-2 bg-[#1A56DB] hover:bg-[#1A56DB]/90 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md shadow-[#1A56DB]/20">
                     <Icon name="extension" />
