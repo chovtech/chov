@@ -415,7 +415,12 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
             </button>
           ) : step === 2 ? (
             <button
-              onClick={() => setStep(3)}
+              onClick={async () => {
+                if (createdProjectId) {
+                  await projectApi.update(createdProjectId, { platform: platform || 'html' })
+                }
+                setStep(3)
+              }}
               disabled={!canProceedStep2}
               className="flex items-center gap-1.5 px-6 py-2 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >

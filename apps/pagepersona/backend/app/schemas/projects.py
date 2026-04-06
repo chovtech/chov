@@ -30,3 +30,4 @@ class ProjectUpdate(BaseModel):
     script_verified: Optional[bool] = None
     page_url: Optional[str] = None
     thumbnail_url: Optional[str] = None
+    platform: Optional[str] = None
