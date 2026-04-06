@@ -4,6 +4,7 @@ import asyncpg
 import httpx
 import hashlib
 import json
+import re
 from app.database import get_db
 from app.core.security import get_current_user
 
@@ -190,8 +191,8 @@ async def sdk_verify_project(
             html = resp.text
     except Exception as e:
         raise HTTPException(status_code=422, detail=f'Could not fetch page: {str(e)}')
-    # Check for script tag with matching script_id
-    found = script_id in html and 'pagepersona' in html.lower()
+    # Exact match: script ID must be followed by a non-alphanumeric char (avoids PP-ABC matching PP-ABC11)
+    found = bool(re.search(re.escape(script_id) + r'[^A-Za-z0-9]', html))
     await db.execute(
         'UPDATE projects SET script_verified = $1 WHERE id = $2',
         found, project_id
