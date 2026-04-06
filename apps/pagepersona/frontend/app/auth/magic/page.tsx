@@ -16,10 +16,11 @@ function MagicLinkContent() {
     if (!token) { setStatus('error'); return }
     authApiExtended.verifyMagicLink(token)
       .then(res => {
-        const { access_token, refresh_token } = res.data
+        const { access_token, refresh_token, user } = res.data
         localStorage.setItem('access_token', access_token)
         localStorage.setItem('refresh_token', refresh_token)
         document.cookie = `access_token=${access_token}; path=/; max-age=${60 * 60 * 24 * 30}`
+        if (user?.language) localStorage.setItem('pp_language', user.language)
         setStatus('success')
         setTimeout(() => router.push('/dashboard'), 1500)
       })

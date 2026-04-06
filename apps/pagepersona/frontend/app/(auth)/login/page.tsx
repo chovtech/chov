@@ -62,10 +62,24 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const res = await authApi.login(form)
-      const { access_token, refresh_token } = res.data
+      const { access_token, refresh_token, user } = res.data
       localStorage.setItem('access_token', access_token)
       localStorage.setItem('refresh_token', refresh_token)
       document.cookie = `access_token=${access_token}; path=/; max-age=${60 * 60 * 24 * 30}`
+      // Reconcile language: localStorage wins (user may have switched on login page)
+      // Push it to DB so they stay in sync from this point forward
+      const localLang = localStorage.getItem('pp_language')
+      if (localLang && user?.language && localLang !== user.language) {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+        fetch(`${apiUrl}/api/users/profile`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${access_token}` },
+          body: JSON.stringify({ language: localLang })
+        }).catch(() => null)
+      } else if (user?.language && !localLang) {
+        // No localStorage preference — pull from DB
+        localStorage.setItem('pp_language', user.language)
+      }
       router.push('/dashboard')
     } catch (err: unknown) {
       const message = (err as { response?: { data?: { detail?: string } } })

@@ -22,6 +22,18 @@ function GoogleCallbackContent() {
     if (refresh_token) localStorage.setItem('refresh_token', refresh_token)
     document.cookie = `access_token=${access_token}; path=/; max-age=${60 * 60 * 24 * 30}`
 
+    // Sync DB language to localStorage — DB is source of truth
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const meRes = await fetch(`${apiUrl}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${access_token}` }
+      })
+      if (meRes.ok) {
+        const me = await meRes.json()
+        if (me?.language) localStorage.setItem('pp_language', me.language)
+      }
+    } catch { /* silent */ }
+
     router.push('/dashboard')
   }, [searchParams, router])
 
