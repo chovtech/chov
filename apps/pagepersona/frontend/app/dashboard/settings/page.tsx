@@ -168,6 +168,7 @@ export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null)
   const [profileForm, setProfileForm] = useState({ name: '', email: '', avatar_url: '' })
   const [passwordForm, setPasswordForm] = useState({ current_password: '', new_password: '', confirm: '' })
+  const [showPw, setShowPw] = useState({ current: false, new: false, confirm: false })
   const [profileLoading, setProfileLoading] = useState(false)
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -467,15 +468,30 @@ export default function SettingsPage() {
                 <form onSubmit={handlePasswordSave} className="space-y-4">
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.password.current')}</label>
-                    <input type="password" value={passwordForm.current_password} onChange={e => setPasswordForm(p => ({ ...p, current_password: e.target.value }))} className={inputClass} />
+                    <div className="relative">
+                      <input type={showPw.current ? 'text' : 'password'} value={passwordForm.current_password} onChange={e => setPasswordForm(p => ({ ...p, current_password: e.target.value }))} className={inputClass} />
+                      <button type="button" onClick={() => setShowPw(p => ({ ...p, current: !p.current }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        <Icon name={showPw.current ? 'visibility_off' : 'visibility'} className="text-base" />
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.password.new')}</label>
-                    <input type="password" value={passwordForm.new_password} onChange={e => setPasswordForm(p => ({ ...p, new_password: e.target.value }))} placeholder="Min. 8" className={inputClass} />
+                    <div className="relative">
+                      <input type={showPw.new ? 'text' : 'password'} value={passwordForm.new_password} onChange={e => setPasswordForm(p => ({ ...p, new_password: e.target.value }))} placeholder="Min. 8" className={inputClass} />
+                      <button type="button" onClick={() => setShowPw(p => ({ ...p, new: !p.new }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        <Icon name={showPw.new ? 'visibility_off' : 'visibility'} className="text-base" />
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">{t('settings.password.confirm')}</label>
-                    <input type="password" value={passwordForm.confirm} onChange={e => setPasswordForm(p => ({ ...p, confirm: e.target.value }))} className={inputClass} />
+                    <div className="relative">
+                      <input type={showPw.confirm ? 'text' : 'password'} value={passwordForm.confirm} onChange={e => setPasswordForm(p => ({ ...p, confirm: e.target.value }))} className={inputClass} />
+                      <button type="button" onClick={() => setShowPw(p => ({ ...p, confirm: !p.confirm }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        <Icon name={showPw.confirm ? 'visibility_off' : 'visibility'} className="text-base" />
+                      </button>
+                    </div>
                   </div>
                   <div className="flex justify-end pt-2">
                     <button type="submit" disabled={passwordLoading} className="px-6 py-2.5 bg-brand hover:bg-brand/90 disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
