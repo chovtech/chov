@@ -67,7 +67,7 @@
 | # | Description | Fixed | Test written |
 |---|-------------|-------|-------------|
 | 1 | Duplicate JWT token on rapid signup+login (jti fix) | ✅ | ✅ |
-no basic bug found just that session time expires quit quickly. it works well but would have been great to have it stay for long
+| 2 | Session expiring every 30 min — no refresh token flow implemented | ✅ | — |
 
 ### Automated Tests — `tests/test_auth.py`
 - [x] `test_signup_returns_tokens`
@@ -81,13 +81,13 @@ no basic bug found just that session time expires quit quickly. it works well bu
 - [ ] `test_reset_password_success`
 - [ ] `test_magic_link_login`
 
----
+-----------------------------
 
 ## MODULE 2 — USER PROFILE
 
 ### Manual Checklist
 - [ ] Update name saves correctly
-- [ ] Update email saves correctly
+- [ ] Update email saves correctly (update email not allowed)
 - [ ] Avatar upload works (image shows in sidebar/header)
 - [ ] Change password — correct current password required
 - [ ] Change password — wrong current password rejected
@@ -375,7 +375,7 @@ no basic bug found just that session time expires quit quickly. it works well bu
 
 | Module | Manual done | Bugs found | Tests written |
 |--------|-------------|------------|---------------|
-| 1. Auth | 0 / 22 | 1 (fixed) | 5 / 10 |
+| 1. Auth | 22 / 22 ✅ | 2 (fixed) | 5 / 10 |
 | 2. User Profile | 0 / 6 | 0 | 0 / 4 |
 | 3. Workspaces | 0 / 6 | 0 | 0 / 4 |
 | 4. Projects | 0 / 11 | 0 | 0 / 5 |

@@ -311,6 +311,7 @@ export default function SettingsPage() {
     try {
       const res = await userApi.updateProfile({ name: profileForm.name, language, avatar_url: profileForm.avatar_url })
       setUser(res.data)
+      window.dispatchEvent(new CustomEvent('profileUpdated', { detail: res.data }))
       setProfileMsg({ type: 'success', text: t('toast.profileUpdated') })
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || t('toast.profileFailed')
