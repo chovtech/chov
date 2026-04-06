@@ -30,7 +30,7 @@ const platforms = [
 ]
 
 const platformSteps: Record<string, string[]> = {
-  html:         ['Open your page's HTML file.', 'Paste the script tag inside the <head> section.', 'Save and publish your page.'],
+  html:         ['Open your HTML file.', 'Paste the script tag inside the <head> section.', 'Save and publish your page.'],
   wordpress:    ['Install the free WPCode plugin from WordPress.org.', 'Go to Code Snippets → Header & Footer.', 'Paste the script in the Header box and click Save.'],
   shopify:      ['Go to Online Store → Themes → Edit code.', 'Open theme.liquid and find the <head> tag.', 'Paste the script just before </head> and click Save.'],
   webflow:      ['Go to Project Settings → Custom Code.', 'Paste the script in the Head Code section.', 'Publish your site.'],
