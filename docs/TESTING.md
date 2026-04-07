@@ -148,26 +148,29 @@
 - [x] Delete project (with confirmation) works
 
 #### Script Verification
-- [ ] Script verify detects installed script on page
-- [ ] Uninstalled script shows correct "not found" state
+- [x] Script verify detects installed script on page
+- [x] Uninstalled script shows correct "not found" state
 
 #### URL Guard (SDK)
-- [ ] pp.js only fires on the exact registered page URL
-- [ ] pp.js silently exits on any other page (blog, about, etc.) with same script installed
-- [ ] WordPress plugin downloads as ZIP with correct script ID pre-filled
-- [ ] WordPress plugin settings page shows page URL → Script ID mapping table
-- [ ] White-labeled plugin uses agency brand name when workspace has brand set
+- [x] pp.js only fires on the exact registered page URL
+- [x] pp.js silently exits on any other page (blog, about, etc.) with same script installed
+- [x] WordPress plugin downloads as ZIP with correct script ID pre-filled
+- [x] WordPress plugin settings page shows page URL → Script ID mapping table
+
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
 |---|-------------|-------|-------------|
 
 ### Automated Tests — `tests/test_projects.py`
-- [ ] `test_create_project`
-- [ ] `test_list_projects`
-- [ ] `test_edit_project`
-- [ ] `test_delete_project`
-- [ ] `test_toggle_project_status`
+- [x] `test_create_project` — returns PP-XXXXXX script ID, draft status
+- [x] `test_create_project_script_id_is_unique` — two projects never share a script ID
+- [x] `test_list_projects` — all projects returned for workspace
+- [x] `test_edit_project_name` — PUT updates name correctly
+- [x] `test_edit_project_platform` — PUT updates platform correctly
+- [x] `test_toggle_project_status` — draft ↔ active toggle works
+- [x] `test_delete_project` — deleted project removed from list
+- [x] `test_cannot_access_other_users_project` — returns 404 for wrong user
 
 ---
 
@@ -348,6 +351,7 @@
 - [ ] SSL auto-provisions after domain verify (custom domain loads via HTTPS)
 - [ ] Agency slug link works (`app.usepagepersona.com/join/[slug]`)
 - [ ] SDK script tag uses agency custom domain URL (if domain verified)
+- [ ] White-labeled plugin uses agency brand name when workspace has brand set
 
 ### PART B — Agency Creates Projects & Rules (as Agency)
 - [ ] Create a project inside agency workspace

@@ -29,7 +29,7 @@
       var rules = data.rules;
       var geo = data.geo || {};
       if (!rules || rules.length === 0) return;
-      var signals = detectSignals(geo);
+      var signals = detectSignals(geo, scriptId);
       window.__pp = window.__pp || {};
       window.__pp.signals = signals;
       window.__pp.rules = rules;
@@ -133,7 +133,7 @@
   }
 
   // ─── SIGNAL DETECTION ──────────────────────────────────────────────────────
-  function detectSignals(geo) {
+  function detectSignals(geo, scriptId) {
     var signals = {};
     geo = geo || {};
 
@@ -177,7 +177,7 @@
       signals.browser = 'unknown';
     }
 
-    var visitKey = 'pp_visits_' + (params.id || '');
+    var visitKey = 'pp_visits_' + scriptId;
     var visits = parseInt(localStorage.getItem(visitKey) || '0', 10) + 1;
     localStorage.setItem(visitKey, String(visits));
     signals.visit_count = visits;
