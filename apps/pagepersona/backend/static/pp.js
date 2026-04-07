@@ -461,14 +461,12 @@
   }
 
   function swapImage(blockId, newSrc) {
-    var el = findElement(blockId);
-    if (!el) return;
-    if (el.tagName === 'IMG') {
-      el.src = newSrc;
-    } else {
-      var img = el.querySelector('img');
-      if (img) img.src = newSrc;
-    }
+    var escapedSrc = newSrc.replace(/"/g, '\\"');
+    var css = blockId + '{content:url("' + escapedSrc + '") !important}'
+            + blockId + ' img{content:url("' + escapedSrc + '") !important}';
+    var s = document.createElement('style');
+    s.textContent = css;
+    document.head.appendChild(s);
   }
 
   function hideSection(blockId) {
