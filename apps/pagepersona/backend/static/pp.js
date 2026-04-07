@@ -465,10 +465,31 @@
     if (!el) return;
     var img = el.tagName === 'IMG' ? el : el.querySelector('img');
     if (!img) return;
-    img.src = newSrc;
-    // Clear srcset/sizes so browser doesn't override src with original WordPress responsive images
-    img.removeAttribute('srcset');
-    img.removeAttribute('sizes');
+
+    function applySwap(target) {
+      target.src = newSrc;
+      target.removeAttribute('srcset');
+      target.removeAttribute('sizes');
+    }
+
+    applySwap(img);
+
+    // Re-apply after page builders (Elementor, etc.) re-render and overwrite src
+    setTimeout(function() { applySwap(img); }, 500);
+    setTimeout(function() { applySwap(img); }, 1500);
+
+    // MutationObserver: re-apply if src gets overwritten
+    var observer = new MutationObserver(function(mutations) {
+      for (var i = 0; i < mutations.length; i++) {
+        if (mutations[i].attributeName === 'src' && img.src !== newSrc) {
+          applySwap(img);
+        }
+      }
+    });
+    observer.observe(img, { attributes: true, attributeFilter: ['src', 'srcset'] });
+
+    // Stop observing after 5 seconds — page builder has settled by then
+    setTimeout(function() { observer.disconnect(); }, 5000);
   }
 
   function hideSection(blockId) {
