@@ -314,7 +314,7 @@
   function fireAction(action) {
     switch (action.type) {
       case 'swap_text':        swapText(action.target_block, action.value);           break;
-      case 'swap_image':       swapImage(action.target_block, action.value, action.css_fallback || ''); break;
+      case 'swap_image':       swapImage(action.target_block, action.value); break;
       case 'hide_section':     hideSection(action.target_block);                      break;
       case 'show_element':     showElement(action.target_block);                      break;
       case 'swap_url':         swapUrl(action.target_block, action.value);            break;
@@ -460,20 +460,9 @@
     el.style.removeProperty('display');
   }
 
-  function swapImage(selector, newSrc, cssFallback) {
-    // Step 1: If the element doesn't already have data-pp stamped (live page),
-    // find it via CSS fallback and stamp it now so CSS injection can target it.
-    var ppMatch = selector.match(/\[data-pp="([^"]+)"\]/);
-    if (ppMatch) {
-      var ppCode = ppMatch[1];
-      if (!document.querySelector(selector) && cssFallback) {
-        var found = document.querySelector(cssFallback);
-        if (found) {
-          found.setAttribute('data-pp', ppCode);
-        }
-      }
-    }
-    // Step 2: CSS injection — lives in <head>, survives any page builder re-render.
+  function swapImage(selector, newSrc) {
+    // CSS injection — lives in <head>, applied after every page builder re-render.
+    // Targets both the element itself (if it's an img) and any img inside it.
     var escapedSrc = newSrc.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
     var css = selector + ' { content: url("' + escapedSrc + '") !important; }\n'
             + selector + ' img { content: url("' + escapedSrc + '") !important; }\n';
@@ -1030,11 +1019,10 @@
     e.stopPropagation();
 
     var el = e.target;
-    var result = buildSelector(el);
+    var selector = buildSelector(el);
     var payload = {
       type:        'PP_ELEMENT_SELECTED',
-      selector:    result.ppSelector,
-      cssFallback: result.cssFallback,
+      selector:    selector,
       tagName:     el.tagName,
       textContent: (el.textContent || '').trim().slice(0, 120),
       id:          el.id || '',
@@ -1043,44 +1031,46 @@
     window.parent.postMessage(payload, '*');
   }
 
-  // Generate a random unique data-pp tag code
-  function generatePPCode() {
-    var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    var code = 'pp-';
-    for (var i = 0; i < 6; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
-  }
-
-  // Build a best-effort CSS fallback selector (for stamping data-pp on the live page)
-  function getCSSFallback(el) {
-    if (el.id) return '#' + CSS.escape(el.id);
-    if (el.className && typeof el.className === 'string') {
-      var classes = el.className.trim().split(/\s+/)
-        .filter(function(c) { return c && c !== 'pp-picker-hover' && c !== 'pp-has-rules'; })
-        .slice(0, 3).join('.');
-      if (classes) return el.tagName.toLowerCase() + '.' + classes;
-    }
-    var parent = el.parentElement;
-    if (parent && parent.id) return '#' + CSS.escape(parent.id) + ' ' + el.tagName.toLowerCase();
-    if (parent && parent.className && typeof parent.className === 'string') {
-      var pClass = parent.className.trim().split(/\s+/).filter(function(c) { return c && c !== 'pp-picker-hover'; })[0];
-      if (pClass) return '.' + pClass + ' ' + el.tagName.toLowerCase();
-    }
-    return el.tagName.toLowerCase();
-  }
-
-  // Build a stable selector by stamping data-pp onto the element
-  // Returns { ppSelector, cssFallback }
+  // Build the most stable CSS selector for a given element.
+  // Priority: unique id → meaningful classes → parent id + tag → parent class + tag
+  // Never generates positional nth-child selectors — those break when DOM changes.
   function buildSelector(el) {
-    var existingCode = el.getAttribute('data-pp');
-    var code = existingCode || generatePPCode();
-    if (!existingCode) el.setAttribute('data-pp', code);
-    return {
-      ppSelector: '[data-pp="' + code + '"]',
-      cssFallback: getCSSFallback(el)
-    };
+    var skip = ['pp-picker-hover', 'pp-has-rules', 'pp-brand-tag'];
+
+    function cleanClasses(el) {
+      if (!el.className || typeof el.className !== 'string') return '';
+      return el.className.trim().split(/\s+/)
+        .filter(function(c) { return c && skip.indexOf(c) === -1; })
+        .slice(0, 3).join('.');
+    }
+
+    // 1. Element has a unique id
+    if (el.id) return '#' + el.id;
+
+    // 2. Element has its own meaningful classes
+    var classes = cleanClasses(el);
+    if (classes) return el.tagName.toLowerCase() + '.' + classes;
+
+    // 3. Parent has a unique id — scope by parent#id > tag
+    var parent = el.parentElement;
+    if (parent && parent.id) {
+      return '#' + parent.id + ' ' + el.tagName.toLowerCase();
+    }
+
+    // 4. Parent has classes — scope by .parentClass tag
+    if (parent) {
+      var pClasses = cleanClasses(parent);
+      if (pClasses) return '.' + pClasses.split('.')[0] + ' ' + el.tagName.toLowerCase();
+    }
+
+    // 5. Walk up further to find a stable ancestor
+    var ancestor = parent && parent.parentElement;
+    if (ancestor && ancestor.id) {
+      return '#' + ancestor.id + ' ' + el.tagName.toLowerCase();
+    }
+
+    // 6. Last resort — tag name only (better than nth-child which breaks on DOM change)
+    return el.tagName.toLowerCase();
   }
 
   // Listen for messages from the dashboard
