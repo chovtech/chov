@@ -314,7 +314,7 @@
   function fireAction(action) {
     switch (action.type) {
       case 'swap_text':        swapText(action.target_block, action.value);           break;
-      case 'swap_image':       swapImage(action.target_block, action.value); break;
+      case 'swap_image':       swapImage(action.target_block, action.value);          break;
       case 'hide_section':     hideSection(action.target_block);                      break;
       case 'show_element':     showElement(action.target_block);                      break;
       case 'swap_url':         swapUrl(action.target_block, action.value);            break;
@@ -460,16 +460,15 @@
     el.style.removeProperty('display');
   }
 
-  function swapImage(selector, newSrc) {
-    // CSS injection — lives in <head>, applied after every page builder re-render.
-    // Targets both the element itself (if it's an img) and any img inside it.
-    var escapedSrc = newSrc.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-    var css = selector + ' { content: url("' + escapedSrc + '") !important; }\n'
-            + selector + ' img { content: url("' + escapedSrc + '") !important; }\n';
-    var style = document.createElement('style');
-    style.setAttribute('data-pp-swap', 'image');
-    style.textContent = css;
-    document.head.appendChild(style);
+  function swapImage(blockId, newSrc) {
+    var el = findElement(blockId);
+    if (!el) return;
+    if (el.tagName === 'IMG') {
+      el.src = newSrc;
+    } else {
+      var img = el.querySelector('img');
+      if (img) img.src = newSrc;
+    }
   }
 
   function hideSection(blockId) {
@@ -810,16 +809,9 @@
   // ─── DOM HELPERS ───────────────────────────────────────────────────────────
   function findElement(blockId) {
     if (!blockId) return null;
-    var el = null;
-    try { el = document.getElementById(blockId); } catch(e) {}
-    if (!el) {
-      // Only try data-pp-block wrapper if blockId looks like a plain word/id, not a CSS selector
-      var looksLikeCSSSelector = /^[.#\[:]/.test(blockId.trim());
-      if (!looksLikeCSSSelector) {
-        try { el = document.querySelector('[data-pp-block="' + blockId + '"]'); } catch(e) {}
-      }
-    }
-    if (!el) { try { el = document.querySelector(blockId); } catch(e) {} }
+    var el = document.getElementById(blockId)
+      || document.querySelector('[data-pp-block="' + blockId + '"]')
+      || document.querySelector(blockId);
     if (!el) warn('Element not found: ' + blockId);
     return el;
   }
@@ -1050,24 +1042,18 @@
     }
     // 3. tag + meaningful classes (skip utility/layout classes)
     if (el.className && typeof el.className === 'string') {
-      var classes = el.className.trim().split(/\s+/).filter(function(c) {
-        return c && c !== 'pp-picker-hover' && c !== 'pp-has-rules' && c !== 'pp-brand-tag';
-      }).slice(0, 2).join('.');
+      var classes = el.className.trim().split(/\s+/).filter(function(c) { return c !== 'pp-picker-hover' && c !== 'pp-has-rules'; }).slice(0, 2).join('.');
       if (classes) return el.tagName.toLowerCase() + '.' + classes;
     }
-    // 4. Parent id + tag
+    // 4. tag + nth-child fallback
     var parent = el.parentElement;
-    if (parent && parent.id) {
-      return '#' + parent.id + ' ' + el.tagName.toLowerCase();
-    }
-    // 5. tag + nth-child fallback
     if (parent) {
       var siblings = Array.prototype.slice.call(parent.children);
       var index = siblings.indexOf(el) + 1;
-      var parentSelector = parent.tagName.toLowerCase();
+      var parentSelector = parent.id ? '#' + parent.id : parent.tagName.toLowerCase();
       return parentSelector + ' > ' + el.tagName.toLowerCase() + ':nth-child(' + index + ')';
     }
-    // 6. bare tag as last resort
+    // 5. bare tag as last resort
     return el.tagName.toLowerCase();
   }
 
