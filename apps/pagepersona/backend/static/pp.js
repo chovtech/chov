@@ -1038,45 +1038,36 @@
     window.parent.postMessage(payload, '*');
   }
 
-  // Build the most stable CSS selector for a given element.
-  // Priority: unique id → meaningful classes → parent id + tag → parent class + tag
-  // Never generates positional nth-child selectors — those break when DOM changes.
+  // Build the most specific stable CSS selector for a given element
   function buildSelector(el) {
-    var skip = ['pp-picker-hover', 'pp-has-rules', 'pp-brand-tag'];
-
-    function cleanClasses(el) {
-      if (!el.className || typeof el.className !== 'string') return '';
-      return el.className.trim().split(/\s+/)
-        .filter(function(c) { return c && skip.indexOf(c) === -1; })
-        .slice(0, 3).join('.');
+    // 1. data-pp-block attribute — most stable
+    if (el.getAttribute('data-pp-block')) {
+      return '[data-pp-block="' + el.getAttribute('data-pp-block') + '"]';
     }
-
-    // 1. Element has a unique id
-    if (el.id) return '#' + el.id;
-
-    // 2. Element has its own meaningful classes
-    var classes = cleanClasses(el);
-    if (classes) return el.tagName.toLowerCase() + '.' + classes;
-
-    // 3. Parent has a unique id — scope by parent#id > tag
+    // 2. id attribute — very stable
+    if (el.id) {
+      return '#' + el.id;
+    }
+    // 3. tag + meaningful classes (skip utility/layout classes)
+    if (el.className && typeof el.className === 'string') {
+      var classes = el.className.trim().split(/\s+/).filter(function(c) {
+        return c && c !== 'pp-picker-hover' && c !== 'pp-has-rules' && c !== 'pp-brand-tag';
+      }).slice(0, 2).join('.');
+      if (classes) return el.tagName.toLowerCase() + '.' + classes;
+    }
+    // 4. Parent id + tag
     var parent = el.parentElement;
     if (parent && parent.id) {
       return '#' + parent.id + ' ' + el.tagName.toLowerCase();
     }
-
-    // 4. Parent has classes — scope by .parentClass tag
+    // 5. tag + nth-child fallback
     if (parent) {
-      var pClasses = cleanClasses(parent);
-      if (pClasses) return '.' + pClasses.split('.')[0] + ' ' + el.tagName.toLowerCase();
+      var siblings = Array.prototype.slice.call(parent.children);
+      var index = siblings.indexOf(el) + 1;
+      var parentSelector = parent.tagName.toLowerCase();
+      return parentSelector + ' > ' + el.tagName.toLowerCase() + ':nth-child(' + index + ')';
     }
-
-    // 5. Walk up further to find a stable ancestor
-    var ancestor = parent && parent.parentElement;
-    if (ancestor && ancestor.id) {
-      return '#' + ancestor.id + ' ' + el.tagName.toLowerCase();
-    }
-
-    // 6. Last resort — tag name only (better than nth-child which breaks on DOM change)
+    // 6. bare tag as last resort
     return el.tagName.toLowerCase();
   }
 
