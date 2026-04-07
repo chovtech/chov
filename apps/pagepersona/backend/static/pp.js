@@ -810,9 +810,16 @@
   // ─── DOM HELPERS ───────────────────────────────────────────────────────────
   function findElement(blockId) {
     if (!blockId) return null;
-    var el = document.getElementById(blockId)
-      || document.querySelector('[data-pp-block="' + blockId + '"]')
-      || document.querySelector(blockId);
+    var el = null;
+    try { el = document.getElementById(blockId); } catch(e) {}
+    if (!el) {
+      // Only try data-pp-block wrapper if blockId looks like a plain word/id, not a CSS selector
+      var looksLikeCSSSelector = /^[.#\[:]/.test(blockId.trim());
+      if (!looksLikeCSSSelector) {
+        try { el = document.querySelector('[data-pp-block="' + blockId + '"]'); } catch(e) {}
+      }
+    }
+    if (!el) { try { el = document.querySelector(blockId); } catch(e) {} }
     if (!el) warn('Element not found: ' + blockId);
     return el;
   }
