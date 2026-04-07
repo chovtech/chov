@@ -1038,20 +1038,34 @@
     if (el.id) {
       return '#' + el.id;
     }
-    // 3. tag + meaningful classes (skip utility/layout classes)
+    // 3. Find nearest ancestor with a unique ID to scope the selector
+    function nearestId(node) {
+      var n = node.parentElement;
+      while (n && n !== document.body) {
+        if (n.id) return n;
+        n = n.parentElement;
+      }
+      return null;
+    }
+    var anchor = nearestId(el);
+
+    // 4. tag + meaningful classes scoped to unique ancestor
     if (el.className && typeof el.className === 'string') {
       var classes = el.className.trim().split(/\s+/).filter(function(c) { return c !== 'pp-picker-hover' && c !== 'pp-has-rules'; }).slice(0, 2).join('.');
-      if (classes) return el.tagName.toLowerCase() + '.' + classes;
+      if (classes) {
+        var base = el.tagName.toLowerCase() + '.' + classes;
+        return anchor ? '#' + anchor.id + ' ' + base : base;
+      }
     }
-    // 4. tag + nth-child fallback
+    // 5. nth-child scoped to unique ancestor
     var parent = el.parentElement;
     if (parent) {
       var siblings = Array.prototype.slice.call(parent.children);
       var index = siblings.indexOf(el) + 1;
-      var parentSelector = parent.id ? '#' + parent.id : parent.tagName.toLowerCase();
-      return parentSelector + ' > ' + el.tagName.toLowerCase() + ':nth-child(' + index + ')';
+      var parentSel = parent.id ? '#' + parent.id : (anchor ? '#' + anchor.id + ' ' + parent.tagName.toLowerCase() : parent.tagName.toLowerCase());
+      return parentSel + ' > ' + el.tagName.toLowerCase() + ':nth-child(' + index + ')';
     }
-    // 5. bare tag as last resort
+    // 6. bare tag as last resort
     return el.tagName.toLowerCase();
   }
 
