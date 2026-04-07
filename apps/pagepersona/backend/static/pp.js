@@ -460,36 +460,16 @@
     el.style.removeProperty('display');
   }
 
-  function swapImage(blockId, newSrc) {
-    var el = findElement(blockId);
-    if (!el) return;
-    var img = el.tagName === 'IMG' ? el : el.querySelector('img');
-    if (!img) return;
-
-    function applySwap(target) {
-      target.src = newSrc;
-      target.removeAttribute('srcset');
-      target.removeAttribute('sizes');
-    }
-
-    applySwap(img);
-
-    // Re-apply after page builders (Elementor, etc.) re-render and overwrite src
-    setTimeout(function() { applySwap(img); }, 500);
-    setTimeout(function() { applySwap(img); }, 1500);
-
-    // MutationObserver: re-apply if src gets overwritten
-    var observer = new MutationObserver(function(mutations) {
-      for (var i = 0; i < mutations.length; i++) {
-        if (mutations[i].attributeName === 'src' && img.src !== newSrc) {
-          applySwap(img);
-        }
-      }
-    });
-    observer.observe(img, { attributes: true, attributeFilter: ['src', 'srcset'] });
-
-    // Stop observing after 5 seconds — page builder has settled by then
-    setTimeout(function() { observer.disconnect(); }, 5000);
+  function swapImage(selector, newSrc) {
+    // Use CSS injection — beats page builder re-renders (Elementor, Divi, WPBakery etc.)
+    // CSS in <head> is applied after every render cycle, so it always wins.
+    var escapedSrc = newSrc.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    var css = selector + ' { content: url("' + escapedSrc + '") !important; }\n'
+            + selector + ' img { content: url("' + escapedSrc + '") !important; }\n';
+    var style = document.createElement('style');
+    style.setAttribute('data-pp-swap', 'image');
+    style.textContent = css;
+    document.head.appendChild(style);
   }
 
   function hideSection(blockId) {
@@ -1051,31 +1031,28 @@
     window.parent.postMessage(payload, '*');
   }
 
-  // Build the most specific stable CSS selector for a given element
+  // Generate a random unique data-pp tag code
+  function generatePPCode() {
+    var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    var code = 'pp-';
+    for (var i = 0; i < 6; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  }
+
+  // Build a stable selector by stamping data-pp onto the element
   function buildSelector(el) {
-    // 1. data-pp-block attribute — most stable
-    if (el.getAttribute('data-pp-block')) {
-      return '[data-pp-block="' + el.getAttribute('data-pp-block') + '"]';
+    // If already has a data-pp tag, reuse it
+    if (el.getAttribute('data-pp')) {
+      return '[data-pp="' + el.getAttribute('data-pp') + '"]';
     }
-    // 2. id attribute — very stable
-    if (el.id) {
-      return '#' + el.id;
-    }
-    // 3. tag + meaningful classes (skip utility/layout classes)
-    if (el.className && typeof el.className === 'string') {
-      var classes = el.className.trim().split(/\s+/).filter(function(c) { return c !== 'pp-picker-hover' && c !== 'pp-has-rules'; }).slice(0, 2).join('.');
-      if (classes) return el.tagName.toLowerCase() + '.' + classes;
-    }
-    // 4. tag + nth-child fallback
-    var parent = el.parentElement;
-    if (parent) {
-      var siblings = Array.prototype.slice.call(parent.children);
-      var index = siblings.indexOf(el) + 1;
-      var parentSelector = parent.id ? '#' + parent.id : parent.tagName.toLowerCase();
-      return parentSelector + ' > ' + el.tagName.toLowerCase() + ':nth-child(' + index + ')';
-    }
-    // 5. bare tag as last resort
-    return el.tagName.toLowerCase();
+    // For images, stamp on the img itself (not the wrapper)
+    var target = el;
+    // Generate and stamp a unique data-pp attribute
+    var code = generatePPCode();
+    target.setAttribute('data-pp', code);
+    return '[data-pp="' + code + '"]';
   }
 
   // Listen for messages from the dashboard
