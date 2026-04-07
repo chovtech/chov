@@ -314,7 +314,7 @@
   function fireAction(action) {
     switch (action.type) {
       case 'swap_text':        swapText(action.target_block, action.value);           break;
-      case 'swap_image':       swapImage(action.target_block, action.value);          break;
+      case 'swap_image':       swapImage(action.target_block, action.value, action.css_fallback || ''); break;
       case 'hide_section':     hideSection(action.target_block);                      break;
       case 'show_element':     showElement(action.target_block);                      break;
       case 'swap_url':         swapUrl(action.target_block, action.value);            break;
@@ -460,9 +460,20 @@
     el.style.removeProperty('display');
   }
 
-  function swapImage(selector, newSrc) {
-    // Use CSS injection — beats page builder re-renders (Elementor, Divi, WPBakery etc.)
-    // CSS in <head> is applied after every render cycle, so it always wins.
+  function swapImage(selector, newSrc, cssFallback) {
+    // Step 1: If the element doesn't already have data-pp stamped (live page),
+    // find it via CSS fallback and stamp it now so CSS injection can target it.
+    var ppMatch = selector.match(/\[data-pp="([^"]+)"\]/);
+    if (ppMatch) {
+      var ppCode = ppMatch[1];
+      if (!document.querySelector(selector) && cssFallback) {
+        var found = document.querySelector(cssFallback);
+        if (found) {
+          found.setAttribute('data-pp', ppCode);
+        }
+      }
+    }
+    // Step 2: CSS injection — lives in <head>, survives any page builder re-render.
     var escapedSrc = newSrc.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
     var css = selector + ' { content: url("' + escapedSrc + '") !important; }\n'
             + selector + ' img { content: url("' + escapedSrc + '") !important; }\n';
@@ -1019,10 +1030,11 @@
     e.stopPropagation();
 
     var el = e.target;
-    var selector = buildSelector(el);
+    var result = buildSelector(el);
     var payload = {
       type:        'PP_ELEMENT_SELECTED',
-      selector:    selector,
+      selector:    result.ppSelector,
+      cssFallback: result.cssFallback,
       tagName:     el.tagName,
       textContent: (el.textContent || '').trim().slice(0, 120),
       id:          el.id || '',
@@ -1041,18 +1053,34 @@
     return code;
   }
 
-  // Build a stable selector by stamping data-pp onto the element
-  function buildSelector(el) {
-    // If already has a data-pp tag, reuse it
-    if (el.getAttribute('data-pp')) {
-      return '[data-pp="' + el.getAttribute('data-pp') + '"]';
+  // Build a best-effort CSS fallback selector (for stamping data-pp on the live page)
+  function getCSSFallback(el) {
+    if (el.id) return '#' + CSS.escape(el.id);
+    if (el.className && typeof el.className === 'string') {
+      var classes = el.className.trim().split(/\s+/)
+        .filter(function(c) { return c && c !== 'pp-picker-hover' && c !== 'pp-has-rules'; })
+        .slice(0, 3).join('.');
+      if (classes) return el.tagName.toLowerCase() + '.' + classes;
     }
-    // For images, stamp on the img itself (not the wrapper)
-    var target = el;
-    // Generate and stamp a unique data-pp attribute
-    var code = generatePPCode();
-    target.setAttribute('data-pp', code);
-    return '[data-pp="' + code + '"]';
+    var parent = el.parentElement;
+    if (parent && parent.id) return '#' + CSS.escape(parent.id) + ' ' + el.tagName.toLowerCase();
+    if (parent && parent.className && typeof parent.className === 'string') {
+      var pClass = parent.className.trim().split(/\s+/).filter(function(c) { return c && c !== 'pp-picker-hover'; })[0];
+      if (pClass) return '.' + pClass + ' ' + el.tagName.toLowerCase();
+    }
+    return el.tagName.toLowerCase();
+  }
+
+  // Build a stable selector by stamping data-pp onto the element
+  // Returns { ppSelector, cssFallback }
+  function buildSelector(el) {
+    var existingCode = el.getAttribute('data-pp');
+    var code = existingCode || generatePPCode();
+    if (!existingCode) el.setAttribute('data-pp', code);
+    return {
+      ppSelector: '[data-pp="' + code + '"]',
+      cssFallback: getCSSFallback(el)
+    };
   }
 
   // Listen for messages from the dashboard

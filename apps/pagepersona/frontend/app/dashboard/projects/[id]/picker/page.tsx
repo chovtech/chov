@@ -11,6 +11,7 @@ import { useLanguage } from '@/lib/hooks/useLanguage'
 
 interface SelectedElement {
   selector: string
+  cssFallback: string
   tagName: string
   textContent: string
 }
@@ -40,6 +41,7 @@ interface Action {
   type: string
   type_label: string
   target_block: string
+  css_fallback: string
   value: string
   needsElement: boolean
 }
@@ -135,7 +137,7 @@ function PickerPageInner() {
         }
       }
       if (e.data.type === 'PP_ELEMENT_SELECTED') {
-        setSelectedEl({ selector: e.data.selector, tagName: e.data.tagName, textContent: e.data.textContent })
+        setSelectedEl({ selector: e.data.selector, cssFallback: e.data.cssFallback || '', tagName: e.data.tagName, textContent: e.data.textContent })
         setView('block')
         fetchRulesForElement(e.data.selector)
       }
@@ -173,7 +175,7 @@ function PickerPageInner() {
     setRuleName('')
     setConditionOperator('AND')
     setConditions([])
-    setActions([{ id: Date.now().toString(), type: 'swap_text', type_label: t('picker.action_swap_text'), target_block: selectedEl?.selector || '', value: '', needsElement: true }])
+    setActions([{ id: Date.now().toString(), type: 'swap_text', type_label: t('picker.action_swap_text'), target_block: selectedEl?.selector || '', css_fallback: selectedEl?.cssFallback || '', value: '', needsElement: true }])
     setSaveError('')
     setView('rule_editor')
   }
@@ -196,6 +198,7 @@ function PickerPageInner() {
       type: a.type,
       type_label: (() => { const found = ACTION_TYPE_DEFS.find(at => at.key === a.type); return found ? t(found.labelKey) : a.type; })(),
       target_block: a.target_block || '',
+      css_fallback: a.css_fallback || '',
       value: a.value || '',
       needsElement: ACTION_TYPE_DEFS.find(at => at.key === a.type)?.needsElement ?? true,
     })))
@@ -216,7 +219,7 @@ function PickerPageInner() {
 
   const removeCondition = (id: string) => setConditions(prev => prev.filter(c => c.id !== id))
   const updateCondition  = (id: string, f: string, v: string) => setConditions(prev => prev.map(c => c.id === id ? { ...c, [f]: v } : c))
-  const addAction        = (at: any) => { setActions(prev => [...prev, { id: Date.now().toString(), type: at.key, type_label: t(at.labelKey), target_block: at.needsElement ? (selectedEl?.selector || '') : '', value: '', needsElement: at.needsElement }]); setActionMenuOpen(false) }
+  const addAction        = (at: any) => { setActions(prev => [...prev, { id: Date.now().toString(), type: at.key, type_label: t(at.labelKey), target_block: at.needsElement ? (selectedEl?.selector || '') : '', css_fallback: at.needsElement ? (selectedEl?.cssFallback || '') : '', value: '', needsElement: at.needsElement }]); setActionMenuOpen(false) }
   const removeAction     = (id: string) => setActions(prev => prev.filter(a => a.id !== id))
   const updateAction     = (id: string, f: string, v: string) => setActions(prev => prev.map(a => a.id === id ? { ...a, [f]: v } : a))
   const injectToken      = (id: string, tok: string) => setActions(prev => prev.map(a => {
@@ -235,7 +238,7 @@ function PickerPageInner() {
         name: ruleName,
         conditions: conditions.map(c => ({ signal: c.signal, operator: c.operator, value: c.value })),
         condition_operator: conditionOperator,
-        actions: actions.map(a => ({ type: a.type, target_block: a.target_block, value: a.value })),
+        actions: actions.map(a => ({ type: a.type, target_block: a.target_block, css_fallback: a.css_fallback || '', value: a.value })),
         priority: 0,
       })
       const res = await rulesApi.list(projectId)
@@ -256,7 +259,7 @@ function PickerPageInner() {
         name: ruleName,
         conditions: conditions.map(c => ({ signal: c.signal, operator: c.operator, value: c.value })),
         condition_operator: conditionOperator,
-        actions: actions.map(a => ({ type: a.type, target_block: a.target_block, value: a.value })),
+        actions: actions.map(a => ({ type: a.type, target_block: a.target_block, css_fallback: a.css_fallback || '', value: a.value })),
       })
       const res = await rulesApi.list(projectId)
       const all: ExistingRule[] = res.data || []
