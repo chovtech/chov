@@ -463,12 +463,12 @@
   function swapImage(blockId, newSrc) {
     var el = findElement(blockId);
     if (!el) return;
-    if (el.tagName === 'IMG') {
-      el.src = newSrc;
-    } else {
-      var img = el.querySelector('img');
-      if (img) img.src = newSrc;
-    }
+    var img = el.tagName === 'IMG' ? el : el.querySelector('img');
+    if (!img) return;
+    img.src = newSrc;
+    // Clear srcset/sizes so browser doesn't override src with original WordPress responsive images
+    img.removeAttribute('srcset');
+    img.removeAttribute('sizes');
   }
 
   function hideSection(blockId) {
