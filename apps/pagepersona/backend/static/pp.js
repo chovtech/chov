@@ -1028,45 +1028,54 @@
     window.parent.postMessage(payload, '*');
   }
 
-  // Build the most specific stable CSS selector for a given element
+  // Build a unique CSS selector for an element — verified to match exactly 1 node
   function buildSelector(el) {
     // 1. data-pp-block attribute — most stable
     if (el.getAttribute('data-pp-block')) {
       return '[data-pp-block="' + el.getAttribute('data-pp-block') + '"]';
     }
-    // 2. id attribute — very stable
-    if (el.id) {
+    // 2. Unique id on element itself
+    if (el.id && document.querySelectorAll('#' + el.id).length === 1) {
       return '#' + el.id;
     }
-    // 3. Find nearest ancestor with a unique ID to scope the selector
-    function nearestId(node) {
-      var n = node.parentElement;
-      while (n && n !== document.body) {
-        if (n.id) return n;
-        n = n.parentElement;
-      }
-      return null;
-    }
-    var anchor = nearestId(el);
 
-    // 4. tag + meaningful classes scoped to unique ancestor
-    if (el.className && typeof el.className === 'string') {
-      var classes = el.className.trim().split(/\s+/).filter(function(c) { return c !== 'pp-picker-hover' && c !== 'pp-has-rules'; }).slice(0, 2).join('.');
-      if (classes) {
-        var base = el.tagName.toLowerCase() + '.' + classes;
-        return anchor ? '#' + anchor.id + ' ' + base : base;
+    // Walk up DOM building a path from the nearest unique-ID ancestor down to el
+    // This guarantees the selector is unique on this page
+    function getPath(node) {
+      var parts = [];
+      var cur = node;
+      while (cur && cur !== document.documentElement) {
+        if (cur.id && document.querySelectorAll('#' + cur.id).length === 1) {
+          parts.unshift('#' + cur.id);
+          break;
+        }
+        var tag = cur.tagName.toLowerCase();
+        var parent = cur.parentElement;
+        if (parent) {
+          var siblings = Array.prototype.slice.call(parent.children).filter(function(c) { return c.tagName === cur.tagName; });
+          if (siblings.length > 1) {
+            var idx = siblings.indexOf(cur) + 1;
+            tag += ':nth-of-type(' + idx + ')';
+          }
+        }
+        parts.unshift(tag);
+        cur = cur.parentElement;
       }
+      return parts.join(' > ');
     }
-    // 5. nth-child scoped to unique ancestor
-    var parent = el.parentElement;
-    if (parent) {
-      var siblings = Array.prototype.slice.call(parent.children);
-      var index = siblings.indexOf(el) + 1;
-      var parentSel = parent.id ? '#' + parent.id : (anchor ? '#' + anchor.id + ' ' + parent.tagName.toLowerCase() : parent.tagName.toLowerCase());
-      return parentSel + ' > ' + el.tagName.toLowerCase() + ':nth-child(' + index + ')';
-    }
-    // 6. bare tag as last resort
-    return el.tagName.toLowerCase();
+
+    var selector = getPath(el);
+    // Verify uniqueness — if somehow still not unique, append nth-of-type to el
+    try {
+      if (document.querySelectorAll(selector).length !== 1) {
+        var parent = el.parentElement;
+        if (parent) {
+          var siblings = Array.prototype.slice.call(parent.children);
+          selector += ':nth-child(' + (siblings.indexOf(el) + 1) + ')';
+        }
+      }
+    } catch(e) {}
+    return selector;
   }
 
   // Listen for messages from the dashboard
