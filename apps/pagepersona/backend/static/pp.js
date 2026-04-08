@@ -551,6 +551,14 @@
 
     var box = document.createElement('div');
     var widthStyle = isBar || isFullscreen ? '' : ';width:' + (c.width || 420) + 'px;max-width:95vw';
+    // For bar layout, derive justify-content from the first text block's text_align
+    var barJustify = 'center';
+    if (isBar && c.blocks) {
+      var firstText = c.blocks.find(function(b) { return b.type === 'text' && b.text_align; });
+      if (firstText) {
+        barJustify = firstText.text_align === 'center' ? 'center' : firstText.text_align === 'right' ? 'flex-end' : 'flex-start';
+      }
+    }
     box.style.cssText = (posStyles[c.position] || posStyles.center) + widthStyle +
       ';background:' + (c.bg_color || '#1A56DB') +
       ';border-radius:' + br + 'px' +
@@ -558,6 +566,7 @@
       ';font-family:sans-serif;box-shadow:0 8px 40px rgba(0,0,0,0.2);pointer-events:auto' +
       ';display:flex;flex-direction:' + (isBar ? 'row' : 'column') +
       ';gap:10px;align-items:' + (isBar ? 'center' : 'stretch') +
+      ';justify-content:' + (isBar ? barJustify : 'flex-start') +
       ';flex-wrap:' + (isBar ? 'wrap' : 'nowrap') +
       ';overflow:hidden';
 
@@ -623,6 +632,7 @@
           ';text-align:' + (block.text_align || 'left') +
           ';color:' + (block.text_color || '#ffffff') +
           ';line-height:1.5' +
+          (isBar ? ';flex:1;min-width:0' : '') +
           (block.text_italic ? ';font-style:italic' : '') +
           (block.text_underline ? ';text-decoration:underline' : '');
         el.textContent = resolveTokensWithFallbacks(block.text || '', block.text_fallbacks || {});
