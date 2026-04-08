@@ -2,7 +2,7 @@
   'use strict';
 
   // ─── CONFIG ────────────────────────────────────────────────────────────────
-  var API_BASE = 'http://localhost:8000'; // swap to https://api.usepagepersona.com in production
+  var API_BASE = 'https://api.usepagepersona.com';
   var CACHE_PREFIX = 'pp_rules_';
   var CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
