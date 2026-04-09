@@ -68,12 +68,27 @@ async def get_active_rules(project_id: str, db: asyncpg.Connection) -> list:
     )
     rules = []
     for row in rows:
+        actions = json.loads(row['actions']) if isinstance(row['actions'], str) else row['actions']
+        # For show_popup actions, always resolve fresh config from the popups table
+        for action in actions:
+            if action.get('type') == 'show_popup' and action.get('value'):
+                try:
+                    val = json.loads(action['value']) if isinstance(action['value'], str) else action['value']
+                    popup_id = val.get('popup_id')
+                    if popup_id:
+                        popup_row = await db.fetchrow('SELECT config FROM popups WHERE id = $1', popup_id)
+                        if popup_row and popup_row['config']:
+                            live_config = json.loads(popup_row['config']) if isinstance(popup_row['config'], str) else popup_row['config']
+                            val['config'] = live_config
+                            action['value'] = json.dumps(val)
+                except Exception:
+                    pass
         rules.append({
             'id': str(row['id']),
             'name': row['name'],
             'conditions': json.loads(row['conditions']) if isinstance(row['conditions'], str) else row['conditions'],
             'condition_operator': row['condition_operator'],
-            'actions': json.loads(row['actions']) if isinstance(row['actions'], str) else row['actions'],
+            'actions': actions,
             'priority': row['priority'],
         })
     return rules
