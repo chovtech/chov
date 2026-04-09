@@ -101,7 +101,17 @@
       pingHash(scriptId, function (serverHash) {
         if (serverHash && serverHash !== cached.rules_hash) {
           fetchRules(scriptId, function (data) {
-            if (data) setCache(scriptId, data.rules_hash, data.rules, data.geo, data.page_url);
+            if (!data) return;
+            setCache(scriptId, data.rules_hash, data.rules, data.geo, data.page_url);
+            // Rules changed — re-fire with fresh data on this visit
+            // Clear popup session markers so updated popups re-render
+            Object.keys(sessionStorage).filter(function(k) {
+              return k.indexOf('pp_popup_') === 0;
+            }).forEach(function(k) { sessionStorage.removeItem(k); });
+            var geo2 = data.geo || {};
+            var signals2 = detectSignals(geo2, scriptId);
+            var matched2 = evaluateRules(data.rules, signals2);
+            fireActions(matched2, scriptId, signals2);
           });
         }
       });
