@@ -557,6 +557,13 @@
       fullscreen:    'position:absolute;inset:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column',
     };
 
+    // bg image
+    if (c.bg_image) {
+      container.style.backgroundImage = 'url(' + c.bg_image + ')';
+      container.style.backgroundSize = 'cover';
+      container.style.backgroundPosition = 'center';
+    }
+
     var box = document.createElement('div');
     var widthStyle = isBar || isFullscreen ? '' : ';width:' + (c.width || 420) + 'px;max-width:95vw';
     box.style.cssText = (posStyles[c.position] || posStyles.center) + widthStyle +
@@ -566,16 +573,8 @@
       ';font-family:sans-serif;box-shadow:0 8px 40px rgba(0,0,0,0.2);pointer-events:auto' +
       ';display:flex;flex-direction:' + (isBar ? 'row' : 'column') +
       ';gap:10px;align-items:' + (isBar ? 'center' : 'stretch') +
-      ';justify-content:' + (isBar ? 'center' : 'flex-start') +
       ';flex-wrap:' + (isBar ? 'wrap' : 'nowrap') +
       ';overflow:hidden';
-
-    // bg image on the box (not the container)
-    if (c.bg_image) {
-      box.style.backgroundImage = 'url(' + c.bg_image + ')';
-      box.style.backgroundSize = 'cover';
-      box.style.backgroundPosition = 'center';
-    }
 
     // Close button
     if (c.close_button) {
