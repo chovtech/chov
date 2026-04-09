@@ -69,7 +69,7 @@ async def get_active_rules(project_id: str, db: asyncpg.Connection) -> list:
     rules = []
     for row in rows:
         actions = json.loads(row['actions']) if isinstance(row['actions'], str) else row['actions']
-        # For show_popup actions, always resolve fresh config from the popups table
+        # Always resolve fresh config from source tables — never serve stale snapshots
         for action in actions:
             if action.get('type') == 'show_popup' and action.get('value'):
                 try:
@@ -80,6 +80,22 @@ async def get_active_rules(project_id: str, db: asyncpg.Connection) -> list:
                         if popup_row and popup_row['config']:
                             live_config = json.loads(popup_row['config']) if isinstance(popup_row['config'], str) else popup_row['config']
                             val['config'] = live_config
+                            action['value'] = json.dumps(val)
+                except Exception:
+                    pass
+            elif action.get('type') == 'insert_countdown' and action.get('value'):
+                try:
+                    val = json.loads(action['value']) if isinstance(action['value'], str) else action['value']
+                    countdown_id = val.get('countdown_id')
+                    if countdown_id:
+                        cd_row = await db.fetchrow('SELECT config, ends_at, expiry_action, expiry_value FROM countdowns WHERE id = $1', countdown_id)
+                        if cd_row:
+                            if cd_row['config']:
+                                val['config'] = json.loads(cd_row['config']) if isinstance(cd_row['config'], str) else cd_row['config']
+                            if cd_row['ends_at']:
+                                val['ends_at'] = cd_row['ends_at'].isoformat() if hasattr(cd_row['ends_at'], 'isoformat') else cd_row['ends_at']
+                            val['expiry_action'] = cd_row['expiry_action']
+                            val['expiry_value'] = cd_row['expiry_value']
                             action['value'] = json.dumps(val)
                 except Exception:
                     pass
