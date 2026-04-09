@@ -93,8 +93,7 @@ async def sdk_ping(
     rules = await get_active_rules(str(project['id']), db)
     rules_hash = compute_rules_hash(rules)
     response = JSONResponse(content={'rules_hash': rules_hash})
-    # Allow CDN to cache this for 30 seconds
-    response.headers['Cache-Control'] = 'public, max-age=30'
+    response.headers['Cache-Control'] = 'no-store'
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
 
@@ -134,7 +133,7 @@ async def sdk_rules(
         'geo': geo,
         'page_url': project['page_url'],
     })
-    response.headers['Cache-Control'] = 'public, max-age=30'
+    response.headers['Cache-Control'] = 'no-store'
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
 
