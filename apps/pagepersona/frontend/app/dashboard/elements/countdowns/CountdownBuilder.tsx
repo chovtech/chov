@@ -163,7 +163,6 @@ function CountdownDisplay({ endsAt, config, t }: { endsAt: string; config: Count
       {timeLeft.noDate ? (
         <>
           {renderDigits(DEMO_VALUES)}
-          <p style={{ color: '#94a3b8', fontSize: 11, margin: 0, fontStyle: 'italic' }}>{t('countdown_builder.preview_demo_badge')}</p>
         </>
       ) : timeLeft.expired ? (
         <p style={{ color: '#94a3b8', fontSize: 13, margin: 0 }}>{t('countdown_builder.preview_expired')}</p>
