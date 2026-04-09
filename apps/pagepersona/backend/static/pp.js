@@ -638,6 +638,7 @@
           ';text-align:' + (block.text_align || 'left') +
           ';color:' + (block.text_color || '#ffffff') +
           ';line-height:1.5' +
+          (isBar ? ';flex:1' : '') +
           (block.text_italic ? ';font-style:italic' : '') +
           (block.text_underline ? ';text-decoration:underline' : '');
         el.textContent = resolveTokensWithFallbacks(block.text || '', block.text_fallbacks || {});
