@@ -573,6 +573,7 @@
       ';font-family:sans-serif;box-shadow:0 8px 40px rgba(0,0,0,0.2);pointer-events:auto' +
       ';display:flex;flex-direction:' + (isBar ? 'row' : 'column') +
       ';gap:10px;align-items:' + (isBar ? 'center' : 'stretch') +
+      ';justify-content:' + (isBar ? 'center' : 'flex-start') +
       ';flex-wrap:' + (isBar ? 'wrap' : 'nowrap') +
       ';overflow:hidden';
 
@@ -638,7 +639,6 @@
           ';text-align:' + (block.text_align || 'left') +
           ';color:' + (block.text_color || '#ffffff') +
           ';line-height:1.5' +
-          (isBar ? ';flex:1' : '') +
           (block.text_italic ? ';font-style:italic' : '') +
           (block.text_underline ? ';text-decoration:underline' : '');
         el.textContent = resolveTokensWithFallbacks(block.text || '', block.text_fallbacks || {});
