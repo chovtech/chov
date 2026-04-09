@@ -502,7 +502,12 @@
     }
     var c = cfg.config;
     var freq = c.frequency || 'once';
-    var storageKey = 'pp_popup_' + (cfg.popup_id || 'x');
+    // Hash the config so any edit to the popup resets shown-history for all users
+    var configStr = typeof value === 'string' ? value : JSON.stringify(cfg);
+    var configHash = 0;
+    for (var ci = 0; ci < configStr.length; ci++) { configHash = (configHash * 31 + configStr.charCodeAt(ci)) & 0xffffffff; }
+    configHash = Math.abs(configHash).toString(36).slice(0, 6);
+    var storageKey = 'pp_popup_' + (cfg.popup_id || 'x') + '_' + configHash;
     if (freq === 'once') {
       if (localStorage.getItem(storageKey)) return;
       localStorage.setItem(storageKey, '1');
