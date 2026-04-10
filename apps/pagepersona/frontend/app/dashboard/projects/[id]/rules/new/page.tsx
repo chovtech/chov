@@ -450,10 +450,20 @@ function NewRulePageInner() {
                             onChange={e => updateCondition(condition.id, "value", e.target.value)}
                             disabled={!condition.signal}
                             placeholder={t('rules.value_placeholder')}
-                            className={"w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand disabled:opacity-40 transition-all" + (condition.signal === 'time_on_page' || condition.signal === 'scroll_depth' || condition.signal === 'utm_source' || condition.signal === 'utm_medium' || condition.signal === 'utm_campaign' || condition.signal === 'referrer_url' ? ' pr-8' : '')}
+                            className={"w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand disabled:opacity-40 transition-all" + (condition.signal === 'time_on_page' || condition.signal === 'scroll_depth' || condition.signal === 'utm_source' || condition.signal === 'utm_medium' || condition.signal === 'utm_campaign' || condition.signal === 'referrer_url' || condition.signal === 'day_time' ? ' pr-8' : '')}
                           />
                           {condition.signal === 'time_on_page' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">sec</span>}
                           {condition.signal === 'scroll_depth' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">%</span>}
+                          {condition.signal === 'day_time' && (
+                            <div className="group absolute right-2 top-1/2 -translate-y-1/2">
+                              <Icon name="info" className="text-sm text-slate-400 cursor-help" />
+                              <div className="pointer-events-none absolute bottom-full right-0 mb-2 w-72 bg-slate-800 text-white text-[11px] rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-lg">
+                                <span className="block text-slate-400 mb-1">24-hour time in visitor&apos;s timezone</span>
+                                <code className="text-emerald-300">&quot;is&quot; → <span className="text-white">14:30</span></code>
+                                <code className="block text-emerald-300 mt-1">&quot;is between&quot; → <span className="text-white">09:00,17:00</span></code>
+                              </div>
+                            </div>
+                          )}
                           {(['utm_source','utm_medium','utm_campaign','referrer_url'] as const).includes(condition.signal as any) && (() => {
                             const siteUrl = (() => { try { return new URL(projectPageUrl).hostname } catch { return projectPageUrl || 'yoursite.com' } })()
                             const paramName = condition.signal === 'referrer_url' ? null : condition.signal

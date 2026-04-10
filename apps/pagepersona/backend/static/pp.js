@@ -320,8 +320,13 @@
       case 'is between': {
         var parts = String(expected).split(',');
         if (parts.length !== 2) return false;
+        // Time strings (HH:MM) — compare lexicographically; numbers — compare numerically
+        var lo = parts[0].trim(), hi = parts[1].trim(), act = String(actual).trim();
+        if (lo.indexOf(':') !== -1 || hi.indexOf(':') !== -1) {
+          return act >= lo && act <= hi;
+        }
         var val = parseFloat(actual);
-        return val >= parseFloat(parts[0]) && val <= parseFloat(parts[1]);
+        return val >= parseFloat(lo) && val <= parseFloat(hi);
       }
       default: return false;
     }

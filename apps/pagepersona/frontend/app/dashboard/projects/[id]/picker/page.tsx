@@ -660,10 +660,20 @@ function PickerPageInner() {
                                   <input type={c.valueType === 'number' ? 'number' : 'text'} value={c.value}
                                     onChange={e => updateCondition(c.id, 'value', e.target.value)}
                                     placeholder={t('picker.value_placeholder')}
-                                    className={"w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand transition-all" + (c.signal === 'time_on_page' || c.signal === 'scroll_depth' || c.signal === 'utm_source' || c.signal === 'utm_medium' || c.signal === 'utm_campaign' || c.signal === 'referrer_url' ? ' pr-8' : '')}
+                                    className={"w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand transition-all" + (c.signal === 'time_on_page' || c.signal === 'scroll_depth' || c.signal === 'utm_source' || c.signal === 'utm_medium' || c.signal === 'utm_campaign' || c.signal === 'referrer_url' || c.signal === 'day_time' ? ' pr-8' : '')}
                                   />
                                   {c.signal === 'time_on_page' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">sec</span>}
                                   {c.signal === 'scroll_depth' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">%</span>}
+                                  {c.signal === 'day_time' && (
+                                    <div className="group absolute right-2 top-1/2 -translate-y-1/2">
+                                      <Icon name="info" className="text-sm text-slate-400 cursor-help" />
+                                      <div className="pointer-events-none absolute bottom-full right-0 mb-2 w-64 bg-slate-800 text-white text-[11px] rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-lg">
+                                        <span className="block text-slate-400 mb-1">24-hour time in visitor&apos;s timezone</span>
+                                        <code className="text-emerald-300">&quot;is&quot; → <span className="text-white">14:30</span></code>
+                                        <code className="block text-emerald-300 mt-1">&quot;is between&quot; → <span className="text-white">09:00,17:00</span></code>
+                                      </div>
+                                    </div>
+                                  )}
                                   {(['utm_source','utm_medium','utm_campaign','referrer_url'] as const).includes(c.signal as any) && (() => {
                                     const siteUrl = (() => { try { return new URL(pageUrl).hostname } catch { return pageUrl || 'yoursite.com' } })()
                                     const paramName = c.signal === 'referrer_url' ? null : c.signal
@@ -985,10 +995,20 @@ function PickerPageInner() {
                                     <input type={c.valueType === 'number' ? 'number' : 'text'} value={c.value}
                                       onChange={e => updateCondition(c.id, 'value', e.target.value)}
                                       placeholder={t('picker.value_placeholder')}
-                                      className={"w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand transition-all" + (c.signal === 'time_on_page' || c.signal === 'scroll_depth' || c.signal === 'utm_source' || c.signal === 'utm_medium' || c.signal === 'utm_campaign' || c.signal === 'referrer_url' ? ' pr-8' : '')}
+                                      className={"w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand transition-all" + (c.signal === 'time_on_page' || c.signal === 'scroll_depth' || c.signal === 'utm_source' || c.signal === 'utm_medium' || c.signal === 'utm_campaign' || c.signal === 'referrer_url' || c.signal === 'day_time' ? ' pr-8' : '')}
                                     />
                                     {c.signal === 'time_on_page' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">sec</span>}
                                     {c.signal === 'scroll_depth' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">%</span>}
+                                    {c.signal === 'day_time' && (
+                                      <div className="group absolute right-2 top-1/2 -translate-y-1/2">
+                                        <Icon name="info" className="text-sm text-slate-400 cursor-help" />
+                                        <div className="pointer-events-none absolute bottom-full right-0 mb-2 w-64 bg-slate-800 text-white text-[11px] rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-lg">
+                                          <span className="block text-slate-400 mb-1">24-hour time in visitor&apos;s timezone</span>
+                                          <code className="text-emerald-300">&quot;is&quot; → <span className="text-white">14:30</span></code>
+                                          <code className="block text-emerald-300 mt-1">&quot;is between&quot; → <span className="text-white">09:00,17:00</span></code>
+                                        </div>
+                                      </div>
+                                    )}
                                     {(['utm_source','utm_medium','utm_campaign','referrer_url'] as const).includes(c.signal as any) && (() => {
                                       const siteUrl = (() => { try { return new URL(pageUrl).hostname } catch { return pageUrl || 'yoursite.com' } })()
                                       const paramName = c.signal === 'referrer_url' ? null : c.signal
