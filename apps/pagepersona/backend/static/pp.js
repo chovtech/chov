@@ -131,11 +131,12 @@
             Object.keys(sessionStorage).filter(function(k) {
               return k.indexOf('pp_popup_') === 0;
             }).forEach(function(k) { sessionStorage.removeItem(k); });
-            var geo2 = data.geo || {};
-            var signals2 = detectSignals(geo2, scriptId);
-            var matched2 = evaluateRules(data.rules, signals2);
+            // Use live signals (not a fresh detectSignals call) so scroll_depth /
+            // time_on_page have their real current values during re-evaluation
+            var liveSignals = (window.__pp && window.__pp.signals) || {};
+            var matched2 = evaluateRules(data.rules, liveSignals);
             matched2.forEach(function(r) { window.__pp.firedIds[r.id] = true; });
-            fireActions(matched2, scriptId, signals2);
+            fireActions(matched2, scriptId, liveSignals);
           });
         }
       });
@@ -217,7 +218,11 @@
     signals.visit_count = visits;
     signals.visitor_type = visits === 1 ? 'new' : 'returning';
 
-    signals.scroll_depth = 0;
+    (function() {
+      var scrolled = window.scrollY + window.innerHeight;
+      var total = document.documentElement.scrollHeight;
+      signals.scroll_depth = total > 0 ? Math.round((scrolled / total) * 100) : 0;
+    })();
     window.addEventListener('scroll', function () {
       var scrolled = window.scrollY + window.innerHeight;
       var total = document.documentElement.scrollHeight;
