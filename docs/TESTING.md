@@ -237,11 +237,14 @@
 | 8 | Countdown config stale after edit — same snapshot issue as popup | ✅ | — |
 
 ### Automated Tests — `tests/test_rules.py`
-- [ ] `test_create_rule`
-- [ ] `test_list_rules`
-- [ ] `test_edit_rule`
-- [ ] `test_delete_rule`
-- [ ] `test_toggle_rule_active`
+- [x] `test_create_rule`
+- [x] `test_list_rules`
+- [x] `test_edit_rule`
+- [x] `test_delete_rule`
+- [x] `test_toggle_rule_active`
+- [x] `test_cannot_access_other_users_rules`
+- [x] `test_rule_with_multiple_conditions`
+- [x] `test_rule_with_show_popup_action`
 
 ---
 
@@ -273,10 +276,14 @@
 | 4 | Popup shown-history not reset after editing — storage key versioned by config hash | ✅ | — |
 
 ### Automated Tests — `tests/test_popups.py`
-- [ ] `test_create_popup`
-- [ ] `test_list_popups`
-- [ ] `test_edit_popup`
-- [ ] `test_delete_popup`
+- [x] `test_create_popup`
+- [x] `test_list_popups`
+- [x] `test_get_popup_by_id`
+- [x] `test_edit_popup_name`
+- [x] `test_edit_popup_config`
+- [x] `test_delete_popup`
+- [x] `test_cannot_access_other_users_popup`
+- [x] `test_popup_with_countdown_block`
 
 ---
 
@@ -300,10 +307,14 @@
 | 1 | "Demo preview" text showing on all countdown templates | ✅ | — |
 
 ### Automated Tests — `tests/test_countdowns.py`
-- [ ] `test_create_countdown_fixed`
-- [ ] `test_create_countdown_duration`
-- [ ] `test_edit_countdown`
-- [ ] `test_delete_countdown`
+- [x] `test_create_countdown_fixed`
+- [x] `test_create_countdown_duration`
+- [x] `test_create_countdown_expiry_redirect`
+- [x] `test_create_countdown_expiry_message`
+- [x] `test_list_countdowns`
+- [x] `test_edit_countdown`
+- [x] `test_delete_countdown`
+- [x] `test_cannot_access_other_users_countdown`
 
 ---
 
@@ -356,10 +367,17 @@
 | 3 | `window.__pp.rules` not updated after pingHash change — loop used stale closure | ✅ | — |
 
 ### Automated Tests — `tests/test_sdk.py`
-- [ ] `test_sdk_ping`
-- [ ] `test_sdk_rules_by_script_id`
-- [ ] `test_sdk_visit_recorded`
-- [ ] `test_sdk_event_recorded`
+- [x] `test_sdk_ping_returns_hash`
+- [x] `test_sdk_ping_unknown_script_id`
+- [x] `test_sdk_rules_returns_rules`
+- [x] `test_sdk_rules_draft_project_returns_empty`
+- [x] `test_sdk_ping_hash_changes_after_rule_edit`
+- [x] `test_sdk_rules_no_cache_header`
+- [x] `test_sdk_ping_no_cache_header`
+- [x] `test_sdk_rules_only_active_rules_returned`
+- [x] `test_sdk_rules_popup_config_resolved_live`
+- [ ] `test_sdk_visit_recorded` — requires beacon endpoint
+- [ ] `test_sdk_event_recorded` — requires beacon endpoint
 
 ---
 
@@ -500,10 +518,10 @@ the implication is that it is filling our db records with so much
 | 2. User Profile | 6 / 6 ✅ | 2 (fixed) | 4 / 4 ✅ |
 | 3. Workspaces | 4 / 4 ✅ | 0 | 0 / 3 |
 | 4. Projects | 0 / 11 | 0 | 0 / 5 |
-| 5. Rules Engine | ✅ All signals × all actions | 8 (all fixed) | 0 / 5 |
-| 6. Popups | ✅ All templates + all block types | 4 (all fixed) | 0 / 4 |
-| 7. Countdowns | ✅ All expiry types + in-popup | 1 (fixed) | 0 / 4 |
-| 8. SDK E2E | ✅ All signals + actions on live page | 3 (all fixed) | 0 / 4 |
+| 5. Rules Engine | ✅ All signals × all actions | 8 (all fixed) | 8 / 8 ✅ |
+| 6. Popups | ✅ All templates + all block types | 4 (all fixed) | 8 / 8 ✅ |
+| 7. Countdowns | ✅ All expiry types + in-popup | 1 (fixed) | 8 / 8 ✅ |
+| 8. SDK E2E | ✅ All signals + actions on live page | 3 (all fixed) | 9 / 11 (beacon pending) |
 | 9. Analytics | 0 / 11 | 0 | 0 / 2 |
 | 10. Agency / Client | 0 / 37 | 0 | 0 / 6 |
 | 11. Team | 0 / 5 | 0 | 0 / 3 |
