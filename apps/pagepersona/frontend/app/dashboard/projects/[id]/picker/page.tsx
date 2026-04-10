@@ -656,11 +656,15 @@ function PickerPageInner() {
                             {c.valueType !== 'none' && (
                               <div>
                                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('picker.value_label')}</label>
-                                <input type={c.valueType === 'number' ? 'number' : 'text'} value={c.value}
-                                  onChange={e => updateCondition(c.id, 'value', e.target.value)}
-                                  placeholder={t('picker.value_placeholder')}
-                                  className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand transition-all"
-                                />
+                                <div className="relative">
+                                  <input type={c.valueType === 'number' ? 'number' : 'text'} value={c.value}
+                                    onChange={e => updateCondition(c.id, 'value', e.target.value)}
+                                    placeholder={t('picker.value_placeholder')}
+                                    className={"w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand transition-all" + (c.signal === 'time_on_page' || c.signal === 'scroll_depth' ? ' pr-10' : '')}
+                                  />
+                                  {c.signal === 'time_on_page' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">sec</span>}
+                                  {c.signal === 'scroll_depth' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">%</span>}
+                                </div>
                               </div>
                             )}
                           </div>
@@ -962,11 +966,15 @@ function PickerPageInner() {
                                     {(c.options || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
                                   </select>
                                 ) : (
-                                  <input type={c.valueType === 'number' ? 'number' : 'text'} value={c.value}
-                                    onChange={e => updateCondition(c.id, 'value', e.target.value)}
-                                    placeholder={t('picker.value_placeholder')}
-                                    className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand transition-all"
-                                  />
+                                  <div className="relative">
+                                    <input type={c.valueType === 'number' ? 'number' : 'text'} value={c.value}
+                                      onChange={e => updateCondition(c.id, 'value', e.target.value)}
+                                      placeholder={t('picker.value_placeholder')}
+                                      className={"w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand transition-all" + (c.signal === 'time_on_page' || c.signal === 'scroll_depth' ? ' pr-10' : '')}
+                                    />
+                                    {c.signal === 'time_on_page' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">sec</span>}
+                                    {c.signal === 'scroll_depth' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">%</span>}
+                                  </div>
                                 )}
                               </div>
                             )}
