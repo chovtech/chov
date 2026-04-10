@@ -660,15 +660,26 @@ function PickerPageInner() {
                                   <input type={c.valueType === 'number' ? 'number' : 'text'} value={c.value}
                                     onChange={e => updateCondition(c.id, 'value', e.target.value)}
                                     placeholder={t('picker.value_placeholder')}
-                                    className={"w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand transition-all" + (c.signal === 'time_on_page' || c.signal === 'scroll_depth' ? ' pr-10' : '')}
+                                    className={"w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand transition-all" + (c.signal === 'time_on_page' || c.signal === 'scroll_depth' || c.signal === 'utm_source' || c.signal === 'utm_medium' || c.signal === 'utm_campaign' || c.signal === 'referrer_url' ? ' pr-8' : '')}
                                   />
                                   {c.signal === 'time_on_page' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">sec</span>}
                                   {c.signal === 'scroll_depth' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">%</span>}
+                                  {(['utm_source','utm_medium','utm_campaign','referrer_url'] as const).includes(c.signal as any) && (() => {
+                                    const siteUrl = (() => { try { return new URL(pageUrl).hostname } catch { return pageUrl || 'yoursite.com' } })()
+                                    const paramName = c.signal === 'referrer_url' ? null : c.signal
+                                    const exampleVal = c.signal === 'utm_source' ? (c.value || 'google') : c.signal === 'utm_medium' ? (c.value || 'cpc') : c.signal === 'utm_campaign' ? (c.value || 'summer_sale') : null
+                                    const tooltip = paramName ? `${siteUrl}?${paramName}=${exampleVal}` : `${c.value || 'google.com'}`
+                                    return (
+                                      <div className="group absolute right-2 top-1/2 -translate-y-1/2">
+                                        <Icon name="info" className="text-sm text-slate-400 cursor-help" />
+                                        <div className="pointer-events-none absolute bottom-full right-0 mb-2 w-64 bg-slate-800 text-white text-[11px] rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-lg">
+                                          <span className="block text-slate-400 mb-1">{paramName ? 'Your URL will look like:' : 'Match when referrer contains:'}</span>
+                                          <code className="text-emerald-300 break-all">{tooltip}</code>
+                                        </div>
+                                      </div>
+                                    )
+                                  })()}
                                 </div>
-                                {c.signal === 'utm_source' && <p className="mt-1 text-[11px] text-slate-400">From URL: <code className="bg-slate-100 px-1 rounded">?utm_source=<span className="text-brand">{c.value || 'google'}</span></code></p>}
-                                {c.signal === 'utm_medium' && <p className="mt-1 text-[11px] text-slate-400">From URL: <code className="bg-slate-100 px-1 rounded">?utm_medium=<span className="text-brand">{c.value || 'cpc'}</span></code></p>}
-                                {c.signal === 'utm_campaign' && <p className="mt-1 text-[11px] text-slate-400">From URL: <code className="bg-slate-100 px-1 rounded">?utm_campaign=<span className="text-brand">{c.value || 'summer_sale'}</span></code></p>}
-                                {c.signal === 'referrer_url' && <p className="mt-1 text-[11px] text-slate-400">Referring page URL, e.g. <code className="bg-slate-100 px-1 rounded">google.com</code></p>}
                               </div>
                             )}
                           </div>
@@ -974,16 +985,27 @@ function PickerPageInner() {
                                     <input type={c.valueType === 'number' ? 'number' : 'text'} value={c.value}
                                       onChange={e => updateCondition(c.id, 'value', e.target.value)}
                                       placeholder={t('picker.value_placeholder')}
-                                      className={"w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand transition-all" + (c.signal === 'time_on_page' || c.signal === 'scroll_depth' ? ' pr-10' : '')}
+                                      className={"w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand transition-all" + (c.signal === 'time_on_page' || c.signal === 'scroll_depth' || c.signal === 'utm_source' || c.signal === 'utm_medium' || c.signal === 'utm_campaign' || c.signal === 'referrer_url' ? ' pr-8' : '')}
                                     />
                                     {c.signal === 'time_on_page' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">sec</span>}
                                     {c.signal === 'scroll_depth' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">%</span>}
+                                    {(['utm_source','utm_medium','utm_campaign','referrer_url'] as const).includes(c.signal as any) && (() => {
+                                      const siteUrl = (() => { try { return new URL(pageUrl).hostname } catch { return pageUrl || 'yoursite.com' } })()
+                                      const paramName = c.signal === 'referrer_url' ? null : c.signal
+                                      const exampleVal = c.signal === 'utm_source' ? (c.value || 'google') : c.signal === 'utm_medium' ? (c.value || 'cpc') : c.signal === 'utm_campaign' ? (c.value || 'summer_sale') : null
+                                      const tooltip = paramName ? `${siteUrl}?${paramName}=${exampleVal}` : `${c.value || 'google.com'}`
+                                      return (
+                                        <div className="group absolute right-2 top-1/2 -translate-y-1/2">
+                                          <Icon name="info" className="text-sm text-slate-400 cursor-help" />
+                                          <div className="pointer-events-none absolute bottom-full right-0 mb-2 w-64 bg-slate-800 text-white text-[11px] rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-lg">
+                                            <span className="block text-slate-400 mb-1">{paramName ? 'Your URL will look like:' : 'Match when referrer contains:'}</span>
+                                            <code className="text-emerald-300 break-all">{tooltip}</code>
+                                          </div>
+                                        </div>
+                                      )
+                                    })()}
                                   </div>
                                 )}
-                                {c.signal === 'utm_source' && <p className="mt-1 text-[11px] text-slate-400">From URL: <code className="bg-slate-100 px-1 rounded">?utm_source=<span className="text-brand">{c.value || 'google'}</span></code></p>}
-                                {c.signal === 'utm_medium' && <p className="mt-1 text-[11px] text-slate-400">From URL: <code className="bg-slate-100 px-1 rounded">?utm_medium=<span className="text-brand">{c.value || 'cpc'}</span></code></p>}
-                                {c.signal === 'utm_campaign' && <p className="mt-1 text-[11px] text-slate-400">From URL: <code className="bg-slate-100 px-1 rounded">?utm_campaign=<span className="text-brand">{c.value || 'summer_sale'}</span></code></p>}
-                                {c.signal === 'referrer_url' && <p className="mt-1 text-[11px] text-slate-400">Referring page URL, e.g. <code className="bg-slate-100 px-1 rounded">google.com</code> or <code className="bg-slate-100 px-1 rounded">facebook.com</code></p>}
                               </div>
                             )}
                           </div>
