@@ -40,6 +40,23 @@
       window.__pp.firedIds = {};
       matched.forEach(function(r) { window.__pp.firedIds[r.id] = true; });
       fireActions(matched, scriptId, signals);
+      // Re-evaluate immediately when exit intent is detected
+      document.addEventListener('mouseleave', function(e) {
+        if (e.clientY > 0) return;
+        var liveRules = (window.__pp && window.__pp.rules) || [];
+        var hasExitIntent = liveRules.some(function(r) {
+          return (r.conditions || []).some(function(c) { return c.signal === 'exit_intent'; });
+        });
+        if (!hasExitIntent) return;
+        var nowMatched = evaluateRules(liveRules, signals);
+        nowMatched.forEach(function(r) {
+          if (!window.__pp.firedIds[r.id]) {
+            window.__pp.firedIds[r.id] = true;
+            fireActions([r], scriptId, signals);
+          }
+        });
+      });
+
       // Always run dynamic re-evaluation loop — reads window.__pp.rules so
       // it picks up rule edits that arrive via the hash-change re-fetch
       setInterval(function() {
