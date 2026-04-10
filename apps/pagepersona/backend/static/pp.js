@@ -37,26 +37,27 @@
       sendVisitBeacon(scriptId, signals, geo);
       var matched = evaluateRules(rules, signals);
       window.__pp.matched = matched;
+      window.__pp.firedIds = {};
+      matched.forEach(function(r) { window.__pp.firedIds[r.id] = true; });
       fireActions(matched, scriptId, signals);
-      // Re-evaluate every second for time_on_page / scroll_depth conditions
-      var hasDynamic = rules.some(function(r) {
-        return (r.conditions || []).some(function(c) {
-          return c.signal === 'time_on_page' || c.signal === 'scroll_depth';
-        });
-      });
-      if (hasDynamic) {
-        var firedIds = {};
-        matched.forEach(function(r) { firedIds[r.id] = true; });
-        setInterval(function() {
-          var nowMatched = evaluateRules(rules, signals);
-          nowMatched.forEach(function(r) {
-            if (!firedIds[r.id]) {
-              firedIds[r.id] = true;
-              fireActions([r], scriptId, signals);
-            }
+      // Always run dynamic re-evaluation loop — reads window.__pp.rules so
+      // it picks up rule edits that arrive via the hash-change re-fetch
+      setInterval(function() {
+        var liveRules = (window.__pp && window.__pp.rules) || [];
+        var hasDynamic = liveRules.some(function(r) {
+          return (r.conditions || []).some(function(c) {
+            return c.signal === 'time_on_page' || c.signal === 'scroll_depth';
           });
-        }, 1000);
-      }
+        });
+        if (!hasDynamic) return;
+        var nowMatched = evaluateRules(liveRules, signals);
+        nowMatched.forEach(function(r) {
+          if (!window.__pp.firedIds[r.id]) {
+            window.__pp.firedIds[r.id] = true;
+            fireActions([r], scriptId, signals);
+          }
+        });
+      }, 1000);
     });
   }
 
@@ -122,7 +123,10 @@
           fetchRules(scriptId, function (data) {
             if (!data) return;
             setCache(scriptId, data.rules_hash, data.rules, data.geo, data.page_url);
-            // Rules changed — re-fire with fresh data on this visit
+            // Update live rules so dynamic re-evaluation loop picks up edits
+            window.__pp = window.__pp || {};
+            window.__pp.rules = data.rules;
+            window.__pp.firedIds = {};
             // Clear popup session markers so updated popups re-render
             Object.keys(sessionStorage).filter(function(k) {
               return k.indexOf('pp_popup_') === 0;
@@ -130,6 +134,7 @@
             var geo2 = data.geo || {};
             var signals2 = detectSignals(geo2, scriptId);
             var matched2 = evaluateRules(data.rules, signals2);
+            matched2.forEach(function(r) { window.__pp.firedIds[r.id] = true; });
             fireActions(matched2, scriptId, signals2);
           });
         }
