@@ -79,6 +79,33 @@ async def get_active_rules(project_id: str, db: asyncpg.Connection) -> list:
                         popup_row = await db.fetchrow('SELECT config FROM popups WHERE id = $1', popup_id)
                         if popup_row and popup_row['config']:
                             live_config = json.loads(popup_row['config']) if isinstance(popup_row['config'], str) else popup_row['config']
+                            # Also resolve any countdown blocks inside the popup live from the countdowns table
+                            blocks = live_config.get('blocks') or []
+                            for block in blocks:
+                                if block.get('type') == 'countdown' and block.get('countdown_id'):
+                                    cd_row = await db.fetchrow(
+                                        'SELECT config, ends_at, expiry_action, expiry_value FROM countdowns WHERE id = $1',
+                                        block['countdown_id']
+                                    )
+                                    if cd_row:
+                                        block['countdown_config'] = json.loads(cd_row['config']) if isinstance(cd_row['config'], str) else (cd_row['config'] or {})
+                                        block['countdown_ends_at'] = cd_row['ends_at'].isoformat() if cd_row['ends_at'] and hasattr(cd_row['ends_at'], 'isoformat') else cd_row['ends_at']
+                                        block['countdown_expiry_action'] = cd_row['expiry_action']
+                                        block['countdown_expiry_value'] = cd_row['expiry_value']
+                            # Also resolve countdown blocks inside column sub-blocks
+                            for block in blocks:
+                                if block.get('type') == 'columns':
+                                    for sub in (block.get('col_left') or []) + (block.get('col_right') or []):
+                                        if sub.get('type') == 'countdown' and sub.get('countdown_id'):
+                                            cd_row = await db.fetchrow(
+                                                'SELECT config, ends_at, expiry_action, expiry_value FROM countdowns WHERE id = $1',
+                                                sub['countdown_id']
+                                            )
+                                            if cd_row:
+                                                sub['countdown_config'] = json.loads(cd_row['config']) if isinstance(cd_row['config'], str) else (cd_row['config'] or {})
+                                                sub['countdown_ends_at'] = cd_row['ends_at'].isoformat() if cd_row['ends_at'] and hasattr(cd_row['ends_at'], 'isoformat') else cd_row['ends_at']
+                                                sub['countdown_expiry_action'] = cd_row['expiry_action']
+                                                sub['countdown_expiry_value'] = cd_row['expiry_value']
                             val['config'] = live_config
                             action['value'] = json.dumps(val)
                 except Exception:
