@@ -478,17 +478,23 @@ function EditRulePageInner() {
                         <Icon name="expand_more" className="absolute right-2 top-3 text-slate-400 pointer-events-none text-sm" />
                       </div>
                     ) : (
-                      <div className="relative">
-                        <input
-                          type={condition.valueType === 'number' ? 'number' : 'text'}
-                          value={condition.value}
-                          onChange={e => updateCondition(condition.id, 'value', e.target.value)}
-                          disabled={!condition.signal}
-                          placeholder={t('rules.value_placeholder')}
-                          className={"w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand disabled:opacity-40 transition-all" + (condition.signal === 'time_on_page' || condition.signal === 'scroll_depth' ? ' pr-10' : '')}
-                        />
-                        {condition.signal === 'time_on_page' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">sec</span>}
-                        {condition.signal === 'scroll_depth' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">%</span>}
+                      <div>
+                        <div className="relative">
+                          <input
+                            type={condition.valueType === 'number' ? 'number' : 'text'}
+                            value={condition.value}
+                            onChange={e => updateCondition(condition.id, 'value', e.target.value)}
+                            disabled={!condition.signal}
+                            placeholder={t('rules.value_placeholder')}
+                            className={"w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand disabled:opacity-40 transition-all" + (condition.signal === 'time_on_page' || condition.signal === 'scroll_depth' ? ' pr-10' : '')}
+                          />
+                          {condition.signal === 'time_on_page' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">sec</span>}
+                          {condition.signal === 'scroll_depth' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">%</span>}
+                        </div>
+                        {condition.signal === 'utm_source' && <p className="mt-1 text-[11px] text-slate-400">From URL: <code className="bg-slate-100 px-1 rounded">?utm_source=<span className="text-brand">{condition.value || 'google'}</span></code></p>}
+                        {condition.signal === 'utm_medium' && <p className="mt-1 text-[11px] text-slate-400">From URL: <code className="bg-slate-100 px-1 rounded">?utm_medium=<span className="text-brand">{condition.value || 'cpc'}</span></code></p>}
+                        {condition.signal === 'utm_campaign' && <p className="mt-1 text-[11px] text-slate-400">From URL: <code className="bg-slate-100 px-1 rounded">?utm_campaign=<span className="text-brand">{condition.value || 'summer_sale'}</span></code></p>}
+                        {condition.signal === 'referrer_url' && <p className="mt-1 text-[11px] text-slate-400">Referring page URL, e.g. <code className="bg-slate-100 px-1 rounded">google.com</code> or <code className="bg-slate-100 px-1 rounded">facebook.com</code></p>}
                       </div>
                     )}
                   </div>

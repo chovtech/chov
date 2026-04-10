@@ -665,6 +665,10 @@ function PickerPageInner() {
                                   {c.signal === 'time_on_page' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">sec</span>}
                                   {c.signal === 'scroll_depth' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">%</span>}
                                 </div>
+                                {c.signal === 'utm_source' && <p className="mt-1 text-[11px] text-slate-400">From URL: <code className="bg-slate-100 px-1 rounded">?utm_source=<span className="text-brand">{c.value || 'google'}</span></code></p>}
+                                {c.signal === 'utm_medium' && <p className="mt-1 text-[11px] text-slate-400">From URL: <code className="bg-slate-100 px-1 rounded">?utm_medium=<span className="text-brand">{c.value || 'cpc'}</span></code></p>}
+                                {c.signal === 'utm_campaign' && <p className="mt-1 text-[11px] text-slate-400">From URL: <code className="bg-slate-100 px-1 rounded">?utm_campaign=<span className="text-brand">{c.value || 'summer_sale'}</span></code></p>}
+                                {c.signal === 'referrer_url' && <p className="mt-1 text-[11px] text-slate-400">Referring page URL, e.g. <code className="bg-slate-100 px-1 rounded">google.com</code></p>}
                               </div>
                             )}
                           </div>
@@ -976,6 +980,10 @@ function PickerPageInner() {
                                     {c.signal === 'scroll_depth' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">%</span>}
                                   </div>
                                 )}
+                                {c.signal === 'utm_source' && <p className="mt-1 text-[11px] text-slate-400">From URL: <code className="bg-slate-100 px-1 rounded">?utm_source=<span className="text-brand">{c.value || 'google'}</span></code></p>}
+                                {c.signal === 'utm_medium' && <p className="mt-1 text-[11px] text-slate-400">From URL: <code className="bg-slate-100 px-1 rounded">?utm_medium=<span className="text-brand">{c.value || 'cpc'}</span></code></p>}
+                                {c.signal === 'utm_campaign' && <p className="mt-1 text-[11px] text-slate-400">From URL: <code className="bg-slate-100 px-1 rounded">?utm_campaign=<span className="text-brand">{c.value || 'summer_sale'}</span></code></p>}
+                                {c.signal === 'referrer_url' && <p className="mt-1 text-[11px] text-slate-400">Referring page URL, e.g. <code className="bg-slate-100 px-1 rounded">google.com</code> or <code className="bg-slate-100 px-1 rounded">facebook.com</code></p>}
                               </div>
                             )}
                           </div>
