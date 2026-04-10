@@ -334,18 +334,13 @@
     }
   }
 
-  function insertCountdown(blockId, value) {
-    var el = findElement(blockId);
-    if (!el) { warn('insert_countdown: element not found — ' + blockId); return; }
-
-    var cfg;
-    try { cfg = typeof value === 'string' ? JSON.parse(value) : value; } catch(e) { cfg = {}; }
-    var style = cfg.config || {};
-    var type   = style.countdown_type || 'fixed';
+  // Builds and returns a countdown DOM element. Used by insertCountdown and popup _renderBlock.
+  function _buildCountdownEl(cfg, onExpire) {
+    var style      = cfg.config || {};
+    var type       = style.countdown_type || 'fixed';
     var endsAt;
-
     if (type === 'duration') {
-      var durSec = ((style.duration_value || 24) * ({ minutes: 60, hours: 3600, days: 86400 }[style.duration_unit || 'hours'] || 3600));
+      var durSec  = ((style.duration_value || 24) * ({ minutes: 60, hours: 3600, days: 86400 }[style.duration_unit || 'hours'] || 3600));
       var storKey = 'pp_cd_' + (cfg.countdown_id || 'x') + '_start';
       var stored  = localStorage.getItem(storKey);
       if (!stored) { stored = String(Date.now()); localStorage.setItem(storKey, stored); }
@@ -353,8 +348,6 @@
     } else {
       endsAt = cfg.ends_at ? new Date(cfg.ends_at).getTime() : null;
     }
-
-    // Build container
     var digitBg    = style.digit_bg    || '#1A56DB';
     var digitColor = style.digit_color || '#ffffff';
     var labelColor = style.label_color || '#64748b';
@@ -370,14 +363,8 @@
       { key: 'minutes', label: 'MIN',  show: style.show_minutes !== false },
       { key: 'seconds', label: 'SEC',  show: style.show_seconds !== false },
     ].filter(function(u) { return u.show; });
-
-    // Inject wrapper
-    el.innerHTML = '';
     var wrapper = document.createElement('div');
     wrapper.style.cssText = 'display:flex;align-items:flex-start;justify-content:center;gap:' + gap + 'px;background:' + bgColor + ';padding:' + pad + 'px;box-sizing:border-box;';
-    el.appendChild(wrapper);
-
-    // Digit elements
     var digitEls = {};
     units.forEach(function(u, i) {
       var group = document.createElement('div');
@@ -404,22 +391,13 @@
       wrapper.appendChild(group);
       digitEls[u.key] = box;
     });
-
-    // Tick
     var expiredFired = false;
     function tick() {
       var now  = Date.now();
       var diff = endsAt ? endsAt - now : 0;
       if (diff <= 0) {
         Object.keys(digitEls).forEach(function(k) { digitEls[k].textContent = '00'; });
-        if (!expiredFired) {
-          expiredFired = true;
-          var expAction = cfg.expiry_action || style.expiry_action || 'hide';
-          var expValue  = cfg.expiry_value  || style.expiry_value  || '';
-          if      (expAction === 'hide')     { el.style.display = 'none'; }
-          else if (expAction === 'redirect') { window.location.href = expValue; }
-          else if (expAction === 'message')  { el.innerHTML = '<span style="font-size:14px;color:' + labelColor + '">' + expValue + '</span>'; }
-        }
+        if (!expiredFired) { expiredFired = true; if (onExpire) onExpire(); }
         return;
       }
       var d = Math.floor(diff / 86400000);
@@ -431,6 +409,25 @@
     }
     tick();
     if (endsAt) setInterval(tick, 1000);
+    return wrapper;
+  }
+
+  function insertCountdown(blockId, value) {
+    var el = findElement(blockId);
+    if (!el) { warn('insert_countdown: element not found — ' + blockId); return; }
+    var cfg;
+    try { cfg = typeof value === 'string' ? JSON.parse(value) : value; } catch(e) { cfg = {}; }
+    var style      = cfg.config || {};
+    var labelColor = style.label_color || '#64748b';
+    var expAction  = cfg.expiry_action || style.expiry_action || 'hide';
+    var expValue   = cfg.expiry_value  || style.expiry_value  || '';
+    el.innerHTML   = '';
+    var cdEl = _buildCountdownEl(cfg, function() {
+      if      (expAction === 'hide')     { el.style.display = 'none'; }
+      else if (expAction === 'redirect') { window.location.href = expValue; }
+      else if (expAction === 'message')  { el.innerHTML = '<span style="font-size:14px;color:' + labelColor + '">' + expValue + '</span>'; }
+    });
+    el.appendChild(cdEl);
   }
 
   function swapText(blockId, value) {
@@ -699,6 +696,25 @@
         var el = document.createElement('div');
         el.innerHTML = block.embed_code;
         return el;
+      }
+      case 'countdown': {
+        if (!block.countdown_id) return null;
+        var cfg = {
+          countdown_id: block.countdown_id,
+          ends_at: block.countdown_ends_at,
+          expiry_action: block.countdown_expiry_action || 'hide',
+          expiry_value: block.countdown_expiry_value || '',
+          config: block.countdown_config || {}
+        };
+        var wrapper = document.createElement('div');
+        wrapper.style.cssText = 'display:flex;justify-content:center;padding:4px 0';
+        var cdEl = _buildCountdownEl(cfg, function() {
+          if (cfg.expiry_action === 'hide') wrapper.style.display = 'none';
+          else if (cfg.expiry_action === 'redirect') window.location.href = cfg.expiry_value;
+          else if (cfg.expiry_action === 'message') wrapper.innerHTML = '<span style="font-size:14px;color:#94a3b8">' + cfg.expiry_value + '</span>';
+        });
+        wrapper.appendChild(cdEl);
+        return wrapper;
       }
       case 'columns': {
         var row = document.createElement('div');
