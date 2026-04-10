@@ -478,14 +478,18 @@ function EditRulePageInner() {
                         <Icon name="expand_more" className="absolute right-2 top-3 text-slate-400 pointer-events-none text-sm" />
                       </div>
                     ) : (
-                      <input
-                        type={condition.valueType === 'number' ? 'number' : 'text'}
-                        value={condition.value}
-                        onChange={e => updateCondition(condition.id, 'value', e.target.value)}
-                        disabled={!condition.signal}
-                        placeholder={t('rules.value_placeholder')}
-                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand disabled:opacity-40 transition-all"
-                      />
+                      <div className="relative">
+                        <input
+                          type={condition.valueType === 'number' ? 'number' : 'text'}
+                          value={condition.value}
+                          onChange={e => updateCondition(condition.id, 'value', e.target.value)}
+                          disabled={!condition.signal}
+                          placeholder={t('rules.value_placeholder')}
+                          className={"w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand disabled:opacity-40 transition-all" + (condition.signal === 'time_on_page' || condition.signal === 'scroll_depth' ? ' pr-10' : '')}
+                        />
+                        {condition.signal === 'time_on_page' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">sec</span>}
+                        {condition.signal === 'scroll_depth' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium pointer-events-none">%</span>}
+                      </div>
                     )}
                   </div>
                   <div className="col-span-1 flex items-end justify-center pb-1">

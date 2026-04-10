@@ -38,6 +38,25 @@
       var matched = evaluateRules(rules, signals);
       window.__pp.matched = matched;
       fireActions(matched, scriptId, signals);
+      // Re-evaluate every second for time_on_page / scroll_depth conditions
+      var hasDynamic = rules.some(function(r) {
+        return (r.conditions || []).some(function(c) {
+          return c.signal === 'time_on_page' || c.signal === 'scroll_depth';
+        });
+      });
+      if (hasDynamic) {
+        var firedIds = {};
+        matched.forEach(function(r) { firedIds[r.id] = true; });
+        setInterval(function() {
+          var nowMatched = evaluateRules(rules, signals);
+          nowMatched.forEach(function(r) {
+            if (!firedIds[r.id]) {
+              firedIds[r.id] = true;
+              fireActions([r], scriptId, signals);
+            }
+          });
+        }, 1000);
+      }
     });
   }
 
