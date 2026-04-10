@@ -1,6 +1,6 @@
 # TESTING.md — PagePersona Manual Test & Test Coverage Tracker
 > Module-by-module. Test manually first, write automated test for each bug found.
-> Last updated: 2026-04-07
+> Last updated: 2026-04-10
 
 ---
 
@@ -179,31 +179,62 @@
 ### Manual Checklist
 
 #### Create Rule
-- [ ] Rule creation modal opens
-- [ ] Can add multiple conditions (AND / OR)
-- [ ] All 15 condition types work in the dropdown
-- [ ] All operators work per condition type
-- [ ] Can add an action to the rule
-- [ ] All 7 action types available
+- [x] Rule creation modal opens
+- [x] Can add multiple conditions (AND / OR)
+- [x] All 15 condition types work in the dropdown
+- [x] All operators work per condition type
+- [x] Can add an action to the rule
+- [x] All 7 action types available
+
+#### Signals Tested (each against all 7 actions)
+- [x] `page_view` — fires on load
+- [x] `visit_count` — fires on correct visit number
+- [x] `time_on_page` — fires after correct number of seconds
+- [x] `scroll_depth` — fires at correct scroll percentage
+- [x] `exit_intent` — fires on cursor leaving viewport
+- [x] `day_time` — fires based on visitor's local time (24h format)
+- [x] `utm_source` — matches URL parameter
+- [x] `utm_medium` — matches URL parameter
+- [x] `utm_campaign` — matches URL parameter
+- [x] `referrer_url` — matches referring page URL
+- [x] `device_type` — desktop/mobile/tablet
+- [x] `browser` — Chrome/Firefox/Safari etc.
+- [x] `os` — Windows/Mac/iOS/Android etc.
+- [x] `geo_country` — matches visitor country
+- [x] `visitor_timezone` — matches timezone string
 
 #### Actions
-- [ ] `swap_text` — element picker works, text saves
-- [ ] `swap_image` — image upload + picker works
-- [ ] `swap_url` — URL input saves
-- [ ] `hide_section` — picker works
-- [ ] `show_element` — picker works
-- [ ] `show_popup` — popup selector shows saved popups
-- [ ] `insert_countdown` — countdown selector shows saved countdowns
+- [x] `swap_text` — element picker works, text swaps correctly on page
+- [x] `swap_image` — image upload + picker works, image swaps on page
+- [x] `swap_url` — URL input saves, link href updates on page
+- [x] `hide_section` — picker works, element hidden correctly
+- [x] `show_element` — picker works, element shown correctly
+- [x] `show_popup` — popup selector works, popup renders on page
+- [x] `insert_countdown` — countdown selector works, timer renders and counts down
+
+#### Live Edit (no page reload required)
+- [x] Edit a rule's trigger signal → fires with new trigger on next eval cycle
+- [x] Edit a rule's action value → updated action fires without clearing cache
+- [x] Edit then save → rule fires within ~30s via `pingHash` change detection
+- [x] Popup config edited → new popup config shown without clearing sessionStorage
 
 #### Manage Rules
-- [ ] Rule list shows sorted by priority
-- [ ] Edit rule saves changes correctly
-- [ ] Active/inactive toggle works
-- [ ] Delete rule works
+- [x] Rule list shows sorted by priority
+- [x] Edit rule saves changes correctly
+- [x] Active/inactive toggle works
+- [x] Delete rule works
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
 |---|-------------|-------|-------------|
+| 1 | `time_on_page` rules never fired — one-shot evaluation at load when signal=0 | ✅ | — |
+| 2 | `scroll_depth` always 0 at load — only updated on scroll events, not initialised | ✅ | — |
+| 3 | `exit_intent` never triggered popup — no re-evaluation on mouseleave | ✅ | — |
+| 4 | Edited rules not picked up by re-eval loop — loop captured stale `rules` variable | ✅ | — |
+| 5 | pingHash re-fire used stale signals (scroll_depth=0) — called `detectSignals` fresh | ✅ | — |
+| 6 | `day_time` `is between` broken — used `parseFloat` losing minutes component | ✅ | — |
+| 7 | Popup config stale after edit — popup config saved as snapshot in rule, not resolved live | ✅ | — |
+| 8 | Countdown config stale after edit — same snapshot issue as popup | ✅ | — |
 
 ### Automated Tests — `tests/test_rules.py`
 - [ ] `test_create_rule`
@@ -217,23 +248,29 @@
 ## MODULE 6 — POPUPS
 
 ### Manual Checklist
-- [ ] Create popup — all 10 layout templates selectable
-- [ ] All block types work: text, image, button, embed, no_thanks, columns
-- [ ] All 12 position options work
-- [ ] Background colour picker works
-- [ ] Background image upload works
-- [ ] Border radius, padding, width inputs save
-- [ ] Overlay toggle works
-- [ ] Close button toggle works
-- [ ] Display delay + frequency inputs save
-- [ ] Animation selector works (fade, slide, zoom)
-- [ ] `{country}` token renders correctly in preview
-- [ ] Edit popup saves changes
-- [ ] Delete popup works
+- [x] Create popup — all layout templates selectable
+- [x] All block types work: text, image, button, embed, no_thanks, columns
+- [x] All position options work (center, top/bottom bars, corners, fullscreen)
+- [x] Background colour picker works
+- [x] Background image upload works
+- [x] Border radius, padding, width inputs save
+- [x] Overlay toggle works
+- [x] Close button toggle works
+- [x] Display delay + frequency inputs save
+- [x] Animation selector works (fade, slide, zoom)
+- [x] `{country}` token renders correctly in preview
+- [x] Countdown block inside popup renders and counts down on live page
+- [x] Edit popup saves changes — reflects on page without cache clear
+- [x] Delete popup works
+- [x] All popup templates tested on live page
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
 |---|-------------|-------|-------------|
+| 1 | Countdown block inside popup not rendering — `_renderBlock` had no countdown case | ✅ | — |
+| 2 | Countdown inside popup used stale config — backend not resolving countdown blocks live | ✅ | — |
+| 3 | Announcement bar text misaligned left — fixed with `justify-content:center` | ✅ | — |
+| 4 | Popup shown-history not reset after editing — storage key versioned by config hash | ✅ | — |
 
 ### Automated Tests — `tests/test_popups.py`
 - [ ] `test_create_popup`
@@ -246,17 +283,21 @@
 ## MODULE 7 — COUNTDOWN TIMERS
 
 ### Manual Checklist
-- [ ] Create fixed-date countdown (with `ends_at` timestamp)
-- [ ] Create duration countdown (per-session)
-- [ ] Expiry action: `hide` saves correctly
-- [ ] Expiry action: `redirect` saves correctly
-- [ ] Expiry action: `message` saves correctly
-- [ ] Edit countdown saves changes
-- [ ] Delete countdown works
+- [x] Create fixed-date countdown (with `ends_at` timestamp)
+- [x] Create duration countdown (per-session)
+- [x] Expiry action: `hide` saves correctly
+- [x] Expiry action: `redirect` saves correctly
+- [x] Expiry action: `message` saves correctly
+- [x] Edit countdown saves changes — reflects on page without cache clear
+- [x] Delete countdown works
+- [x] Countdown renders correctly as standalone `insert_countdown` action
+- [x] Countdown renders correctly when inserted as a block inside a popup
+- [x] "Demo preview" badge removed from all countdown templates
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
 |---|-------------|-------|-------------|
+| 1 | "Demo preview" text showing on all countdown templates | ✅ | — |
 
 ### Automated Tests — `tests/test_countdowns.py`
 - [ ] `test_create_countdown_fixed`
@@ -279,30 +320,40 @@
 - [ ] Unload beacon updates `time_on_page` + `scroll_depth`
 
 #### Rules Firing
-- [ ] Rule with `visit_count` condition fires on correct visit number
-- [ ] Rule with `time_on_page` condition fires after correct delay
-- [ ] Rule with `scroll_depth` condition fires at correct scroll %
-- [ ] Rule with `exit_intent` condition fires on cursor leave
-- [ ] AND condition — all conditions must be true for rule to fire
-- [ ] OR condition — any one condition triggers rule
+- [x] Rule with `page_view` fires on load
+- [x] Rule with `visit_count` condition fires on correct visit number
+- [x] Rule with `time_on_page` condition fires after correct delay (seconds)
+- [x] Rule with `scroll_depth` condition fires at correct scroll %
+- [x] Rule with `exit_intent` condition fires on cursor leave
+- [x] Rule with `day_time` condition fires based on visitor's local time
+- [x] Rule with `utm_source` / `utm_medium` / `utm_campaign` fires from URL params
+- [x] Rule with `referrer_url` fires based on referring page
+- [x] Rule with `device_type` / `browser` / `os` / `geo_country` fires correctly
+- [x] AND condition — all conditions must be true for rule to fire
+- [x] OR condition — any one condition triggers rule
 
 #### Actions on Page
-- [ ] `swap_text` — text swaps correctly on page
-- [ ] `swap_image` — image swaps correctly on page
-- [ ] `swap_url` — link href updated correctly
-- [ ] `hide_section` — element hidden correctly
-- [ ] `show_element` — element shown correctly
-- [ ] `show_popup` — popup renders correctly on page
-- [ ] `insert_countdown` — countdown timer renders and counts down
+- [x] `swap_text` — text swaps correctly on page
+- [x] `swap_image` — image swaps correctly on page
+- [x] `swap_url` — link href updated correctly
+- [x] `hide_section` — element hidden correctly
+- [x] `show_element` — element shown correctly
+- [x] `show_popup` — popup renders correctly on page
+- [x] `insert_countdown` — countdown timer renders and counts down
 
 #### Cache & Sync
-- [ ] SDK ping detects rule change within 30s — updated rule fires without page reload
+- [x] SDK ping detects rule change within ~30s — updated rule fires without page reload
+- [x] Editing a rule's trigger or action reflects on next eval cycle — no cache clear needed
+- [x] Editing popup config reflects immediately — popup storage key versioned by config hash
 - [ ] `pp.js` loads via agency custom domain (white-labeled URL)
 - [ ] Rule-fired event recorded in `rule_events` table
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
 |---|-------------|-------|-------------|
+| 1 | API_BASE was localhost after revert — pp.js not hitting production API | ✅ | — |
+| 2 | Cloudflare caching `/api/sdk/ping` and `/api/sdk/rules` for 30s | ✅ | — |
+| 3 | `window.__pp.rules` not updated after pingHash change — loop used stale closure | ✅ | — |
 
 ### Automated Tests — `tests/test_sdk.py`
 - [ ] `test_sdk_ping`
@@ -436,6 +487,11 @@
 
 ---
 
+## New feature to be added
+Image Tray
+when we upload image once. And we delete that image from the user side. say i changed the pofile image ike uploaded a new one and i wish to go to the other, the case not is that i have to repupload the image afresh.
+the implication is that it is filling our db records with so much
+
 ## PROGRESS SUMMARY
 
 | Module | Manual done | Bugs found | Tests written |
@@ -444,10 +500,16 @@
 | 2. User Profile | 6 / 6 ✅ | 2 (fixed) | 4 / 4 ✅ |
 | 3. Workspaces | 4 / 4 ✅ | 0 | 0 / 3 |
 | 4. Projects | 0 / 11 | 0 | 0 / 5 |
-| 5. Rules Engine | 0 / 14 | 0 | 0 / 5 |
-| 6. Popups | 0 / 13 | 0 | 0 / 4 |
-| 7. Countdowns | 0 / 7 | 0 | 0 / 4 |
-| 8. SDK E2E | 0 / 20 | 0 | 0 / 4 |
+| 5. Rules Engine | ✅ All signals × all actions | 8 (all fixed) | 0 / 5 |
+| 6. Popups | ✅ All templates + all block types | 4 (all fixed) | 0 / 4 |
+| 7. Countdowns | ✅ All expiry types + in-popup | 1 (fixed) | 0 / 4 |
+| 8. SDK E2E | ✅ All signals + actions on live page | 3 (all fixed) | 0 / 4 |
 | 9. Analytics | 0 / 11 | 0 | 0 / 2 |
 | 10. Agency / Client | 0 / 37 | 0 | 0 / 6 |
 | 11. Team | 0 / 5 | 0 | 0 / 3 |
+
+### Next up
+- Module 9 — Analytics
+- Module 10 — Agency / Client
+- Module 11 — Team Management
+- Write automated tests for Modules 5–8
