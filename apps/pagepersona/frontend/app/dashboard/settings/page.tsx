@@ -197,12 +197,18 @@ export default function SettingsPage() {
   const isClientUser = activeWorkspace?.member_role === 'client'
   const isViewOnly = isClientUser && activeWorkspace?.client_access_level === 'view_only'
   const isClientWorkspace = !!activeWorkspace?.parent_workspace_id
+  const isOwner = !activeWorkspace || activeWorkspace?.member_role === 'owner'
+  const isTeamMember = activeWorkspace?.member_role === 'member'
+  const isTeamAdmin = activeWorkspace?.member_role === 'admin'
 
   const tabs = [
     { key: 'general', label: t('settings.tabs.general'), icon: 'person' },
-    ...(!isViewOnly ? [{ key: 'team', label: t('settings.tabs.team'), icon: 'group' }] : []),
-    ...(!isViewOnly ? [{ key: 'billing', label: t('settings.tabs.billing'), icon: 'credit_card' }] : []),
-    ...(!isClientWorkspace ? [{ key: 'whitelabel', label: t('settings.tabs.whitelabel'), icon: 'palette' }] : []),
+    // Team tab: owner and admin only (not plain member, not view_only client)
+    ...(isOwner || isTeamAdmin ? [{ key: 'team', label: t('settings.tabs.team'), icon: 'group' }] : []),
+    // Billing: owner only
+    ...(isOwner ? [{ key: 'billing', label: t('settings.tabs.billing'), icon: 'credit_card' }] : []),
+    // White label: owner only, not a client workspace
+    ...(isOwner && !isClientWorkspace ? [{ key: 'whitelabel', label: t('settings.tabs.whitelabel'), icon: 'palette' }] : []),
   ]
 
   useEffect(() => {
@@ -513,15 +519,17 @@ export default function SettingsPage() {
                       <input
                         type="text"
                         value={wsNameForm}
-                        onChange={e => setWsNameForm(e.target.value)}
-                        className={inputClass}
+                        onChange={e => isOwner && setWsNameForm(e.target.value)}
+                        disabled={!isOwner}
+                        className={`${inputClass} ${!isOwner ? 'opacity-50 cursor-not-allowed' : ''}`}
                       />
+                      {!isOwner && <p className="text-xs text-slate-400 mt-1">Only the workspace owner can rename the workspace.</p>}
                     </div>
-                    <div className="flex justify-end pt-2">
+                    {isOwner && <div className="flex justify-end pt-2">
                       <button type="submit" disabled={wsNameLoading || !wsNameForm.trim()} className="px-6 py-2.5 bg-brand hover:bg-brand/90 disabled:opacity-60 text-white font-semibold rounded-xl transition-colors">
                         {wsNameLoading ? t('settings.workspace.saving') : t('settings.workspace.save')}
                       </button>
-                    </div>
+                    </div>}
                   </form>
                 </div>
               )}

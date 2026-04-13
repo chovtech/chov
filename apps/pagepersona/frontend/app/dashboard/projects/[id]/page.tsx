@@ -397,6 +397,7 @@ export default function ProjectDashboardPage() {
   const projectId = params.id as string
   const { loading: workspaceLoading, activeWorkspace } = useWorkspace()
   const isViewOnly = activeWorkspace?.member_role === 'client' && activeWorkspace?.client_access_level === 'view_only'
+  const canDeleteProject = !isViewOnly && activeWorkspace?.member_role !== 'member'
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
@@ -558,9 +559,9 @@ export default function ProjectDashboardPage() {
             </div>
           </div>
           {!isViewOnly && <div className="flex items-center gap-3">
-            <button onClick={() => setShowDelete(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-200 text-slate-500 bg-white hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all">
+            {canDeleteProject && <button onClick={() => setShowDelete(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-200 text-slate-500 bg-white hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all">
               <Icon name="delete" className="text-base" />{t('project.delete_project')}
-            </button>
+            </button>}
             <button onClick={handlePublishToggle} disabled={publishing} className={project.status === 'active' ? 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 disabled:opacity-50 transition-all' : 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-brand/30 text-brand bg-brand/5 hover:bg-brand/10 disabled:opacity-50 transition-all'}>
               <Icon name={project.status === 'active' ? 'cloud_off' : 'cloud_upload'} className="text-base" />
               {publishing ? '...' : project.status === 'active' ? t('project.unpublish') : t('project.publish')}

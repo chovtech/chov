@@ -26,20 +26,8 @@ async def create(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    # Get workspace for this user
-    if body.workspace_id:
-        workspace = await db.fetchrow(
-            "SELECT id FROM workspaces WHERE id = $1 AND owner_id = $2",
-            body.workspace_id, current_user['id']
-        )
-    else:
-        workspace = await db.fetchrow(
-            "SELECT id FROM workspaces WHERE owner_id = $1 ORDER BY created_at ASC LIMIT 1",
-            current_user['id']
-        )
-    if not workspace:
-        raise HTTPException(status_code=404, detail="Workspace not found")
-
+    from app.core.access import get_accessible_workspace
+    workspace = await get_accessible_workspace(db, current_user['id'], body.workspace_id or None)
     await require_admin_or_owner(db, current_user['id'], str(workspace['id']))
 
     project = await create_project(

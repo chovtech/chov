@@ -32,6 +32,14 @@ const clientViewNavigation = [
   { key: 'settings', href: '/dashboard/settings', icon: 'settings', exact: false },
 ]
 
+// Team member (member or admin) — no Agency/Clients page
+const teamMemberNavigation = [
+  { key: 'dashboard', href: '/dashboard', icon: 'home', exact: true },
+  { key: 'elements', href: '/dashboard/elements', icon: 'widgets', exact: false },
+  { key: 'analytics', href: '/dashboard/analytics', icon: 'bar_chart', exact: false },
+  { key: 'settings', href: '/dashboard/settings', icon: 'settings', exact: false },
+]
+
 interface User { name?: string; email: string; avatar_url?: string }
 
 export default function Sidebar() {
@@ -79,13 +87,16 @@ export default function Sidebar() {
   const isClientUser = activeWorkspace?.member_role === 'client'
   const isViewOnly = isClientUser && activeWorkspace?.client_access_level === 'view_only'
   const isInClientWorkspace = !isClientUser && activeWorkspace?.parent_workspace_id !== null
+  const isTeamMember = activeWorkspace?.member_role === 'member' || activeWorkspace?.member_role === 'admin'
   const navigation = isViewOnly
     ? clientViewNavigation
     : isClientUser
       ? clientFullNavigation
       : isInClientWorkspace
         ? fullNavigation.filter(item => item.key !== 'clients')
-        : fullNavigation
+        : isTeamMember
+          ? teamMemberNavigation
+          : fullNavigation
 
   return (
     <>

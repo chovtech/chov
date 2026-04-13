@@ -14,6 +14,7 @@ export default function DashboardPage() {
   const { t } = useTranslation('common')
   const { activeWorkspace, loading: wsLoading } = useWorkspace()
   const isViewOnly = activeWorkspace?.member_role === 'client' && activeWorkspace?.client_access_level === 'view_only'
+  const canCreateProject = !isViewOnly && activeWorkspace?.member_role !== 'member'
   const [activeTab, setActiveTab] = useState('all')
   const [modalOpen, setModalOpen] = useState(false)
   const [projects, setProjects] = useState([])
@@ -77,7 +78,7 @@ export default function DashboardPage() {
                 {t('dashboard.subheading')}
               </p>
             </div>
-            {!isViewOnly && <button
+            {canCreateProject && <button
               onClick={() => setModalOpen(true)}
               className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl font-bold shadow-lg shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
@@ -177,7 +178,7 @@ export default function DashboardPage() {
             ))}
 
             {/* Add new project card */}
-            {!isViewOnly && <div
+            {canCreateProject && <div
               onClick={() => setModalOpen(true)}
               className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center p-8 text-center hover:border-brand/40 transition-colors cursor-pointer group"
             >
@@ -240,7 +241,7 @@ export default function DashboardPage() {
               {t('dashboard.empty_state.description')}
             </p>
             <div className="flex flex-col items-center gap-6">
-              {!isViewOnly && <button
+              {canCreateProject && <button
                 onClick={() => setModalOpen(true)}
                 className="flex items-center gap-2 rounded-xl bg-brand px-8 py-4 text-lg font-bold text-white shadow-lg shadow-brand/20 hover:bg-brand/90 hover:-translate-y-0.5 transition-all"
               >
