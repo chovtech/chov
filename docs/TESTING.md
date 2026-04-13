@@ -499,21 +499,118 @@
 
 ## MODULE 11 — TEAM MANAGEMENT
 
-### Manual Checklist
-- [ ] Invite team member by email + role
-- [ ] Team member receives invite email
-- [ ] Team member appears in team list
-- [ ] Change team member role works
-- [ ] Remove team member works
+> Test with two real accounts. Use your main account (Chike) as the **Owner**.
+> Use `nobechykeokoli@gmail.com` as the **invited team member**.
+> Use the deployed app at `app.usepagepersona.com`.
+
+---
+
+### PART A — Invite Flow
+
+#### Owner sends invite
+- [ ] Go to Settings → Team tab
+- [ ] Enter `nobechykeokoli@gmail.com`, select role **Member**, click Invite
+- [ ] Member appears in team list with status **Pending**
+- [ ] Email arrives at `nobechykeokoli@gmail.com` with the invite link
+
+#### New user accept (first time)
+- [ ] Click the invite link in the email — lands on `/team-accept?token=...`
+- [ ] Page shows workspace name and role (Member)
+- [ ] Shows "Create your account" form (name + password + confirm)
+- [ ] Fill in name and password, submit
+- [ ] Redirected to `/dashboard`
+- [ ] Workspace switcher shows **two workspaces**: their own + yours (Chike's workspace)
+- [ ] Member row in Settings → Team updates to status **Active**
+
+#### Existing user accept
+- [ ] Invite an email that already has a PagePersona account
+- [ ] That user clicks the invite link — sees "Accept Invitation" button (no name/password form)
+- [ ] Click accept — redirected to dashboard
+- [ ] Workspace switcher shows their existing workspace + your workspace
+
+---
+
+### PART B — Team Member Access (logged in as the invited member)
+
+#### Can do (full CRUD)
+- [ ] Switch to Chike's workspace using workspace switcher
+- [ ] Can see all projects in the workspace
+- [ ] Can create a new project
+- [ ] Can edit an existing project
+- [ ] Can delete a project
+- [ ] Can create a rule on a project
+- [ ] Can edit a rule
+- [ ] Can delete a rule
+- [ ] Can create a popup
+- [ ] Can edit a popup
+- [ ] Can delete a popup
+- [ ] Can create a countdown
+- [ ] Can edit a countdown
+- [ ] Can delete a countdown
+- [ ] Can view analytics (project + workspace level)
+
+#### Cannot do (blocked)
+- [ ] Settings page — cannot change workspace name or billing
+- [ ] Settings → Team — cannot see the invite form (member role)
+- [ ] Cannot access Agency / Client management pages
+
+---
+
+### PART C — Role Management (logged in as Owner)
+
+#### Admin role
+- [ ] Change the member's role from **Member** to **Admin**
+- [ ] Log in as the team member — they can now see the Invite button in Settings → Team
+- [ ] Admin can invite another member
+- [ ] Admin can remove a member (other than the owner)
+- [ ] Admin **cannot** change roles (role dropdown/button should be hidden or disabled)
+- [ ] Admin **cannot** change workspace settings or billing
+
+#### Changing roles
+- [ ] Change Admin back to Member — verify invite button disappears again
+- [ ] Change Member back to Admin — verify invite button reappears
+
+---
+
+### PART D — Edge Cases
+
+- [ ] Resend invite to same pending email — new link works, old link is invalid
+- [ ] Invite already-active member email returns an error message
+- [ ] Owner cannot invite their own email — error shown
+- [ ] Accept link with invalid / tampered token shows error page
+- [ ] Accept link for already-accepted invite shows "Already accepted" screen with sign-in link
+
+---
+
+### PART E — Remove Member
+
+- [ ] Owner removes team member from Settings → Team
+- [ ] Member row disappears from the list
+- [ ] Removed member refreshes their dashboard — Chike's workspace disappears from switcher
+- [ ] Removed member can still access their own workspace normally
+
+---
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
 |---|-------------|-------|-------------|
 
 ### Automated Tests — `tests/test_team.py`
-- [ ] `test_invite_team_member`
-- [ ] `test_update_member_role`
-- [ ] `test_remove_team_member`
+- [x] `test_invite_new_member`
+- [x] `test_invite_admin_role`
+- [x] `test_invite_invalid_role`
+- [x] `test_invite_info_returns_workspace_name`
+- [x] `test_accept_invite_new_user`
+- [x] `test_accept_invite_existing_user`
+- [x] `test_accept_invite_activates_member`
+- [x] `test_list_members`
+- [x] `test_update_member_role`
+- [x] `test_update_role_invalid`
+- [x] `test_remove_member`
+- [x] `test_member_can_access_workspace_projects`
+- [x] `test_resend_invite_refreshes_token`
+- [x] `test_cannot_invite_self`
+- [x] `test_accept_invalid_token`
 
 ---
 
@@ -560,7 +657,7 @@ Video/audio support later is just a UI filter change — no schema migration nee
 | 8. SDK E2E | ✅ All signals + actions on live page | 3 (all fixed) | 9 / 11 (beacon pending) |
 | 9. Analytics | ✅ All endpoints | 0 | 14 / 14 ✅ |
 | 10. Agency / Client | 0 / 37 | 0 | 0 / 6 |
-| 11. Team | 0 / 5 | 0 | 0 / 3 |
+| 11. Team | 0 / 26 | 0 | 15 / 15 ✅ |
 
 ### Next up
 - Module 11 — Team Management
