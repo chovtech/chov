@@ -1281,7 +1281,7 @@ function GlobalProperties({ config, setC, isBar, isFullscreen, t, workspaceId }:
 
       <div>
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Background Image</label>
-        <ImageUploader value={config.bg_image || ''} onChange={url => setC('bg_image', url)} workspaceId={activeWorkspace?.id} />
+        <ImageUploader value={config.bg_image || ''} onChange={url => setC('bg_image', url)} workspaceId={workspaceId} />
         {config.bg_image && (
           <div className="mt-2">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Colour Overlay — {config.bg_image_opacity || 40}%</label>
