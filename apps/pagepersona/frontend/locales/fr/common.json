@@ -901,5 +901,13 @@
     "error": "Impossible de charger les analytiques.",
     "project_analytics_title": "Analytiques du projet",
     "workspace_analytics_title": "Analytiques de l'espace de travail"
+  },
+  "library": {
+    "title": "Médiathèque",
+    "upload_new": "Télécharger",
+    "empty": "Aucune image. Téléchargez votre première image.",
+    "pick": "Choisir dans la médiathèque",
+    "select_or_upload": "Sélectionnez une image ou téléchargez-en une nouvelle",
+    "delete_confirm": "Supprimer cette image de la médiathèque ?"
   }
 }

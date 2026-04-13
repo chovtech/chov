@@ -226,6 +226,20 @@ export const clientsApi = {
     apiClient.post('/api/clients/report', data),
 }
 
+// Assets API
+export const assetsApi = {
+  upload: (file: File, workspaceId?: string) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const url = workspaceId ? `/api/assets/upload?workspace_id=${workspaceId}` : '/api/assets/upload'
+    return apiClient.post(url, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
+  list: (workspaceId: string) =>
+    apiClient.get(`/api/assets?workspace_id=${workspaceId}`),
+  delete: (id: string) =>
+    apiClient.delete(`/api/assets/${id}`),
+}
+
 // Rules API
 export const rulesApi = {
   create: (projectId: string, data: { name: string; conditions: any[]; condition_operator: string; actions: any[]; priority?: number }) =>

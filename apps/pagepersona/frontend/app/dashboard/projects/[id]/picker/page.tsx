@@ -798,7 +798,7 @@ function PickerPageInner() {
                         {action.type === 'swap_image' && (
                           <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">New Image</label>
-                            <ImageUploader value={action.value} onChange={url => updateAction(action.id, 'value', url)} />
+                            <ImageUploader value={action.value} onChange={url => updateAction(action.id, 'value', url)} workspaceId={activeWorkspace?.id} />
                           </div>
                         )}
                         {action.type === 'swap_url' && (
@@ -1150,7 +1150,7 @@ function PickerPageInner() {
                           {action.type === 'swap_image' && (
                             <div>
                               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">New Image</label>
-                              <ImageUploader value={action.value} onChange={url => updateAction(action.id, 'value', url)} />
+                              <ImageUploader value={action.value} onChange={url => updateAction(action.id, 'value', url)} workspaceId={activeWorkspace?.id} />
                             </div>
                           )}
 
