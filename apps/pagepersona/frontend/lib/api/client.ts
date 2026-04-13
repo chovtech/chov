@@ -192,6 +192,8 @@ export const teamApi = {
     apiClient.get(workspaceId ? `/api/team?workspace_id=${workspaceId}` : '/api/team'),
   invite: (data: { email: string; role?: string; workspace_id?: string }) =>
     apiClient.post('/api/team/invite', data),
+  resend: (memberId: string) =>
+    apiClient.post(`/api/team/${memberId}/resend`, {}),
   updateRole: (memberId: string, role: string) =>
     apiClient.patch(`/api/team/${memberId}/role`, { role }),
   remove: (memberId: string) =>
