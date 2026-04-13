@@ -596,28 +596,28 @@
 > Switch to `chikeokoliofficial`'s workspace in the switcher first.
 
 #### Can do
-- [ ] Can see all projects in the workspace
-- [ ] Can create a new project
-- [ ] Can edit an existing project
-- [ ] Can delete a project
-- [ ] Full CRUD on rules, popups, countdowns
-- [ ] Can view analytics
-- [ ] Settings → Team — **invite form IS visible**
-- [ ] Can invite another member
-- [ ] Can remove a member (not the owner)
+- [x] Can see all projects in the workspace
+- [x] Can create a new project
+- [x] Can edit an existing project
+- [x] Can delete a project
+- [x] Full CRUD on rules, popups, countdowns
+- [x] Can view analytics
+- [x] Settings → Team — **invite form IS visible**
+- [x] Can invite another member
+- [x] Can remove a member (not the owner)
 
 #### Cannot do
-- [ ] Cannot change roles (role controls hidden/disabled)
-- [ ] Cannot change workspace settings or billing
+- [x] Cannot change roles (role controls hidden/disabled)
+- [x] Cannot change workspace settings or billing
 
 ---
 
 ### PART E — Role Changes (logged in as Owner `chikeokoliofficial@gmail.com`)
 
-- [ ] Change `noblechykeokoli@gmail.com` from **Member → Admin** — they can now invite others
-- [ ] Change back **Admin → Member** — invite button disappears again
-- [ ] Change `legendchyke@gmail.com` from **Admin → Member** — invite button disappears
-- [ ] Change back **Member → Admin** — invite button reappears
+- [x] Change `noblechykeokoli@gmail.com` from **Member → Admin** — they can now invite others
+- [x] Change back **Admin → Member** — invite button disappears again
+- [x] Change `legendchyke@gmail.com` from **Admin → Member** — invite button disappears
+- [x] Change back **Member → Admin** — invite button reappears
 
 ---
 

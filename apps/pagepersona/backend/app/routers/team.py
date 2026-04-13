@@ -164,6 +164,14 @@ async def invite_member(
     if self_user and self_user["email"] == body.email:
         raise HTTPException(status_code=400, detail="You cannot invite yourself")
 
+    # Block inviting the workspace owner
+    owner_user = await db.fetchrow(
+        "SELECT u.email FROM users u JOIN workspaces w ON u.id = w.owner_id WHERE w.id = $1",
+        ws["id"]
+    )
+    if owner_user and owner_user["email"] == body.email:
+        raise HTTPException(status_code=400, detail="This person is already the workspace owner")
+
     # Check existing pending/active invite
     existing = await db.fetchrow(
         "SELECT id, status FROM workspace_members WHERE workspace_id = $1 AND email = $2",
