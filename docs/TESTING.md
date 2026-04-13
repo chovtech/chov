@@ -456,7 +456,7 @@
 - [ ] Agency tab → Clients → click Invite Client
 - [ ] Enter `edumesSoftware@gmail.com`, set access **Full**, click Send
 - [ ] Client row appears in list with status **Pending**
-- [ ] Invite email arrives at `chikeokoli99@gmail.com` — accept link visible
+- [ ] Invite email arrives at `edumesSoftware@gmail.com` — accept link visible
 - [ ] Agency brand name visible in the invite email
 - [ ] Resend invite from row dropdown → new email arrives, old link now returns error
 - [ ] Cancel invite from row dropdown → row removed from client list
@@ -464,7 +464,7 @@
 
 ---
 
-### PART C — New Client Accepts (as `chikeokoli99@gmail.com`)
+### PART C — New Client Accepts (as `edumesSoftware@gmail.com`)
 
 > Open in incognito browser.
 
@@ -476,7 +476,7 @@
 - [ ] Dashboard shows agency branding (logo, colour, brand name in nav)
 - [ ] **No workspace switcher** — workspace badge shown instead
 - [ ] Nav shows all items **except** Agency tab
-- [ ] Back in agency browser — `chikeokoli99@gmail.com` row status is **Active**
+- [ ] Back in agency browser — `edumesSoftware@gmail.com` row status is **Active**
 
 ---
 
@@ -494,7 +494,7 @@
 
 ---
 
-### PART E — Client Experience: Full Access (as `chikeokoli99@gmail.com`)
+### PART E — Client Experience: Full Access (as `edumesSoftware@gmail.com`)
 
 > In incognito, log in as `edumesSoftware@gmail.com`.
 
