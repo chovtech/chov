@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { apiClient } from '@/lib/api/client'
+import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -180,6 +181,7 @@ interface CountdownBuilderProps { countdownId?: string }
 export default function CountdownBuilder({ countdownId }: CountdownBuilderProps) {
   const { t } = useTranslation('common')
   const router = useRouter()
+  const { activeWorkspace } = useWorkspace()
   const isEdit = !!countdownId
 
   const [name, setName] = useState('')
@@ -234,7 +236,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
         setSaved(true)
         setTimeout(() => setSaved(false), 3000)
       } else {
-        const res = await apiClient.post('/api/countdowns', { name, ends_at: endsAtISO || null, expiry_action: expiryAction, expiry_value: expiryValue, config: fullConfig })
+        const res = await apiClient.post('/api/countdowns', { name, ends_at: endsAtISO || null, expiry_action: expiryAction, expiry_value: expiryValue, config: fullConfig, workspace_id: activeWorkspace?.id })
         router.push('/dashboard/elements/countdowns/' + res.data.id + '/edit')
       }
     } catch { setSaveError(t('countdown_builder.save_failed')) }

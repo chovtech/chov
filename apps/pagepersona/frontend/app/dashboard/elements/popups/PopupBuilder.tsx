@@ -7,6 +7,7 @@ import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { apiClient } from '@/lib/api/client'
 import ImageUploader from '@/components/ui/ImageUploader'
+import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -343,6 +344,7 @@ interface PopupBuilderProps { popupId?: string }
 export default function PopupBuilder({ popupId }: PopupBuilderProps) {
   const { t } = useTranslation('common')
   const router = useRouter()
+  const { activeWorkspace } = useWorkspace()
   const isEdit = !!popupId
   const [name, setName] = useState('')
   const [config, setConfig] = useState<PopupConfig>({ ...DEFAULT_CONFIG, blocks: DEFAULT_CONFIG.blocks.map(b => ({...b})) })
@@ -485,7 +487,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
       if (isEdit) {
         await apiClient.put('/api/popups/' + popupId, { name, config })
       } else {
-        const res = await apiClient.post('/api/popups', { name, config })
+        const res = await apiClient.post('/api/popups', { name, config, workspace_id: activeWorkspace?.id })
         router.push('/dashboard/elements/popups/' + res.data.id + '/edit')
         return
       }
