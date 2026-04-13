@@ -422,12 +422,12 @@
 ## MODULE 10 — AGENCY / CLIENT
 
 > **Agency account:** `chikeokoliofficial@gmail.com`
-> **New client (no PP account yet):** `chikeokoli99@gmail.com` ← confirm before testing
-> **Existing client (already has PP account):** `okolichikevitalis@gmail.com`
+> **New client (no PP account yet):** `edumesSoftware@gmail.com`
+> **Existing client (already has PP account):** `chovtechllc@gmail.com` ← sign up first if not already on PP
 > **Deployed app:** `app.usepagepersona.com`
 >
 > **Pre-test setup:**
-> 1. Confirm `okolichikevitalis@gmail.com` has an existing PagePersona account
+> 1. Sign up `chovtechllc@gmail.com` on PagePersona if not already registered
 > 2. Log in as `chikeokoliofficial@gmail.com` — go to Agency tab
 > 3. Use Chrome as agency browser, incognito window as client browser
 
@@ -451,16 +451,16 @@
 
 ### PART B — Agency Invites a New Client (no existing PP account)
 
-> Client email: `chikeokoli99@gmail.com`
+> Client email: `edumesSoftware@gmail.com`
 
 - [ ] Agency tab → Clients → click Invite Client
-- [ ] Enter `chikeokoli99@gmail.com`, set access **Full**, click Send
+- [ ] Enter `edumesSoftware@gmail.com`, set access **Full**, click Send
 - [ ] Client row appears in list with status **Pending**
 - [ ] Invite email arrives at `chikeokoli99@gmail.com` — accept link visible
 - [ ] Agency brand name visible in the invite email
 - [ ] Resend invite from row dropdown → new email arrives, old link now returns error
 - [ ] Cancel invite from row dropdown → row removed from client list
-- [ ] Re-invite `chikeokoli99@gmail.com` with **Full** access (for accept test below)
+- [ ] Re-invite `edumesSoftware@gmail.com` with **Full** access (for accept test below)
 
 ---
 
@@ -482,13 +482,13 @@
 
 ### PART D — Agency Invites Existing PagePersona User as Client
 
-> Client email: `okolichikevitalis@gmail.com`
+> Client email: `chovtechllc@gmail.com`
 
 - [ ] Agency tab → Clients → Invite Client
-- [ ] Enter `okolichikevitalis@gmail.com`, set access **Full**, click Send
+- [ ] Enter `chovtechllc@gmail.com`, set access **Full**, click Send
 - [ ] Client row appears with status **Pending**
 - [ ] Email arrives — shows **"Accept Invitation"** button only (no signup form)
-- [ ] Open in incognito as `okolichikevitalis@gmail.com` — click Accept → redirected to `/dashboard`
+- [ ] Open in incognito as `chovtechllc@gmail.com` — click Accept → redirected to `/dashboard`
 - [ ] Client sees their **own workspace** + the client workspace in the switcher (both visible)
 - [ ] Back in agency browser — row status is **Active**
 
@@ -496,7 +496,7 @@
 
 ### PART E — Client Experience: Full Access (as `chikeokoli99@gmail.com`)
 
-> In incognito, log in as `chikeokoli99@gmail.com`.
+> In incognito, log in as `edumesSoftware@gmail.com`.
 
 - [ ] Agency branding applied throughout — logo, colour, brand name in nav
 - [ ] No workspace switcher — badge shown instead
@@ -512,7 +512,7 @@
 
 ### PART F — Switch Client to View Only
 
-> As agency: Agency tab → `chikeokoli99@gmail.com` row → change access to **View Only**
+> As agency: Agency tab → `edumesSoftware@gmail.com` row → change access to **View Only**
 
 - [ ] Access level updates to `view_only` in client list
 - [ ] In client browser (refresh) — nav shows only **Dashboard** and **Analytics**
@@ -525,7 +525,7 @@
 
 ### PART G — Revoke & Restore Access
 
-> As agency: Agency tab → `chikeokoli99@gmail.com` → Revoke Access
+> As agency: Agency tab → `edumesSoftware@gmail.com` → Revoke Access
 
 - [ ] Row status changes to **Revoked** in client list
 - [ ] Client browser (refresh) → **Access Revoked** page shown, not dashboard
