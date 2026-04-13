@@ -376,8 +376,8 @@
 - [x] `test_sdk_ping_no_cache_header`
 - [x] `test_sdk_rules_only_active_rules_returned`
 - [x] `test_sdk_rules_popup_config_resolved_live`
-- [ ] `test_sdk_visit_recorded` — requires beacon endpoint
-- [ ] `test_sdk_event_recorded` — requires beacon endpoint
+- [x] `test_sdk_visit_recorded` — requires beacon endpoint
+- [x] `test_sdk_event_recorded` — requires beacon endpoint
 
 ---
 
@@ -420,68 +420,141 @@
 ---
 
 ## MODULE 10 — AGENCY / CLIENT
-> Test both sides thoroughly. Do not assume that because something works as an agency it works as a client.
-> Use two separate browsers (or one incognito) — one logged in as agency, one as client.
 
-### PART A — Agency Setup (White-label)
-- [ ] White-label tab: set brand name, logo, primary colour
-- [ ] Live preview updates correctly
-- [ ] Custom domain: enter domain, verify DNS, shows verified state
-- [ ] CNAME instructions show correct target (`cname.usepagepersona.com`)
-- [ ] Root/ALIAS record instructions show correctly
-- [ ] SSL auto-provisions after domain verify (custom domain loads via HTTPS)
-- [ ] Agency slug link works (`app.usepagepersona.com/join/[slug]`)
-- [ ] SDK script tag uses agency custom domain URL (if domain verified)
-- [ ] White-labeled plugin uses agency brand name when workspace has brand set
+> **Agency account:** `chikeokoliofficial@gmail.com`
+> **New client (no PP account yet):** `chikeokoli99@gmail.com` ← confirm before testing
+> **Existing client (already has PP account):** `okolichikevitalis@gmail.com`
+> **Deployed app:** `app.usepagepersona.com`
+>
+> **Pre-test setup:**
+> 1. Confirm `okolichikevitalis@gmail.com` has an existing PagePersona account
+> 2. Log in as `chikeokoliofficial@gmail.com` — go to Agency tab
+> 3. Use Chrome as agency browser, incognito window as client browser
 
-### PART B — Agency Creates Projects & Rules (as Agency)
-- [ ] Create a project inside agency workspace
-- [ ] Install script on a test page
-- [ ] Create rules with conditions and actions
-- [ ] Create a popup and attach to a rule
-- [ ] Create a countdown and attach to a rule
-- [ ] Rules fire correctly on the test page
-- [ ] Analytics records visits and rule events for agency project
+---
 
-### PART C — Agency Invites Client
-- [ ] Invite new client by email — invite email arrives
-- [ ] Invite existing PagePersona user — correct email variant sent
-- [ ] Client appears in client list after invite
-- [ ] Set client access to `full` — verify correct permissions
-- [ ] Set client access to `view_only` — verify correct permissions
-- [ ] Revoke client access — client can no longer log in to agency workspace
-- [ ] Restore client access — client regains access
+### PART A — Agency White-Label Setup
 
-### PART D — Client Self-Signup
-- [ ] Client visits `/join/[slug]` — agency branding shows (logo, colour, favicon, title)
-- [ ] Client signs up via self-signup form
-- [ ] Client lands in their own workspace with agency branding applied
-- [ ] Client login page shows agency branding on custom domain
+- [ ] Agency tab → White-label sub-tab loads correctly
+- [ ] Set brand name — saves and reflects in preview
+- [ ] Upload logo — appears in preview
+- [ ] Change primary colour — preview updates live
+- [ ] Agency slug link works — visit `app.usepagepersona.com/join/[slug]` in incognito — branded page loads
+- [ ] White-labeled WordPress plugin uses agency brand name when brand is set
 
-### PART E — Client Experience (Full Access)
-> Log in as invited client with `full` access
-- [ ] Client sees agency branding in dashboard (logo, colour, brand name)
-- [ ] Client sees all nav items except the Agency tab
-- [ ] Client can create a project in their workspace
-- [ ] Client can install script on their page
-- [ ] Client can create rules
-- [ ] Client can create popups
-- [ ] Client can create countdowns
-- [ ] Client rules fire correctly on their test page
-- [ ] Client analytics shows their own data
-- [ ] Client cannot access agency's projects or data
+> **Custom domain (skip if no domain ready):**
+> - [ ] Enter domain → CNAME instructions show correct target
+> - [ ] After DNS propagates — domain verifies, shows verified state
+> - [ ] Agency SDK script tag updates to use custom domain URL
 
-### PART F — Client Experience (View Only Access)
-> Log in as invited client with `view_only` access
-- [ ] Client sees only dashboard + analytics in nav
-- [ ] Projects, Rules, Popups, Countdown pages are inaccessible
-- [ ] Client cannot create or edit anything
-- [ ] Analytics is visible and shows their data
+---
 
-### PART G — Branding Persistence
-- [ ] Agency branding persists on auth pages after browser restart
-- [ ] Page title is dynamic from agency brand name
-- [ ] Favicon reflects agency icon on all auth pages
+### PART B — Agency Invites a New Client (no existing PP account)
+
+> Client email: `chikeokoli99@gmail.com`
+
+- [ ] Agency tab → Clients → click Invite Client
+- [ ] Enter `chikeokoli99@gmail.com`, set access **Full**, click Send
+- [ ] Client row appears in list with status **Pending**
+- [ ] Invite email arrives at `chikeokoli99@gmail.com` — accept link visible
+- [ ] Agency brand name visible in the invite email
+- [ ] Resend invite from row dropdown → new email arrives, old link now returns error
+- [ ] Cancel invite from row dropdown → row removed from client list
+- [ ] Re-invite `chikeokoli99@gmail.com` with **Full** access (for accept test below)
+
+---
+
+### PART C — New Client Accepts (as `chikeokoli99@gmail.com`)
+
+> Open in incognito browser.
+
+- [ ] Click accept link — lands on `/client-accept?token=...`
+- [ ] Page shows agency brand name, logo, primary colour
+- [ ] Shows account creation form (name + password + confirm)
+- [ ] Fill in name and password, submit
+- [ ] Redirected to `/dashboard`
+- [ ] Dashboard shows agency branding (logo, colour, brand name in nav)
+- [ ] **No workspace switcher** — workspace badge shown instead
+- [ ] Nav shows all items **except** Agency tab
+- [ ] Back in agency browser — `chikeokoli99@gmail.com` row status is **Active**
+
+---
+
+### PART D — Agency Invites Existing PagePersona User as Client
+
+> Client email: `okolichikevitalis@gmail.com`
+
+- [ ] Agency tab → Clients → Invite Client
+- [ ] Enter `okolichikevitalis@gmail.com`, set access **Full**, click Send
+- [ ] Client row appears with status **Pending**
+- [ ] Email arrives — shows **"Accept Invitation"** button only (no signup form)
+- [ ] Open in incognito as `okolichikevitalis@gmail.com` — click Accept → redirected to `/dashboard`
+- [ ] Client sees their **own workspace** + the client workspace in the switcher (both visible)
+- [ ] Back in agency browser — row status is **Active**
+
+---
+
+### PART E — Client Experience: Full Access (as `chikeokoli99@gmail.com`)
+
+> In incognito, log in as `chikeokoli99@gmail.com`.
+
+- [ ] Agency branding applied throughout — logo, colour, brand name in nav
+- [ ] No workspace switcher — badge shown instead
+- [ ] Nav: Dashboard, Projects, Rules, Popups, Countdowns, Analytics all visible
+- [ ] Agency tab **not visible**
+- [ ] Can create a project in their workspace
+- [ ] Can create rules, popups, countdowns
+- [ ] Can view analytics
+- [ ] Agency's projects are not visible anywhere
+- [ ] Settings visible — can view but cannot change billing
+
+---
+
+### PART F — Switch Client to View Only
+
+> As agency: Agency tab → `chikeokoli99@gmail.com` row → change access to **View Only**
+
+- [ ] Access level updates to `view_only` in client list
+- [ ] In client browser (refresh) — nav shows only **Dashboard** and **Analytics**
+- [ ] Projects, Rules, Popups, Countdowns nav items are gone
+- [ ] Navigating directly to `/dashboard/projects` is blocked or redirects
+- [ ] Analytics still loads correctly
+- [ ] Cannot create or edit anything
+
+---
+
+### PART G — Revoke & Restore Access
+
+> As agency: Agency tab → `chikeokoli99@gmail.com` → Revoke Access
+
+- [ ] Row status changes to **Revoked** in client list
+- [ ] Client browser (refresh) → **Access Revoked** page shown, not dashboard
+- [ ] As agency: click Restore Access
+- [ ] Client browser (refresh) → back to dashboard normally
+
+---
+
+### PART H — Client Self-Signup via Slug
+
+> Use a fresh email not already on PagePersona.
+
+- [ ] Visit `app.usepagepersona.com/join/[agency-slug]` in incognito
+- [ ] Agency branding shows on the signup page (logo, colour, brand name)
+- [ ] Fill in name, email, password — submit
+- [ ] Redirected to dashboard with agency branding
+- [ ] New client row appears in agency's client list
+
+---
+
+### PART I — Branding on Auth Pages
+
+- [ ] Visit `app.usepagepersona.com/login?slug=[agency-slug]` — agency branding appears
+- [ ] Page `<title>` reflects agency brand name
+- [ ] Favicon reflects agency icon
+- [ ] Refresh — branding persists (not lost on reload)
+- [ ] Log out as client — login page retains agency branding
+
+---
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
@@ -726,7 +799,7 @@
 | 7. Countdowns | ✅ All expiry types + in-popup | 1 (fixed) | 8 / 8 ✅ |
 | 8. SDK E2E | ✅ All signals + actions on live page | 3 (all fixed) | 9 / 11 (beacon pending) |
 | 9. Analytics | ✅ All endpoints | 0 | 14 / 14 ✅ |
-| 10. Agency / Client | 0 / 37 | 0 | 0 / 6 |
+| 10. Agency / Client | 0 / 49 | 0 | 0 / 6 |
 | 11. Team | ✅ All 52 items | 11 bugs (all fixed) | 15 / 15 ✅ |
 | 12. Media Library | ✅ All 16 items | 1 (fixed) | 12 / 12 ✅ |
 
