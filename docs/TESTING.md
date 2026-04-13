@@ -643,6 +643,17 @@
 ### Bugs Found
 | # | Description | Fixed | Test written |
 |---|-------------|-------|-------------|
+| 1 | Team list showed members from wrong workspace — endpoints not respecting active `workspace_id` | ✅ | — |
+| 2 | Members could create new projects — `canManageProject` guard missing on create button | ✅ | — |
+| 3 | Members could delete projects — delete button not gated on role | ✅ | — |
+| 4 | Members could edit project settings (name, status, platform) — edit actions not blocked for member role | ✅ | — |
+| 5 | Backend didn't enforce member role on project mutations — API accepted member PUT/DELETE on projects | ✅ | — |
+| 6 | Members couldn't access Rules, Popups, Countdowns pages — nav guard was too broad, blocked members entirely | ✅ | — |
+| 7 | Role-change selector missing — owner had no UI to promote/demote members | ✅ | — |
+| 8 | Duplicate pending invites allowed — re-inviting same pending email created a second row instead of erroring | ✅ | ✅ |
+| 9 | No resend button for pending invites — UI had no way to resend without cancelling and re-inviting | ✅ | ✅ |
+| 10 | Old invite link still valid after resend — token not rotated, both old and new links worked | ✅ | ✅ |
+| 11 | No feedback after clicking Resend — button gave no visual confirmation the resend succeeded | ✅ | — |
 
 ### Automated Tests — `tests/test_team.py`
 - [x] `test_invite_new_member`
