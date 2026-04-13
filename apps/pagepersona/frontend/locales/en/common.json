@@ -901,5 +901,15 @@
     "error": "Could not load analytics.",
     "project_analytics_title": "Project Analytics",
     "workspace_analytics_title": "Workspace Analytics"
+  },
+  "library": {
+    "title": "Media Library",
+    "subtitle": "Select an image from your library or upload a new one",
+    "upload_new": "Upload from computer",
+    "insert": "Insert image",
+    "empty_heading": "Your library is empty",
+    "empty_sub": "Upload your first image to get started",
+    "uploading": "Uploading...",
+    "open": "Open media library"
   }
 }

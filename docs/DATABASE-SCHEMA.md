@@ -254,6 +254,22 @@ Indexes: `project_id`, `rule_id`, `timestamp`
 
 ---
 
+### assets
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID PK | |
+| workspace_id | UUID FK → workspaces | Nullable — CASCADE delete; NULL for non-workspace uploads |
+| user_id | UUID FK → users | NOT NULL — CASCADE delete |
+| url | TEXT | R2 public URL |
+| filename | TEXT | Original filename |
+| size | INTEGER | File size in bytes |
+| mime_type | VARCHAR(100) | e.g. `image/jpeg`, `image/png` |
+| created_at | TIMESTAMPTZ | Default `now()` |
+
+Indexes: `workspace_id`, `user_id`
+
+---
+
 ## VPS Table Status
 
 | Table | Local | VPS |
@@ -273,3 +289,4 @@ Indexes: `project_id`, `rule_id`, `timestamp`
 | page_visits | ✅ | ✅ |
 | rule_events | ✅ | ✅ |
 | countdowns | ✅ | ✅ (owned by `postgres`, not `chov`) |
+| assets | ✅ | ⚠️ Run migration on VPS |

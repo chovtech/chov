@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { projectApi, apiClient } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
+import AssetLibrary from '@/components/ui/AssetLibrary'
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
@@ -405,8 +406,7 @@ export default function ProjectDashboardPage() {
   const [showInstall, setShowInstall] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
-  const [thumbnailUploading, setThumbnailUploading] = useState(false)
-  const thumbnailInputRef = useRef<HTMLInputElement>(null)
+  const [showThumbnailLibrary, setShowThumbnailLibrary] = useState(false)
   const [activeTab, setActiveTab] = useState<'overview' | 'analytics'>('overview')
   const [analyticsPeriod, setAnalyticsPeriod] = useState(30)
   const [analyticsData, setAnalyticsData] = useState<any>(null)
@@ -472,20 +472,13 @@ export default function ProjectDashboardPage() {
     } catch { } finally { setPublishing(false) }
   }
 
-  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setThumbnailUploading(true)
+  const handleThumbnailSelect = async (url: string) => {
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      const uploadRes = await apiClient.post('/api/upload/image', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
-      const url = uploadRes.data.url
       const res = await projectApi.update(project.id, { thumbnail_url: url })
       setProject(res.data)
     } catch (err: any) {
-      console.error('Thumbnail upload error:', err?.response?.data || err?.message || err)
-    } finally { setThumbnailUploading(false) }
+      console.error('Thumbnail update error:', err?.response?.data || err?.message || err)
+    }
   }
 
   const activityItems = [
@@ -499,6 +492,14 @@ export default function ProjectDashboardPage() {
       {showInstall && <InstallModal project={project} cdnBase={activeWorkspace?.custom_domain && activeWorkspace?.custom_domain_verified ? `https://${activeWorkspace.custom_domain}` : 'https://cdn.usepagepersona.com'} onClose={() => setShowInstall(false)} onVerified={() => setProject(p => p ? { ...p, script_verified: true } : p)} onUnverified={() => setProject(p => p ? { ...p, script_verified: false } : p)} />}
       {showEdit && <EditProjectModal project={project} onClose={() => setShowEdit(false)} onSaved={(updated) => { setProject(updated); setShowEdit(false) }} />}
       {showDelete && <DeleteProjectModal project={project} onClose={() => setShowDelete(false)} onDeleted={() => router.push('/dashboard')} />}
+      {showThumbnailLibrary && activeWorkspace?.id && (
+        <AssetLibrary
+          workspaceId={activeWorkspace.id}
+          onInsert={handleThumbnailSelect}
+          onClose={() => setShowThumbnailLibrary(false)}
+          t={t}
+        />
+      )}
       <div className="p-8 max-w-7xl mx-auto w-full">
         <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
           <button onClick={() => router.push('/dashboard')} className="hover:text-brand transition-colors">{t('dashboard.heading')}</button>
@@ -509,27 +510,23 @@ export default function ProjectDashboardPage() {
           <div className="flex items-center gap-4">
             {/* Thumbnail */}
             <div className="relative group shrink-0">
-              <div className={`w-16 h-16 rounded-xl border-2 border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center${canManageProject ? ' cursor-pointer' : ''}`}
-                onClick={() => canManageProject && thumbnailInputRef.current?.click()}>
+              <div
+                className={`w-16 h-16 rounded-xl border-2 border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center${canManageProject ? ' cursor-pointer' : ''}`}
+                onClick={() => canManageProject && setShowThumbnailLibrary(true)}
+              >
                 {project.thumbnail_url ? (
                   <img src={project.thumbnail_url} alt={project.name} className="w-full h-full object-cover" />
                 ) : (
                   <Icon name="web" className="text-3xl text-slate-300" />
                 )}
-                {thumbnailUploading && (
-                  <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-                    <Icon name="sync" className="text-brand animate-spin" />
-                  </div>
-                )}
               </div>
               {canManageProject && (
-                <>
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-brand rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                    onClick={() => thumbnailInputRef.current?.click()}>
-                    <Icon name="edit" className="text-white text-xs" />
-                  </div>
-                  <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
-                </>
+                <div
+                  className="absolute -bottom-1 -right-1 w-6 h-6 bg-brand rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  onClick={() => setShowThumbnailLibrary(true)}
+                >
+                  <Icon name="edit" className="text-white text-xs" />
+                </div>
               )}
             </div>
             <div>

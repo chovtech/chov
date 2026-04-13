@@ -667,6 +667,7 @@ export default function SettingsPage() {
                         value={wlForm.logo}
                         onChange={url => setWlForm(p => ({ ...p, logo: url }))}
                         placeholder={t('settings.whitelabel.logo_placeholder')}
+                        workspaceId={activeWorkspace?.id}
                       />
                       <p className="text-xs text-slate-400 mt-1">{t('settings.whitelabel.logo_hint')}</p>
                     </div>
@@ -676,6 +677,7 @@ export default function SettingsPage() {
                         value={wlForm.icon}
                         onChange={url => setWlForm(p => ({ ...p, icon: url }))}
                         placeholder={t('settings.whitelabel.icon_placeholder')}
+                        workspaceId={activeWorkspace?.id}
                       />
                       <p className="text-xs text-slate-400 mt-1">{t('settings.whitelabel.icon_hint')}</p>
                     </div>
