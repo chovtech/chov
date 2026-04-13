@@ -785,7 +785,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
 
           {/* Global style */}
           {rightPanel === 'global' && (
-            <GlobalProperties config={config} setC={setC} isBar={isBar} isFullscreen={isFullscreen} t={t} />
+            <GlobalProperties config={config} setC={setC} isBar={isBar} isFullscreen={isFullscreen} t={t} workspaceId={activeWorkspace?.id} />
           )}
 
           {/* Behaviour */}
@@ -1238,7 +1238,7 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
 
 // ── Global Properties ─────────────────────────────────────────────────────
 
-function GlobalProperties({ config, setC, isBar, isFullscreen, t }: any) {
+function GlobalProperties({ config, setC, isBar, isFullscreen, t, workspaceId }: any) {
   return (
     <div className="p-5 flex flex-col gap-4">
       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('popup_builder.global_settings')}</h3>

@@ -623,20 +623,20 @@
 
 ### PART F — Edge Cases
 
-- [ ] Try inviting `chikeokoliofficial@gmail.com` (owner's own email) — error shown
-- [ ] Try inviting `noblechykeokoli@gmail.com` again (already active) — error shown
-- [ ] Invite a new pending email, then re-invite same email — new link works, old link returns error
-- [ ] Paste a tampered/fake token URL — shows "Invalid invitation" error page
-- [ ] Click an already-accepted link — shows "Already accepted" screen with sign-in link
+- [x] Try inviting `chikeokoliofficial@gmail.com` (owner's own email) — error shown
+- [x] Try inviting `noblechykeokoli@gmail.com` again (already active) — error shown
+- [x] Invite a new pending email, then re-invite same email — new link works, old link returns error
+- [x] Paste a tampered/fake token URL — shows "Invalid invitation" error page
+- [x] Click an already-accepted link — shows "Already accepted" screen with sign-in link
 
 ---
 
 ### PART G — Remove Member
 
-- [ ] Owner removes `noblechykeokoli@gmail.com` from the team list
-- [ ] Row disappears from team list
-- [ ] Log in as `noblechykeokoli@gmail.com` — `chikeokoliofficial`'s workspace is gone from switcher
-- [ ] Their own workspace still works normally
+- [x] Owner removes `noblechykeokoli@gmail.com` from the team list
+- [x] Row disappears from team list
+- [x] Log in as `noblechykeokoli@gmail.com` — `chikeokoliofficial`'s workspace is gone from switcher
+- [x] Their own workspace still works normally
 
 ---
 
@@ -709,7 +709,6 @@ Video/audio support later is just a UI filter change — no schema migration nee
 | 11. Team | 0 / 44 | 0 | 15 / 15 ✅ |
 
 ### Next up
-- Module 11 — Team Management
 - Build Media Library
 - Module 10 — Agency / Client
 - Write automated tests for Modules 9–11
