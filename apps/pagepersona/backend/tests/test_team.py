@@ -262,7 +262,7 @@ async def test_member_can_access_workspace_projects(client):
 
 
 async def test_resend_invite_refreshes_token(client):
-    """Re-inviting a pending email refreshes the token."""
+    """POST /{member_id}/resend generates a new token on the same row."""
     headers, _ = await signup(client)
     email = unique_email()
 
@@ -273,14 +273,19 @@ async def test_resend_invite_refreshes_token(client):
         r1 = await db.fetchrow("SELECT invite_token FROM workspace_members WHERE id = $1", m1["id"])
     token1 = r1["invite_token"]
 
-    # Resend
-    m2 = await invite_member(client, headers, email)
+    # Resend via the dedicated endpoint
+    with patch("app.routers.team.send_team_invite_email", return_value=True), \
+         patch("app.routers.team.send_team_invite_existing_user_email", return_value=True):
+        resend_res = await client.post(f"/api/team/{m1['id']}/resend", headers=headers)
+    assert resend_res.status_code == 200
+    m2 = resend_res.json()
+
     async with pool.acquire() as db:
         r2 = await db.fetchrow("SELECT invite_token FROM workspace_members WHERE id = $1", m2["id"])
     token2 = r2["invite_token"]
 
-    assert token1 != token2
-    assert m1["id"] == m2["id"]  # same row, not a duplicate
+    assert token1 != token2          # token was refreshed
+    assert m1["id"] == m2["id"]      # same row, no duplicate
 
 
 async def test_cannot_invite_self(client):

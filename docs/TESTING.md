@@ -663,34 +663,44 @@
 
 ---
 
-## Upcoming Feature — Media Library
+## MODULE 12 — MEDIA LIBRARY
 
-**What:** A workspace-scoped image store. Every image uploaded anywhere in the app
-(popup builder, profile, project thumbnail, etc.) is saved to the library. Users can
-browse and re-select existing images instead of re-uploading the same file.
+### Manual Checklist
+- [ ] Click any image zone in popup builder → library tray opens (not OS picker)
+- [ ] Click any image zone in rules swap_image → library tray opens
+- [ ] Click project thumbnail → library tray opens
+- [ ] Settings → workspace logo / icon → library tray opens
+- [ ] Library empty state shows upload button
+- [ ] Upload new image from library tray → appears in grid, auto-selected
+- [ ] Click image in grid → highlighted with blue border + checkmark
+- [ ] Insert button disabled until image selected
+- [ ] Click Insert → image applied, tray closes
+- [ ] Image persists in library across page reloads
+- [ ] Delete image from library → removed from grid
+- [ ] Profile avatar — direct OS picker (no library)
+- [ ] Paste URL section still works in all ImageUploader instances
+- [ ] Non-workspace (personal) uploads rejected by assets endpoint
+- [ ] Files > 10MB rejected
+- [ ] Non-image file types rejected
 
-**Why:** Currently re-using an image requires re-uploading it, generating duplicate R2
-objects and bloating the database. The library fixes this.
+### Bugs Found
+| # | Description | Fixed | Test written |
+|---|-------------|-------|-------------|
+| 1 | activeWorkspace used directly inside GlobalProperties (outside PopupBuilder scope) — ReferenceError during build prerender | ✅ | ✅ |
 
-**Scope decision:** `workspace_id` scoped — consistent with all other entities.
-For regular users (one workspace) this is effectively account-level. For agencies,
-each workspace (agency + each client) keeps its own isolated image library, which is
-the correct behaviour for data isolation.
-
-**Data model:**
-```
-assets (id, workspace_id, url, filename, size, mime_type, created_at)
-```
-`mime_type` is stored now even though the UI only surfaces images (`image/*`) today.
-Video/audio support later is just a UI filter change — no schema migration needed.
-
-**Build order (after all manual testing is done):**
-1. `assets` DB table + migration
-2. `POST /api/assets/upload` — upload to R2, insert row
-3. `GET /api/assets` — list workspace assets (filterable by mime_type)
-4. `DELETE /api/assets/{id}` — delete from R2 + DB
-5. `AssetLibrary` modal component (thumbnail grid, select / upload new tab)
-6. Wire into `ImageUploader` everywhere it appears
+### Automated Tests — `tests/test_assets.py`
+- [x] `test_upload_asset_returns_record`
+- [x] `test_upload_asset_without_workspace_id`
+- [x] `test_upload_asset_wrong_workspace_returns_403`
+- [x] `test_upload_asset_unauthenticated`
+- [x] `test_upload_rejects_non_image`
+- [x] `test_list_assets_returns_workspace_assets`
+- [x] `test_list_assets_wrong_workspace_returns_403`
+- [x] `test_list_assets_empty_for_new_workspace`
+- [x] `test_delete_own_asset`
+- [x] `test_delete_asset_removed_from_list`
+- [x] `test_delete_nonexistent_asset_returns_404`
+- [x] `test_delete_other_users_asset_returns_403`
 
 ## PROGRESS SUMMARY
 
@@ -698,17 +708,20 @@ Video/audio support later is just a UI filter change — no schema migration nee
 |--------|-------------|------------|---------------|
 | 1. Auth | 19 / 22 (magic link pending JVZoo) | 2 (fixed) | 5 / 5 ✅ |
 | 2. User Profile | 6 / 6 ✅ | 2 (fixed) | 4 / 4 ✅ |
-| 3. Workspaces | 4 / 4 ✅ | 0 | 0 / 3 |
-| 4. Projects | 0 / 11 | 0 | 0 / 5 |
+| 3. Workspaces | 4 / 4 ✅ | 0 | 3 / 3 ✅ |
+| 4. Projects | 0 / 11 | 0 | 8 / 8 ✅ |
 | 5. Rules Engine | ✅ All signals × all actions | 8 (all fixed) | 8 / 8 ✅ |
 | 6. Popups | ✅ All templates + all block types | 4 (all fixed) | 8 / 8 ✅ |
 | 7. Countdowns | ✅ All expiry types + in-popup | 1 (fixed) | 8 / 8 ✅ |
 | 8. SDK E2E | ✅ All signals + actions on live page | 3 (all fixed) | 9 / 11 (beacon pending) |
 | 9. Analytics | ✅ All endpoints | 0 | 14 / 14 ✅ |
 | 10. Agency / Client | 0 / 37 | 0 | 0 / 6 |
-| 11. Team | 0 / 44 | 0 | 15 / 15 ✅ |
+| 11. Team | ✅ All 52 items | 11 bugs (all fixed) | 15 / 15 ✅ |
+| 12. Media Library | 0 / 16 | 1 (fixed) | 12 / 12 ✅ |
+
+**Total automated tests: 95 / 95 passing**
 
 ### Next up
-- Build Media Library
+- Module 12 — Media Library manual testing
 - Module 10 — Agency / Client
-- Write automated tests for Modules 9–11
+- Module 4 — Projects manual testing
