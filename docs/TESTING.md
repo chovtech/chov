@@ -505,10 +505,34 @@
 
 ---
 
-## New feature to be added
-Image Tray
-when we upload image once. And we delete that image from the user side. say i changed the pofile image ike uploaded a new one and i wish to go to the other, the case not is that i have to repupload the image afresh.
-the implication is that it is filling our db records with so much
+## Upcoming Feature — Media Library
+
+**What:** A workspace-scoped image store. Every image uploaded anywhere in the app
+(popup builder, profile, project thumbnail, etc.) is saved to the library. Users can
+browse and re-select existing images instead of re-uploading the same file.
+
+**Why:** Currently re-using an image requires re-uploading it, generating duplicate R2
+objects and bloating the database. The library fixes this.
+
+**Scope decision:** `workspace_id` scoped — consistent with all other entities.
+For regular users (one workspace) this is effectively account-level. For agencies,
+each workspace (agency + each client) keeps its own isolated image library, which is
+the correct behaviour for data isolation.
+
+**Data model:**
+```
+assets (id, workspace_id, url, filename, size, mime_type, created_at)
+```
+`mime_type` is stored now even though the UI only surfaces images (`image/*`) today.
+Video/audio support later is just a UI filter change — no schema migration needed.
+
+**Build order (after all manual testing is done):**
+1. `assets` DB table + migration
+2. `POST /api/assets/upload` — upload to R2, insert row
+3. `GET /api/assets` — list workspace assets (filterable by mime_type)
+4. `DELETE /api/assets/{id}` — delete from R2 + DB
+5. `AssetLibrary` modal component (thumbnail grid, select / upload new tab)
+6. Wire into `ImageUploader` everywhere it appears
 
 ## PROGRESS SUMMARY
 
@@ -530,4 +554,5 @@ the implication is that it is filling our db records with so much
 - Module 9 — Analytics
 - Module 10 — Agency / Client
 - Module 11 — Team Management
-- Write automated tests for Modules 5–8
+- Write automated tests for Modules 9–11
+- Build Media Library (after all testing complete)
