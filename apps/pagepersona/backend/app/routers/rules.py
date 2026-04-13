@@ -2,22 +2,32 @@ from fastapi import APIRouter, Depends, HTTPException
 import asyncpg
 from app.database import get_db
 from app.core.security import get_current_user
-from app.core.access import get_accessible_workspace
 from app.schemas.rules import RuleCreate, RuleResponse, RuleUpdate
 from app.services.rules_service import (
     create_rule, get_rules, get_rule, update_rule, delete_rule
 )
-from app.services.project_service import get_project
 
 router = APIRouter(prefix="/api/projects/{project_id}/rules", tags=["rules"])
 
 
 async def verify_project_access(project_id: str, current_user: dict, db: asyncpg.Connection):
-    workspace = await get_accessible_workspace(db, current_user['id'])
-    project = await get_project(db, project_id, str(workspace['id']))
-    if not project:
+    """Return the project if the user can access it (as owner or active team member)."""
+    row = await db.fetchrow(
+        """SELECT p.* FROM projects p
+           JOIN workspaces w ON p.workspace_id = w.id
+           WHERE p.id = $1 AND (
+               w.owner_id = $2
+               OR EXISTS (
+                   SELECT 1 FROM workspace_members wm
+                   WHERE wm.workspace_id = w.id AND wm.user_id = $2
+                     AND wm.status = 'active' AND wm.role NOT IN ('client', 'revoked')
+               )
+           )""",
+        project_id, current_user['id']
+    )
+    if not row:
         raise HTTPException(status_code=404, detail="Project not found")
-    return project
+    return dict(row)
 
 
 @router.post("", response_model=RuleResponse)
