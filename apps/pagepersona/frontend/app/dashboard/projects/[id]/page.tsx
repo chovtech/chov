@@ -509,8 +509,8 @@ export default function ProjectDashboardPage() {
           <div className="flex items-center gap-4">
             {/* Thumbnail */}
             <div className="relative group shrink-0">
-              <div className={`w-16 h-16 rounded-xl border-2 border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center${isViewOnly ? '' : ' cursor-pointer'}`}
-                onClick={() => !isViewOnly && thumbnailInputRef.current?.click()}>
+              <div className={`w-16 h-16 rounded-xl border-2 border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center${canManageProject ? ' cursor-pointer' : ''}`}
+                onClick={() => canManageProject && thumbnailInputRef.current?.click()}>
                 {project.thumbnail_url ? (
                   <img src={project.thumbnail_url} alt={project.name} className="w-full h-full object-cover" />
                 ) : (
@@ -522,7 +522,7 @@ export default function ProjectDashboardPage() {
                   </div>
                 )}
               </div>
-              {!isViewOnly && (
+              {canManageProject && (
                 <>
                   <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-brand rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                     onClick={() => thumbnailInputRef.current?.click()}>
