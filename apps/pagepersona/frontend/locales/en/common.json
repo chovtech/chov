@@ -140,6 +140,7 @@
       "no_members_sub": "Invite colleagues to collaborate on your workspace.",
       "remove": "Remove member",
       "confirm_remove": "Are you sure you want to remove this team member?",
+      "resend_invite": "Resend invitation",
       "sending": "Sending invite..."
     },
     "workspace": {
