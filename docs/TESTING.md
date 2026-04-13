@@ -1,6 +1,6 @@
 # TESTING.md — PagePersona Manual Test & Test Coverage Tracker
 > Module-by-module. Test manually first, write automated test for each bug found.
-> Last updated: 2026-04-10
+> Last updated: 2026-04-13
 
 ---
 
@@ -385,25 +385,37 @@
 > Requires SDK data flowing (complete Module 8 first).
 
 ### Manual Checklist
-- [ ] Project analytics loads (visits, unique visitors, rules fired)
-- [ ] Period selector (7/14/30/90/180/365 days) works
-- [ ] Daily chart renders correctly
-- [ ] Top countries table shows data
-- [ ] Traffic sources shows data
-- [ ] Device split shows data
-- [ ] Visitor split (new vs returning) shows data
-- [ ] Rules performance table shows data
-- [ ] Recent visits list shows data
-- [ ] Workspace analytics loads (aggregated across all projects)
-- [ ] Overview stats on dashboard load
+- [x] Project analytics loads (visits, unique visitors, rules fired)
+- [x] Period selector (7/14/30/90/180/365 days) works
+- [x] Daily chart renders correctly
+- [x] Top countries table shows data
+- [x] Traffic sources shows data
+- [x] Device split shows data
+- [x] Visitor split (new vs returning) shows data
+- [x] Rules performance table shows data
+- [x] Recent visits list shows data
+- [x] Workspace analytics loads (aggregated across all projects)
+- [x] Overview stats on dashboard load
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
 |---|-------------|-------|-------------|
 
 ### Automated Tests — `tests/test_analytics.py`
-- [ ] `test_project_analytics_returns_data`
-- [ ] `test_workspace_analytics_returns_data`
+- [x] `test_project_analytics_empty`
+- [x] `test_project_analytics_counts_visits`
+- [x] `test_project_analytics_counts_rules_fired`
+- [x] `test_project_analytics_period_filter`
+- [x] `test_project_analytics_response_shape`
+- [x] `test_project_analytics_traffic_sources`
+- [x] `test_project_analytics_device_split`
+- [x] `test_project_analytics_cannot_access_other_users`
+- [x] `test_workspace_analytics_empty`
+- [x] `test_workspace_analytics_aggregates_across_projects`
+- [x] `test_overview_analytics`
+- [x] `test_sdk_visit_beacon`
+- [x] `test_sdk_event_beacon`
+- [x] `test_sdk_visit_unknown_script_id`
 
 ---
 
@@ -546,12 +558,11 @@ Video/audio support later is just a UI filter change — no schema migration nee
 | 6. Popups | ✅ All templates + all block types | 4 (all fixed) | 8 / 8 ✅ |
 | 7. Countdowns | ✅ All expiry types + in-popup | 1 (fixed) | 8 / 8 ✅ |
 | 8. SDK E2E | ✅ All signals + actions on live page | 3 (all fixed) | 9 / 11 (beacon pending) |
-| 9. Analytics | 0 / 11 | 0 | 0 / 2 |
+| 9. Analytics | ✅ All endpoints | 0 | 14 / 14 ✅ |
 | 10. Agency / Client | 0 / 37 | 0 | 0 / 6 |
 | 11. Team | 0 / 5 | 0 | 0 / 3 |
 
 ### Next up
-- Module 9 — Analytics
 - Module 11 — Team Management
 - Build Media Library
 - Module 10 — Agency / Client
