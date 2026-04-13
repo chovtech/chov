@@ -666,22 +666,22 @@
 ## MODULE 12 — MEDIA LIBRARY
 
 ### Manual Checklist
-- [ ] Click any image zone in popup builder → library tray opens (not OS picker)
-- [ ] Click any image zone in rules swap_image → library tray opens
-- [ ] Click project thumbnail → library tray opens
-- [ ] Settings → workspace logo / icon → library tray opens
-- [ ] Library empty state shows upload button
-- [ ] Upload new image from library tray → appears in grid, auto-selected
-- [ ] Click image in grid → highlighted with blue border + checkmark
-- [ ] Insert button disabled until image selected
-- [ ] Click Insert → image applied, tray closes
-- [ ] Image persists in library across page reloads
-- [ ] Delete image from library → removed from grid
-- [ ] Profile avatar — direct OS picker (no library)
-- [ ] Paste URL section still works in all ImageUploader instances
-- [ ] Non-workspace (personal) uploads rejected by assets endpoint
-- [ ] Files > 10MB rejected
-- [ ] Non-image file types rejected
+- [x] Click any image zone in popup builder → library tray opens (not OS picker)
+- [x] Click any image zone in rules swap_image → library tray opens
+- [x] Click project thumbnail → library tray opens
+- [x] Settings → workspace logo / icon → library tray opens
+- [x] Library empty state shows upload button
+- [x] Upload new image from library tray → appears in grid, auto-selected
+- [x] Click image in grid → highlighted with blue border + checkmark
+- [x] Insert button disabled until image selected
+- [x] Click Insert → image applied, tray closes
+- [x] Image persists in library across page reloads
+- [x] Delete image from library → removed from grid
+- [x] Profile avatar — direct OS picker (no library)
+- [x] Paste URL section still works in all ImageUploader instances
+- [x] Non-workspace (personal) uploads rejected by assets endpoint
+- [x] Files > 10MB rejected
+- [x] Non-image file types rejected
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
@@ -717,11 +717,10 @@
 | 9. Analytics | ✅ All endpoints | 0 | 14 / 14 ✅ |
 | 10. Agency / Client | 0 / 37 | 0 | 0 / 6 |
 | 11. Team | ✅ All 52 items | 11 bugs (all fixed) | 15 / 15 ✅ |
-| 12. Media Library | 0 / 16 | 1 (fixed) | 12 / 12 ✅ |
+| 12. Media Library | ✅ All 16 items | 1 (fixed) | 12 / 12 ✅ |
 
 **Total automated tests: 95 / 95 passing**
 
 ### Next up
-- Module 12 — Media Library manual testing
 - Module 10 — Agency / Client
-- Module 4 — Projects manual testing
+
