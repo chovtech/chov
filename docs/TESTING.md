@@ -552,7 +552,7 @@ Video/audio support later is just a UI filter change — no schema migration nee
 
 ### Next up
 - Module 9 — Analytics
-- Module 10 — Agency / Client
 - Module 11 — Team Management
+- Build Media Library
+- Module 10 — Agency / Client
 - Write automated tests for Modules 9–11
-- Build Media Library (after all testing complete)
