@@ -1,8 +1,11 @@
 """
 Shared workspace access helpers.
 
-All authenticated endpoints use one of these to resolve the workspace,
-so team members (workspace_members rows) get access alongside the owner.
+Role matrix:
+  owner  — full access to everything
+  admin  — full CRUD on projects/rules/popups/countdowns, can invite/remove members
+  member — read + edit on projects, full CRUD on rules/popups/countdowns,
+           cannot create or delete projects
 """
 import asyncpg
 from fastapi import HTTPException
@@ -54,3 +57,33 @@ async def get_accessible_workspace(
     if not row:
         raise HTTPException(status_code=404, detail="Workspace not found")
     return dict(row)
+
+
+async def require_admin_or_owner(
+    db: asyncpg.Connection,
+    user_id,
+    workspace_id: str,
+) -> None:
+    """
+    Raise 403 if user is a plain 'member' (not owner or admin).
+    Used for project create and delete — operations members cannot perform.
+    """
+    # Owner always passes
+    is_owner = await db.fetchval(
+        "SELECT 1 FROM workspaces WHERE id = $1 AND owner_id = $2",
+        workspace_id, user_id
+    )
+    if is_owner:
+        return
+
+    # Check admin membership
+    is_admin = await db.fetchval(
+        """SELECT 1 FROM workspace_members
+           WHERE workspace_id = $1 AND user_id = $2
+             AND role = 'admin' AND status = 'active'""",
+        workspace_id, user_id
+    )
+    if is_admin:
+        return
+
+    raise HTTPException(status_code=403, detail="Members cannot perform this action")

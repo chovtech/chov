@@ -512,60 +512,60 @@
 ### PART A — Invite New Users (no existing account)
 
 #### Invite `noblechykeokoli@gmail.com` as Member
-- [ ] Go to Settings → Team tab as `chikeokoliofficial@gmail.com`
-- [ ] Enter `noblechykeokoli@gmail.com`, select role **Member**, click Invite
-- [ ] Row appears in team list with status **Pending**
-- [ ] Email arrives at `noblechykeokoli@gmail.com` — invite link visible
+- [x] Go to Settings → Team tab as `chikeokoliofficial@gmail.com`
+- [x] Enter `noblechykeokoli@gmail.com`, select role **Member**, click Invite
+- [x] Row appears in team list with status **Pending**
+- [x] Email arrives at `noblechykeokoli@gmail.com` — invite link visible
 
 #### Accept as new user — `noblechykeokoli@gmail.com`
-- [ ] Click invite link — lands on `/team-accept?token=...`
-- [ ] Page shows workspace name and role **Member**
-- [ ] Shows "Create your account" form (name + password + confirm)
-- [ ] Fill in name and password, submit
-- [ ] Redirected to `/dashboard`
-- [ ] Workspace switcher shows **two workspaces**: their own + `chikeokoliofficial`'s workspace
-- [ ] Back in owner account — `noblechykeokoli@gmail.com` row shows status **Active**
+- [x] Click invite link — lands on `/team-accept?token=...`
+- [x] Page shows workspace name and role **Member**
+- [x] Shows "Create your account" form (name + password + confirm)
+- [x] Fill in name and password, submit
+- [x] Redirected to `/dashboard`
+- [x] Workspace switcher shows **two workspaces**: their own + `chikeokoliofficial`'s workspace
+- [x] Back in owner account — `noblechykeokoli@gmail.com` row shows status **Active**
 
 #### Invite `legendchyke@gmail.com` as Admin
-- [ ] Enter `legendchyke@gmail.com`, select role **Admin**, click Invite
-- [ ] Row appears in team list with status **Pending**
-- [ ] Email arrives at `legendchyke@gmail.com` — invite link visible
+- [x] Enter `legendchyke@gmail.com`, select role **Admin**, click Invite
+- [x] Row appears in team list with status **Pending**
+- [x] Email arrives at `legendchyke@gmail.com` — invite link visible
 
 #### Accept as new user — `legendchyke@gmail.com`
-- [ ] Click invite link — lands on `/team-accept?token=...`
-- [ ] Page shows workspace name and role **Admin**
-- [ ] Fill in name and password, submit
-- [ ] Redirected to `/dashboard`
-- [ ] Workspace switcher shows **two workspaces**: their own + `chikeokoliofficial`'s workspace
-- [ ] Back in owner account — `legendchyke@gmail.com` row shows status **Active**
+- [x] Click invite link — lands on `/team-accept?token=...`
+- [x] Page shows workspace name and role **Admin**
+- [x] Fill in name and password, submit
+- [x] Redirected to `/dashboard`
+- [x] Workspace switcher shows **two workspaces**: their own + `chikeokoliofficial`'s workspace
+- [x] Back in owner account — `legendchyke@gmail.com` row shows status **Active**
 
 ---
 
 ### PART B — Invite Existing Users (already have an account)
 
 #### Invite `okolichikevitalis@gmail.com` as Member
-- [ ] Enter `okolichikevitalis@gmail.com`, select role **Member**, click Invite
-- [ ] Row appears in team list with status **Pending**
-- [ ] Email arrives at `okolichikevitalis@gmail.com`
+- [x] Enter `okolichikevitalis@gmail.com`, select role **Member**, click Invite
+- [x] Row appears in team list with status **Pending**
+- [x] Email arrives at `okolichikevitalis@gmail.com`
 
 #### Accept as existing user — `okolichikevitalis@gmail.com`
-- [ ] Click invite link — lands on `/team-accept?token=...`
-- [ ] Page shows workspace name and role **Member**
-- [ ] Shows **"Accept Invitation" button only** — no name/password form
-- [ ] Click Accept — redirected to `/dashboard`
-- [ ] Workspace switcher shows their existing workspace + `chikeokoliofficial`'s workspace
-- [ ] Back in owner account — `okolichikevitalis@gmail.com` row shows status **Active**
+- [x] Click invite link — lands on `/team-accept?token=...`
+- [x] Page shows workspace name and role **Member**
+- [x] Shows **"Accept Invitation" button only** — no name/password form
+- [x] Click Accept — redirected to `/dashboard`
+- [x] Workspace switcher shows their existing workspace + `chikeokoliofficial`'s workspace
+- [x] Back in owner account — `okolichikevitalis@gmail.com` row shows status **Active**
 
 #### Invite `theinfluenccr@gmail.com` as Admin
-- [ ] Enter `theinfluenccr@gmail.com`, select role **Admin**, click Invite
-- [ ] Row appears in team list with status **Pending**
-- [ ] Email arrives at `theinfluenccr@gmail.com`
+- [x] Enter `theinfluenccr@gmail.com`, select role **Admin**, click Invite
+- [x] Row appears in team list with status **Pending**
+- [x] Email arrives at `theinfluenccr@gmail.com`
 
 #### Accept as existing user — `theinfluenccr@gmail.com`
-- [ ] Click invite link — shows "Accept Invitation" button only (no signup form)
-- [ ] Click Accept — redirected to `/dashboard`
-- [ ] Workspace switcher shows their existing workspace + `chikeokoliofficial`'s workspace
-- [ ] Back in owner account — `theinfluenccr@gmail.com` row shows status **Active**
+- [x] Click invite link — shows "Accept Invitation" button only (no signup form)
+- [x] Click Accept — redirected to `/dashboard`
+- [x] Workspace switcher shows their existing workspace + `chikeokoliofficial`'s workspace
+- [x] Back in owner account — `theinfluenccr@gmail.com` row shows status **Active**
 
 ---
 
@@ -573,11 +573,9 @@
 
 > Switch to `chikeokoliofficial`'s workspace in the switcher first.
 
-#### Can do (full CRUD)
+#### Can do
 - [ ] Can see all projects in the workspace
-- [ ] Can create a new project
-- [ ] Can edit an existing project
-- [ ] Can delete a project
+- [ ] Can edit an existing project (name, status, platform)
 - [ ] Can create a rule on a project
 - [ ] Can edit and delete a rule
 - [ ] Can create, edit, delete a popup
@@ -585,6 +583,8 @@
 - [ ] Can view project analytics and workspace analytics
 
 #### Cannot do (blocked)
+- [ ] Cannot create a new project — button hidden or returns error
+- [ ] Cannot delete a project — button hidden or returns error
 - [ ] Settings — cannot change workspace name or billing
 - [ ] Settings → Team — invite form is **not visible** (member role)
 - [ ] Agency / Client pages are inaccessible
@@ -596,7 +596,12 @@
 > Switch to `chikeokoliofficial`'s workspace in the switcher first.
 
 #### Can do
-- [ ] Full CRUD on projects, rules, popups, countdowns (same as member)
+- [ ] Can see all projects in the workspace
+- [ ] Can create a new project
+- [ ] Can edit an existing project
+- [ ] Can delete a project
+- [ ] Full CRUD on rules, popups, countdowns
+- [ ] Can view analytics
 - [ ] Settings → Team — **invite form IS visible**
 - [ ] Can invite another member
 - [ ] Can remove a member (not the owner)

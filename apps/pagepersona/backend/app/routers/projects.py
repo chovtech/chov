@@ -10,6 +10,7 @@ from app.core.security import get_current_user
 from app.schemas.projects import ProjectCreate, ProjectResponse, ProjectUpdate
 from app.routers.upload import delete_r2_image
 from app.services.email_service import send_install_email
+from app.core.access import require_admin_or_owner
 from pydantic import BaseModel, EmailStr
 from app.services.project_service import (
     create_project, get_projects, get_project,
@@ -38,6 +39,8 @@ async def create(
         )
     if not workspace:
         raise HTTPException(status_code=404, detail="Workspace not found")
+
+    await require_admin_or_owner(db, current_user['id'], str(workspace['id']))
 
     project = await create_project(
         db=db,
@@ -144,6 +147,8 @@ async def delete(
     existing = await _get_accessible_project(db, project_id, current_user['id'])
     if not existing:
         raise HTTPException(status_code=404, detail="Project not found")
+
+    await require_admin_or_owner(db, current_user['id'], str(existing['workspace_id']))
 
     deleted = await delete_project(db, project_id, str(existing['workspace_id']))
     if not deleted:
