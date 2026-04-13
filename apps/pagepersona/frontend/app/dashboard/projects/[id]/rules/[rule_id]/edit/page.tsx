@@ -7,6 +7,7 @@ import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
 import { rulesApi, projectApi, apiClient } from '@/lib/api/client'
+import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
 // Full signal config map — needed to reconstruct form state from saved rule data
 const SIGNAL_CONFIGS: Record<string, { label: string; operators: string[]; valueType: string; options?: string[] }> = {
@@ -177,6 +178,7 @@ function EditRulePageInner() {
   const { t } = useTranslation('common')
   const params = useParams()
   const router = useRouter()
+  const { activeWorkspace } = useWorkspace()
   const projectId = params.id as string
   const ruleId = params.rule_id as string
 
@@ -199,15 +201,16 @@ function EditRulePageInner() {
 
   // Load popups and countdowns for pickers
   useEffect(() => {
-    apiClient.get('/api/popups')
+    const wsParam = activeWorkspace?.id ? `?workspace_id=${activeWorkspace.id}` : ''
+    apiClient.get(`/api/popups${wsParam}`)
       .then(res => setPopups(res.data))
       .catch(() => null)
       .finally(() => setLoadingPopups(false))
-    apiClient.get('/api/countdowns')
+    apiClient.get(`/api/countdowns${wsParam}`)
       .then(res => setCountdowns(res.data))
       .catch(() => null)
       .finally(() => setLoadingCountdowns(false))
-  }, [])
+  }, [activeWorkspace?.id])
 
   // Load rule and project on mount
   useEffect(() => {

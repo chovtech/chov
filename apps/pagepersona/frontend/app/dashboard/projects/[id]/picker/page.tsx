@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { rulesApi, projectApi, apiClient } from '@/lib/api/client'
+import { useWorkspace } from '@/lib/context/WorkspaceContext'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
 import Icon from '@/components/ui/Icon'
 import ImageUploader from '@/components/ui/ImageUploader'
@@ -83,6 +84,7 @@ function PickerPageInner() {
   const searchParams = useSearchParams()
   const projectId    = params.id as string
   const pageUrl      = searchParams.get('url') || ''
+  const { activeWorkspace } = useWorkspace()
 
   const { t } = useTranslation()
   const { language, setLanguage } = useLanguage()
@@ -120,9 +122,10 @@ function PickerPageInner() {
     rulesApi.list(projectId).then((res: any) => {
       setActiveRules((res.data || []).filter((r: any) => r.is_active).length)
     }).catch(() => {})
-    apiClient.get('/api/countdowns').then((res: any) => setCountdowns(res.data || [])).catch(() => {}).finally(() => setLoadingCountdowns(false))
-    apiClient.get('/api/popups').then((res: any) => setPopups(res.data || [])).catch(() => {}).finally(() => setLoadingPopups(false))
-  }, [projectId])
+    const wsParam = activeWorkspace?.id ? `?workspace_id=${activeWorkspace.id}` : ''
+    apiClient.get(`/api/countdowns${wsParam}`).then((res: any) => setCountdowns(res.data || [])).catch(() => {}).finally(() => setLoadingCountdowns(false))
+    apiClient.get(`/api/popups${wsParam}`).then((res: any) => setPopups(res.data || [])).catch(() => {}).finally(() => setLoadingPopups(false))
+  }, [projectId, activeWorkspace?.id])
 
   useEffect(() => {
     function handleMessage(e: MessageEvent) {

@@ -8,6 +8,7 @@ import { useTranslation } from '@/lib/hooks/useTranslation'
 import ImageUploader from '@/components/ui/ImageUploader'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
 import { rulesApi, projectApi, apiClient } from '@/lib/api/client'
+import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
 const ACTION_TYPES = [
   { key: "swap_text",         labelKey: "picker.action_swap_text",         icon: "text_fields",    needsElement: true  },
@@ -161,6 +162,7 @@ function NewRulePageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const projectId = params.id as string
+  const { activeWorkspace } = useWorkspace()
 
   const [ruleName, setRuleName] = useState("")
   const [conditionOperator, setConditionOperator] = useState<"AND" | "OR">("AND")
@@ -253,15 +255,16 @@ function NewRulePageInner() {
 
   // Load popups and countdowns for pickers
   useEffect(() => {
-    apiClient.get('/api/popups')
+    const wsParam = activeWorkspace?.id ? `?workspace_id=${activeWorkspace.id}` : ''
+    apiClient.get(`/api/popups${wsParam}`)
       .then(res => setPopups(res.data))
       .catch(() => null)
       .finally(() => setLoadingPopups(false))
-    apiClient.get('/api/countdowns')
+    apiClient.get(`/api/countdowns${wsParam}`)
       .then(res => setCountdowns(res.data))
       .catch(() => null)
       .finally(() => setLoadingCountdowns(false))
-  }, [])
+  }, [activeWorkspace?.id])
 
   // ── Open picker for a specific action ───────────────────────────────────
   const openPicker = (actionIndex: number) => {
