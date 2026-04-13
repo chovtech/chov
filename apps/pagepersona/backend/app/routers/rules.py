@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 import asyncpg
 from app.database import get_db
 from app.core.security import get_current_user
+from app.core.access import get_accessible_workspace
 from app.schemas.rules import RuleCreate, RuleResponse, RuleUpdate
 from app.services.rules_service import (
     create_rule, get_rules, get_rule, update_rule, delete_rule
@@ -12,11 +13,7 @@ router = APIRouter(prefix="/api/projects/{project_id}/rules", tags=["rules"])
 
 
 async def verify_project_access(project_id: str, current_user: dict, db: asyncpg.Connection):
-    workspace = await db.fetchrow(
-        "SELECT id FROM workspaces WHERE owner_id = $1", current_user['id']
-    )
-    if not workspace:
-        raise HTTPException(status_code=404, detail="Workspace not found")
+    workspace = await get_accessible_workspace(db, current_user['id'])
     project = await get_project(db, project_id, str(workspace['id']))
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")

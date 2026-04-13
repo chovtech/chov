@@ -1,59 +1,126 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 import asyncpg
 import uuid
+from datetime import datetime, timezone
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from app.database import get_db
-from app.core.security import get_current_user
-from app.services.email_service import send_email
+from app.core.security import get_current_user, hash_password, create_access_token, create_refresh_token
+from app.services.email_service import send_team_invite_email, send_team_invite_existing_user_email
+from app.core.config import settings
 
 router = APIRouter(prefix="/api/team", tags=["team"])
 
 
 class InviteMemberRequest(BaseModel):
     email: EmailStr
-    role: str = "member"
+    role: str = "member"  # "member" | "admin"
 
 
 class UpdateRoleRequest(BaseModel):
     role: str
 
 
+class AcceptInviteRequest(BaseModel):
+    token: str
+    name: Optional[str] = None
+    password: Optional[str] = None
+
+
 def _fmt(m) -> dict:
     return {
-        "id": str(m['id']),
-        "workspace_id": str(m['workspace_id']),
-        "user_id": str(m['user_id']) if m['user_id'] else None,
-        "email": m['email'],
-        "role": m['role'],
-        "status": m['status'],
-        "invited_at": m['invited_at'].isoformat() if m['invited_at'] else None,
-        "joined_at": m['joined_at'].isoformat() if m['joined_at'] else None,
+        "id": str(m["id"]),
+        "workspace_id": str(m["workspace_id"]),
+        "user_id": str(m["user_id"]) if m["user_id"] else None,
+        "email": m["email"],
+        "role": m["role"],
+        "status": m["status"],
+        "invited_at": m["invited_at"].isoformat() if m["invited_at"] else None,
+        "joined_at": m["joined_at"].isoformat() if m["joined_at"] else None,
     }
 
 
-async def _get_workspace(db, current_user):
+async def _owner_workspace(db, current_user) -> dict:
+    """Resolve the workspace owned by current_user. Raises 404 if none."""
     ws = await db.fetchrow(
         "SELECT * FROM workspaces WHERE owner_id = $1 LIMIT 1",
-        current_user['id']
+        current_user["id"]
     )
     if not ws:
         raise HTTPException(status_code=404, detail="Workspace not found")
     return ws
 
 
+async def _admin_or_owner_workspace(db, current_user) -> dict:
+    """Workspace accessible to current_user as owner OR admin member."""
+    # Owner path
+    ws = await db.fetchrow(
+        "SELECT * FROM workspaces WHERE owner_id = $1 LIMIT 1",
+        current_user["id"]
+    )
+    if ws:
+        return ws
+    # Admin member path
+    row = await db.fetchrow(
+        """SELECT w.* FROM workspaces w
+           JOIN workspace_members wm ON wm.workspace_id = w.id
+           WHERE wm.user_id = $1 AND wm.role = 'admin' AND wm.status = 'active'
+           LIMIT 1""",
+        current_user["id"]
+    )
+    if not row:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return row
+
+
+# ── List members ──────────────────────────────────────────────────────────────
+
 @router.get("")
 async def list_members(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    ws = await _get_workspace(db, current_user)
+    ws = await _owner_workspace(db, current_user)
     rows = await db.fetch(
         "SELECT * FROM workspace_members WHERE workspace_id = $1 ORDER BY invited_at ASC",
-        ws['id']
+        ws["id"]
     )
     return [_fmt(r) for r in rows]
 
+
+# ── Invite info (unauthenticated) ─────────────────────────────────────────────
+
+@router.get("/invite-info")
+async def invite_info(
+    token: str = Query(...),
+    db: asyncpg.Connection = Depends(get_db)
+):
+    """Return workspace name and whether the invited email already has an account."""
+    member = await db.fetchrow(
+        """SELECT wm.id, wm.email, wm.role, wm.status,
+                  w.name as workspace_name, w.id as workspace_id
+           FROM workspace_members wm
+           JOIN workspaces w ON wm.workspace_id = w.id
+           WHERE wm.invite_token = $1""",
+        token
+    )
+    if not member:
+        raise HTTPException(status_code=404, detail="Invalid invite link")
+    if member["status"] == "active":
+        raise HTTPException(status_code=409, detail="This invitation has already been accepted")
+
+    user_exists = await db.fetchrow(
+        "SELECT id FROM users WHERE email = $1", member["email"]
+    )
+    return {
+        "workspace_name": member["workspace_name"],
+        "email": member["email"],
+        "role": member["role"],
+        "user_exists": user_exists is not None,
+    }
+
+
+# ── Invite member ─────────────────────────────────────────────────────────────
 
 @router.post("/invite")
 async def invite_member(
@@ -61,33 +128,141 @@ async def invite_member(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    ws = await _get_workspace(db, current_user)
+    if body.role not in ("member", "admin"):
+        raise HTTPException(status_code=422, detail="Role must be 'member' or 'admin'")
 
-    # Check if already a member
+    ws = await _admin_or_owner_workspace(db, current_user)
+
+    # Block inviting yourself
+    self_user = await db.fetchrow("SELECT email FROM users WHERE id = $1", current_user["id"])
+    if self_user and self_user["email"] == body.email:
+        raise HTTPException(status_code=400, detail="You cannot invite yourself")
+
+    # Check existing pending/active invite
     existing = await db.fetchrow(
-        "SELECT id FROM workspace_members WHERE workspace_id = $1 AND email = $2",
-        ws['id'], body.email
+        "SELECT id, status FROM workspace_members WHERE workspace_id = $1 AND email = $2",
+        ws["id"], body.email
     )
+    if existing and existing["status"] == "active":
+        raise HTTPException(status_code=400, detail="This email is already an active team member")
+
+    token = str(uuid.uuid4())
+    accept_url = f"{settings.FRONTEND_URL}/team-accept?token={token}"
+
     if existing:
-        raise HTTPException(status_code=400, detail="This email is already a member or has a pending invite")
+        # Resend — refresh token
+        member = await db.fetchrow(
+            """UPDATE workspace_members
+               SET invite_token = $1, role = $2, invited_at = NOW()
+               WHERE id = $3
+               RETURNING *""",
+            token, body.role, existing["id"]
+        )
+    else:
+        member = await db.fetchrow(
+            """INSERT INTO workspace_members (workspace_id, email, role, status, invite_token)
+               VALUES ($1, $2, $3, 'pending', $4)
+               RETURNING *""",
+            ws["id"], body.email, body.role, token
+        )
 
-    member = await db.fetchrow(
-        """INSERT INTO workspace_members (workspace_id, email, role, status)
-           VALUES ($1, $2, $3, 'pending')
-           RETURNING *""",
-        ws['id'], body.email, body.role
-    )
+    # Send email — different copy depending on whether they have an account
+    user_exists = await db.fetchrow("SELECT id FROM users WHERE email = $1", body.email)
+    inviter = await db.fetchrow("SELECT name FROM users WHERE id = $1", current_user["id"])
+    inviter_name = inviter["name"] if inviter else "Your team"
 
-    # Send invite email
-    invite_html = f"""
-    <p>You've been invited to join <strong>{ws['name']}</strong> on PagePersona.</p>
-    <p>Sign up or log in to accept your invitation.</p>
-    <p><a href="https://app.usepagepersona.com/signup">Accept Invitation</a></p>
-    """
-    send_email(body.email, f"You've been invited to {ws['name']}", invite_html)
+    if user_exists:
+        send_team_invite_existing_user_email(
+            to_email=body.email,
+            workspace_name=ws["name"],
+            inviter_name=inviter_name,
+            accept_url=accept_url,
+        )
+    else:
+        send_team_invite_email(
+            to_email=body.email,
+            workspace_name=ws["name"],
+            inviter_name=inviter_name,
+            accept_url=accept_url,
+        )
 
     return _fmt(member)
 
+
+# ── Accept invite ─────────────────────────────────────────────────────────────
+
+@router.post("/accept")
+async def accept_invite(
+    body: AcceptInviteRequest,
+    db: asyncpg.Connection = Depends(get_db)
+):
+    """Accept team invite — create account + own workspace if new, else use existing user."""
+    member = await db.fetchrow(
+        """SELECT wm.*, w.name as workspace_name
+           FROM workspace_members wm
+           JOIN workspaces w ON wm.workspace_id = w.id
+           WHERE wm.invite_token = $1 AND wm.status = 'pending'""",
+        body.token
+    )
+    if not member:
+        raise HTTPException(status_code=404, detail="Invalid or already accepted invite link")
+
+    email = member["email"]
+    now = datetime.now(timezone.utc)
+
+    existing_user = await db.fetchrow("SELECT * FROM users WHERE email = $1", email)
+
+    if existing_user:
+        user = existing_user
+    else:
+        if not body.name or not body.password:
+            raise HTTPException(status_code=400, detail="Name and password are required to create your account")
+        if len(body.password) < 8:
+            raise HTTPException(status_code=422, detail="Password must be at least 8 characters")
+        hashed = hash_password(body.password)
+        user = await db.fetchrow(
+            """INSERT INTO users (email, name, password_hash, email_verified, language)
+               VALUES ($1, $2, $3, true, 'en')
+               RETURNING *""",
+            email, body.name, hashed
+        )
+        # Create their own personal workspace
+        ws_name = f"{body.name}'s Workspace"
+        ws_slug_base = body.name.lower().strip().replace(" ", "-")
+        ws_slug = ws_slug_base
+        count = await db.fetchval("SELECT COUNT(*) FROM workspaces WHERE slug = $1", ws_slug)
+        if count:
+            ws_slug = f"{ws_slug_base}-{str(uuid.uuid4())[:8]}"
+        await db.execute(
+            """INSERT INTO workspaces (name, slug, owner_id, type)
+               VALUES ($1, $2, $3, 'personal')""",
+            ws_name, ws_slug, str(user["id"])
+        )
+
+    # Activate the workspace_members row
+    await db.execute(
+        """UPDATE workspace_members
+           SET user_id = $1, status = 'active', joined_at = $2, invite_token = NULL
+           WHERE id = $3""",
+        str(user["id"]), now, member["id"]
+    )
+
+    access_token = create_access_token({"sub": str(user["id"])})
+    refresh_token = create_refresh_token({"sub": str(user["id"])})
+    await db.execute(
+        "INSERT INTO sessions (user_id, token, expires_at) VALUES ($1, $2, NOW() + INTERVAL '30 days')",
+        str(user["id"]), refresh_token
+    )
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "user": {"id": str(user["id"]), "email": user["email"], "name": user["name"]},
+        "workspace_name": member["workspace_name"],
+    }
+
+
+# ── Update role ───────────────────────────────────────────────────────────────
 
 @router.patch("/{member_id}/role")
 async def update_member_role(
@@ -96,17 +271,21 @@ async def update_member_role(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    ws = await _get_workspace(db, current_user)
+    if body.role not in ("member", "admin"):
+        raise HTTPException(status_code=422, detail="Role must be 'member' or 'admin'")
+    ws = await _owner_workspace(db, current_user)  # only owner can change roles
     updated = await db.fetchrow(
         """UPDATE workspace_members SET role = $1
            WHERE id = $2 AND workspace_id = $3
            RETURNING *""",
-        body.role, member_id, ws['id']
+        body.role, member_id, ws["id"]
     )
     if not updated:
         raise HTTPException(status_code=404, detail="Member not found")
     return _fmt(updated)
 
+
+# ── Remove member ─────────────────────────────────────────────────────────────
 
 @router.delete("/{member_id}")
 async def remove_member(
@@ -114,10 +293,10 @@ async def remove_member(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    ws = await _get_workspace(db, current_user)
+    ws = await _admin_or_owner_workspace(db, current_user)
     deleted = await db.fetchrow(
         "DELETE FROM workspace_members WHERE id = $1 AND workspace_id = $2 RETURNING id",
-        member_id, ws['id']
+        member_id, ws["id"]
     )
     if not deleted:
         raise HTTPException(status_code=404, detail="Member not found")

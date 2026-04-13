@@ -240,9 +240,17 @@ async def workspace_analytics(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
-    # Verify ownership
+    # Verify access — owner or active team member
     workspace = await db.fetchrow(
-        'SELECT id FROM workspaces WHERE id=$1 AND owner_id=$2',
+        '''SELECT w.id FROM workspaces w
+           WHERE w.id = $1 AND (
+               w.owner_id = $2
+               OR EXISTS (
+                   SELECT 1 FROM workspace_members wm
+                   WHERE wm.workspace_id = w.id AND wm.user_id = $2
+                     AND wm.status = 'active' AND wm.role NOT IN ('client', 'revoked')
+               )
+           )''',
         workspace_id, current_user['id']
     )
     if not workspace:
@@ -418,7 +426,14 @@ async def workspace_analytics_self(
         )
     else:
         workspace = await db.fetchrow(
-            'SELECT id FROM workspaces WHERE owner_id=$1', current_user['id']
+            '''SELECT w.id FROM workspaces w
+               LEFT JOIN workspace_members wm
+                      ON wm.workspace_id = w.id AND wm.user_id = $1
+                         AND wm.status = 'active' AND wm.role NOT IN ('client', 'revoked')
+               WHERE w.owner_id = $1 OR wm.id IS NOT NULL
+               ORDER BY CASE WHEN w.owner_id = $1 THEN 0 ELSE 1 END, w.created_at ASC
+               LIMIT 1''',
+            current_user['id']
         )
     if not workspace:
         raise HTTPException(status_code=404, detail='Workspace not found')

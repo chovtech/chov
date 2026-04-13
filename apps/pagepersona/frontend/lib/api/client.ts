@@ -196,6 +196,10 @@ export const teamApi = {
     apiClient.patch(`/api/team/${memberId}/role`, { role }),
   remove: (memberId: string) =>
     apiClient.delete(`/api/team/${memberId}`),
+  inviteInfo: (token: string) =>
+    apiClient.get(`/api/team/invite-info?token=${token}`),
+  accept: (data: { token: string; name?: string; password?: string }) =>
+    apiClient.post('/api/team/accept', data),
 }
 
 // Clients API

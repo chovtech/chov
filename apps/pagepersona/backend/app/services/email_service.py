@@ -176,6 +176,50 @@ def send_client_access_restored_email(
     return send_email(to_email, subject, html)
 
 
+def send_team_invite_email(
+    to_email: str,
+    workspace_name: str,
+    inviter_name: str,
+    accept_url: str,
+) -> bool:
+    """Invite email for a new user (no existing account)."""
+    subject = f"You've been invited to join {workspace_name} on PagePersona"
+    html = f"""
+    <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+      <h2 style="color:#1A56DB">You're invited to collaborate!</h2>
+      <p>Hi,</p>
+      <p><strong>{inviter_name}</strong> has invited you to join <strong>{workspace_name}</strong> on PagePersona.</p>
+      <p>Click the button below to set up your account and get started:</p>
+      <p><a href="{accept_url}" style="background:#1A56DB;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>
+      <p style="color:#94a3b8;font-size:12px">This link can only be used once. If you weren't expecting this, you can ignore it.</p>
+      <p style="color:#94a3b8;font-size:12px">Powered by PagePersona</p>
+    </body></html>
+    """
+    return send_email(to_email, subject, html)
+
+
+def send_team_invite_existing_user_email(
+    to_email: str,
+    workspace_name: str,
+    inviter_name: str,
+    accept_url: str,
+) -> bool:
+    """Invite email for a user who already has a PagePersona account."""
+    subject = f"You've been invited to join {workspace_name} on PagePersona"
+    html = f"""
+    <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
+      <h2 style="color:#1A56DB">You're invited to collaborate!</h2>
+      <p>Hi,</p>
+      <p><strong>{inviter_name}</strong> has invited you to join <strong>{workspace_name}</strong> on PagePersona.</p>
+      <p>Since you already have a PagePersona account, just click the button below to accept — no sign-up needed:</p>
+      <p><a href="{accept_url}" style="background:#1A56DB;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>
+      <p style="color:#94a3b8;font-size:12px">This link can only be used once. You'll be taken straight to the dashboard after accepting.</p>
+      <p style="color:#94a3b8;font-size:12px">Powered by PagePersona</p>
+    </body></html>
+    """
+    return send_email(to_email, subject, html)
+
+
 def send_install_email(to_email: str, script_tag: str, project_name: str, lang: str = "en") -> bool:
     subjects = {
         "en": f"PagePersona installation instructions for {project_name}",

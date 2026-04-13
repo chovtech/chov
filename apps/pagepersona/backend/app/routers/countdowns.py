@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from typing import Optional
 from app.database import get_db
 from app.core.security import get_current_user
+from app.core.access import get_accessible_workspace
 from app.services.countdown_service import (
     create_countdown, get_countdowns, get_countdown, update_countdown, delete_countdown
 )
@@ -34,9 +35,7 @@ async def create(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    workspace = await db.fetchrow("SELECT id FROM workspaces WHERE owner_id = $1", current_user['id'])
-    if not workspace:
-        raise HTTPException(404, "Workspace not found")
+    workspace = await get_accessible_workspace(db, current_user['id'])
     return await create_countdown(
         db, str(workspace['id']), body.name,
         body.ends_at, body.expiry_action, body.expiry_value, body.config
@@ -49,12 +48,7 @@ async def list_all(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    if workspace_id:
-        workspace = await db.fetchrow("SELECT id FROM workspaces WHERE id = $1 AND owner_id = $2", workspace_id, current_user['id'])
-    else:
-        workspace = await db.fetchrow("SELECT id FROM workspaces WHERE owner_id = $1 ORDER BY created_at ASC LIMIT 1", current_user['id'])
-    if not workspace:
-        raise HTTPException(404, "Workspace not found")
+    workspace = await get_accessible_workspace(db, current_user['id'], workspace_id)
     return await get_countdowns(db, str(workspace['id']))
 
 
@@ -64,9 +58,7 @@ async def get_one(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    workspace = await db.fetchrow("SELECT id FROM workspaces WHERE owner_id = $1", current_user['id'])
-    if not workspace:
-        raise HTTPException(404, "Workspace not found")
+    workspace = await get_accessible_workspace(db, current_user['id'])
     countdown = await get_countdown(db, countdown_id, str(workspace['id']))
     if not countdown:
         raise HTTPException(404, "Countdown not found")
@@ -80,9 +72,7 @@ async def update(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    workspace = await db.fetchrow("SELECT id FROM workspaces WHERE owner_id = $1", current_user['id'])
-    if not workspace:
-        raise HTTPException(404, "Workspace not found")
+    workspace = await get_accessible_workspace(db, current_user['id'])
     countdown = await update_countdown(
         db, countdown_id, str(workspace['id']),
         body.name, body.ends_at, body.expiry_action, body.expiry_value,
@@ -99,9 +89,7 @@ async def delete(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    workspace = await db.fetchrow("SELECT id FROM workspaces WHERE owner_id = $1", current_user['id'])
-    if not workspace:
-        raise HTTPException(404, "Workspace not found")
+    workspace = await get_accessible_workspace(db, current_user['id'])
     deleted = await delete_countdown(db, countdown_id, str(workspace['id']))
     if not deleted:
         raise HTTPException(404, "Countdown not found")
