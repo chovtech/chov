@@ -109,6 +109,8 @@ async def update(
     if not existing:
         raise HTTPException(status_code=404, detail="Project not found")
 
+    await require_admin_or_owner(db, current_user['id'], str(existing['workspace_id']))
+
     if body.thumbnail_url and existing['thumbnail_url']:
         delete_r2_image(existing['thumbnail_url'])
 
