@@ -583,8 +583,7 @@
 
 #### Cannot do (blocked)
 - [x] Cannot create a new project — button hidden or returns error
-- [x] Cannot edit an existing project (name, status, platform) — edit button hidden, backend returns 403
-- [x] Cannot upload project thumbnail — upload control hidden, backend returns 403
+- [x] Cannot edit an existing project (name, status, platform)
 - [x] Cannot delete a project — button hidden or returns error
 - [x] Settings — cannot change workspace name or billing
 - [x] Settings → Team — invite form is **not visible** (member role)
@@ -624,38 +623,26 @@
 
 ### PART F — Edge Cases
 
-- [x] Try inviting `chikeokoliofficial@gmail.com` (owner's own email) — error shown
-- [x] Try inviting `noblechykeokoli@gmail.com` again (already active) — error shown
-- [x] Invite a new pending email, then re-invite same email — blocked with "pending invite exists" error
-- [x] Use Resend button on pending row — new invite link sent, green checkmark appears for 2.5s
-- [x] Paste a tampered/fake token URL — shows "Invalid invitation" error page
-- [x] Click an already-accepted link — shows "Already accepted" screen with sign-in link
+- [ ] Try inviting `chikeokoliofficial@gmail.com` (owner's own email) — error shown
+- [ ] Try inviting `noblechykeokoli@gmail.com` again (already active) — error shown
+- [ ] Invite a new pending email, then re-invite same email — new link works, old link returns error
+- [ ] Paste a tampered/fake token URL — shows "Invalid invitation" error page
+- [ ] Click an already-accepted link — shows "Already accepted" screen with sign-in link
 
 ---
 
 ### PART G — Remove Member
 
-- [x] Owner removes `noblechykeokoli@gmail.com` from the team list
-- [x] Row disappears from team list
-- [x] Log in as `noblechykeokoli@gmail.com` — `chikeokoliofficial`'s workspace is gone from switcher
-- [x] Their own workspace still works normally
+- [ ] Owner removes `noblechykeokoli@gmail.com` from the team list
+- [ ] Row disappears from team list
+- [ ] Log in as `noblechykeokoli@gmail.com` — `chikeokoliofficial`'s workspace is gone from switcher
+- [ ] Their own workspace still works normally
 
 ---
 
 ### Bugs Found
 | # | Description | Fixed | Test written |
 |---|-------------|-------|-------------|
-| 1 | Rules page blank for members — `verify_project_access` used `get_accessible_workspace` without workspace_id, returned member's own workspace, project not found there | ✅ | ✅ |
-| 2 | New Rule / On-page Personalisation buttons disabled for members — same root cause as bug 1 (Promise.all failed, project data never loaded) | ✅ | — |
-| 3 | Breadcrumb not showing project name for members — same root cause as bug 1 | ✅ | — |
-| 4 | Popups and countdowns created by members landed in member's own workspace — builders posted without `workspace_id`, backend fell back to member's personal workspace | ✅ | — |
-| 5 | Orphaned popup/countdown items appearing in rule picker across workspaces — picker fetched without `workspace_id`, returned all accessible workspaces' items including orphaned ones | ✅ | — |
-| 6 | Team list empty when admin switched to owner's workspace — `_admin_or_owner_workspace` ignored the `workspace_id` param and returned admin's own workspace | ✅ | — |
-| 7 | Team invite sent to admin's own workspace instead of active workspace — same root cause as bug 6 | ✅ | — |
-| 8 | Owner had no role-change UI — role selector was never built in TeamTab | ✅ | — |
-| 9 | Inviting workspace owner's email wasn't blocked — no guard in invite endpoint | ✅ | ✅ |
-| 10 | Re-inviting a pending email clobbered the existing token — original invite link broke; fixed by blocking re-invite and adding a dedicated Resend button | ✅ | ✅ |
-| 11 | Resend button showed no success feedback — icon returned to normal with no confirmation; fixed with 2.5s green checkmark state | ✅ | — |
 
 ### Automated Tests — `tests/test_team.py`
 - [x] `test_invite_new_member`
@@ -673,8 +660,6 @@
 - [x] `test_resend_invite_refreshes_token`
 - [x] `test_cannot_invite_self`
 - [x] `test_accept_invalid_token`
-- [x] `test_cannot_invite_owner`
-- [x] `test_duplicate_pending_invite_blocked`
 
 ---
 
@@ -721,9 +706,10 @@ Video/audio support later is just a UI filter change — no schema migration nee
 | 8. SDK E2E | ✅ All signals + actions on live page | 3 (all fixed) | 9 / 11 (beacon pending) |
 | 9. Analytics | ✅ All endpoints | 0 | 14 / 14 ✅ |
 | 10. Agency / Client | 0 / 37 | 0 | 0 / 6 |
-| 11. Team | ✅ All 52 items | 11 (all fixed) | 17 / 17 ✅ |
+| 11. Team | 0 / 44 | 0 | 15 / 15 ✅ |
 
 ### Next up
+- Module 11 — Team Management
 - Build Media Library
 - Module 10 — Agency / Client
-- Write automated tests for Module 10
+- Write automated tests for Modules 9–11

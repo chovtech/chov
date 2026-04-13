@@ -779,7 +779,6 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
               t={t}
               countdowns={countdowns}
               loadingCountdowns={loadingCountdowns}
-              workspaceId={activeWorkspace?.id}
             />
           )}
 
@@ -958,7 +957,7 @@ function BlockPreview({ block, isBar, t }: { block: Block; isBar: boolean; t: an
 
 // ── Block Properties Panel ────────────────────────────────────────────────
 
-function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCountdowns, workspaceId }: { block: Block; onUpdate: (u: Partial<Block>) => void; onClose: () => void; t: any; countdowns?: any[]; loadingCountdowns?: boolean; workspaceId?: string }) {
+function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCountdowns }: { block: Block; onUpdate: (u: Partial<Block>) => void; onClose: () => void; t: any; countdowns?: any[]; loadingCountdowns?: boolean }) {
   const labels: Record<string, string> = { text: t('popup_builder.block_text_settings'), image: t('popup_builder.block_image_settings'), button: t('popup_builder.block_button_settings'), embed: t('popup_builder.block_embed_settings'), no_thanks: t('popup_builder.block_no_thanks_settings'), columns: t('popup_builder.block_columns_settings'), countdown: t('popup_builder.block_countdown_settings') }
 
   return (
@@ -1077,7 +1076,7 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
         <>
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Image</label>
-            <ImageUploader value={block.image_url || ''} onChange={url => onUpdate({ image_url: url })} workspaceId={workspaceId} />
+            <ImageUploader value={block.image_url || ''} onChange={url => onUpdate({ image_url: url })} />
           </div>
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Height — {block.image_height || 160}px</label>
@@ -1281,7 +1280,7 @@ function GlobalProperties({ config, setC, isBar, isFullscreen, t }: any) {
 
       <div>
         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Background Image</label>
-        <ImageUploader value={config.bg_image || ''} onChange={url => setC('bg_image', url)} workspaceId={activeWorkspace?.id} />
+        <ImageUploader value={config.bg_image || ''} onChange={url => setC('bg_image', url)} />
         {config.bg_image && (
           <div className="mt-2">
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Colour Overlay — {config.bg_image_opacity || 40}%</label>
