@@ -179,18 +179,26 @@ async def invite_member(
     )
     if existing and existing["status"] == "active":
         raise HTTPException(status_code=400, detail="This email is already an active team member")
-    if existing and existing["status"] == "pending":
-        raise HTTPException(status_code=400, detail="A pending invitation already exists for this email. Use resend to send a new link.")
 
     token = str(uuid.uuid4())
     accept_url = f"{settings.FRONTEND_URL}/team-accept?token={token}"
 
-    member = await db.fetchrow(
-        """INSERT INTO workspace_members (workspace_id, email, role, status, invite_token)
-           VALUES ($1, $2, $3, 'pending', $4)
-           RETURNING *""",
-        ws["id"], body.email, body.role, token
-    )
+    if existing:
+        # Resend — refresh token
+        member = await db.fetchrow(
+            """UPDATE workspace_members
+               SET invite_token = $1, role = $2, invited_at = NOW()
+               WHERE id = $3
+               RETURNING *""",
+            token, body.role, existing["id"]
+        )
+    else:
+        member = await db.fetchrow(
+            """INSERT INTO workspace_members (workspace_id, email, role, status, invite_token)
+               VALUES ($1, $2, $3, 'pending', $4)
+               RETURNING *""",
+            ws["id"], body.email, body.role, token
+        )
 
     # Send email — different copy depending on whether they have an account
     user_exists = await db.fetchrow("SELECT id FROM users WHERE email = $1", body.email)
@@ -213,49 +221,6 @@ async def invite_member(
         )
 
     return _fmt(member)
-
-
-# ── Resend invite ─────────────────────────────────────────────────────────────
-
-@router.post("/{member_id}/resend")
-async def resend_invite(
-    member_id: str,
-    db: asyncpg.Connection = Depends(get_db),
-    current_user: dict = Depends(get_current_user)
-):
-    member = await db.fetchrow(
-        "SELECT * FROM workspace_members WHERE id = $1 AND status = 'pending'", member_id
-    )
-    if not member:
-        raise HTTPException(status_code=404, detail="Pending invite not found")
-
-    ws = await _admin_or_owner_workspace(db, current_user, str(member["workspace_id"]))
-
-    token = str(uuid.uuid4())
-    accept_url = f"{settings.FRONTEND_URL}/team-accept?token={token}"
-
-    updated = await db.fetchrow(
-        """UPDATE workspace_members SET invite_token = $1, invited_at = NOW()
-           WHERE id = $2 RETURNING *""",
-        token, member_id
-    )
-
-    user_exists = await db.fetchrow("SELECT id FROM users WHERE email = $1", member["email"])
-    inviter = await db.fetchrow("SELECT name FROM users WHERE id = $1", current_user["id"])
-    inviter_name = inviter["name"] if inviter else "Your team"
-
-    if user_exists:
-        send_team_invite_existing_user_email(
-            to_email=member["email"], workspace_name=ws["name"],
-            inviter_name=inviter_name, accept_url=accept_url,
-        )
-    else:
-        send_team_invite_email(
-            to_email=member["email"], workspace_name=ws["name"],
-            inviter_name=inviter_name, accept_url=accept_url,
-        )
-
-    return _fmt(updated)
 
 
 # ── Accept invite ─────────────────────────────────────────────────────────────

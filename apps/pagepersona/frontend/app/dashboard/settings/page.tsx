@@ -30,7 +30,6 @@ function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgC
   const [inviteLoading, setInviteLoading] = useState(false)
   const [inviteMsg, setInviteMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null)
-  const [resendingId, setResendingId] = useState<string | null>(null)
 
   async function fetchMembers(wsId?: string) {
     try {
@@ -63,14 +62,6 @@ function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgC
       setMembers(prev => prev.map(m => m.id === memberId ? { ...m, role: newRole } : m))
     } catch { /* ignore */ }
     finally { setUpdatingRoleId(null) }
-  }
-
-  async function handleResend(memberId: string) {
-    setResendingId(memberId)
-    try {
-      await teamApi.resend(memberId)
-    } catch { /* ignore */ }
-    finally { setResendingId(null) }
   }
 
   async function handleRemove(memberId: string) {
@@ -125,17 +116,7 @@ function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgC
                 </div>
                 <div className="flex items-center gap-3">
                   {m.status === 'pending' ? (
-                    <>
-                      <span className="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase tracking-wider">{t('agency.status_pending')}</span>
-                      <button
-                        onClick={() => handleResend(m.id)}
-                        disabled={resendingId === m.id}
-                        className="p-1.5 text-slate-400 hover:text-brand hover:bg-brand/5 rounded-lg transition-colors disabled:opacity-40"
-                        title={t('settings.team.resend_invite')}
-                      >
-                        <Icon name={resendingId === m.id ? 'sync' : 'forward_to_inbox'} className={`text-[18px]${resendingId === m.id ? ' animate-spin' : ''}`} />
-                      </button>
-                    </>
+                    <span className="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase tracking-wider">{t('agency.status_pending')}</span>
                   ) : (
                     <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase tracking-wider">{t('agency.status_active')}</span>
                   )}
