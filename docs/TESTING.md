@@ -499,95 +499,139 @@
 
 ## MODULE 11 — TEAM MANAGEMENT
 
-> Test with two real accounts. Use your main account (Chike) as the **Owner**.
-> Use `nobechykeokoli@gmail.com` as the **invited team member**.
-> Use the deployed app at `app.usepagepersona.com`.
+> **Owner account:** `chikeokoliofficial@gmail.com`
+> **Deployed app:** `app.usepagepersona.com`
+>
+> **Pre-test setup (do this before anything else):**
+> 1. Sign up `okolichikevitalis@gmail.com` on PagePersona (existing user test)
+> 2. Sign up `theinfluenccr@gmail.com` on PagePersona (existing user test)
+> 3. Log out — then log back in as `chikeokoliofficial@gmail.com` to run the tests
 
 ---
 
-### PART A — Invite Flow
+### PART A — Invite New Users (no existing account)
 
-#### Owner sends invite
-- [ ] Go to Settings → Team tab
-- [ ] Enter `nobechykeokoli@gmail.com`, select role **Member**, click Invite
-- [ ] Member appears in team list with status **Pending**
-- [ ] Email arrives at `nobechykeokoli@gmail.com` with the invite link
+#### Invite `noblechykeokoli@gmail.com` as Member
+- [ ] Go to Settings → Team tab as `chikeokoliofficial@gmail.com`
+- [ ] Enter `noblechykeokoli@gmail.com`, select role **Member**, click Invite
+- [ ] Row appears in team list with status **Pending**
+- [ ] Email arrives at `noblechykeokoli@gmail.com` — invite link visible
 
-#### New user accept (first time)
-- [ ] Click the invite link in the email — lands on `/team-accept?token=...`
-- [ ] Page shows workspace name and role (Member)
+#### Accept as new user — `noblechykeokoli@gmail.com`
+- [ ] Click invite link — lands on `/team-accept?token=...`
+- [ ] Page shows workspace name and role **Member**
 - [ ] Shows "Create your account" form (name + password + confirm)
 - [ ] Fill in name and password, submit
 - [ ] Redirected to `/dashboard`
-- [ ] Workspace switcher shows **two workspaces**: their own + yours (Chike's workspace)
-- [ ] Member row in Settings → Team updates to status **Active**
+- [ ] Workspace switcher shows **two workspaces**: their own + `chikeokoliofficial`'s workspace
+- [ ] Back in owner account — `noblechykeokoli@gmail.com` row shows status **Active**
 
-#### Existing user accept
-- [ ] Invite an email that already has a PagePersona account
-- [ ] That user clicks the invite link — sees "Accept Invitation" button (no name/password form)
-- [ ] Click accept — redirected to dashboard
-- [ ] Workspace switcher shows their existing workspace + your workspace
+#### Invite `legendchyke@gmail.com` as Admin
+- [ ] Enter `legendchyke@gmail.com`, select role **Admin**, click Invite
+- [ ] Row appears in team list with status **Pending**
+- [ ] Email arrives at `legendchyke@gmail.com` — invite link visible
+
+#### Accept as new user — `legendchyke@gmail.com`
+- [ ] Click invite link — lands on `/team-accept?token=...`
+- [ ] Page shows workspace name and role **Admin**
+- [ ] Fill in name and password, submit
+- [ ] Redirected to `/dashboard`
+- [ ] Workspace switcher shows **two workspaces**: their own + `chikeokoliofficial`'s workspace
+- [ ] Back in owner account — `legendchyke@gmail.com` row shows status **Active**
 
 ---
 
-### PART B — Team Member Access (logged in as the invited member)
+### PART B — Invite Existing Users (already have an account)
+
+#### Invite `okolichikevitalis@gmail.com` as Member
+- [ ] Enter `okolichikevitalis@gmail.com`, select role **Member**, click Invite
+- [ ] Row appears in team list with status **Pending**
+- [ ] Email arrives at `okolichikevitalis@gmail.com`
+
+#### Accept as existing user — `okolichikevitalis@gmail.com`
+- [ ] Click invite link — lands on `/team-accept?token=...`
+- [ ] Page shows workspace name and role **Member**
+- [ ] Shows **"Accept Invitation" button only** — no name/password form
+- [ ] Click Accept — redirected to `/dashboard`
+- [ ] Workspace switcher shows their existing workspace + `chikeokoliofficial`'s workspace
+- [ ] Back in owner account — `okolichikevitalis@gmail.com` row shows status **Active**
+
+#### Invite `theinfluenccr@gmail.com` as Admin
+- [ ] Enter `theinfluenccr@gmail.com`, select role **Admin**, click Invite
+- [ ] Row appears in team list with status **Pending**
+- [ ] Email arrives at `theinfluenccr@gmail.com`
+
+#### Accept as existing user — `theinfluenccr@gmail.com`
+- [ ] Click invite link — shows "Accept Invitation" button only (no signup form)
+- [ ] Click Accept — redirected to `/dashboard`
+- [ ] Workspace switcher shows their existing workspace + `chikeokoliofficial`'s workspace
+- [ ] Back in owner account — `theinfluenccr@gmail.com` row shows status **Active**
+
+---
+
+### PART C — Member Access (logged in as `noblechykeokoli@gmail.com`)
+
+> Switch to `chikeokoliofficial`'s workspace in the switcher first.
 
 #### Can do (full CRUD)
-- [ ] Switch to Chike's workspace using workspace switcher
 - [ ] Can see all projects in the workspace
 - [ ] Can create a new project
 - [ ] Can edit an existing project
 - [ ] Can delete a project
 - [ ] Can create a rule on a project
-- [ ] Can edit a rule
-- [ ] Can delete a rule
-- [ ] Can create a popup
-- [ ] Can edit a popup
-- [ ] Can delete a popup
-- [ ] Can create a countdown
-- [ ] Can edit a countdown
-- [ ] Can delete a countdown
-- [ ] Can view analytics (project + workspace level)
+- [ ] Can edit and delete a rule
+- [ ] Can create, edit, delete a popup
+- [ ] Can create, edit, delete a countdown
+- [ ] Can view project analytics and workspace analytics
 
 #### Cannot do (blocked)
-- [ ] Settings page — cannot change workspace name or billing
-- [ ] Settings → Team — cannot see the invite form (member role)
-- [ ] Cannot access Agency / Client management pages
+- [ ] Settings — cannot change workspace name or billing
+- [ ] Settings → Team — invite form is **not visible** (member role)
+- [ ] Agency / Client pages are inaccessible
 
 ---
 
-### PART C — Role Management (logged in as Owner)
+### PART D — Admin Access (logged in as `legendchyke@gmail.com`)
 
-#### Admin role
-- [ ] Change the member's role from **Member** to **Admin**
-- [ ] Log in as the team member — they can now see the Invite button in Settings → Team
-- [ ] Admin can invite another member
-- [ ] Admin can remove a member (other than the owner)
-- [ ] Admin **cannot** change roles (role dropdown/button should be hidden or disabled)
-- [ ] Admin **cannot** change workspace settings or billing
+> Switch to `chikeokoliofficial`'s workspace in the switcher first.
 
-#### Changing roles
-- [ ] Change Admin back to Member — verify invite button disappears again
-- [ ] Change Member back to Admin — verify invite button reappears
+#### Can do
+- [ ] Full CRUD on projects, rules, popups, countdowns (same as member)
+- [ ] Settings → Team — **invite form IS visible**
+- [ ] Can invite another member
+- [ ] Can remove a member (not the owner)
 
----
-
-### PART D — Edge Cases
-
-- [ ] Resend invite to same pending email — new link works, old link is invalid
-- [ ] Invite already-active member email returns an error message
-- [ ] Owner cannot invite their own email — error shown
-- [ ] Accept link with invalid / tampered token shows error page
-- [ ] Accept link for already-accepted invite shows "Already accepted" screen with sign-in link
+#### Cannot do
+- [ ] Cannot change roles (role controls hidden/disabled)
+- [ ] Cannot change workspace settings or billing
 
 ---
 
-### PART E — Remove Member
+### PART E — Role Changes (logged in as Owner `chikeokoliofficial@gmail.com`)
 
-- [ ] Owner removes team member from Settings → Team
-- [ ] Member row disappears from the list
-- [ ] Removed member refreshes their dashboard — Chike's workspace disappears from switcher
-- [ ] Removed member can still access their own workspace normally
+- [ ] Change `noblechykeokoli@gmail.com` from **Member → Admin** — they can now invite others
+- [ ] Change back **Admin → Member** — invite button disappears again
+- [ ] Change `legendchyke@gmail.com` from **Admin → Member** — invite button disappears
+- [ ] Change back **Member → Admin** — invite button reappears
+
+---
+
+### PART F — Edge Cases
+
+- [ ] Try inviting `chikeokoliofficial@gmail.com` (owner's own email) — error shown
+- [ ] Try inviting `noblechykeokoli@gmail.com` again (already active) — error shown
+- [ ] Invite a new pending email, then re-invite same email — new link works, old link returns error
+- [ ] Paste a tampered/fake token URL — shows "Invalid invitation" error page
+- [ ] Click an already-accepted link — shows "Already accepted" screen with sign-in link
+
+---
+
+### PART G — Remove Member
+
+- [ ] Owner removes `noblechykeokoli@gmail.com` from the team list
+- [ ] Row disappears from team list
+- [ ] Log in as `noblechykeokoli@gmail.com` — `chikeokoliofficial`'s workspace is gone from switcher
+- [ ] Their own workspace still works normally
 
 ---
 
@@ -657,7 +701,7 @@ Video/audio support later is just a UI filter change — no schema migration nee
 | 8. SDK E2E | ✅ All signals + actions on live page | 3 (all fixed) | 9 / 11 (beacon pending) |
 | 9. Analytics | ✅ All endpoints | 0 | 14 / 14 ✅ |
 | 10. Agency / Client | 0 / 37 | 0 | 0 / 6 |
-| 11. Team | 0 / 26 | 0 | 15 / 15 ✅ |
+| 11. Team | 0 / 44 | 0 | 15 / 15 ✅ |
 
 ### Next up
 - Module 11 — Team Management
