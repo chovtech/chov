@@ -574,20 +574,20 @@
 > Switch to `chikeokoliofficial`'s workspace in the switcher first.
 
 #### Can do
-- [ ] Can see all projects in the workspace
-- [ ] Can edit an existing project (name, status, platform)
-- [ ] Can create a rule on a project
-- [ ] Can edit and delete a rule
-- [ ] Can create, edit, delete a popup
-- [ ] Can create, edit, delete a countdown
-- [ ] Can view project analytics and workspace analytics
+- [x] Can see all projects in the workspace
+- [x] Can create a rule on a project
+- [x] Can edit and delete a rule
+- [x] Can create, edit, delete a popup
+- [x] Can create, edit, delete a countdown
+- [x] Can view project analytics and workspace analytics
 
 #### Cannot do (blocked)
-- [ ] Cannot create a new project — button hidden or returns error
-- [ ] Cannot delete a project — button hidden or returns error
-- [ ] Settings — cannot change workspace name or billing
-- [ ] Settings → Team — invite form is **not visible** (member role)
-- [ ] Agency / Client pages are inaccessible
+- [x] Cannot create a new project — button hidden or returns error
+- [x] Cannot edit an existing project (name, status, platform)
+- [x] Cannot delete a project — button hidden or returns error
+- [x] Settings — cannot change workspace name or billing
+- [x] Settings → Team — invite form is **not visible** (member role)
+- [x] Agency / Client pages are inaccessible
 
 ---
 

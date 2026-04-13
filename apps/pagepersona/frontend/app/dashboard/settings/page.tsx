@@ -21,6 +21,7 @@ interface Member {
 function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgClass: (type: string) => string }) {
   const { activeWorkspace } = useWorkspace()
   const workspaceId = activeWorkspace?.id
+  const isOwner = activeWorkspace?.member_role === 'owner'
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
   const [inviteOpen, setInviteOpen] = useState(false)
@@ -28,6 +29,7 @@ function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgC
   const [inviteRole, setInviteRole] = useState('member')
   const [inviteLoading, setInviteLoading] = useState(false)
   const [inviteMsg, setInviteMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null)
 
   async function fetchMembers(wsId?: string) {
     try {
@@ -51,6 +53,15 @@ function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgC
     } catch (err: any) {
       setInviteMsg({ type: 'error', text: err?.response?.data?.detail || t('settings.team.invite_error') })
     } finally { setInviteLoading(false) }
+  }
+
+  async function handleRoleChange(memberId: string, newRole: string) {
+    setUpdatingRoleId(memberId)
+    try {
+      await teamApi.updateRole(memberId, newRole)
+      setMembers(prev => prev.map(m => m.id === memberId ? { ...m, role: newRole } : m))
+    } catch { /* ignore */ }
+    finally { setUpdatingRoleId(null) }
   }
 
   async function handleRemove(memberId: string) {
@@ -109,6 +120,17 @@ function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgC
                   ) : (
                     <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase tracking-wider">{t('agency.status_active')}</span>
                   )}
+                  {isOwner && m.status === 'active' ? (
+                    <select
+                      value={m.role}
+                      disabled={updatingRoleId === m.id}
+                      onChange={e => handleRoleChange(m.id, e.target.value)}
+                      className="text-xs font-semibold border border-slate-200 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand/30 disabled:opacity-50 cursor-pointer"
+                    >
+                      <option value="member">{t('settings.team.role_member')}</option>
+                      <option value="admin">{t('settings.team.role_admin')}</option>
+                    </select>
+                  ) : null}
                   <button
                     onClick={() => handleRemove(m.id)}
                     className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
