@@ -31,6 +31,7 @@ function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgC
   const [inviteMsg, setInviteMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null)
   const [resendingId, setResendingId] = useState<string | null>(null)
+  const [resentId, setResentId] = useState<string | null>(null)
 
   async function fetchMembers(wsId?: string) {
     try {
@@ -67,8 +68,11 @@ function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgC
 
   async function handleResend(memberId: string) {
     setResendingId(memberId)
-    try { await teamApi.resend(memberId) }
-    catch { /* ignore */ }
+    try {
+      await teamApi.resend(memberId)
+      setResentId(memberId)
+      setTimeout(() => setResentId(null), 2500)
+    } catch { /* ignore */ }
     finally { setResendingId(null) }
   }
 
@@ -132,7 +136,10 @@ function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgC
                         title={t('settings.team.resend_invite')}
                         className="p-1.5 text-slate-400 hover:text-brand hover:bg-brand/5 rounded-lg transition-colors disabled:opacity-40"
                       >
-                        <Icon name={resendingId === m.id ? 'sync' : 'forward_to_inbox'} className={`text-[18px]${resendingId === m.id ? ' animate-spin' : ''}`} />
+                        <Icon
+                          name={resendingId === m.id ? 'sync' : resentId === m.id ? 'check_circle' : 'forward_to_inbox'}
+                          className={`text-[18px]${resendingId === m.id ? ' animate-spin' : resentId === m.id ? ' text-green-500' : ''}`}
+                        />
                       </button>
                     </>
                   ) : (
