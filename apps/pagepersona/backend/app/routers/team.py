@@ -15,6 +15,7 @@ router = APIRouter(prefix="/api/team", tags=["team"])
 class InviteMemberRequest(BaseModel):
     email: EmailStr
     role: str = "member"  # "member" | "admin"
+    workspace_id: Optional[str] = None
 
 
 class UpdateRoleRequest(BaseModel):
@@ -40,27 +41,51 @@ def _fmt(m) -> dict:
     }
 
 
-async def _owner_workspace(db, current_user) -> dict:
-    """Resolve the workspace owned by current_user. Raises 404 if none."""
-    ws = await db.fetchrow(
-        "SELECT * FROM workspaces WHERE owner_id = $1 LIMIT 1",
-        current_user["id"]
-    )
+async def _owner_workspace(db, current_user, workspace_id: str | None = None) -> dict:
+    """Resolve a workspace the current_user owns.
+    If workspace_id given, verifies ownership of that specific workspace.
+    Raises 403 if not owner."""
+    if workspace_id:
+        ws = await db.fetchrow(
+            "SELECT * FROM workspaces WHERE id = $1 AND owner_id = $2",
+            workspace_id, current_user["id"]
+        )
+    else:
+        ws = await db.fetchrow(
+            "SELECT * FROM workspaces WHERE owner_id = $1 ORDER BY created_at ASC LIMIT 1",
+            current_user["id"]
+        )
     if not ws:
-        raise HTTPException(status_code=404, detail="Workspace not found")
-    return ws
+        raise HTTPException(status_code=403, detail="Only the workspace owner can perform this action")
+    return dict(ws)
 
 
-async def _admin_or_owner_workspace(db, current_user) -> dict:
-    """Workspace accessible to current_user as owner OR admin member."""
-    # Owner path
+async def _admin_or_owner_workspace(db, current_user, workspace_id: str | None = None) -> dict:
+    """Workspace accessible to current_user as owner OR admin.
+    If workspace_id given, checks that specific workspace. Otherwise falls back to own workspace."""
+    if workspace_id:
+        ws = await db.fetchrow(
+            """SELECT w.* FROM workspaces w
+               WHERE w.id = $1 AND (
+                   w.owner_id = $2
+                   OR EXISTS (
+                       SELECT 1 FROM workspace_members wm
+                       WHERE wm.workspace_id = w.id AND wm.user_id = $2
+                         AND wm.role = 'admin' AND wm.status = 'active'
+                   )
+               )""",
+            workspace_id, current_user["id"]
+        )
+        if not ws:
+            raise HTTPException(status_code=403, detail="Admin access required")
+        return dict(ws)
+    # No workspace_id — fall back to own workspace first, then any admin workspace
     ws = await db.fetchrow(
-        "SELECT * FROM workspaces WHERE owner_id = $1 LIMIT 1",
+        "SELECT * FROM workspaces WHERE owner_id = $1 ORDER BY created_at ASC LIMIT 1",
         current_user["id"]
     )
     if ws:
-        return ws
-    # Admin member path
+        return dict(ws)
     row = await db.fetchrow(
         """SELECT w.* FROM workspaces w
            JOIN workspace_members wm ON wm.workspace_id = w.id
@@ -70,17 +95,18 @@ async def _admin_or_owner_workspace(db, current_user) -> dict:
     )
     if not row:
         raise HTTPException(status_code=403, detail="Admin access required")
-    return row
+    return dict(row)
 
 
 # ── List members ──────────────────────────────────────────────────────────────
 
 @router.get("")
 async def list_members(
+    workspace_id: Optional[str] = Query(None),
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    ws = await _owner_workspace(db, current_user)
+    ws = await _admin_or_owner_workspace(db, current_user, workspace_id)
     rows = await db.fetch(
         "SELECT * FROM workspace_members WHERE workspace_id = $1 ORDER BY invited_at ASC",
         ws["id"]
@@ -131,7 +157,7 @@ async def invite_member(
     if body.role not in ("member", "admin"):
         raise HTTPException(status_code=422, detail="Role must be 'member' or 'admin'")
 
-    ws = await _admin_or_owner_workspace(db, current_user)
+    ws = await _admin_or_owner_workspace(db, current_user, body.workspace_id)
 
     # Block inviting yourself
     self_user = await db.fetchrow("SELECT email FROM users WHERE id = $1", current_user["id"])
@@ -273,7 +299,11 @@ async def update_member_role(
 ):
     if body.role not in ("member", "admin"):
         raise HTTPException(status_code=422, detail="Role must be 'member' or 'admin'")
-    ws = await _owner_workspace(db, current_user)  # only owner can change roles
+    # Look up workspace from the member record, then verify ownership
+    member = await db.fetchrow("SELECT workspace_id FROM workspace_members WHERE id = $1", member_id)
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+    ws = await _owner_workspace(db, current_user, str(member["workspace_id"]))  # only owner can change roles
     updated = await db.fetchrow(
         """UPDATE workspace_members SET role = $1
            WHERE id = $2 AND workspace_id = $3
@@ -293,7 +323,11 @@ async def remove_member(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    ws = await _admin_or_owner_workspace(db, current_user)
+    # Look up workspace from the member record, then verify admin/owner access
+    member = await db.fetchrow("SELECT workspace_id FROM workspace_members WHERE id = $1", member_id)
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+    ws = await _admin_or_owner_workspace(db, current_user, str(member["workspace_id"]))
     deleted = await db.fetchrow(
         "DELETE FROM workspace_members WHERE id = $1 AND workspace_id = $2 RETURNING id",
         member_id, ws["id"]

@@ -19,6 +19,8 @@ interface Member {
 }
 
 function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgClass: (type: string) => string }) {
+  const { activeWorkspace } = useWorkspace()
+  const workspaceId = activeWorkspace?.id
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
   const [inviteOpen, setInviteOpen] = useState(false)
@@ -27,22 +29,22 @@ function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgC
   const [inviteLoading, setInviteLoading] = useState(false)
   const [inviteMsg, setInviteMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-  async function fetchMembers() {
+  async function fetchMembers(wsId?: string) {
     try {
-      const res = await teamApi.list()
+      const res = await teamApi.list(wsId ?? workspaceId)
       setMembers(res.data)
     } catch { setMembers([]) }
     finally { setLoading(false) }
   }
 
-  useEffect(() => { fetchMembers() }, [])
+  useEffect(() => { if (workspaceId) fetchMembers(workspaceId) }, [workspaceId])
 
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault()
     setInviteMsg(null)
     setInviteLoading(true)
     try {
-      await teamApi.invite({ email: inviteEmail, role: inviteRole })
+      await teamApi.invite({ email: inviteEmail, role: inviteRole, workspace_id: workspaceId })
       setInviteEmail(''); setInviteRole('member')
       setInviteOpen(false)
       await fetchMembers()
