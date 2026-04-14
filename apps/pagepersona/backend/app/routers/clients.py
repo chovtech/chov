@@ -52,7 +52,7 @@ async def get_invite_info(
 ):
     """Return white label + workspace info for an invite token. No auth required."""
     invite = await db.fetchrow(
-        """SELECT ci.id, ci.status, ci.client_email as email,
+        """SELECT ci.id, ci.status, ci.email,
                   w.name as workspace_name, w.white_label_brand_name, w.white_label_logo, w.white_label_primary_color, w.hide_powered_by,
                   u.name as inviter_name
            FROM client_invites ci
