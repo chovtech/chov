@@ -195,16 +195,24 @@ async def invite_member(
     user_exists = await db.fetchrow("SELECT id FROM users WHERE email = $1", body.email)
     inviter = await db.fetchrow("SELECT name FROM users WHERE id = $1", current_user["id"])
     inviter_name = inviter["name"] if inviter else "Your team"
+    brand_name = ws.get("white_label_brand_name") or 'PagePersona'
+    brand_color = ws.get("white_label_primary_color") or '#1A56DB'
+    logo_url = ws.get("white_label_logo")
+    hide_powered_by = ws.get("hide_powered_by") or False
 
     if user_exists:
         send_team_invite_existing_user_email(
             to_email=body.email, workspace_name=ws["name"],
             inviter_name=inviter_name, accept_url=accept_url,
+            brand_name=brand_name, brand_color=brand_color,
+            logo_url=logo_url, hide_powered_by=hide_powered_by,
         )
     else:
         send_team_invite_email(
             to_email=body.email, workspace_name=ws["name"],
             inviter_name=inviter_name, accept_url=accept_url,
+            brand_name=brand_name, brand_color=brand_color,
+            logo_url=logo_url, hide_powered_by=hide_powered_by,
         )
 
     return _fmt(member)
@@ -237,16 +245,24 @@ async def resend_invite(
     user_exists = await db.fetchrow("SELECT id FROM users WHERE email = $1", member["email"])
     inviter = await db.fetchrow("SELECT name FROM users WHERE id = $1", current_user["id"])
     inviter_name = inviter["name"] if inviter else "Your team"
+    brand_name = ws.get("white_label_brand_name") or 'PagePersona'
+    brand_color = ws.get("white_label_primary_color") or '#1A56DB'
+    logo_url = ws.get("white_label_logo")
+    hide_powered_by = ws.get("hide_powered_by") or False
 
     if user_exists:
         send_team_invite_existing_user_email(
             to_email=member["email"], workspace_name=ws["name"],
             inviter_name=inviter_name, accept_url=accept_url,
+            brand_name=brand_name, brand_color=brand_color,
+            logo_url=logo_url, hide_powered_by=hide_powered_by,
         )
     else:
         send_team_invite_email(
             to_email=member["email"], workspace_name=ws["name"],
             inviter_name=inviter_name, accept_url=accept_url,
+            brand_name=brand_name, brand_color=brand_color,
+            logo_url=logo_url, hide_powered_by=hide_powered_by,
         )
 
     return _fmt(updated)

@@ -160,8 +160,11 @@ def send_client_access_restored_email(
     logo_url: Optional[str],
     brand_color: str,
     dashboard_url: str,
+    brand_name: str = 'PagePersona',
+    hide_powered_by: bool = False,
 ) -> bool:
-    logo_html = f'<img src="{logo_url}" alt="" style="max-height:50px;margin-bottom:16px"/><br/>' if logo_url else ''
+    logo_html = f'<img src="{logo_url}" alt="{brand_name}" style="max-height:50px;margin-bottom:16px"/><br/>' if logo_url else ''
+    powered_by = '' if hide_powered_by else '<p style="color:#94a3b8;font-size:12px">Powered by PagePersona</p>'
     subject = f"Your access to {workspace_name} has been restored"
     html = f"""
     <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
@@ -171,10 +174,10 @@ def send_client_access_restored_email(
       <p>Your access to <strong>{workspace_name}</strong> has been restored.</p>
       <p>You can log back in and pick up where you left off:</p>
       <p><a href="{dashboard_url}" style="background:{brand_color};color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">Go to Dashboard</a></p>
-      <p style="color:#94a3b8;font-size:12px">Powered by PagePersona</p>
+      {powered_by}
     </body></html>
     """
-    return send_email(to_email, subject, html)
+    return send_email(to_email, subject, html, sender_name=brand_name)
 
 
 def send_team_invite_email(
@@ -182,21 +185,28 @@ def send_team_invite_email(
     workspace_name: str,
     inviter_name: str,
     accept_url: str,
+    brand_name: str = 'PagePersona',
+    brand_color: str = '#1A56DB',
+    logo_url: Optional[str] = None,
+    hide_powered_by: bool = False,
 ) -> bool:
     """Invite email for a new user (no existing account)."""
-    subject = f"You've been invited to join {workspace_name} on PagePersona"
+    logo_html = f'<img src="{logo_url}" alt="{brand_name}" style="max-height:50px;margin-bottom:16px"/><br/>' if logo_url else ''
+    powered_by = '' if hide_powered_by else '<p style="color:#94a3b8;font-size:12px">Powered by PagePersona</p>'
+    subject = f"You've been invited to join {workspace_name} on {brand_name}"
     html = f"""
     <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-      <h2 style="color:#1A56DB">You're invited to collaborate!</h2>
+      {logo_html}
+      <h2 style="color:{brand_color}">You're invited to collaborate!</h2>
       <p>Hi,</p>
-      <p><strong>{inviter_name}</strong> has invited you to join <strong>{workspace_name}</strong> on PagePersona.</p>
+      <p><strong>{inviter_name}</strong> has invited you to join <strong>{workspace_name}</strong> on {brand_name}.</p>
       <p>Click the button below to set up your account and get started:</p>
-      <p><a href="{accept_url}" style="background:#1A56DB;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>
+      <p><a href="{accept_url}" style="background:{brand_color};color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>
       <p style="color:#94a3b8;font-size:12px">This link can only be used once. If you weren't expecting this, you can ignore it.</p>
-      <p style="color:#94a3b8;font-size:12px">Powered by PagePersona</p>
+      {powered_by}
     </body></html>
     """
-    return send_email(to_email, subject, html)
+    return send_email(to_email, subject, html, sender_name=brand_name)
 
 
 def send_team_invite_existing_user_email(
@@ -204,35 +214,53 @@ def send_team_invite_existing_user_email(
     workspace_name: str,
     inviter_name: str,
     accept_url: str,
+    brand_name: str = 'PagePersona',
+    brand_color: str = '#1A56DB',
+    logo_url: Optional[str] = None,
+    hide_powered_by: bool = False,
 ) -> bool:
-    """Invite email for a user who already has a PagePersona account."""
-    subject = f"You've been invited to join {workspace_name} on PagePersona"
+    """Invite email for a user who already has an account."""
+    logo_html = f'<img src="{logo_url}" alt="{brand_name}" style="max-height:50px;margin-bottom:16px"/><br/>' if logo_url else ''
+    powered_by = '' if hide_powered_by else '<p style="color:#94a3b8;font-size:12px">Powered by PagePersona</p>'
+    subject = f"You've been invited to join {workspace_name} on {brand_name}"
     html = f"""
     <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-      <h2 style="color:#1A56DB">You're invited to collaborate!</h2>
+      {logo_html}
+      <h2 style="color:{brand_color}">You're invited to collaborate!</h2>
       <p>Hi,</p>
-      <p><strong>{inviter_name}</strong> has invited you to join <strong>{workspace_name}</strong> on PagePersona.</p>
-      <p>Since you already have a PagePersona account, just click the button below to accept — no sign-up needed:</p>
-      <p><a href="{accept_url}" style="background:#1A56DB;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>
+      <p><strong>{inviter_name}</strong> has invited you to join <strong>{workspace_name}</strong> on {brand_name}.</p>
+      <p>Since you already have a {brand_name} account, just click the button below to accept — no sign-up needed:</p>
+      <p><a href="{accept_url}" style="background:{brand_color};color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>
       <p style="color:#94a3b8;font-size:12px">This link can only be used once. You'll be taken straight to the dashboard after accepting.</p>
-      <p style="color:#94a3b8;font-size:12px">Powered by PagePersona</p>
+      {powered_by}
     </body></html>
     """
-    return send_email(to_email, subject, html)
+    return send_email(to_email, subject, html, sender_name=brand_name)
 
 
-def send_install_email(to_email: str, script_tag: str, project_name: str, lang: str = "en") -> bool:
+def send_install_email(
+    to_email: str,
+    script_tag: str,
+    project_name: str,
+    lang: str = "en",
+    brand_name: str = 'PagePersona',
+    brand_color: str = '#1A56DB',
+    logo_url: Optional[str] = None,
+    hide_powered_by: bool = False,
+) -> bool:
+    logo_html = f'<img src="{logo_url}" alt="{brand_name}" style="max-height:50px;margin-bottom:16px"/><br/>' if logo_url else ''
+    powered_by = '' if hide_powered_by else '<p style="color:#94a3b8;font-size:12px">Powered by PagePersona</p>'
     subjects = {
-        "en": f"PagePersona installation instructions for {project_name}",
-        "fr": f"Instructions d'installation PagePersona pour {project_name}",
+        "en": f"{brand_name} installation instructions for {project_name}",
+        "fr": f"Instructions d'installation {brand_name} pour {project_name}",
     }
     headings = {
-        "en": "Install PagePersona on your page",
-        "fr": "Installer PagePersona sur votre page",
+        "en": f"Install {brand_name} on your page",
+        "fr": f"Installer {brand_name} sur votre page",
     }
     intros = {
-        "en": f"You've been asked to install the PagePersona script on <strong>{project_name}</strong>. Paste the tag below before the <code>&lt;/body&gt;</code> tag or inside the <code>&lt;head&gt;</code> of your page:",
-        "fr": f"Vous avez été invité à installer le script PagePersona sur <strong>{project_name}</strong>. Collez la balise ci-dessous avant la balise <code>&lt;/body&gt;</code> ou dans le <code>&lt;head&gt;</code> de votre page :",
+        "en": f"You've been asked to install the {brand_name} script on <strong>{project_name}</strong>. Paste the tag below before the <code>&lt;/body&gt;</code> tag or inside the <code>&lt;head&gt;</code> of your page:",
+        "fr": f"Vous avez été invité à installer le script {brand_name} sur <strong>{project_name}</strong>. Collez la balise ci-dessous avant la balise <code>&lt;/body&gt;</code> ou dans le <code>&lt;head&gt;</code> de votre page :",
     }
     footers = {
         "en": "The script loads asynchronously and won't slow down your page. Once installed, reply to whoever sent this email to let them know.",
@@ -242,14 +270,15 @@ def send_install_email(to_email: str, script_tag: str, project_name: str, lang: 
     script_tag_escaped = script_tag.replace('<', '&lt;').replace('>', '&gt;')
     html = f"""
     <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-      <h2 style="color:#1A56DB">{headings.get(lang, headings['en'])}</h2>
+      {logo_html}
+      <h2 style="color:{brand_color}">{headings.get(lang, headings['en'])}</h2>
       <p style="color:#334155">{intros.get(lang, intros['en'])}</p>
       <div style="background:#0F172A;border-radius:10px;padding:20px;margin:20px 0">
         <code style="color:#93c5fd;font-size:13px;word-break:break-all">{script_tag_escaped}</code>
       </div>
       <p style="color:#64748b;font-size:14px">{footers.get(lang, footers['en'])}</p>
       <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
-      <p style="color:#94a3b8;font-size:12px">PagePersona · usepagepersona.com</p>
+      {powered_by}
     </body></html>
     """
-    return send_email(to_email, subject, html)
+    return send_email(to_email, subject, html, sender_name=brand_name)

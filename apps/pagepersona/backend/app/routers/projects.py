@@ -325,7 +325,10 @@ async def send_install_email_endpoint(
         raise HTTPException(status_code=404, detail="Project not found")
     ws = await db.fetchrow(
         """SELECT w.custom_domain, w.custom_domain_verified,
-                  pw.custom_domain as parent_domain, pw.custom_domain_verified as parent_domain_verified
+                  w.white_label_brand_name, w.white_label_logo, w.white_label_primary_color, w.hide_powered_by,
+                  pw.custom_domain as parent_domain, pw.custom_domain_verified as parent_domain_verified,
+                  pw.white_label_brand_name as parent_brand_name, pw.white_label_logo as parent_logo,
+                  pw.white_label_primary_color as parent_color, pw.hide_powered_by as parent_hide_powered_by
            FROM workspaces w
            LEFT JOIN workspaces pw ON w.parent_workspace_id = pw.id
            WHERE w.id = $1""",
@@ -334,9 +337,18 @@ async def send_install_email_endpoint(
     effective_domain = ws['custom_domain'] if ws and ws['custom_domain'] and ws['custom_domain_verified'] else \
                        (ws['parent_domain'] if ws and ws['parent_domain'] and ws['parent_domain_verified'] else None)
     cdn_base = f"https://{effective_domain}" if effective_domain else "https://cdn.usepagepersona.com"
+    brand_name = (ws['white_label_brand_name'] or ws['parent_brand_name']) if ws else None
+    brand_name = brand_name or 'PagePersona'
+    logo_url = (ws['white_label_logo'] or ws['parent_logo']) if ws else None
+    brand_color = (ws['white_label_primary_color'] or ws['parent_color']) if ws else None
+    brand_color = brand_color or '#1A56DB'
+    hide_powered_by = bool((ws['hide_powered_by'] or ws['parent_hide_powered_by'])) if ws else False
     script_tag = f'<script async src="{cdn_base}/pp.js?id={project["script_id"]}"></script>'
     lang = current_user.get('language', 'en')
-    sent = send_install_email(body.developer_email, script_tag, project['name'], lang)
+    sent = send_install_email(
+        body.developer_email, script_tag, project['name'], lang,
+        brand_name=brand_name, brand_color=brand_color, logo_url=logo_url, hide_powered_by=hide_powered_by
+    )
     if not sent:
         raise HTTPException(status_code=500, detail="Failed to send email")
     return {"message": "Installation email sent"}
