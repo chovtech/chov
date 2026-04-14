@@ -300,7 +300,9 @@ async def invite_client(
     brand_name = agency_ws['white_label_brand_name'] or 'PagePersona'
     logo_url = agency_ws['white_label_logo']
     brand_color = agency_ws['white_label_primary_color'] or '#1A56DB'
-    accept_url = f"https://app.usepagepersona.com/accept?token={token}"
+    custom_domain = agency_ws['custom_domain'] if agency_ws['custom_domain'] and agency_ws['custom_domain_verified'] else None
+    base_url = f"https://{custom_domain}" if custom_domain else "https://app.usepagepersona.com"
+    accept_url = f"{base_url}/accept?token={token}"
 
     from app.services.email_service import send_client_invite_email, send_client_invite_existing_user_email
     import logging

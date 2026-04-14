@@ -143,7 +143,7 @@ function AcceptForm() {
             )}
             <h1 className="text-2xl font-bold text-slate-900">You've been invited!</h1>
             <p className="text-slate-500 text-sm mt-1">
-              Access <strong>{info?.workspace_name}</strong> via your existing account
+              Access your <strong>{brandName}</strong> dashboard via your existing account
             </p>
           </div>
 
@@ -197,7 +197,7 @@ function AcceptForm() {
           )}
           <h1 className="text-2xl font-bold text-slate-900">Welcome to {brandName}</h1>
           <p className="text-slate-500 text-sm mt-1">
-            You've been invited to access <strong>{info?.workspace_name}</strong>
+            You've been invited to access your <strong>{brandName}</strong> dashboard
           </p>
         </div>
 
