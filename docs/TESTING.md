@@ -436,16 +436,16 @@
 ### PART A — Agency White-Label Setup
 
 - [x] Agency tab → White-label sub-tab loads correctly
-- [ ] Set brand name — saves and reflects in preview
-- [ ] Upload logo — appears in preview
-- [ ] Change primary colour — preview updates live
-- [ ] Agency slug link works — visit `app.usepagepersona.com/join/[slug]` in incognito — branded page loads
+- [x] Set brand name — saves and reflects in preview
+- [x] Upload logo — appears in preview
+- [x] Change primary colour — preview updates live
+- [x] Agency slug link works — visit `app.usepagepersona.com/join/[slug]` in incognito — branded page loads
 - [ ] White-labeled WordPress plugin uses agency brand name when brand is set
 
 > **Custom domain (skip if no domain ready):**
-> - [ ] Enter domain → CNAME instructions show correct target
-> - [ ] After DNS propagates — domain verifies, shows verified state
-> - [ ] Agency SDK script tag updates to use custom domain URL
+> - [x] Enter domain → CNAME instructions show correct target
+> - [x] After DNS propagates — domain verifies, shows verified state
+> - [x] Agency SDK script tag updates to use custom domain URL
 
 ---
 

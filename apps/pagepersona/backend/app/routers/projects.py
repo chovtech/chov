@@ -156,10 +156,15 @@ async def download_wordpress_plugin(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    # Get workspace brand name for white-labelling
+    # Get workspace white-label settings
     workspace = await db.fetchrow(
-        "SELECT white_label_brand_name FROM workspaces WHERE id = $1",
+        "SELECT white_label_brand_name, custom_domain, custom_domain_verified FROM workspaces WHERE id = $1",
         project['workspace_id']
+    )
+    cdn_base = (
+        f"https://{workspace['custom_domain']}"
+        if workspace and workspace['custom_domain'] and workspace['custom_domain_verified']
+        else "https://cdn.usepagepersona.com"
     )
     brand_name = (workspace and workspace['white_label_brand_name']) or 'PagePersona'
     plugin_slug = re.sub(r'[^a-z0-9]+', '-', brand_name.lower()).strip('-')
@@ -280,7 +285,7 @@ add_action('wp_head', function () {{
         $registered = untrailingslashit(rtrim($m['url'], '/'));
         if ($registered === $current_url || untrailingslashit(rtrim($m['url'], '/')) === $current_url) {{
             $id = esc_attr($m['script']);
-            echo "\\n<script async src=\\"https://cdn.usepagepersona.com/pp.js?id={{$id}}\\"></script>\\n";
+            echo "\\n<script async src=\\"{cdn_base}/pp.js?id={{$id}}\\"></script>\\n";
             break;
         }}
     }}
@@ -314,7 +319,12 @@ async def send_install_email_endpoint(
     project = await _get_accessible_project(db, project_id, current_user['id'])
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    script_tag = f'<script async src="https://cdn.usepagepersona.com/pp.js?id={project["script_id"]}"></script>'
+    ws = await db.fetchrow(
+        "SELECT custom_domain, custom_domain_verified FROM workspaces WHERE id = $1",
+        project['workspace_id']
+    )
+    cdn_base = f"https://{ws['custom_domain']}" if ws and ws['custom_domain'] and ws['custom_domain_verified'] else "https://cdn.usepagepersona.com"
+    script_tag = f'<script async src="{cdn_base}/pp.js?id={project["script_id"]}"></script>'
     lang = current_user.get('language', 'en')
     sent = send_install_email(body.developer_email, script_tag, project['name'], lang)
     if not sent:
