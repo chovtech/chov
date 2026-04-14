@@ -213,7 +213,14 @@ export default function SettingsPage() {
   const { t } = useTranslation('common')
   const { language } = useLanguage()
   const { activeWorkspace, refreshWorkspaces } = useWorkspace()
-  const [activeTab, setActiveTab] = useState('general')
+  const [activeTab, setActiveTab] = useState<string>(() =>
+    typeof window !== 'undefined' ? (localStorage.getItem('settings_active_tab') || 'general') : 'general'
+  )
+
+  const switchTab = (tab: string) => {
+    switchTab(tab)
+    localStorage.setItem('settings_active_tab', tab)
+  }
   const [user, setUser] = useState<User | null>(null)
   const [profileForm, setProfileForm] = useState({ name: '', email: '', avatar_url: '' })
   const [passwordForm, setPasswordForm] = useState({ current_password: '', new_password: '', confirm: '' })
@@ -412,7 +419,7 @@ export default function SettingsPage() {
             {tabs.map(tab => (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => switchTab(tab.key)}
                 className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold border-b-2 transition-colors ${
                   activeTab === tab.key ? 'border-brand text-brand' : 'border-transparent text-slate-500 hover:text-slate-700'
                 }`}

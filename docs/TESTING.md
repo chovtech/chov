@@ -435,7 +435,7 @@
 
 ### PART A — Agency White-Label Setup
 
-- [ ] Agency tab → White-label sub-tab loads correctly
+- [x] Agency tab → White-label sub-tab loads correctly
 - [ ] Set brand name — saves and reflects in preview
 - [ ] Upload logo — appears in preview
 - [ ] Change primary colour — preview updates live
