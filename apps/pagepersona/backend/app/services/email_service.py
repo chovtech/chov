@@ -18,9 +18,10 @@ def get_ses_client():
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
     )
 
-def send_email(to_email: str, subject: str, html_body: str, text_body: str = "") -> bool:
+def send_email(to_email: str, subject: str, html_body: str, text_body: str = "", sender_name: Optional[str] = None) -> bool:
     client = get_ses_client()
-    sender = f"{settings.SES_SENDER_NAME} <{settings.SES_SENDER_EMAIL}>"
+    display_name = sender_name or settings.SES_SENDER_NAME
+    sender = f"{display_name} <{settings.SES_SENDER_EMAIL}>"
     try:
         response = client.send_email(
             Source=sender,
@@ -123,7 +124,7 @@ def send_client_invite_email(
       {footer_html}
     </body></html>
     """
-    return send_email(to_email, subject, html)
+    return send_email(to_email, subject, html, sender_name=brand_name)
 
 
 def send_client_invite_existing_user_email(
@@ -150,7 +151,7 @@ def send_client_invite_existing_user_email(
       {footer_html}
     </body></html>
     """
-    return send_email(to_email, subject, html)
+    return send_email(to_email, subject, html, sender_name=brand_name)
 
 
 def send_client_access_restored_email(
