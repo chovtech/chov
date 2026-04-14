@@ -84,8 +84,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     document.title = branding?.brand_name || 'PagePersona'
-    const link = document.querySelector<HTMLLinkElement>('link[rel~="icon"]')
-    if (link) link.href = branding?.icon_url || '/favicon.ico'
+    const faviconUrl = branding?.icon_url || branding?.logo_url || '/favicon.ico'
+    let link = document.querySelector<HTMLLinkElement>('link[rel~="icon"]')
+    if (!link) {
+      link = document.createElement('link')
+      link.rel = 'icon'
+      document.head.appendChild(link)
+    }
+    link.href = faviconUrl
   }, [branding])
 
   function handleResolved(b: Branding | null) {

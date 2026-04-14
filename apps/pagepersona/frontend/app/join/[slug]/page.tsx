@@ -49,8 +49,14 @@ export default function JoinPage() {
   useEffect(() => {
     if (!info) return
     document.title = info.brand_name
-    const link = document.querySelector<HTMLLinkElement>('link[rel~="icon"]')
-    if (link) link.href = info.icon_url || '/favicon.ico'
+    const faviconUrl = info.icon_url || info.logo_url || '/favicon.ico'
+    let link = document.querySelector<HTMLLinkElement>('link[rel~="icon"]')
+    if (!link) {
+      link = document.createElement('link')
+      link.rel = 'icon'
+      document.head.appendChild(link)
+    }
+    link.href = faviconUrl
   }, [info])
 
   async function handleSubmit(e: React.FormEvent) {
