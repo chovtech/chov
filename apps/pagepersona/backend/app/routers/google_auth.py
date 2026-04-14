@@ -11,6 +11,7 @@ from app.services.auth_service import (
 )
 from app.services.email_service import send_welcome_email
 from app.services.mautic_service import subscribe_contact
+from app.services.coin_service import seed_coins
 from app.core.security import hash_password
 import secrets
 import logging
@@ -169,6 +170,9 @@ async def google_callback(
                VALUES ($1, $2, $3, $4, $5, $6)""",
             uuid.uuid4(), workspace_id, 'pagepersona', 'trial', 'direct', 'active'
         )
+
+        # Seed AI coins for new workspace
+        await seed_coins(str(workspace_id), 'trial', db)
 
         user = dict(await db.fetchrow("SELECT * FROM users WHERE id = $1", user_id))
 

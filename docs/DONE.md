@@ -334,8 +334,37 @@ All emails: EN + FR bilingual (where applicable), SES via boto3, `noreply@usepag
 
 | Item | Note |
 |------|------|
-| Send Report | Intentionally skipped — clients can log in as view_only and see their own analytics directly |
-| Popup DnD reorder | Post-launch |
-| AI rule suggestions | Post-launch — coins model (see FUNNEL-ANALYSIS.md) |
-| Onboarding flow | Intentionally skipped — JVZoo buyers are self-selected |
 | Chov Libraries extraction | Phase 2 — after first sales |
+
+---
+
+## 21. WHAT'S NEXT — AI FEATURES (Agreed & Locked)
+
+Build order: AI module first → measure real coin costs → entitlements/limits → JVZoo landing page.
+
+### AI Infrastructure (Phase 1 — before any feature)
+- `ai_coins` table — balance per workspace, last_reset_at
+- `ai_coin_transactions` table — audit log: action_type, coins_deducted, claude_tokens_used
+- Backend coin service: `get_balance()`, `check_coins()`, `deduct_coins()` — owner plan always bypasses
+- Coin balance badge in sidebar under workspace name
+
+### AI Features (Phase 2)
+
+| # | Feature | Where | What it does |
+|---|---------|--------|--------------|
+| 1 | **Rule Creation Hub** | New rule entry point | 3 paths: **Manual** (existing builder unchanged), **Template** (pick a goal → pre-built rule loads → user picks elements with picker), **AI** (user types goal → AI scans page URL, reads real element selectors → returns 3–5 ready rules → user accepts/edits/discards) |
+| 2 | **AI Rule Suggestions** | Project overview, analytics, rule list, any rule surface | Contextual nudges based on traffic patterns / page content / analytics — always visible, non-intrusive, actionable |
+| 3 | **Copy Writer** | Rule builder — `swap_text` action | User describes goal → AI returns 3 copy variants to pick from |
+| 4 | **Image Generation** | Rule builder — `swap_image` action | User describes image → **Flux.1 Pro via fal.ai** generates website-quality output → uploads to R2 like any other image |
+| 5 | **Popup Content Generator** | Popup builder | User describes popup goal → AI fills headline, body, CTA label → treated as user-created, saves as their own template |
+| 6 | **Analytics Insights** | Analytics page — per project | Reads rule fires, visitor breakdown, countries, devices, referrers → plain-English story of what the data is saying |
+
+### Technical decisions locked
+- Text AI: `claude-haiku-4-5` for copy/popup, `claude-sonnet-4-6` for rule suggestions + page scan
+- Image AI: Flux.1 Pro via fal.ai (~$0.05/image — photorealistic, website-grade)
+- Page scan: `httpx` + `BeautifulSoup` — no Puppeteer; degrades gracefully for JS-heavy SPAs
+- Coin costs: TBD after empirical testing — then locked into `COIN_COSTS` constant
+
+### After AI module
+- Entitlements / limits enforcement (plan limits + coin allocations per plan, now empirically informed)
+- JVZoo sales funnel pages (FE page, OTO 1–5, thank-you pages)

@@ -5,6 +5,7 @@ from typing import Optional
 import asyncpg
 from app.core.security import hash_password, verify_password, create_access_token, create_refresh_token
 from app.core.config import settings
+from app.services.coin_service import seed_coins
 
 def generate_slug(name: str) -> str:
     """Convert workspace name to a URL-safe slug."""
@@ -107,6 +108,9 @@ async def create_user_and_workspace(
         'direct',
         'active'
     )
+
+    # Seed AI coins for new workspace
+    await seed_coins(str(workspace_id), 'trial', db)
 
     return dict(user), dict(workspace)
 

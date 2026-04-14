@@ -36,8 +36,22 @@ class Settings(BaseSettings):
     MAUTIC_PAGEPERSONA_SEGMENT_ID: int = 5
     # JVZoo
     JVZOO_SECRET_KEY: Optional[str] = None
+    # AI — Anthropic Claude
+    ANTHROPIC_API_KEY: Optional[str] = None
+    # AI — fal.ai (Flux image generation)
+    FAL_API_KEY: Optional[str] = None
 
     class Config:
         env_file = ".env"
 
 settings = Settings()
+
+# ── AI Model Constants ────────────────────────────────────────────────────────
+# Claude: fast/cheap model for copy, popup, suggestions
+AI_MODEL_FAST = "claude-haiku-4-5-20251001"
+# Claude: reasoning model for rule creation + page scan
+AI_MODEL_SMART = "claude-sonnet-4-6"
+# fal.ai: Flux Dev — best quality/price for website-grade image generation
+AI_IMAGE_MODEL = "fal-ai/flux/dev"
+# fal.ai: image output size (standard landing page hero dimensions)
+AI_IMAGE_SIZE = "landscape_16_9"
