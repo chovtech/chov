@@ -297,9 +297,9 @@ async def invite_client(
             body.workspace_id, body.client_email, client_ws['id'], token
         )
 
-    brand_name = agency_ws.get('brand_name') or 'PagePersona'
-    logo_url = agency_ws.get('logo_url')
-    brand_color = agency_ws.get('brand_color') or '#1A56DB'
+    brand_name = agency_ws['white_label_brand_name'] or 'PagePersona'
+    logo_url = agency_ws['white_label_logo']
+    brand_color = agency_ws['white_label_primary_color'] or '#1A56DB'
     accept_url = f"https://app.usepagepersona.com/accept?token={token}"
 
     from app.services.email_service import send_client_invite_email, send_client_invite_existing_user_email
@@ -549,9 +549,9 @@ async def send_report(
     if not recipient:
         raise HTTPException(status_code=400, detail="No client email on record")
 
-    brand_name = agency_ws.get('brand_name') or 'PagePersona'
-    logo_url = agency_ws.get('logo_url')
-    brand_color = agency_ws.get('brand_color') or '#1A56DB'
+    brand_name = agency_ws['white_label_brand_name'] or 'PagePersona'
+    logo_url = agency_ws['white_label_logo']
+    brand_color = agency_ws['white_label_primary_color'] or '#1A56DB'
     custom_msg = body.message or "Here is your latest personalisation report."
     report_url = "https://app.usepagepersona.com/dashboard/analytics"
 
