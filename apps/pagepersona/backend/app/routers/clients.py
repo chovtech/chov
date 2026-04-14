@@ -449,7 +449,8 @@ async def restore_access(
     # Verify requester owns the parent workspace; fetch client workspace name too
     ws = await db.fetchrow(
         """SELECT w.id, w.name AS workspace_name, w.client_email,
-                  parent.brand_name, parent.logo_url, parent.brand_color
+                  parent.white_label_brand_name, parent.white_label_logo,
+                  parent.white_label_primary_color, parent.hide_powered_by
            FROM workspaces w
            JOIN workspaces parent ON w.parent_workspace_id = parent.id
            WHERE w.id = $1 AND parent.owner_id = $2""",
@@ -473,15 +474,18 @@ async def restore_access(
     client_email = ws['client_email']
     if client_email:
         from app.core.config import settings
-        logo_url = ws['logo_url']
-        brand_color = ws['brand_color'] or '#1A56DB'
-        # Use agency branding for logo/colour but reference the client's own workspace name
+        brand_name = ws['white_label_brand_name'] or 'PagePersona'
+        logo_url = ws['white_label_logo']
+        brand_color = ws['white_label_primary_color'] or '#1A56DB'
+        hide_powered_by = ws['hide_powered_by'] or False
         send_client_access_restored_email(
             to_email=client_email,
             workspace_name=ws['workspace_name'],
             logo_url=logo_url,
             brand_color=brand_color,
             dashboard_url=f"{settings.FRONTEND_URL}/dashboard",
+            brand_name=brand_name,
+            hide_powered_by=hide_powered_by,
         )
 
     return {"ok": True}

@@ -41,14 +41,14 @@ async def get_accessible_workspace(
             f"SELECT w.* FROM workspaces w WHERE w.id = $1 AND {_MEMBER_CHECK}",
             workspace_id, user_id
         )
-        # Also allow full-access clients to access their assigned client workspace
+        # Also allow client users (full or view_only) to access their assigned workspace.
+        # require_admin_or_owner will then enforce write restrictions for view_only clients.
         if not row:
             row = await db.fetchrow(
                 """SELECT w.* FROM workspaces w
                    JOIN workspace_members wm ON wm.workspace_id = w.id
                    WHERE w.id = $1 AND wm.user_id = $2
-                     AND wm.role = 'client' AND wm.status = 'active'
-                     AND w.client_access_level = 'full'""",
+                     AND wm.role = 'client' AND wm.status = 'active'""",
                 workspace_id, user_id
             )
     else:
