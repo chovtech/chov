@@ -106,12 +106,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               {branding.logo_url ? (
                 <img src={branding.logo_url} alt={branding.brand_name} className="h-8 object-contain" />
               ) : (
-                <div className="size-8 rounded-lg flex items-center justify-center text-white font-bold text-sm"
-                  style={{ backgroundColor: branding.brand_color }}>
-                  {branding.brand_name.slice(0, 2).toUpperCase()}
-                </div>
+                <>
+                  <div className="size-8 rounded-lg flex items-center justify-center text-white font-bold text-sm"
+                    style={{ backgroundColor: branding.brand_color }}>
+                    {branding.brand_name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <span className="text-base font-bold text-slate-900">{branding.brand_name}</span>
+                </>
               )}
-              <span className="text-base font-bold text-slate-900">{branding.brand_name}</span>
             </div>
           ) : (
             <Link href="/" className="flex items-center gap-2">

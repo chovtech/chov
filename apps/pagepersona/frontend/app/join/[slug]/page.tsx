@@ -109,12 +109,14 @@ export default function JoinPage() {
           {info.logo_url ? (
             <img src={info.logo_url} alt={info.brand_name} className="h-8 object-contain" />
           ) : (
-            <div className="size-8 rounded-lg flex items-center justify-center text-white font-bold text-sm"
-              style={{ backgroundColor: primary }}>
-              {info.brand_name.slice(0, 2).toUpperCase()}
-            </div>
+            <>
+              <div className="size-8 rounded-lg flex items-center justify-center text-white font-bold text-sm"
+                style={{ backgroundColor: primary }}>
+                {info.brand_name.slice(0, 2).toUpperCase()}
+              </div>
+              <span className="text-base font-bold text-slate-900">{info.brand_name}</span>
+            </>
           )}
-          <span className="text-base font-bold text-slate-900">{info.brand_name}</span>
         </div>
         <LanguageSwitcher />
       </header>
