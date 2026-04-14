@@ -218,7 +218,7 @@ export default function SettingsPage() {
   )
 
   const switchTab = (tab: string) => {
-    switchTab(tab)
+    setActiveTab(tab)
     localStorage.setItem('settings_active_tab', tab)
   }
   const [user, setUser] = useState<User | null>(null)
