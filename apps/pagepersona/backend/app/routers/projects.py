@@ -156,17 +156,21 @@ async def download_wordpress_plugin(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    # Get workspace white-label settings
+    # Get workspace white-label settings (inherit from parent for client workspaces)
     workspace = await db.fetchrow(
-        "SELECT white_label_brand_name, custom_domain, custom_domain_verified FROM workspaces WHERE id = $1",
+        """SELECT w.white_label_brand_name, w.custom_domain, w.custom_domain_verified,
+                  pw.white_label_brand_name as parent_brand_name,
+                  pw.custom_domain as parent_domain, pw.custom_domain_verified as parent_domain_verified
+           FROM workspaces w
+           LEFT JOIN workspaces pw ON w.parent_workspace_id = pw.id
+           WHERE w.id = $1""",
         project['workspace_id']
     )
-    cdn_base = (
-        f"https://{workspace['custom_domain']}"
-        if workspace and workspace['custom_domain'] and workspace['custom_domain_verified']
-        else "https://cdn.usepagepersona.com"
-    )
-    brand_name = (workspace and workspace['white_label_brand_name']) or 'PagePersona'
+    effective_brand = (workspace['white_label_brand_name'] or workspace['parent_brand_name']) if workspace else None
+    brand_name = effective_brand or 'PagePersona'
+    effective_domain = workspace['custom_domain'] if workspace and workspace['custom_domain'] and workspace['custom_domain_verified'] else \
+                       (workspace['parent_domain'] if workspace and workspace['parent_domain'] and workspace['parent_domain_verified'] else None)
+    cdn_base = f"https://{effective_domain}" if effective_domain else "https://cdn.usepagepersona.com"
     plugin_slug = re.sub(r'[^a-z0-9]+', '-', brand_name.lower()).strip('-')
     script_id = project['script_id']
     page_url = project['page_url']
@@ -320,10 +324,16 @@ async def send_install_email_endpoint(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     ws = await db.fetchrow(
-        "SELECT custom_domain, custom_domain_verified FROM workspaces WHERE id = $1",
+        """SELECT w.custom_domain, w.custom_domain_verified,
+                  pw.custom_domain as parent_domain, pw.custom_domain_verified as parent_domain_verified
+           FROM workspaces w
+           LEFT JOIN workspaces pw ON w.parent_workspace_id = pw.id
+           WHERE w.id = $1""",
         project['workspace_id']
     )
-    cdn_base = f"https://{ws['custom_domain']}" if ws and ws['custom_domain'] and ws['custom_domain_verified'] else "https://cdn.usepagepersona.com"
+    effective_domain = ws['custom_domain'] if ws and ws['custom_domain'] and ws['custom_domain_verified'] else \
+                       (ws['parent_domain'] if ws and ws['parent_domain'] and ws['parent_domain_verified'] else None)
+    cdn_base = f"https://{effective_domain}" if effective_domain else "https://cdn.usepagepersona.com"
     script_tag = f'<script async src="{cdn_base}/pp.js?id={project["script_id"]}"></script>'
     lang = current_user.get('language', 'en')
     sent = send_install_email(body.developer_email, script_tag, project['name'], lang)
