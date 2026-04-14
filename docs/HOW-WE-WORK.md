@@ -32,3 +32,4 @@
 - Geo resolved server-side — pp.js never calls geo API directly
 - `inject_token` and `send_webhook` permanently removed
 - Firmographics + `geo_city` signals permanently removed
+- dont always commit/push to github with this Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com> i dont know why u intoduce that
