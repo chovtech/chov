@@ -453,14 +453,14 @@
 
 > Client email: `edumesSoftware@gmail.com`
 
-- [ ] Agency tab → Clients → click Invite Client
-- [ ] Enter `edumesSoftware@gmail.com`, set access **Full**, click Send
-- [ ] Client row appears in list with status **Pending**
-- [ ] Invite email arrives at `edumesSoftware@gmail.com` — accept link visible
-- [ ] Agency brand name visible in the invite email
-- [ ] Resend invite from row dropdown → new email arrives, old link now returns error
-- [ ] Cancel invite from row dropdown → row removed from client list
-- [ ] Re-invite `edumesSoftware@gmail.com` with **Full** access (for accept test below)
+- [x] Agency tab → Clients → click Invite Client
+- [x] Enter `edumesSoftware@gmail.com`, set access **Full**, click Send
+- [x] Client row appears in list with status **Pending**
+- [x] Invite email arrives at `edumesSoftware@gmail.com` — accept link visible
+- [x] Agency brand name visible in the invite email
+- [x] Resend invite from row dropdown → new email arrives, old link now returns error
+- [x] Cancel invite from row dropdown → row removed from client list
+- [x] Re-invite `edumesSoftware@gmail.com` with **Full** access (for accept test below)
 
 ---
 
@@ -468,15 +468,15 @@
 
 > Open in incognito browser.
 
-- [ ] Click accept link — lands on `/client-accept?token=...`
-- [ ] Page shows agency brand name, logo, primary colour
-- [ ] Shows account creation form (name + password + confirm)
-- [ ] Fill in name and password, submit
-- [ ] Redirected to `/dashboard`
-- [ ] Dashboard shows agency branding (logo, colour, brand name in nav)
-- [ ] **No workspace switcher** — workspace badge shown instead
-- [ ] Nav shows all items **except** Agency tab
-- [ ] Back in agency browser — `edumesSoftware@gmail.com` row status is **Active**
+- [x] Click accept link — lands on `/client-accept?token=...`
+- [x] Page shows agency brand name, logo, primary colour
+- [x] Shows account creation form (name + password + confirm)
+- [x] Fill in name and password, submit
+- [x] Redirected to `/dashboard`
+- [x] Dashboard shows agency branding (logo, colour, brand name in nav)
+- [x] **No workspace switcher** — workspace badge shown instead
+- [x] Nav shows all items **except** Agency tab
+- [x] Back in agency browser — `edumesSoftware@gmail.com` row status is **Active**
 
 ---
 
@@ -484,13 +484,13 @@
 
 > Client email: `chovtechllc@gmail.com`
 
-- [ ] Agency tab → Clients → Invite Client
-- [ ] Enter `chovtechllc@gmail.com`, set access **Full**, click Send
-- [ ] Client row appears with status **Pending**
-- [ ] Email arrives — shows **"Accept Invitation"** button only (no signup form)
-- [ ] Open in incognito as `chovtechllc@gmail.com` — click Accept → redirected to `/dashboard`
-- [ ] Client sees their **own workspace** + the client workspace in the switcher (both visible)
-- [ ] Back in agency browser — row status is **Active**
+- [x] Agency tab → Clients → Invite Client
+- [x] Enter `chovtechllc@gmail.com`, set access **Full**, click Send
+- [x] Client row appears with status **Pending**
+- [x] Email arrives — shows **"Accept Invitation"** button only (no signup form)
+- [x] Open in incognito as `chovtechllc@gmail.com` — click Accept → redirected to `/dashboard`
+- [x] Client sees their **own workspace** + the client workspace in the switcher (both visible)
+- [x] Back in agency browser — row status is **Active**
 
 ---
 
@@ -498,15 +498,15 @@
 
 > In incognito, log in as `edumesSoftware@gmail.com`.
 
-- [ ] Agency branding applied throughout — logo, colour, brand name in nav
-- [ ] No workspace switcher — badge shown instead
-- [ ] Nav: Dashboard, Projects, Rules, Popups, Countdowns, Analytics all visible
-- [ ] Agency tab **not visible**
-- [ ] Can create a project in their workspace
-- [ ] Can create rules, popups, countdowns
-- [ ] Can view analytics
-- [ ] Agency's projects are not visible anywhere
-- [ ] Settings visible — can view but cannot change billing
+- [x] Agency branding applied throughout — logo, colour, brand name in nav
+- [x] No workspace switcher — badge shown instead
+- [x] Nav: Dashboard, Projects, Rules, Popups, Countdowns, Analytics all visible
+- [x] Agency tab **not visible**
+- [x] Can create a project in their workspace
+- [x] Can create rules, popups, countdowns
+- [x] Can view analytics
+- [x] Agency's projects are not visible anywhere
+- [x] Settings visible — can view but cannot change billing
 
 ---
 
@@ -514,12 +514,12 @@
 
 > As agency: Agency tab → `edumesSoftware@gmail.com` row → change access to **View Only**
 
-- [ ] Access level updates to `view_only` in client list
-- [ ] In client browser (refresh) — nav shows only **Dashboard** and **Analytics**
-- [ ] Projects, Rules, Popups, Countdowns nav items are gone
-- [ ] Navigating directly to `/dashboard/projects` is blocked or redirects
-- [ ] Analytics still loads correctly
-- [ ] Cannot create or edit anything
+- [x] Access level updates to `view_only` in client list
+- [x] In client browser (refresh) — nav shows only **Dashboard** and **Analytics**
+- [x] Projects, Rules, Popups, Countdowns nav items are gone
+- [x] Navigating directly to `/dashboard/projects` is blocked or redirects
+- [x] Analytics still loads correctly
+- [x] Cannot create or edit anything
 
 ---
 
@@ -527,10 +527,10 @@
 
 > As agency: Agency tab → `edumesSoftware@gmail.com` → Revoke Access
 
-- [ ] Row status changes to **Revoked** in client list
-- [ ] Client browser (refresh) → **Access Revoked** page shown, not dashboard
-- [ ] As agency: click Restore Access
-- [ ] Client browser (refresh) → back to dashboard normally
+- [X] Row status changes to **Revoked** in client list
+- [x] Client browser (refresh) → **Access Revoked** page shown, not dashboard
+- [x] As agency: click Restore Access
+- [x] Client browser (refresh) → back to dashboard normally
 
 ---
 
@@ -538,21 +538,21 @@
 
 > Use a fresh email not already on PagePersona.
 
-- [ ] Visit `app.usepagepersona.com/join/[agency-slug]` in incognito
-- [ ] Agency branding shows on the signup page (logo, colour, brand name)
-- [ ] Fill in name, email, password — submit
-- [ ] Redirected to dashboard with agency branding
-- [ ] New client row appears in agency's client list
+- [x] Visit `app.usepagepersona.com/join/[agency-slug]` in incognito
+- [x] Agency branding shows on the signup page (logo, colour, brand name)
+- [x] Fill in name, email, password — submit
+- [x] Redirected to dashboard with agency branding
+- [x] New client row appears in agency's client list
 
 ---
 
 ### PART I — Branding on Auth Pages
 
-- [ ] Visit `app.usepagepersona.com/login?slug=[agency-slug]` — agency branding appears
-- [ ] Page `<title>` reflects agency brand name
-- [ ] Favicon reflects agency icon
-- [ ] Refresh — branding persists (not lost on reload)
-- [ ] Log out as client — login page retains agency branding
+- [x] Visit `app.usepagepersona.com/login?slug=[agency-slug]` — agency branding appears
+- [x] Page `<title>` reflects agency brand name
+- [x] Favicon reflects agency icon
+- [x] Refresh — branding persists (not lost on reload)
+- [x] Log out as client — login page retains agency branding
 
 ---
 

@@ -1,6 +1,6 @@
 # DONE.md — PagePersona Completed Features
 > Living document. Updated from actual backend endpoints + local DB.
-> Last updated: 2026-04-02
+> Last updated: 2026-04-14
 
 ---
 
@@ -80,7 +80,8 @@
 | `/api/projects/{id}` | GET | Get single project |
 | `/api/projects/{id}` | PUT | Edit project (name + URL; URL locked after script verified) |
 | `/api/projects/{id}` | DELETE | Delete project — with confirmation modal |
-| `/api/projects/{id}/send-install-email` | POST | Send script install instructions email to developer |
+| `/api/projects/{id}/wordpress-plugin` | GET | Download branded WordPress plugin ZIP (uses agency brand name + domain) |
+| `/api/projects/{id}/send-install-email` | POST | Send script install instructions email to developer (branded per agency) |
 
 **Script:** Unique `PP-XXXXXX` identifier per project; verified by backend fetching page and checking for script tag
 
@@ -207,9 +208,20 @@
 | `/api/clients/{workspace_id}/restore` | POST | Restore revoked client access |
 | `/api/clients/report` | POST | Send analytics report email to client (API done; frontend button commented out) |
 
-**Access levels:** `full` (all nav except Agency tab) or `view_only` (dashboard + analytics only)
+**Access levels:** `full` (all nav except Agency tab, can create/edit projects) or `view_only` (dashboard + analytics only — 403 on write operations)
 
-**White-label:** Brand name, logo, primary colour applied on `/accept`, `/join/[slug]`, login, forgot-password via slug param
+**Access control:** All backend routers use `role != 'revoked'` to block access — client role is never excluded from read/write (only `revoked` is blocked).
+
+**White-label:** Agency brand name, logo, colour applied on:
+- `/accept` and `/join/[slug]` pages
+- All client invite emails (new user + existing user) — including From name
+- Team invite emails (new user + existing user) — including From name
+- Access revoked / restored emails
+- WordPress plugin download (brand name used in plugin slug and labels)
+- Send-install-email to developer (brand name, colour, logo, From name)
+- Login / forgot-password pages via slug param
+
+**Custom domain:** When agency has a verified custom domain, it is used in invite accept URLs and in the SDK script tag shown to client users. Client workspaces inherit the parent agency's custom domain.
 
 ---
 
@@ -219,8 +231,11 @@
 | Endpoint | Method | Feature |
 |----------|--------|---------|
 | `/api/team` | GET | List team members for workspace |
-| `/api/team/invite` | POST | Invite team member by email + role |
-| `/api/team/{id}/role` | PATCH | Update member role |
+| `/api/team/invite-info` | GET | Get invite details by token (for team-accept page) |
+| `/api/team/invite` | POST | Invite team member by email + role — sends branded SES email |
+| `/api/team/accept` | POST | Accept team invite — creates account if new user |
+| `/api/team/{id}/resend` | POST | Resend invite with fresh token |
+| `/api/team/{id}/role` | PATCH | Update member role (admin / member) |
 | `/api/team/{id}` | DELETE | Remove team member |
 
 ---
@@ -250,12 +265,16 @@ Used for: user avatar, workspace logo, project thumbnail, popup background image
 | Password reset | Forgot password flow |
 | JVZoo welcome + magic link | JVZoo purchase webhook |
 | Magic link login | Request magic link |
-| Script install instructions | "Send to developer" from project |
 | Client invite (new user) | Agency invites new client |
 | Client invite (existing user) | Agency invites existing PagePersona user |
+| Client access revoked | Agency revokes client access |
+| Client access restored | Agency restores client access |
+| Team invite (new user) | Workspace owner/admin invites new team member |
+| Team invite (existing user) | Workspace owner/admin invites existing user |
+| Script install instructions | "Send to developer" from project — branded per agency |
 | Analytics report | `POST /api/clients/report` — API done; frontend button commented out |
 
-All emails: EN + FR bilingual, SES via boto3, `noreply@usepagepersona.com`
+All emails: EN + FR bilingual (where applicable), SES via boto3, `noreply@usepagepersona.com`. Agency-triggered emails (client invites, team invites, install instructions) use agency brand name as the From display name and apply agency logo, colour, and hide_powered_by flag.
 
 ---
 
