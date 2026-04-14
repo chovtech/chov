@@ -31,7 +31,7 @@ async def get_accessible_workspace(
     workspace_id: str | None = None,
 ) -> dict:
     """
-    Return a workspace the user can access (as owner or active team member).
+    Return a workspace the user can access (as owner, active team member, or full-access client).
     If workspace_id is provided, look up that specific workspace.
     Otherwise fall back to the user's own workspace (ordered by created_at).
     Raises 404 if not found or not accessible.
@@ -41,6 +41,16 @@ async def get_accessible_workspace(
             f"SELECT w.* FROM workspaces w WHERE w.id = $1 AND {_MEMBER_CHECK}",
             workspace_id, user_id
         )
+        # Also allow full-access clients to access their assigned client workspace
+        if not row:
+            row = await db.fetchrow(
+                """SELECT w.* FROM workspaces w
+                   JOIN workspace_members wm ON wm.workspace_id = w.id
+                   WHERE w.id = $1 AND wm.user_id = $2
+                     AND wm.role = 'client' AND wm.status = 'active'
+                     AND w.client_access_level = 'full'""",
+                workspace_id, user_id
+            )
     else:
         # Owner's own workspace first, then any member workspace
         row = await db.fetchrow(
@@ -84,6 +94,18 @@ async def require_admin_or_owner(
         workspace_id, user_id
     )
     if is_admin:
+        return
+
+    # Full-access clients can also create/delete projects in their workspace
+    is_full_client = await db.fetchval(
+        """SELECT 1 FROM workspace_members wm
+           JOIN workspaces w ON wm.workspace_id = w.id
+           WHERE wm.workspace_id = $1 AND wm.user_id = $2
+             AND wm.role = 'client' AND wm.status = 'active'
+             AND w.client_access_level = 'full'""",
+        workspace_id, user_id
+    )
+    if is_full_client:
         return
 
     raise HTTPException(status_code=403, detail="Members cannot perform this action")
