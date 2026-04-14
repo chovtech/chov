@@ -224,16 +224,20 @@ async def sdk_verify_project(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    # Verify ownership
-    workspace = await db.fetchrow(
-        'SELECT id FROM workspaces WHERE owner_id = $1',
-        current_user['id']
-    )
-    if not workspace:
-        raise HTTPException(status_code=404, detail='Workspace not found')
+    # Verify access — owner, team member, or full-access client
     project = await db.fetchrow(
-        'SELECT id, page_url, script_id, script_verified FROM projects WHERE id = $1 AND workspace_id = $2',
-        project_id, str(workspace['id'])
+        """SELECT p.id, p.page_url, p.script_id, p.script_verified
+           FROM projects p
+           JOIN workspaces w ON p.workspace_id = w.id
+           WHERE p.id = $1 AND (
+               w.owner_id = $2
+               OR EXISTS (
+                   SELECT 1 FROM workspace_members wm
+                   WHERE wm.workspace_id = w.id AND wm.user_id = $2
+                     AND wm.status = 'active' AND wm.role != 'revoked'
+               )
+           )""",
+        project_id, current_user['id']
     )
     if not project:
         raise HTTPException(status_code=404, detail='Project not found')

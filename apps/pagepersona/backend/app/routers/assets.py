@@ -15,7 +15,7 @@ _WORKSPACE_ACCESS = """
         OR EXISTS (
             SELECT 1 FROM workspace_members wm
             WHERE wm.workspace_id = $1 AND wm.user_id = $2
-              AND wm.status = 'active' AND wm.role NOT IN ('client', 'revoked')
+              AND wm.status = 'active' AND wm.role != 'revoked'
         )
     )
 """

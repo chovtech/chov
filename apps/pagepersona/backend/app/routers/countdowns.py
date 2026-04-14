@@ -22,7 +22,7 @@ async def _resolve_countdown_workspace(db: asyncpg.Connection, countdown_id: str
                OR EXISTS (
                    SELECT 1 FROM workspace_members wm
                    WHERE wm.workspace_id = w.id AND wm.user_id = $2
-                     AND wm.status = 'active' AND wm.role NOT IN ('client', 'revoked')
+                     AND wm.status = 'active' AND wm.role != 'revoked'
                )
            )""",
         countdown_id, user_id
@@ -80,7 +80,7 @@ async def list_all(
               OR EXISTS (
                   SELECT 1 FROM workspace_members wm
                   WHERE wm.workspace_id = w.id AND wm.user_id = $1
-                    AND wm.status = 'active' AND wm.role NOT IN ('client', 'revoked')
+                    AND wm.status = 'active' AND wm.role != 'revoked'
               )
            ORDER BY c.created_at DESC""",
         current_user['id']

@@ -248,7 +248,7 @@ async def workspace_analytics(
                OR EXISTS (
                    SELECT 1 FROM workspace_members wm
                    WHERE wm.workspace_id = w.id AND wm.user_id = $2
-                     AND wm.status = 'active' AND wm.role NOT IN ('client', 'revoked')
+                     AND wm.status = 'active' AND wm.role != 'revoked'
                )
            )''',
         workspace_id, current_user['id']
@@ -429,7 +429,7 @@ async def workspace_analytics_self(
             '''SELECT w.id FROM workspaces w
                LEFT JOIN workspace_members wm
                       ON wm.workspace_id = w.id AND wm.user_id = $1
-                         AND wm.status = 'active' AND wm.role NOT IN ('client', 'revoked')
+                         AND wm.status = 'active' AND wm.role != 'revoked'
                WHERE w.owner_id = $1 OR wm.id IS NOT NULL
                ORDER BY CASE WHEN w.owner_id = $1 THEN 0 ELSE 1 END, w.created_at ASC
                LIMIT 1''',

@@ -17,7 +17,7 @@ _MEMBER_ACCESS = """
         OR EXISTS (
             SELECT 1 FROM workspace_members wm
             WHERE wm.workspace_id = w.id AND wm.user_id = $1
-              AND wm.status = 'active' AND wm.role NOT IN ('client', 'revoked')
+              AND wm.status = 'active' AND wm.role != 'revoked'
         )
     )
 """
@@ -33,7 +33,7 @@ async def _resolve_popup_workspace(db: asyncpg.Connection, popup_id: str, user_i
                OR EXISTS (
                    SELECT 1 FROM workspace_members wm
                    WHERE wm.workspace_id = w.id AND wm.user_id = $2
-                     AND wm.status = 'active' AND wm.role NOT IN ('client', 'revoked')
+                     AND wm.status = 'active' AND wm.role != 'revoked'
                )
            )""",
         popup_id, user_id
