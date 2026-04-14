@@ -78,7 +78,10 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
     setPageUrl(val)
   }
 
-  const scriptTag = `<script async src="https://cdn.usepagepersona.com/pp.js?id=${scriptId}"></script>`
+  const cdnBase = (activeWorkspace?.custom_domain && activeWorkspace?.custom_domain_verified)
+    ? `https://${activeWorkspace.custom_domain}`
+    : 'https://cdn.usepagepersona.com'
+  const scriptTag = `<script async src="${cdnBase}/pp.js?id=${scriptId}"></script>`
 
   const handleCopy = () => {
     navigator.clipboard.writeText(scriptTag)
