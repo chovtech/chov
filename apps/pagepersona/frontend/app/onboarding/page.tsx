@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { WorkspaceProvider, useWorkspace } from '@/lib/context/WorkspaceContext'
-import { aiApi, workspaceApi, authApi } from '@/lib/api/client'
+import { WhiteLabelProvider, useWhiteLabel } from '@/lib/context/WhiteLabelContext'
+import { aiApi, workspaceApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import Icon from '@/components/ui/Icon'
 
@@ -19,6 +20,7 @@ function OnboardingInner() {
   const { t } = useTranslation('common')
   const router = useRouter()
   const { activeWorkspace, loading: wsLoading } = useWorkspace()
+  const { brandName, logo, icon } = useWhiteLabel()
 
   const [step, setStep] = useState(1)
   const [url, setUrl] = useState('')
@@ -27,16 +29,6 @@ function OnboardingInner() {
   const [extracted, setExtracted] = useState(false)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
-  const [userInitial, setUserInitial] = useState('')
-  const [userAvatar, setUserAvatar] = useState('')
-
-  useEffect(() => {
-    authApi.me().then(res => {
-      const name: string = res.data.name || res.data.email || ''
-      setUserInitial(name.charAt(0).toUpperCase())
-      setUserAvatar(res.data.avatar_url || '')
-    }).catch(() => null)
-  }, [])
 
   useEffect(() => {
     if (!wsLoading && activeWorkspace?.onboarding_completed) router.replace('/dashboard')
@@ -88,23 +80,24 @@ function OnboardingInner() {
     <div className="bg-white font-sans text-slate-900 min-h-screen flex flex-col">
 
       {/* ── Nav ── */}
-      <nav className="w-full border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+      <nav className="w-full border-b border-slate-100 px-6 py-4 flex items-center">
         <div className="flex items-center gap-3">
-          <div className="bg-brand text-white p-1.5 rounded-lg flex items-center justify-center">
-            <Icon name="layers" className="text-2xl" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-tight text-slate-900">PagePersona</span>
-            <span className="text-xs text-slate-500 font-medium">Turn any sales page into a smart sales page</span>
-          </div>
-        </div>
-        <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-          {userAvatar
-            ? <img src={userAvatar} alt="" className="w-full h-full object-cover" />
-            : userInitial
-              ? <span className="text-sm font-bold text-brand">{userInitial}</span>
-              : <Icon name="account_circle" className="text-2xl text-slate-400" />
-          }
+          {logo ? (
+            <img src={logo} alt={brandName} className="h-8 object-contain max-w-[140px]" />
+          ) : (
+            <>
+              <div className="bg-brand text-white p-1.5 rounded-lg flex items-center justify-center flex-shrink-0">
+                {icon
+                  ? <img src={icon} alt="" className="w-6 h-6 object-contain" />
+                  : <Icon name="layers" className="text-2xl" />
+                }
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold tracking-tight text-slate-900">{brandName}</span>
+                <span className="text-xs text-slate-500 font-medium">Turn any sales page into a smart sales page</span>
+              </div>
+            </>
+          )}
         </div>
       </nav>
 
@@ -275,7 +268,9 @@ function OnboardingInner() {
 export default function OnboardingPage() {
   return (
     <WorkspaceProvider>
-      <OnboardingInner />
+      <WhiteLabelProvider>
+        <OnboardingInner />
+      </WhiteLabelProvider>
     </WorkspaceProvider>
   )
 }
