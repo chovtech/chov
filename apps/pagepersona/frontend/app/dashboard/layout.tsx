@@ -11,7 +11,7 @@ import { WhiteLabelProvider } from '@/lib/context/WhiteLabelContext'
 function DashboardInner({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation('common')
   const router = useRouter()
-  const { isRevoked, loading: wsLoading } = useWorkspace()
+  const { isRevoked, loading: wsLoading, activeWorkspace } = useWorkspace()
   const [emailVerified, setEmailVerified] = useState(true)
   const [userEmail, setUserEmail] = useState('')
   const [resent, setResent] = useState(false)
@@ -29,6 +29,15 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       router.replace('/access-revoked')
     }
   }, [wsLoading, isRevoked, router])
+
+  useEffect(() => {
+    if (!wsLoading && activeWorkspace &&
+        activeWorkspace.onboarding_completed === false &&
+        activeWorkspace.member_role === 'owner' &&
+        activeWorkspace.type !== 'client') {
+      router.replace('/onboarding')
+    }
+  }, [wsLoading, activeWorkspace, router])
 
   async function handleResend() {
     setResending(true)

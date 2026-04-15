@@ -311,3 +311,4 @@ All 16 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | countdowns | ✅ | ✅ (owned by `postgres`, not `chov`) |
 | assets | ✅ | ✅ |
 | workspace_ai_settings | ✅ | ⚠️ Run migration on VPS |
+| workspaces.onboarding_completed | ✅ | ⚠️ Run migration on VPS |

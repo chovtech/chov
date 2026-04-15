@@ -28,6 +28,7 @@ export interface Workspace {
   sessions_this_month: number
   last_activity: string | null
   invite_status: string
+  onboarding_completed: boolean
 }
 
 interface WorkspaceContextValue {

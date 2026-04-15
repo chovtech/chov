@@ -76,6 +76,7 @@ def _fmt(ws) -> dict:
         "sessions_this_month": int(_get(ws, 'sessions_this_month') or 0),
         "last_activity": last_activity.isoformat() if last_activity else None,
         "invite_status": _get(ws, 'invite_status') or 'none',
+        "onboarding_completed": bool(_get(ws, 'onboarding_completed', False)),
     }
 
 
@@ -253,6 +254,26 @@ async def delete_workspace(
     # before deletion so re-inviting the same email always starts fresh.
     await db.execute("DELETE FROM client_invites WHERE client_workspace_id = $1", workspace_id)
     await db.execute("DELETE FROM workspaces WHERE id = $1", workspace_id)
+    return {"ok": True}
+
+
+@router.post("/{workspace_id}/complete-onboarding")
+async def complete_onboarding(
+    workspace_id: str,
+    db: asyncpg.Connection = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Mark onboarding as complete for the workspace. Owner only."""
+    ws = await db.fetchrow(
+        "SELECT id FROM workspaces WHERE id = $1 AND owner_id = $2",
+        workspace_id, current_user['id']
+    )
+    if not ws:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+    await db.execute(
+        "UPDATE workspaces SET onboarding_completed = true WHERE id = $1",
+        workspace_id
+    )
     return {"ok": True}
 
 

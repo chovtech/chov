@@ -7,6 +7,7 @@ import { authApi, userApi, workspaceApi, teamApi, aiApi } from '@/lib/api/client
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { useLanguage } from '@/lib/hooks/useLanguage'
 import ImageUploader from '@/components/ui/ImageUploader'
+import CopyWriter from '@/components/ui/CopyWriter'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
 interface User {
@@ -216,9 +217,11 @@ function BrandKnowledgeTab({ t, inputClass, msgClass }: { t: any; inputClass: st
   const isAdmin = activeWorkspace?.member_role === 'admin'
   const canEdit = isOwner || isAdmin
 
-  const empty = { website_url: '', brand_name: '', industry: '', tone_of_voice: '', target_audience: '', key_benefits: '', about_brand: '' }
-  const [form, setForm] = useState(empty)
+  const emptyForm = { website_url: '', brand_name: '', industry: '', tone_of_voice: '', target_audience: '', key_benefits: '', about_brand: '' }
+  const [form, setForm] = useState(emptyForm)
   const [loading, setLoading] = useState(true)
+  const [extractOpen, setExtractOpen] = useState(false)
+  const [extractUrl, setExtractUrl] = useState('')
   const [extracting, setExtracting] = useState(false)
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -226,7 +229,7 @@ function BrandKnowledgeTab({ t, inputClass, msgClass }: { t: any; inputClass: st
   useEffect(() => {
     if (!workspaceId) return
     aiApi.getBrand(workspaceId)
-      .then(res => { if (res.data && Object.keys(res.data).length) setForm({ ...empty, ...res.data }) })
+      .then(res => { if (res.data && Object.keys(res.data).length) setForm({ ...emptyForm, ...res.data }) })
       .catch(() => null)
       .finally(() => setLoading(false))
   }, [workspaceId])
@@ -234,12 +237,13 @@ function BrandKnowledgeTab({ t, inputClass, msgClass }: { t: any; inputClass: st
   const set = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }))
 
   async function handleExtract() {
-    if (!form.website_url?.trim()) return
+    if (!extractUrl.trim()) return
     setExtracting(true)
     setMsg(null)
     try {
-      const res = await aiApi.extractBrand({ workspace_id: workspaceId, url: form.website_url.trim() })
+      const res = await aiApi.extractBrand({ workspace_id: workspaceId, url: extractUrl.trim() })
       setForm(f => ({ ...f, ...res.data }))
+      setExtractOpen(false)
     } catch {
       setMsg({ type: 'error', text: t('settings.brand_knowledge.extract_error') })
     } finally { setExtracting(false) }
@@ -261,39 +265,53 @@ function BrandKnowledgeTab({ t, inputClass, msgClass }: { t: any; inputClass: st
 
   return (
     <form onSubmit={handleSave} className="max-w-2xl space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-base font-bold text-slate-900 dark:text-white">{t('settings.brand_knowledge.title')}</h2>
-        <p className="text-sm text-slate-500 mt-1">{t('settings.brand_knowledge.subtitle')}</p>
-      </div>
 
-      {/* URL + Extract */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-3">
-        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.brand_knowledge.website_url_label')}</label>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={form.website_url || ''}
-            onChange={e => set('website_url', e.target.value)}
-            placeholder={t('settings.brand_knowledge.website_url_placeholder')}
-            disabled={!canEdit}
-            className={inputClass + ' flex-1'}
-          />
+      {/* Header row with collapsible extract link */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">{t('settings.brand_knowledge.title')}</h2>
+          <p className="text-sm text-slate-500 mt-1">{t('settings.brand_knowledge.subtitle')}</p>
+        </div>
+        {canEdit && (
           <button
             type="button"
-            onClick={handleExtract}
-            disabled={extracting || !form.website_url?.trim() || !canEdit}
-            className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-colors flex-shrink-0"
+            onClick={() => setExtractOpen(o => !o)}
+            className="flex items-center gap-1.5 text-xs font-bold text-brand hover:text-brand/80 transition-colors flex-shrink-0 mt-0.5"
           >
-            {extracting ? (
-              <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />{t('settings.brand_knowledge.extracting')}</>
-            ) : (
-              <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.09 8.26L19 7L14.74 11.74L21 12L14.74 12.26L19 17L13.09 15.74L12 22L10.91 15.74L5 17L9.26 12.26L3 12L9.26 11.74L5 7L10.91 8.26L12 2Z" fill="currentColor"/></svg>{t('settings.brand_knowledge.extract_btn')}</>
-            )}
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.09 8.26L19 7L14.74 11.74L21 12L14.74 12.26L19 17L13.09 15.74L12 22L10.91 15.74L5 17L9.26 12.26L3 12L9.26 11.74L5 7L10.91 8.26L12 2Z" fill="currentColor"/></svg>
+            {t('settings.brand_knowledge.extract_btn')}
           </button>
-        </div>
-        <p className="text-xs text-slate-400">{t('settings.brand_knowledge.extract_hint')}</p>
+        )}
       </div>
+
+      {/* Collapsible URL extract panel */}
+      {extractOpen && (
+        <div className="bg-brand/5 border border-brand/20 rounded-2xl p-5 space-y-3">
+          <p className="text-xs text-slate-500">{t('settings.brand_knowledge.extract_hint')}</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={extractUrl}
+              onChange={e => setExtractUrl(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleExtract() } }}
+              placeholder={t('settings.brand_knowledge.website_url_placeholder')}
+              autoFocus
+              className={inputClass + ' flex-1'}
+            />
+            <button
+              type="button"
+              onClick={handleExtract}
+              disabled={extracting || !extractUrl.trim()}
+              className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-colors flex-shrink-0"
+            >
+              {extracting ? (
+                <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />{t('settings.brand_knowledge.extracting')}</>
+              ) : t('settings.brand_knowledge.extract_btn')}
+            </button>
+          </div>
+          {msg?.type === 'error' && extractOpen && <p className="text-xs text-red-500">{msg.text}</p>}
+        </div>
+      )}
 
       {/* Core fields */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-5">
@@ -321,7 +339,7 @@ function BrandKnowledgeTab({ t, inputClass, msgClass }: { t: any; inputClass: st
         </div>
       </div>
 
-      {/* About brand — rich textarea */}
+      {/* About brand — rich textarea + CopyWriter */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('settings.brand_knowledge.about_label')}</label>
         <textarea
@@ -333,9 +351,16 @@ function BrandKnowledgeTab({ t, inputClass, msgClass }: { t: any; inputClass: st
           className={inputClass + ' resize-y min-h-[120px]'}
         />
         <p className="text-xs text-slate-400 mt-2">{(form.about_brand || '').length} characters</p>
+        {canEdit && (
+          <CopyWriter
+            workspaceId={workspaceId}
+            maxWords={150}
+            onApply={text => set('about_brand', text)}
+          />
+        )}
       </div>
 
-      {msg && <div className={msgClass(msg.type)}>{msg.text}</div>}
+      {msg && !extractOpen && <div className={msgClass(msg.type)}>{msg.text}</div>}
 
       {canEdit && (
         <button

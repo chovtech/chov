@@ -184,6 +184,8 @@ export const workspaceApi = {
     apiClient.get(`/api/workspaces/${id}/clients`),
   verifyDomain: (id: string) =>
     apiClient.post(`/api/workspaces/${id}/verify-domain`),
+  completeOnboarding: (id: string) =>
+    apiClient.post(`/api/workspaces/${id}/complete-onboarding`),
 }
 
 // Team API
