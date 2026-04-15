@@ -76,17 +76,19 @@ export default function CopyWriter({
 
   if (!open) {
     return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 text-xs font-bold text-brand hover:text-brand/80 transition-colors mt-1.5"
-      >
-        <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
-          <path d="M12 2L13.09 8.26L19 7L14.74 11.74L21 12L14.74 12.26L19 17L13.09 15.74L12 22L10.91 15.74L5 17L9.26 12.26L3 12L9.26 11.74L5 7L10.91 8.26L12 2Z" fill="currentColor"/>
-        </svg>
-        Write with AI
-        <span className="text-[10px] font-medium text-slate-400 ml-0.5">5 coins</span>
-      </button>
+      <div className="flex justify-end mt-1">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-1.5 text-xs font-bold text-brand hover:text-brand/80 transition-colors"
+        >
+          <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L13.09 8.26L19 7L14.74 11.74L21 12L14.74 12.26L19 17L13.09 15.74L12 22L10.91 15.74L5 17L9.26 12.26L3 12L9.26 11.74L5 7L10.91 8.26L12 2Z" fill="currentColor"/>
+          </svg>
+          Write with AI
+          <span className="text-[10px] font-medium text-slate-400 ml-0.5">5 coins</span>
+        </button>
+      </div>
     )
   }
 
