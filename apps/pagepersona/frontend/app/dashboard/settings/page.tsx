@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
-import { authApi, userApi, workspaceApi, teamApi } from '@/lib/api/client'
+import { authApi, userApi, workspaceApi, teamApi, aiApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { useLanguage } from '@/lib/hooks/useLanguage'
 import ImageUploader from '@/components/ui/ImageUploader'
@@ -209,6 +209,147 @@ function TeamTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgC
   )
 }
 
+function BrandKnowledgeTab({ t, inputClass, msgClass }: { t: any; inputClass: string; msgClass: (type: string) => string }) {
+  const { activeWorkspace } = useWorkspace()
+  const workspaceId = activeWorkspace?.id
+  const isOwner = activeWorkspace?.member_role === 'owner'
+  const isAdmin = activeWorkspace?.member_role === 'admin'
+  const canEdit = isOwner || isAdmin
+
+  const empty = { website_url: '', brand_name: '', industry: '', tone_of_voice: '', target_audience: '', key_benefits: '', about_brand: '' }
+  const [form, setForm] = useState(empty)
+  const [loading, setLoading] = useState(true)
+  const [extracting, setExtracting] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  useEffect(() => {
+    if (!workspaceId) return
+    aiApi.getBrand(workspaceId)
+      .then(res => { if (res.data && Object.keys(res.data).length) setForm({ ...empty, ...res.data }) })
+      .catch(() => null)
+      .finally(() => setLoading(false))
+  }, [workspaceId])
+
+  const set = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }))
+
+  async function handleExtract() {
+    if (!form.website_url?.trim()) return
+    setExtracting(true)
+    setMsg(null)
+    try {
+      const res = await aiApi.extractBrand({ workspace_id: workspaceId, url: form.website_url.trim() })
+      setForm(f => ({ ...f, ...res.data }))
+    } catch {
+      setMsg({ type: 'error', text: t('settings.brand_knowledge.extract_error') })
+    } finally { setExtracting(false) }
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault()
+    setSaving(true)
+    setMsg(null)
+    try {
+      await aiApi.saveBrand({ workspace_id: workspaceId, ...form })
+      setMsg({ type: 'success', text: t('settings.brand_knowledge.saved') })
+    } catch {
+      setMsg({ type: 'error', text: t('settings.brand_knowledge.save_error') })
+    } finally { setSaving(false) }
+  }
+
+  if (loading) return <div className="flex justify-center py-12"><div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" /></div>
+
+  return (
+    <form onSubmit={handleSave} className="max-w-2xl space-y-6">
+      {/* Header */}
+      <div>
+        <h2 className="text-base font-bold text-slate-900 dark:text-white">{t('settings.brand_knowledge.title')}</h2>
+        <p className="text-sm text-slate-500 mt-1">{t('settings.brand_knowledge.subtitle')}</p>
+      </div>
+
+      {/* URL + Extract */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-3">
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">{t('settings.brand_knowledge.website_url_label')}</label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={form.website_url || ''}
+            onChange={e => set('website_url', e.target.value)}
+            placeholder={t('settings.brand_knowledge.website_url_placeholder')}
+            disabled={!canEdit}
+            className={inputClass + ' flex-1'}
+          />
+          <button
+            type="button"
+            onClick={handleExtract}
+            disabled={extracting || !form.website_url?.trim() || !canEdit}
+            className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-colors flex-shrink-0"
+          >
+            {extracting ? (
+              <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />{t('settings.brand_knowledge.extracting')}</>
+            ) : (
+              <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><path d="M12 2L13.09 8.26L19 7L14.74 11.74L21 12L14.74 12.26L19 17L13.09 15.74L12 22L10.91 15.74L5 17L9.26 12.26L3 12L9.26 11.74L5 7L10.91 8.26L12 2Z" fill="currentColor"/></svg>{t('settings.brand_knowledge.extract_btn')}</>
+            )}
+          </button>
+        </div>
+        <p className="text-xs text-slate-400">{t('settings.brand_knowledge.extract_hint')}</p>
+      </div>
+
+      {/* Core fields */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('settings.brand_knowledge.brand_name_label')}</label>
+            <input type="text" value={form.brand_name || ''} onChange={e => set('brand_name', e.target.value)} placeholder={t('settings.brand_knowledge.brand_name_placeholder')} disabled={!canEdit} className={inputClass} />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('settings.brand_knowledge.industry_label')}</label>
+            <input type="text" value={form.industry || ''} onChange={e => set('industry', e.target.value)} placeholder={t('settings.brand_knowledge.industry_placeholder')} disabled={!canEdit} className={inputClass} />
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('settings.brand_knowledge.tone_label')}</label>
+          <input type="text" value={form.tone_of_voice || ''} onChange={e => set('tone_of_voice', e.target.value)} placeholder={t('settings.brand_knowledge.tone_placeholder')} disabled={!canEdit} className={inputClass} />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('settings.brand_knowledge.audience_label')}</label>
+          <input type="text" value={form.target_audience || ''} onChange={e => set('target_audience', e.target.value)} placeholder={t('settings.brand_knowledge.audience_placeholder')} disabled={!canEdit} className={inputClass} />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('settings.brand_knowledge.benefits_label')}</label>
+          <input type="text" value={form.key_benefits || ''} onChange={e => set('key_benefits', e.target.value)} placeholder={t('settings.brand_knowledge.benefits_placeholder')} disabled={!canEdit} className={inputClass} />
+        </div>
+      </div>
+
+      {/* About brand — rich textarea */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('settings.brand_knowledge.about_label')}</label>
+        <textarea
+          value={form.about_brand || ''}
+          onChange={e => set('about_brand', e.target.value)}
+          placeholder={t('settings.brand_knowledge.about_placeholder')}
+          rows={7}
+          disabled={!canEdit}
+          className={inputClass + ' resize-y min-h-[120px]'}
+        />
+        <p className="text-xs text-slate-400 mt-2">{(form.about_brand || '').length} characters</p>
+      </div>
+
+      {msg && <div className={msgClass(msg.type)}>{msg.text}</div>}
+
+      {canEdit && (
+        <button
+          type="submit"
+          disabled={saving}
+          className="flex items-center gap-2 px-6 py-3 bg-brand hover:bg-brand/90 disabled:opacity-50 text-white text-sm font-bold rounded-xl transition-colors"
+        >
+          {saving ? t('settings.brand_knowledge.saving') : t('settings.brand_knowledge.save_btn')}
+        </button>
+      )}
+    </form>
+  )
+}
+
 export default function SettingsPage() {
   const { t } = useTranslation('common')
   const { language } = useLanguage()
@@ -263,6 +404,8 @@ export default function SettingsPage() {
     ...(isOwner || isTeamAdmin ? [{ key: 'team', label: t('settings.tabs.team'), icon: 'group' }] : []),
     // Billing: owner only
     ...(isOwner ? [{ key: 'billing', label: t('settings.tabs.billing'), icon: 'credit_card' }] : []),
+    // Brand Knowledge: owner and admin only
+    ...(isOwner || isTeamAdmin ? [{ key: 'brand_knowledge', label: t('settings.tabs.brand_knowledge'), icon: 'psychology' }] : []),
     // White label: owner only, not a client workspace
     ...(isOwner && !isClientWorkspace ? [{ key: 'whitelabel', label: t('settings.tabs.whitelabel'), icon: 'palette' }] : []),
   ]
@@ -642,6 +785,10 @@ export default function SettingsPage() {
                 <p className="text-xs text-slate-400 mt-3">{t('billing.jvzoo_note')}</p>
               </div>
             </div>
+          )}
+
+          {activeTab === 'brand_knowledge' && (
+            <BrandKnowledgeTab t={t} inputClass={inputClass} msgClass={msgClass} />
           )}
 
           {activeTab === 'whitelabel' && (

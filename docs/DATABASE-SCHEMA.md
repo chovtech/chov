@@ -273,6 +273,23 @@ All 16 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 
 ---
 
+### workspace_ai_settings
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID PK | Default `gen_random_uuid()` |
+| workspace_id | UUID FK → workspaces NOT NULL | UNIQUE per workspace — CASCADE delete |
+| website_url | TEXT | Used for AI auto-extraction |
+| brand_name | TEXT | Brand / company name |
+| industry | TEXT | Industry or niche |
+| tone_of_voice | TEXT | Communication style |
+| target_audience | TEXT | Who they sell to |
+| key_benefits | TEXT | Main value propositions |
+| about_brand | TEXT | Free-form brand description — no length limit |
+| created_at | TIMESTAMPTZ | Default `now()` |
+| updated_at | TIMESTAMPTZ | Default `now()` |
+
+---
+
 ## VPS Table Status
 
 | Table | Local | VPS |
@@ -293,3 +310,4 @@ All 16 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | rule_events | ✅ | ✅ |
 | countdowns | ✅ | ✅ (owned by `postgres`, not `chov`) |
 | assets | ✅ | ✅ |
+| workspace_ai_settings | ✅ | ⚠️ Run migration on VPS |

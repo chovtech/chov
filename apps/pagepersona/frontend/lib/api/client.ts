@@ -258,6 +258,20 @@ export const aiApi = {
       max_words?: number
     }
   }) => apiClient.post('/api/ai/copy/write', data),
+  getBrand: (workspaceId?: string) =>
+    apiClient.get('/api/ai/brand', { params: workspaceId ? { workspace_id: workspaceId } : {} }),
+  saveBrand: (data: {
+    workspace_id?: string
+    website_url?: string
+    brand_name?: string
+    industry?: string
+    tone_of_voice?: string
+    target_audience?: string
+    key_benefits?: string
+    about_brand?: string
+  }) => apiClient.put('/api/ai/brand', data),
+  extractBrand: (data: { workspace_id?: string; url: string }) =>
+    apiClient.post('/api/ai/brand/extract', data),
 }
 
 // Rules API

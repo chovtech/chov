@@ -834,13 +834,13 @@
 - [ ] Coin balance shows correct number from DB on page load
 - [ ] Balance updates immediately after an AI action (no refresh needed)
 - [ ] Owner plan workspace shows ∞ (not a number)
-- [ ] While fetching, shows `—` (not 0 or blank)
-- [ ] Clicking the coin badge opens the dropdown
-- [ ] Dropdown shows correct balance + progress bar
+- [x] While fetching, shows `—` (not 0 or blank)
+- [x] Clicking the coin badge opens the dropdown
+- [x] Dropdown shows correct balance + progress bar
 - [ ] Progress bar is hidden for owner/unlimited plan
 - [ ] Progress bar fills proportionally to plan allocation (e.g. 40/50 = 80%)
-- [ ] "Top Up" link navigates to billing tab
-- [ ] View-only client sees no coin badge at all
+- [x] "Top Up" link navigates to billing tab
+- [x] View-only client sees no coin badge at all
 
 ---
 
