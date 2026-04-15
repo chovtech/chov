@@ -808,3 +808,168 @@
 ### Next up
 - Module 10 — Agency / Client
 
+
+---
+
+## MODULE 13 — AI FEATURES
+
+> Test on `app.usepagepersona.com` with a real workspace.
+> Each AI feature costs coins — use owner plan workspace to avoid running out during testing.
+> Coin balance in topbar should update after each generation.
+
+---
+
+### 13.1 — AI Coin Balance (Topbar)
+
+- [ ] Coin balance shows correct number from DB on page load
+- [ ] Balance updates immediately after an AI action (no refresh needed)
+- [ ] Owner plan workspace shows ∞ (not a number)
+- [ ] While fetching, shows `—` (not 0 or blank)
+- [ ] Clicking the coin badge opens the dropdown
+- [ ] Dropdown shows correct balance + progress bar
+- [ ] Progress bar is hidden for owner/unlimited plan
+- [ ] Progress bar fills proportionally to plan allocation (e.g. 40/50 = 80%)
+- [ ] "Top Up" link navigates to billing tab
+- [ ] View-only client sees no coin badge at all
+
+---
+
+### 13.2 — Copy Writer: Rule Builder (Standalone — New Rule)
+
+> Path: Dashboard → Project → Rules → New Rule → Add swap_text action
+
+- [ ] "Write with AI" link appears below the swap_text textarea
+- [ ] Shows "5 coins" indicator next to the link
+- [ ] Clicking opens the AI panel inline (does not navigate away)
+- [ ] Goal textarea accepts input
+- [ ] Cmd+Enter / Ctrl+Enter triggers generation
+- [ ] "Generate 3 variants" button is disabled when goal is empty
+- [ ] Spinner shows during generation
+- [ ] 3 variant cards appear with text + rationale
+- [ ] "Use this" button fills the swap_text textarea with the variant text
+- [ ] Applied variant shows "Applied" state (green tick)
+- [ ] Can apply a different variant after applying one (overwrites)
+- [ ] Closing the panel (✕) resets goal, variants, and error
+- [ ] Coin balance in topbar decrements by 5 after generation
+- [ ] Conditions set on the rule are sent as context to AI (verify via variant relevance)
+- [ ] Target element selector is sent as context (verify via variant relevance)
+- [ ] Page URL is sent as context
+
+---
+
+### 13.3 — Copy Writer: Rule Builder (Standalone — Edit Rule)
+
+> Path: Dashboard → Project → Rules → Edit existing rule with swap_text action
+
+- [ ] "Write with AI" link appears below the swap_text textarea
+- [ ] All generation behaviour identical to 13.2
+- [ ] Applying a variant overwrites the existing saved text in the textarea
+- [ ] Existing conditions are sent as context
+
+---
+
+### 13.4 — Copy Writer: Live Picker (New Rule via Picker)
+
+> Path: Dashboard → Project → Open Picker → Click element → "Add Personalisation" → swap_text action
+
+- [ ] "Write with AI" link appears in the sidebar swap_text section
+- [ ] Panel fits within the narrow sidebar without overflow
+- [ ] `selectedEl.textContent` (current live page text) is sent as context — variants reference what they're replacing
+- [ ] `pageUrl` (the live page URL) is sent as context
+- [ ] Conditions added in picker sidebar are included as context
+- [ ] Applying a variant fills the sidebar textarea
+- [ ] Coin balance in topbar decrements by 5
+
+---
+
+### 13.5 — Copy Writer: Live Picker (Edit Existing Rule)
+
+> Path: Picker → Click element with existing rule → Edit rule → swap_text action
+
+- [ ] "Write with AI" link appears
+- [ ] All behaviour identical to 13.4
+- [ ] Existing conditions correctly sent as context
+
+---
+
+### 13.6 — Copy Writer: Popup Builder — Text Block
+
+> Path: Elements → Popups → New or Edit → Add/select Text block → click block to open properties
+
+- [ ] "Write with AI" link appears below the text content textarea
+- [ ] Panel opens inline in the properties sidebar
+- [ ] Applying a variant fills the text block content
+- [ ] Coin balance decrements by 5
+- [ ] No page URL / element context (user describes goal freely)
+
+---
+
+### 13.7 — Copy Writer: Popup Builder — Button Label
+
+> Path: Elements → Popups → Button block → properties
+
+- [ ] "Write with AI" link appears below the Label input
+- [ ] Variants are short (≤ 5 words enforced via prompt)
+- [ ] Applying a variant fills the btn_label field
+- [ ] Coin balance decrements by 5
+
+---
+
+### 13.8 — Copy Writer: Popup Builder — No Thanks Label
+
+> Path: Elements → Popups → No Thanks block → properties
+
+- [ ] "Write with AI" link appears below the Label input
+- [ ] Variants are short dismissal phrases (≤ 5 words)
+- [ ] Applying a variant fills the no_thanks_label field
+- [ ] Coin balance decrements by 5
+
+---
+
+### 13.9 — Coin Error Handling
+
+- [ ] With 0 coins (non-owner), clicking "Generate" shows insufficient coins error
+- [ ] Error message shows current balance and required amount
+- [ ] No coins are deducted when generation fails (API error / network)
+- [ ] Error clears when panel is closed and reopened
+
+---
+
+### 13.10 — User Type Access
+
+| User type | Sees "Write with AI"? | Can generate? |
+|-----------|----------------------|---------------|
+| Owner | ✅ | ✅ unlimited |
+| Team admin | ✅ | ✅ (workspace coins) |
+| Team member | ✅ | ✅ (workspace coins) |
+| Client (full) | ✅ | ✅ (workspace coins) |
+| Client (view_only) | ❌ (can't reach builders) | ❌ |
+
+- [ ] Owner plan: ∞ coins, no deduction visible
+- [ ] Team member: generates fine, coins deduct from shared workspace pool
+- [ ] Client (full): generates fine in their own workspace
+- [ ] Client (view_only): cannot reach rule/popup builder — confirmed by 403 on write attempts
+
+---
+
+### AI Module Progress
+
+| Sub-module | Manual tested | Bugs found | Notes |
+|------------|--------------|------------|-------|
+| 13.1 Coin balance topbar | [ ] | — | Wired to live API |
+| 13.2 Copy Writer — new rule | [ ] | — | |
+| 13.3 Copy Writer — edit rule | [ ] | — | |
+| 13.4 Copy Writer — picker (new) | [ ] | — | Has live element context |
+| 13.5 Copy Writer — picker (edit) | [ ] | — | |
+| 13.6 Copy Writer — popup text | [ ] | — | |
+| 13.7 Copy Writer — button label | [ ] | — | maxWords=5 |
+| 13.8 Copy Writer — no thanks | [ ] | — | maxWords=5 |
+| 13.9 Error handling | [ ] | — | |
+| 13.10 User type access | [ ] | — | |
+
+> **Next AI features to add here as built:**
+> - 13.11 Popup Content Generator (full popup AI fill)
+> - 13.12 Image Generator (swap_image via fal.ai)
+> - 13.13 Page Scanner (backend utility)
+> - 13.14 Analytics Insights
+> - 13.15 Rule Creation Hub
