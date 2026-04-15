@@ -561,12 +561,26 @@
 |---|-------------|-------|-------------|
 
 ### Automated Tests — `tests/test_agency.py`
-- [ ] `test_invite_client`
-- [ ] `test_client_self_signup`
-- [ ] `test_revoke_client_access`
-- [ ] `test_restore_client_access`
-- [ ] `test_join_info_returns_branding`
-- [ ] `test_client_cannot_access_agency_data`
+- [x] `test_invite_info_returns_branding`
+- [x] `test_invite_info_user_exists_true_for_known_email`
+- [x] `test_invite_info_invalid_token_returns_404`
+- [x] `test_invite_creates_pending_client_workspace`
+- [x] `test_invite_client_appears_in_clients_list`
+- [x] `test_invite_duplicate_active_returns_400`
+- [x] `test_accept_new_user_creates_account`
+- [x] `test_accept_new_user_activates_invite`
+- [x] `test_accept_existing_user_no_password_needed`
+- [x] `test_accept_invalid_token_returns_404`
+- [x] `test_list_clients_only_for_owner`
+- [x] `test_revoke_client_access`
+- [x] `test_restore_client_access`
+- [x] `test_join_info_returns_branding`
+- [x] `test_join_info_invalid_slug_returns_404`
+- [x] `test_self_signup_creates_account_and_client_workspace`
+- [x] `test_self_signup_invalid_slug_returns_404`
+- [x] `test_full_access_client_can_create_project`
+- [x] `test_view_only_client_cannot_create_project`
+- [x] `test_client_cannot_see_agency_projects`
 
 ---
 
@@ -799,17 +813,13 @@
 | 7. Countdowns | ✅ All expiry types + in-popup | 1 (fixed) | 8 / 8 ✅ |
 | 8. SDK E2E | ✅ All signals + actions on live page | 3 (all fixed) | 9 / 11 (beacon pending) |
 | 9. Analytics | ✅ All endpoints | 0 | 14 / 14 ✅ |
-| 10. Agency / Client | 0 / 49 | 0 | 0 / 6 |
+| 10. Agency / Client | 48 / 49 (WP plugin branding pending) | 0 | 20 / 20 ✅ |
 | 11. Team | ✅ All 52 items | 11 bugs (all fixed) | 15 / 15 ✅ |
 | 12. Media Library | ✅ All 16 items | 1 (fixed) | 12 / 12 ✅ |
 
-**Total automated tests: 95 / 95 passing**
-
-### Next up
-- Module 10 — Agency / Client
+**Total automated tests: 115 / 115 passing**
 
 
----
 
 ## MODULE 13 — AI FEATURES
 
