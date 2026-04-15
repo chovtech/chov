@@ -247,6 +247,17 @@ export const aiApi = {
     apiClient.get('/api/ai/coins', { params: workspaceId ? { workspace_id: workspaceId } : {} }),
   getCoinHistory: (workspaceId?: string, limit = 20) =>
     apiClient.get('/api/ai/coins/history', { params: { ...(workspaceId ? { workspace_id: workspaceId } : {}), limit } }),
+  writeCopy: (data: {
+    workspace_id?: string
+    goal: string
+    context?: {
+      page_url?: string
+      element_selector?: string
+      current_text?: string
+      conditions?: Array<{ signal: string; operator: string; value: string }>
+      max_words?: number
+    }
+  }) => apiClient.post('/api/ai/copy/write', data),
 }
 
 // Rules API

@@ -7,6 +7,7 @@ import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { apiClient } from '@/lib/api/client'
 import ImageUploader from '@/components/ui/ImageUploader'
+import CopyWriter from '@/components/ui/CopyWriter'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -995,6 +996,10 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('popup_builder.label_content')}</label>
             <textarea value={block.text || ''} onChange={e => onTextChange(e.target.value)} rows={3}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand" />
+            <CopyWriter
+              workspaceId={workspaceId}
+              onApply={text => onTextChange(text)}
+            />
             <div className="mt-2">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t('picker.insert_token')}</p>
               <div className="flex flex-wrap gap-1.5">
@@ -1109,6 +1114,11 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Label</label>
             <input type="text" value={block.btn_label || ''} onChange={e => onUpdate({ btn_label: e.target.value })}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
+            <CopyWriter
+              workspaceId={workspaceId}
+              maxWords={5}
+              onApply={text => onUpdate({ btn_label: text })}
+            />
           </div>
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Format</label>
@@ -1165,6 +1175,11 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Label</label>
             <input type="text" value={block.no_thanks_label || 'No thanks'} onChange={e => onUpdate({ no_thanks_label: e.target.value })}
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
+            <CopyWriter
+              workspaceId={workspaceId}
+              maxWords={5}
+              onApply={text => onUpdate({ no_thanks_label: text })}
+            />
           </div>
           <div className="flex items-center justify-between">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Colour</label>

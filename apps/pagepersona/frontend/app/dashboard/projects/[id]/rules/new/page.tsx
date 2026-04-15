@@ -7,6 +7,7 @@ import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import ImageUploader from '@/components/ui/ImageUploader'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
+import CopyWriter from '@/components/ui/CopyWriter'
 import { rulesApi, projectApi, apiClient } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
@@ -601,6 +602,13 @@ function NewRulePageInner() {
                           placeholder="Enter the content to show this visitor segment..."
                           rows={3}
                           className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
+                        />
+                        <CopyWriter
+                          workspaceId={activeWorkspace?.id}
+                          pageUrl={projectPageUrl}
+                          elementSelector={action.target_block}
+                          conditions={conditions.map(c => ({ signal: c.signal, operator: c.operator, value: c.value }))}
+                          onApply={text => onTextChange(text)}
                         />
                         <div className="mt-2">
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">{t('picker.insert_token')}</p>

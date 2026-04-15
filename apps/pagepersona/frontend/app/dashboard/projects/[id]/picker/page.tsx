@@ -7,6 +7,7 @@ import { useWorkspace } from '@/lib/context/WorkspaceContext'
 import SignalLibraryModal from '@/components/ui/SignalLibraryModal'
 import Icon from '@/components/ui/Icon'
 import ImageUploader from '@/components/ui/ImageUploader'
+import CopyWriter from '@/components/ui/CopyWriter'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { useLanguage } from '@/lib/hooks/useLanguage'
 
@@ -765,6 +766,14 @@ function PickerPageInner() {
                               <textarea value={parts.text} onChange={e => onTextChange(e.target.value)}
                                 placeholder={t('picker.content_placeholder')} rows={3}
                                 className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:border-brand transition-all" />
+                              <CopyWriter
+                                workspaceId={activeWorkspace?.id}
+                                pageUrl={pageUrl}
+                                elementSelector={action.target_block || selectedEl?.selector}
+                                currentText={selectedEl?.textContent}
+                                conditions={conditions.map(c => ({ signal: c.signal, operator: c.operator, value: c.value }))}
+                                onApply={text => onTextChange(text)}
+                              />
                               <div className="mt-2">
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">{t('picker.insert_token')}</p>
                                 <div className="flex flex-wrap gap-1.5">
@@ -1116,6 +1125,14 @@ function PickerPageInner() {
                                 <textarea value={parts.text} onChange={e => onTextChange(e.target.value)}
                                   placeholder={t('picker.content_placeholder')} rows={3}
                                   className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:border-brand transition-all" />
+                                <CopyWriter
+                                  workspaceId={activeWorkspace?.id}
+                                  pageUrl={pageUrl}
+                                  elementSelector={action.target_block || selectedEl?.selector}
+                                  currentText={selectedEl?.textContent}
+                                  conditions={conditions.map(c => ({ signal: c.signal, operator: c.operator, value: c.value }))}
+                                  onApply={text => onTextChange(text)}
+                                />
                                 <div className="mt-2">
                                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">{t('picker.insert_token')}</p>
                                   <div className="flex flex-wrap gap-1.5">
