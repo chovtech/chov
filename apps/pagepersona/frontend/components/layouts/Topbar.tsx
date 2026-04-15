@@ -2,15 +2,15 @@
 
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
-import { authApi } from '@/lib/api/client'
+import { authApi, aiApi } from '@/lib/api/client'
 import Icon from '@/components/ui/Icon'
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
 interface User { name: string; email: string }
+interface CoinBalance { balance: number | null; plan: string; is_unlimited: boolean; allocations: Record<string, number | null> }
 
-const AI_CREDITS = 250
 const USER_LEVEL = 'Solo'
 
 export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceName?: string }) {
@@ -18,6 +18,7 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
   const { activeWorkspace } = useWorkspace()
   const isViewOnly = activeWorkspace?.member_role === 'client' && activeWorkspace?.client_access_level === 'view_only'
   const [user, setUser] = useState<User | null>(null)
+  const [coins, setCoins] = useState<CoinBalance | null>(null)
   const [showCredits, setShowCredits] = useState(false)
   const creditsRef = useRef<HTMLDivElement>(null)
 
@@ -31,6 +32,12 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
     window.addEventListener('profileUpdated', onProfileUpdated)
     return () => window.removeEventListener('profileUpdated', onProfileUpdated)
   }, [])
+
+  useEffect(() => {
+    if (!isViewOnly) {
+      aiApi.getCoins(activeWorkspace?.id).then(res => setCoins(res.data)).catch(() => null)
+    }
+  }, [activeWorkspace?.id, isViewOnly])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -73,18 +80,27 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
             <span className="text-xl">🪙</span>
-            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{AI_CREDITS.toLocaleString()}</span>
+            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+              {coins?.is_unlimited ? '∞' : coins == null ? '—' : coins.balance?.toLocaleString() ?? '—'}
+            </span>
           </button>
           {showCredits && (
             <div className="absolute top-full right-0 mt-2 w-52 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-4 z-50">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-xs font-bold text-slate-900 dark:text-white">{t('topbar.aiCredits')}</p>
-                <span className="text-xs font-bold text-brand">{AI_CREDITS}</span>
+                <span className="text-xs font-bold text-brand">
+                  {coins?.is_unlimited ? '∞' : (coins?.balance ?? '—')}
+                </span>
               </div>
               <p className="text-[11px] text-slate-400 mb-3">{t('topbar.creditsRemaining')}</p>
-              <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1.5 mb-3">
-                <div className="bg-brand h-1.5 rounded-full" style={{ width: `${(AI_CREDITS / 500) * 100}%` }} />
-              </div>
+              {!coins?.is_unlimited && (
+                <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1.5 mb-3">
+                  <div
+                    className="bg-brand h-1.5 rounded-full"
+                    style={{ width: `${Math.min(100, ((coins?.balance ?? 0) / (coins?.allocations?.[coins?.plan ?? ''] ?? 50)) * 100)}%` }}
+                  />
+                </div>
+              )}
               <Link
                 href="/dashboard/settings?tab=billing"
                 onClick={() => setShowCredits(false)}

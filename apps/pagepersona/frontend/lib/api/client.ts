@@ -241,6 +241,14 @@ export const assetsApi = {
     apiClient.delete(`/api/assets/${id}`),
 }
 
+// AI API
+export const aiApi = {
+  getCoins: (workspaceId?: string) =>
+    apiClient.get('/api/ai/coins', { params: workspaceId ? { workspace_id: workspaceId } : {} }),
+  getCoinHistory: (workspaceId?: string, limit = 20) =>
+    apiClient.get('/api/ai/coins/history', { params: { ...(workspaceId ? { workspace_id: workspaceId } : {}), limit } }),
+}
+
 // Rules API
 export const rulesApi = {
   create: (projectId: string, data: { name: string; conditions: any[]; condition_operator: string; actions: any[]; priority?: number }) =>
