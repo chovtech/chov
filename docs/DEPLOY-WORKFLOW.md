@@ -23,6 +23,16 @@ Then in terminal 4 (already SSH'd to VPS): `~/deploy.sh`
 | Backend (FastAPI) | systemd | `pagepersona-api` | `sudo systemctl restart pagepersona-api` |
 | Frontend (Next.js) | PM2 | `pagepersona-app` | `pm2 restart pagepersona-app` |
 
+## Installing New Python Packages on VPS
+No venv on VPS — backend runs on system Python via `~/.local`. Whenever `requirements.txt` gains a new package:
+```bash
+pip install <package> && sudo systemctl restart pagepersona-api
+```
+Or to install everything from requirements at once:
+```bash
+pip install -r requirements.txt && sudo systemctl restart pagepersona-api
+```
+
 ## Useful VPS Commands
 ```bash
 # Backend logs
