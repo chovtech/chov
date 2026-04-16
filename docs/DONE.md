@@ -338,33 +338,73 @@ All emails: EN + FR bilingual (where applicable), SES via boto3, `noreply@usepag
 
 ---
 
-## 21. WHAT'S NEXT — AI FEATURES (Agreed & Locked)
+## 21. AI MODULE — INFRASTRUCTURE ✅
 
-Build order: AI module first → measure real coin costs → entitlements/limits → JVZoo landing page.
+| Item | Detail |
+|------|--------|
+| `ai_coins` table | Balance per workspace, default 100 coins, `last_reset_at` |
+| `ai_coin_transactions` table | Full audit log — `action_type`, `coins_deducted`, `claude_tokens_used`, `fal_image_generated`, `metadata` |
+| `coin_service.py` | `get_balance()`, `check_coins()`, `deduct_coins()` — owner plan always bypasses |
+| Coin balance in topbar | Live badge, updates via `coinsUpdated` custom DOM event after every AI action |
+| Coin history | Settings → Billing tab shows last 20 transactions |
 
-### AI Infrastructure (Phase 1 — before any feature)
-- `ai_coins` table — balance per workspace, last_reset_at
-- `ai_coin_transactions` table — audit log: action_type, coins_deducted, claude_tokens_used
-- Backend coin service: `get_balance()`, `check_coins()`, `deduct_coins()` — owner plan always bypasses
-- Coin balance badge in sidebar under workspace name
+---
 
-### AI Features (Phase 2)
+## 22. AI MODULE — FEATURES BUILT ✅
 
-| # | Feature | Where | What it does |
-|---|---------|--------|--------------|
-| 1 | **Rule Creation Hub** | New rule entry point | 3 paths: **Manual** (existing builder unchanged), **Template** (pick a goal → pre-built rule loads → user picks elements with picker), **AI** (user types goal → AI scans page URL, reads real element selectors → returns 3–5 ready rules → user accepts/edits/discards) |
-| 2 | **AI Rule Suggestions** | Project overview, analytics, rule list, any rule surface | Contextual nudges based on traffic patterns / page content / analytics — always visible, non-intrusive, actionable |
-| 3 | **Copy Writer** | Rule builder — `swap_text` action | User describes goal → AI returns 3 copy variants to pick from |
-| 4 | **Image Generation** | Rule builder — `swap_image` action | User describes image → **Flux.1 Pro via fal.ai** generates website-quality output → uploads to R2 like any other image |
-| 5 | **Popup Content Generator** | Popup builder | User describes popup goal → AI fills headline, body, CTA label → treated as user-created, saves as their own template |
-| 6 | **Analytics Insights** | Analytics page — per project | Reads rule fires, visitor breakdown, countries, devices, referrers → plain-English story of what the data is saying |
+### Brand Knowledge (Settings → Brand Knowledge tab)
+- Fields: website_url, brand_name, industry, tone_of_voice, target_audience, key_benefits, about_brand
+- "Extract from URL" — free Sonnet call, scrapes site and fills all fields
+- CopyWriter on `about_brand` with `workspaceOnly` flag (no project selector)
 
-### Technical decisions locked
-- Text AI: `claude-haiku-4-5` for copy/popup, `claude-sonnet-4-6` for rule suggestions + page scan
-- Image AI: Flux.1 Pro via fal.ai (~$0.05/image — photorealistic, website-grade)
-- Page scan: `httpx` + `BeautifulSoup` — no Puppeteer; degrades gracefully for JS-heavy SPAs
-- Coin costs: TBD after empirical testing — then locked into `COIN_COSTS` constant
+### Project Description
+- `description TEXT` column on projects — required at creation (> 10 chars)
+- "Extract from URL" — 3 coins, Sonnet scrapes project URL, writes 4–6 sentence description
+- Available in Create and Edit project modals
+- Used by CopyWriter and Image Generator as project-level context
 
-### After AI module
-- Entitlements / limits enforcement (plan limits + coin allocations per plan, now empirically informed)
-- JVZoo sales funnel pages (FE page, OTO 1–5, thank-you pages)
+### CopyWriter (`components/ui/CopyWriter.tsx`) — 5 coins
+- Generates 3 copy variants with rationale
+- Context stack: Brand Knowledge → Project description → current text → visitor conditions → user goal
+- Project selector shown in popup context (`needsProjectSelector = !projectId && !workspaceOnly`)
+- Surfaces: Rules Engine, Live Picker, Popup Builder (text/button/no_thanks), Brand Knowledge
+
+### Image Generator (`components/ui/ImageGenerator.tsx`) — 10 coins
+- fal.ai Flux Dev — Photorealistic (default), Illustration, Anime, Abstract styles
+- Style keywords appended to prompt on backend per style selection
+- Auto-detects W/H from existing image; user-editable W/H fields
+- Generated image → R2 → asset library → pre-selected → Insert
+- Project selector in popup context; `projectId` threaded through ImageUploader from Rules/Picker
+- Surfaces: Popup Builder image block, Rules Engine swap_image, Live Picker swap_image
+
+### Popup Content Generator (PopupBuilder template picker) — 5 coins
+- "Generate with AI" button in template picker header
+- Haiku decides: layout, bg_color, blocks (text/image/button/no_thanks/countdown), all copy
+- Backend strict JSON validation — wrong types/colors/shapes rejected before reaching frontend
+- Style defaults by block role (backend, not AI): headline 24px/800, body 14px/400, button contrasts bg
+- Two-column: AI returns `left_blocks` + `right_blocks` → backend wraps in `columns` block
+- Loads into popup editor — user fills image slots, wires countdown, saves
+
+### Technical Stack (locked)
+| Layer | Choice |
+|-------|--------|
+| Fast copy/popup AI | `claude-haiku-4-5` (AI_MODEL_FAST) |
+| Smart extraction | `claude-sonnet-4-6` (AI_MODEL_SMART) |
+| Image generation | `fal-ai/flux/dev` via `fal-client==0.5.9` |
+| Page scraping | `httpx` + `BeautifulSoup` |
+| Image storage | R2 → asset library (same as manual upload) |
+
+---
+
+## 23. WHAT'S NEXT
+
+### Remaining AI Features
+| # | Feature | Where | Notes |
+|---|---------|--------|-------|
+| 1 | **Rule Creation Hub** | New rule entry point | 3 paths: Manual (unchanged), Template (goal → pre-built rule), AI (goal → scans page → ready rules) |
+| 2 | **AI Rule Suggestions** | Project overview / rule list | Contextual nudges from traffic + analytics |
+| 3 | **Analytics Insights** | Analytics page per project | Plain-English story from rule fires + visitor breakdown |
+
+### After AI module complete
+- Entitlements / plan limits enforcement (coin allocations per plan)
+- JVZoo sales funnel pages (FE, OTO 1–5, thank-you pages)

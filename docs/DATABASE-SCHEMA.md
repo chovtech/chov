@@ -170,6 +170,7 @@ All 16 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | script_verified | BOOLEAN | Default `false` |
 | status | VARCHAR(50) NOT NULL | `draft`, `active` — default `draft` |
 | thumbnail_url | TEXT | R2 URL |
+| description | TEXT | AI context — what the page sells/does. Required at creation. Used by CopyWriter and Image Generator for project-specific copy. |
 | created_at | TIMESTAMPTZ | Default `now()` |
 | updated_at | TIMESTAMPTZ | Default `now()` |
 
@@ -284,9 +285,46 @@ All 16 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | tone_of_voice | TEXT | Communication style |
 | target_audience | TEXT | Who they sell to |
 | key_benefits | TEXT | Main value propositions |
-| about_brand | TEXT | Free-form brand description — no length limit |
+| about_brand | TEXT | Free-form brand description — CopyWriter uses this as base voice/style |
 | created_at | TIMESTAMPTZ | Default `now()` |
 | updated_at | TIMESTAMPTZ | Default `now()` |
+
+---
+
+### ai_coins
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID PK | Default `gen_random_uuid()` |
+| workspace_id | UUID FK → workspaces NOT NULL | UNIQUE per workspace |
+| balance | INTEGER NOT NULL | Current coin balance — default `100` |
+| last_reset_at | TIMESTAMPTZ | When coins were last topped up |
+| created_at | TIMESTAMPTZ | Default `now()` |
+| updated_at | TIMESTAMPTZ | Default `now()` |
+
+---
+
+### ai_coin_transactions
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID PK | Default `gen_random_uuid()` |
+| workspace_id | UUID FK → workspaces NOT NULL | |
+| action_type | VARCHAR(50) NOT NULL | `write_copy`, `generate_image`, `popup_content`, `project_describe`, etc. |
+| coins_deducted | INTEGER NOT NULL | |
+| claude_tokens_used | INTEGER | Nullable — set for Anthropic calls |
+| fal_image_generated | BOOLEAN | Default `false` — set for fal.ai image gen calls |
+| metadata | JSONB | e.g. `{goal, prompt, style, width, height}` |
+| created_at | TIMESTAMPTZ | Default `now()` |
+
+**Coin costs (locked in `COIN_COSTS` constant):**
+| Action | Coins |
+|--------|-------|
+| `write_copy` | 5 |
+| `generate_image` | 10 |
+| `popup_content` | 5 |
+| `project_describe` | 3 |
+| `analytics_insights` | 8 |
+| `rule_creation_ai` | 15 |
+| `rule_suggestion` | 3 |
 
 ---
 
@@ -301,7 +339,7 @@ All 16 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | password_reset_tokens | ✅ | ✅ |
 | entitlements | ✅ | ✅ |
 | pricing_tiers | ✅ | ✅ |
-| projects | ✅ | ✅ |
+| projects | ✅ | ✅ (`description` column added) |
 | rules | ✅ | ✅ |
 | popups | ✅ | ✅ |
 | workspace_members | ✅ | ✅ |
@@ -310,5 +348,7 @@ All 16 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | rule_events | ✅ | ✅ |
 | countdowns | ✅ | ✅ (owned by `postgres`, not `chov`) |
 | assets | ✅ | ✅ |
-| workspace_ai_settings | ✅ | ⚠️ Run migration on VPS |
-| workspaces.onboarding_completed | ✅ | ⚠️ Run migration on VPS |
+| workspace_ai_settings | ✅ | ✅ |
+| ai_coins | ✅ | ✅ |
+| ai_coin_transactions | ✅ | ✅ |
+| workspaces.onboarding_completed | ✅ | ✅ |
