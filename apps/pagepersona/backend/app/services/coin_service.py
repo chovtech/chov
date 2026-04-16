@@ -8,6 +8,7 @@ Manages the AI coin economy:
 - Plan allocations are the starting balance on signup
 """
 import uuid
+import json
 from typing import Optional
 import asyncpg
 from fastapi import HTTPException
@@ -125,7 +126,7 @@ async def deduct_coins(
                VALUES ($1, $2, $3, $4, $5, $6, $7)""",
             uuid.uuid4(), ws_id, action_type, 0,
             claude_tokens_used, fal_image_generated,
-            metadata or {}
+            json.dumps(metadata or {})
         )
         return None
 
@@ -147,7 +148,7 @@ async def deduct_coins(
            VALUES ($1, $2, $3, $4, $5, $6, $7)""",
         uuid.uuid4(), ws_id, action_type, cost,
         claude_tokens_used, fal_image_generated,
-        metadata or {}
+        json.dumps(metadata or {})
     )
 
     return new_balance
