@@ -211,13 +211,13 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
             </button>
           </div>
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-semibold text-[#1A56DB]">
+            <span className="text-xs font-semibold text-brand">
               {t('wizard.step')} {step} {t('wizard.of')} {totalSteps}: {t(`wizard.steps.step${step}`)}
             </span>
             <span className="text-xs text-slate-400">{progress}%</span>
           </div>
           <div className="h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
-            <div className="h-full bg-[#1A56DB] rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
+            <div className="h-full bg-brand rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
           </div>
         </div>
 
@@ -234,7 +234,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                   value={projectName}
                   onChange={e => setProjectName(e.target.value)}
                   placeholder={t('wizard.step1.name_placeholder')}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-[#1A56DB] focus:ring-2 focus:ring-[#1A56DB]/20 outline-none transition-all text-sm"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition-all text-sm"
                 />
               </div>
               <div className="flex flex-col gap-1.5">
@@ -248,7 +248,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                     className={`w-full rounded-xl border bg-white px-4 py-2.5 pr-10 text-slate-900 placeholder:text-slate-400 focus:ring-2 outline-none transition-all text-sm ${
                       urlValid === true ? 'border-emerald-400 focus:ring-emerald-400/20'
                       : urlValid === false ? 'border-red-400 focus:ring-red-400/20'
-                      : 'border-slate-200 focus:border-[#1A56DB] focus:ring-[#1A56DB]/20'
+                      : 'border-slate-200 focus:border-brand focus:ring-brand/20'
                     }`}
                   />
                   {urlValid === true && <div className="absolute inset-y-0 right-3 flex items-center text-emerald-500"><Icon name="check_circle" /></div>}
@@ -279,7 +279,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                   onChange={e => setDescription(e.target.value)}
                   placeholder="Click Extract from URL to auto-fill — or type it yourself: what does this page sell, who is it for, what's the main offer or benefit?"
                   rows={4}
-                  className={`w-full rounded-xl border bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-[#1A56DB] focus:ring-2 focus:ring-[#1A56DB]/20 outline-none transition-all text-sm resize-none ${
+                  className={`w-full rounded-xl border bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition-all text-sm resize-none ${
                     description.trim().length > 10 ? 'border-emerald-400' : 'border-slate-200'
                   }`}
                 />
@@ -325,12 +325,12 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                     onClick={() => setPlatform(p.key)}
                     className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center ${
                       platform === p.key
-                        ? 'border-[#1A56DB] bg-[#1A56DB]/5'
-                        : 'border-slate-200 bg-white hover:border-[#1A56DB]/40'
+                        ? 'border-brand bg-brand/5'
+                        : 'border-slate-200 bg-white hover:border-brand/40'
                     }`}
                   >
                     {platform === p.key && (
-                      <div className="absolute top-1.5 right-1.5 text-[#1A56DB]">
+                      <div className="absolute top-1.5 right-1.5 text-brand">
                         <Icon name="check_circle" className="text-sm" />
                       </div>
                     )}
@@ -340,7 +340,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                         : <Icon name="more_horiz" className="text-xl text-slate-500" />
                       }
                     </div>
-                    <span className={`text-[10px] font-bold leading-tight ${platform === p.key ? 'text-[#1A56DB]' : 'text-slate-700'}`}>
+                    <span className={`text-[10px] font-bold leading-tight ${platform === p.key ? 'text-brand' : 'text-slate-700'}`}>
                       {p.label}
                     </span>
                   </button>
@@ -389,7 +389,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                 <ol className="flex flex-col gap-2">
                   {currentSteps.map((s, i) => (
                     <li key={i} className="flex items-start gap-2.5">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1A56DB]/10 text-[#1A56DB] text-[10px] font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-brand/10 text-brand text-[10px] font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
                       <span className="text-xs text-slate-600 leading-relaxed">{s}</span>
                     </li>
                   ))}
@@ -431,7 +431,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                 <button
                   onClick={handleVerify}
                   disabled={verifying || verified}
-                  className="flex items-center gap-1.5 bg-[#1A56DB] hover:bg-[#1A56DB]/90 disabled:opacity-60 text-white font-bold py-2 px-4 rounded-xl text-xs transition-all shadow-sm"
+                  className="flex items-center gap-1.5 bg-brand hover:bg-brand/90 disabled:opacity-60 text-white font-bold py-2 px-4 rounded-xl text-xs transition-all shadow-sm"
                 >
                   <Icon name={verifying ? 'sync' : 'verified'} className={verifying ? 'animate-spin text-sm' : 'text-sm'} />
                   {verifying ? 'Verifying…' : 'Verify Installation'}
@@ -479,7 +479,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
             <button
               onClick={handleStep1Next}
               disabled={!canProceedStep1}
-              className="flex items-center gap-1.5 px-6 py-2 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="flex items-center gap-1.5 px-6 py-2 bg-brand text-white text-sm font-bold rounded-xl shadow-md shadow-brand/20 hover:bg-brand/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               {t('actions.next')} <Icon name="arrow_forward" className="text-sm" />
             </button>
@@ -492,7 +492,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                 setStep(3)
               }}
               disabled={!canProceedStep2}
-              className="flex items-center gap-1.5 px-6 py-2 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="flex items-center gap-1.5 px-6 py-2 bg-brand text-white text-sm font-bold rounded-xl shadow-md shadow-brand/20 hover:bg-brand/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               {t('actions.next')} <Icon name="arrow_forward" className="text-sm" />
             </button>
@@ -500,7 +500,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
             <button
               disabled={!verified || launching}
               onClick={handleLaunch}
-              className="flex items-center gap-1.5 px-6 py-2 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="flex items-center gap-1.5 px-6 py-2 bg-brand text-white text-sm font-bold rounded-xl shadow-md shadow-brand/20 hover:bg-brand/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               <Icon name="rocket_launch" className="text-sm" />
               {launching ? 'Launching…' : t('wizard.done')}
