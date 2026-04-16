@@ -446,11 +446,20 @@ Return ONLY a valid JSON array with this exact shape — no markdown, no explana
 
 # ── Image Generator ───────────────────────────────────────────────────────────
 
+STYLE_KEYWORDS: dict[str, str] = {
+    "photorealistic": "photorealistic, professional photograph, DSLR quality, sharp focus, realistic lighting, high resolution, 8k",
+    "illustration":   "digital illustration, clean lines, professional graphic design, flat style",
+    "anime":          "anime style, manga illustration, cel shaded",
+    "abstract":       "abstract art, artistic, painterly, expressive",
+}
+
 class ImageGenerateRequest(BaseModel):
     workspace_id: Optional[str] = None
     prompt: str
+    style: str = "photorealistic"
     width: int = 1024
     height: int = 576
+    project_id: Optional[str] = None
 
 @router.post("/image/generate")
 async def generate_image(
@@ -466,6 +475,10 @@ async def generate_image(
     ws_id = str(workspace["id"])
 
     await check_coins(ws_id, "generate_image", db)
+
+    # ── Build enhanced prompt ─────────────────────────────────────────────────
+    style_suffix = STYLE_KEYWORDS.get(body.style, STYLE_KEYWORDS["photorealistic"])
+    final_prompt = f"{body.prompt.strip()}, {style_suffix}"
 
     # Clamp dimensions to fal.ai supported range (multiples of 8, 256–2048)
     def clamp(v: int) -> int:
@@ -483,7 +496,7 @@ async def generate_image(
         result = await fal_client.run_async(
             AI_IMAGE_MODEL,
             arguments={
-                "prompt": body.prompt.strip(),
+                "prompt": final_prompt,
                 "image_size": {"width": width, "height": height},
                 "num_images": 1,
                 "enable_safety_checker": True,
@@ -529,7 +542,7 @@ async def generate_image(
         action_type="generate_image",
         db=db,
         fal_image_generated=True,
-        metadata={"prompt": body.prompt[:200], "width": width, "height": height},
+        metadata={"prompt": body.prompt[:200], "style": body.style, "width": width, "height": height},
     )
 
     return {

@@ -12,9 +12,11 @@ interface ImageUploaderProps {
   placeholder?: string
   /** Pass workspaceId to enable the library flow. Omit for user-level uploads (avatar). */
   workspaceId?: string
+  /** Pass projectId when the uploader is inside a project context (rules, picker). Omit in popup/workspace context to show project selector inside the generator. */
+  projectId?: string
 }
 
-export default function ImageUploader({ value, onChange, placeholder, workspaceId }: ImageUploaderProps) {
+export default function ImageUploader({ value, onChange, placeholder, workspaceId, projectId }: ImageUploaderProps) {
   const { t } = useTranslation()
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
@@ -184,6 +186,7 @@ export default function ImageUploader({ value, onChange, placeholder, workspaceI
       {workspaceId && (
         <ImageGenerator
           workspaceId={workspaceId}
+          projectId={projectId}
           existingImageUrl={value || undefined}
           onInsert={onChange}
         />

@@ -276,7 +276,7 @@ export const aiApi = {
     apiClient.post('/api/ai/brand/extract', data),
   extractProjectDescription: (data: { workspace_id?: string; url: string }) =>
     apiClient.post('/api/ai/project/extract-description', data),
-  generateImage: (data: { workspace_id?: string; prompt: string; width: number; height: number }) =>
+  generateImage: (data: { workspace_id?: string; prompt: string; style?: string; width: number; height: number; project_id?: string }) =>
     apiClient.post('/api/ai/image/generate', data),
 }
 

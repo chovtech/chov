@@ -649,7 +649,7 @@ function NewRulePageInner() {
                   {action.type === "swap_image" && (
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">New Image</label>
-                      <ImageUploader value={action.value} onChange={url => updateAction(action.id, "value", url)} workspaceId={activeWorkspace?.id} />
+                      <ImageUploader value={action.value} onChange={url => updateAction(action.id, "value", url)} workspaceId={activeWorkspace?.id} projectId={projectId} />
                     </div>
                   )}
 

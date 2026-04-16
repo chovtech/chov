@@ -1,11 +1,20 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { aiApi } from '@/lib/api/client'
+import { aiApi, projectApi } from '@/lib/api/client'
 import Icon from '@/components/ui/Icon'
+
+const STYLES = [
+  { value: 'photorealistic', label: 'Photorealistic' },
+  { value: 'illustration',   label: 'Illustration' },
+  { value: 'anime',          label: 'Anime' },
+  { value: 'abstract',       label: 'Abstract' },
+]
 
 interface ImageGeneratorProps {
   workspaceId?: string
+  projectId?: string
+  workspaceOnly?: boolean
   /** URL of the existing image in this slot — used to auto-detect W/H */
   existingImageUrl?: string
   onInsert: (url: string) => void
@@ -14,17 +23,24 @@ interface ImageGeneratorProps {
 
 export default function ImageGenerator({
   workspaceId,
+  projectId,
+  workspaceOnly,
   existingImageUrl,
   onInsert,
   onCoinsUpdated,
 }: ImageGeneratorProps) {
   const [open, setOpen] = useState(false)
   const [prompt, setPrompt] = useState('')
+  const [style, setStyle] = useState('photorealistic')
   const [width, setWidth] = useState(1024)
   const [height, setHeight] = useState(576)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('__workspace__')
+
+  const needsProjectSelector = !projectId && !workspaceOnly
 
   // Auto-detect dimensions from existing image
   useEffect(() => {
@@ -39,6 +55,15 @@ export default function ImageGenerator({
     img.src = existingImageUrl
   }, [existingImageUrl])
 
+  // Load projects for selector when in popup/workspace context
+  useEffect(() => {
+    if (open && needsProjectSelector && workspaceId) {
+      projectApi.list(workspaceId).then((res: any) => {
+        setProjects(res.data || [])
+      }).catch(() => {})
+    }
+  }, [open, needsProjectSelector, workspaceId])
+
   const generate = async () => {
     if (!prompt.trim()) return
     setLoading(true)
@@ -48,8 +73,10 @@ export default function ImageGenerator({
       const res = await aiApi.generateImage({
         workspace_id: workspaceId,
         prompt: prompt.trim(),
+        style,
         width,
         height,
+        project_id: projectId || (selectedProjectId !== '__workspace__' ? selectedProjectId : undefined),
       })
       setResult(res.data.url)
       if (res.data.balance != null) {
@@ -111,43 +138,68 @@ export default function ImageGenerator({
         </button>
       </div>
 
+      {/* Project selector — popup/workspace context only */}
+      {needsProjectSelector && (
+        <div>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Project context</label>
+          <select
+            value={selectedProjectId}
+            onChange={e => setSelectedProjectId(e.target.value)}
+            className="w-full px-3 py-2 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-slate-700"
+          >
+            <option value="__workspace__">Use workspace context</option>
+            {projects.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Prompt */}
       <div>
         <textarea
           value={prompt}
           onChange={e => setPrompt(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate() }}
-          placeholder="Describe the image, e.g. 'Professional photo of a confident woman using a laptop in a modern office, warm light'"
+          placeholder="Describe the image, e.g. 'Confident professional woman at a desk in a modern office, warm natural light'"
           rows={2}
           className="w-full px-3 py-2 bg-white border border-brand/20 rounded-lg text-xs resize-none focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all placeholder:text-slate-400"
         />
       </div>
 
-      {/* Dimensions */}
-      <div className="flex items-center gap-2">
+      {/* Style + Dimensions row */}
+      <div className="flex items-end gap-2">
         <div className="flex-1">
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Width (px)</label>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Style</label>
+          <select
+            value={style}
+            onChange={e => setStyle(e.target.value)}
+            className="w-full px-3 py-2 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-slate-700"
+          >
+            {STYLES.map(s => (
+              <option key={s.value} value={s.value}>{s.label}</option>
+            ))}
+          </select>
+        </div>
+        <div className="w-20">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Width</label>
           <input
             type="number"
             value={width}
             onChange={e => setWidth(Number(e.target.value))}
-            min={256}
-            max={2048}
-            step={8}
-            className="w-full px-3 py-2 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
+            min={256} max={2048} step={8}
+            className="w-full px-2 py-2 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
           />
         </div>
-        <div className="flex items-center pt-4 text-slate-300 font-bold text-sm">×</div>
-        <div className="flex-1">
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Height (px)</label>
+        <div className="text-slate-300 font-bold text-sm pb-2">×</div>
+        <div className="w-20">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Height</label>
           <input
             type="number"
             value={height}
             onChange={e => setHeight(Number(e.target.value))}
-            min={256}
-            max={2048}
-            step={8}
-            className="w-full px-3 py-2 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
+            min={256} max={2048} step={8}
+            className="w-full px-2 py-2 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
           />
         </div>
       </div>
