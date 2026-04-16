@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
-import { projectApi, apiClient } from '@/lib/api/client'
+import { projectApi, apiClient, aiApi } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
 interface Props {
@@ -55,6 +55,9 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
   const [projectName, setProjectName] = useState('')
   const [pageUrl, setPageUrl] = useState('')
   const [urlValid, setUrlValid] = useState<boolean | null>(null)
+  const [description, setDescription] = useState('')
+  const [extracting, setExtracting] = useState(false)
+  const [extractError, setExtractError] = useState('')
   const [platform, setPlatform] = useState('')
   const [copied, setCopied] = useState(false)
   const [verified, setVerified] = useState(false)
@@ -89,6 +92,24 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const handleExtractDescription = async () => {
+    if (!urlValid || !pageUrl.trim()) return
+    setExtracting(true)
+    setExtractError('')
+    try {
+      const res = await aiApi.extractProjectDescription({ workspace_id: activeWorkspace?.id, url: pageUrl.trim() })
+      setDescription(res.data.description || '')
+      if (res.data.balance != null) window.dispatchEvent(new CustomEvent('coinsUpdated', { detail: res.data.balance }))
+    } catch (e: any) {
+      const detail = e?.response?.data?.detail
+      if (typeof detail === 'object' && detail?.error === 'insufficient_coins') {
+        setExtractError(`Not enough coins (need 3, have ${detail.balance}).`)
+      } else {
+        setExtractError('Could not extract. Check the URL is publicly accessible.')
+      }
+    } finally { setExtracting(false) }
+  }
+
   const handleStep1Next = async () => {
     setError('')
     try {
@@ -97,6 +118,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
         page_url: pageUrl,
         platform: platform || 'html',
         workspace_id: activeWorkspace?.id,
+        description: description.trim() || undefined,
       })
       setCreatedProjectId(res.data.id)
       setScriptId(res.data.script_id)
@@ -156,6 +178,8 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
     setProjectName('')
     setPageUrl('')
     setUrlValid(null)
+    setDescription('')
+    setExtractError('')
     setPlatform('')
     setCopied(false)
     setVerified(false)
@@ -234,6 +258,36 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                   <Icon name="info" className="text-sm" />
                   {t('wizard.step1.url_hint')}
                 </p>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-semibold text-slate-700">Page Description <span className="text-slate-400 font-normal">(optional)</span></label>
+                  {urlValid && (
+                    <button
+                      type="button"
+                      onClick={handleExtractDescription}
+                      disabled={extracting}
+                      className="flex items-center gap-1 text-xs font-bold text-brand hover:text-brand/80 disabled:opacity-50 transition-colors"
+                    >
+                      {extracting
+                        ? <><div className="w-3 h-3 border-2 border-brand border-t-transparent rounded-full animate-spin" />Extracting…</>
+                        : <><Icon name="auto_awesome" className="text-sm" />Extract from URL</>
+                      }
+                    </button>
+                  )}
+                </div>
+                <textarea
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="Describe what this page sells or does — who it's for, the main offer, and key benefits. This helps AI generate more accurate copy for this project."
+                  rows={3}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition-all text-sm resize-none"
+                />
+                {extractError && (
+                  <p className="text-xs text-red-500 flex items-center gap-1">
+                    <Icon name="error" className="text-sm" />{extractError}
+                  </p>
+                )}
               </div>
               {error && (
                 <p className="text-xs text-red-500 flex items-center gap-1">

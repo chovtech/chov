@@ -16,7 +16,8 @@ async def create_project(
     workspace_id: str,
     name: str,
     page_url: str,
-    platform: str = 'html'
+    platform: str = 'html',
+    description: str = None,
 ) -> dict:
     # Keep generating until script_id is unique
     while True:
@@ -30,9 +31,9 @@ async def create_project(
     project = await db.fetchrow(
         """
         INSERT INTO projects
-            (id, workspace_id, name, page_url, platform, script_id, status)
+            (id, workspace_id, name, page_url, platform, script_id, status, description)
         VALUES
-            ($1, $2, $3, $4, $5, $6, 'draft')
+            ($1, $2, $3, $4, $5, $6, 'draft', $7)
         RETURNING *
         """,
         uuid.uuid4(),
@@ -40,7 +41,8 @@ async def create_project(
         name,
         page_url,
         platform,
-        script_id
+        script_id,
+        description,
     )
     return dict(project)
 
@@ -83,7 +85,7 @@ async def update_project(
     **kwargs
 ) -> dict | None:
     # Build SET clause dynamically from provided kwargs
-    allowed = {'name', 'status', 'script_verified', 'page_url', 'thumbnail_url', 'platform'}
+    allowed = {'name', 'status', 'script_verified', 'page_url', 'thumbnail_url', 'platform', 'description'}
     fields = {k: v for k, v in kwargs.items() if k in allowed and v is not None}
     if not fields:
         return await get_project(db, project_id, workspace_id)

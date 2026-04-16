@@ -8,6 +8,7 @@ class ProjectCreate(BaseModel):
     page_url: str
     platform: str = 'html'
     workspace_id: Optional[str] = None
+    description: Optional[str] = None
 
 class ProjectResponse(BaseModel):
     id: uuid.UUID
@@ -19,6 +20,7 @@ class ProjectResponse(BaseModel):
     script_verified: bool
     status: str
     thumbnail_url: Optional[str] = None
+    description: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     class Config:
@@ -31,3 +33,4 @@ class ProjectUpdate(BaseModel):
     page_url: Optional[str] = None
     thumbnail_url: Optional[str] = None
     platform: Optional[str] = None
+    description: Optional[str] = None

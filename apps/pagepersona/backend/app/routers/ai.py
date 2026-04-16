@@ -213,6 +213,89 @@ If a field cannot be confidently inferred from the content, use an empty string.
     }
 
 
+# ── Project Description Extractor ─────────────────────────────────────────────
+
+class ProjectDescriptionRequest(BaseModel):
+    workspace_id: Optional[str] = None
+    url: str
+
+@router.post("/project/extract-description")
+async def extract_project_description(
+    body: ProjectDescriptionRequest,
+    current_user: dict = Depends(get_current_user),
+    db: asyncpg.Connection = Depends(get_db),
+):
+    """
+    Fetch a project page URL and extract a concise description of what it sells/does.
+    Costs 3 AI coins. Used at project creation and edit.
+    """
+    workspace = await get_accessible_workspace(db, current_user["id"], body.workspace_id)
+    ws_id = str(workspace["id"])
+
+    await check_coins(ws_id, "project_describe", db)
+
+    url = body.url.strip()
+    if not url.startswith("http"):
+        url = "https://" + url
+
+    try:
+        async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
+            resp = await client.get(url, headers={"User-Agent": "Mozilla/5.0 (compatible; PagePersona/1.0)"})
+        html = resp.text
+    except Exception:
+        raise HTTPException(status_code=422, detail="Could not fetch that URL. Make sure it is publicly accessible.")
+
+    soup = BeautifulSoup(html, "html.parser")
+    for tag in soup(["script", "style", "nav", "footer", "header", "aside"]):
+        tag.decompose()
+
+    title = soup.title.string.strip() if soup.title and soup.title.string else ""
+    meta_desc = ""
+    meta_tag = soup.find("meta", attrs={"name": "description"})
+    if meta_tag and meta_tag.get("content"):
+        meta_desc = meta_tag["content"].strip()
+    headings = " | ".join(h.get_text(strip=True) for h in soup.find_all(["h1", "h2", "h3"])[:8])
+    body_text = " ".join(soup.get_text(separator=" ", strip=True).split())[:2500]
+
+    page_content = f"Title: {title}\nMeta description: {meta_desc}\nHeadings: {headings}\nPage content: {body_text}"
+
+    extract_prompt = f"""You are a conversion analyst reviewing a sales or landing page.
+
+Page content:
+{page_content}
+
+Write a concise project description (4-6 sentences) that captures:
+1. What the product or service is
+2. Who it is for (target audience)
+3. The core problem it solves or the main benefit it delivers
+4. Key offer details, features, or unique angle (pricing, format, guarantee, etc.)
+5. The tone and intent of the page (e.g. hard sell, educational, community, urgency-driven)
+
+This description will be used to give an AI copywriter context about this specific page when generating personalised copy variants. Be specific and factual — do not invent details not present in the content.
+
+Return ONLY the description text. No labels, no JSON, no markdown."""
+
+    ai_client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+    message = ai_client.messages.create(
+        model=AI_MODEL_SMART,
+        max_tokens=300,
+        messages=[{"role": "user", "content": extract_prompt}],
+    )
+
+    description = message.content[0].text.strip()
+    tokens_used = message.usage.input_tokens + message.usage.output_tokens
+
+    new_balance = await deduct_coins(
+        workspace_id=ws_id,
+        action_type="project_describe",
+        db=db,
+        claude_tokens_used=tokens_used,
+        metadata={"url": url},
+    )
+
+    return {"description": description, "balance": new_balance}
+
+
 # ── Copy Writer ───────────────────────────────────────────────────────────────
 
 class CopyWriteContext(BaseModel):
@@ -270,11 +353,14 @@ async def write_copy(
     project_context = ""
     if ctx.project_id:
         proj = await db.fetchrow(
-            "SELECT name, page_url FROM projects WHERE id = $1 AND workspace_id = $2",
+            "SELECT name, page_url, description FROM projects WHERE id = $1 AND workspace_id = $2",
             ctx.project_id, ws_id
         )
         if proj:
-            project_context = f"\nPage context:\n- Project: {proj['name']}\n- Page URL: {proj['page_url']}\n"
+            if proj["description"]:
+                project_context = f"\nPage context:\n- Project: {proj['name']}\n- Page URL: {proj['page_url']}\n- About this page: {proj['description']}\n"
+            else:
+                project_context = f"\nPage context:\n- Project: {proj['name']}\n- Page URL: {proj['page_url']}\n"
 
     context_lines = []
     if ctx.page_url and not ctx.project_id:

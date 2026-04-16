@@ -31,6 +31,7 @@ COIN_COSTS: dict[str, int] = {
     "analytics_insights":   8,
     "rule_creation_ai":     15,
     "rule_suggestion":      3,
+    "project_describe":     3,
 }
 
 

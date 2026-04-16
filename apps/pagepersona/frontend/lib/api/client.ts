@@ -127,13 +127,13 @@ export const authApiExtended = {
 
 // Projects API
 export const projectApi = {
-  create: (data: { name: string; page_url: string; platform: string; workspace_id?: string }) =>
+  create: (data: { name: string; page_url: string; platform: string; workspace_id?: string; description?: string }) =>
     apiClient.post('/api/projects', data),
   list: (workspaceId?: string) =>
     apiClient.get('/api/projects', { params: workspaceId ? { workspace_id: workspaceId } : {} }),
   get: (id: string) =>
     apiClient.get(`/api/projects/${id}`),
-  update: (id: string, data: { name?: string; status?: string; script_verified?: boolean; page_url?: string; thumbnail_url?: string }) =>
+  update: (id: string, data: { name?: string; status?: string; script_verified?: boolean; page_url?: string; thumbnail_url?: string; description?: string }) =>
     apiClient.put(`/api/projects/${id}`, data),
   delete: (id: string) =>
     apiClient.delete(`/api/projects/${id}`),
@@ -274,6 +274,8 @@ export const aiApi = {
   }) => apiClient.put('/api/ai/brand', data),
   extractBrand: (data: { workspace_id?: string; url: string }) =>
     apiClient.post('/api/ai/brand/extract', data),
+  extractProjectDescription: (data: { workspace_id?: string; url: string }) =>
+    apiClient.post('/api/ai/project/extract-description', data),
 }
 
 // Rules API

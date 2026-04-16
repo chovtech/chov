@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
-import { projectApi, apiClient } from '@/lib/api/client'
+import { projectApi, apiClient, aiApi } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
 import AssetLibrary from '@/components/ui/AssetLibrary'
 import {
@@ -22,6 +22,7 @@ interface Project {
   script_id: string
   script_verified: boolean
   status: string
+  description?: string
   created_at: string
   updated_at: string
 }
@@ -254,11 +255,31 @@ function InstallModal({ project, cdnBase, onClose, onVerified, onUnverified }: {
 
 function EditProjectModal({ project, onClose, onSaved }: { project: Project; onClose: () => void; onSaved: (updated: Project) => void }) {
   const { t } = useTranslation('common')
+  const { activeWorkspace } = useWorkspace()
   const [name, setName] = useState(project.name)
   const [pageUrl, setPageUrl] = useState(project.page_url)
+  const [description, setDescription] = useState(project.description || '')
   const [saving, setSaving] = useState(false)
+  const [extracting, setExtracting] = useState(false)
+  const [extractError, setExtractError] = useState('')
   const [error, setError] = useState('')
   const urlChanged = pageUrl.trim() !== project.page_url
+
+  const handleExtractDescription = async () => {
+    setExtracting(true); setExtractError('')
+    try {
+      const res = await aiApi.extractProjectDescription({ workspace_id: activeWorkspace?.id, url: pageUrl.trim() })
+      setDescription(res.data.description || '')
+      if (res.data.balance != null) window.dispatchEvent(new CustomEvent('coinsUpdated', { detail: res.data.balance }))
+    } catch (e: any) {
+      const detail = e?.response?.data?.detail
+      if (typeof detail === 'object' && detail?.error === 'insufficient_coins') {
+        setExtractError(`Not enough coins (need 3, have ${detail.balance}).`)
+      } else {
+        setExtractError('Could not extract. Check the URL is publicly accessible.')
+      }
+    } finally { setExtracting(false) }
+  }
 
   const handleSave = async () => {
     if (!name.trim() || !pageUrl.trim()) return
@@ -267,6 +288,7 @@ function EditProjectModal({ project, onClose, onSaved }: { project: Project; onC
       const res = await projectApi.update(project.id, {
         name: name.trim(),
         page_url: pageUrl.trim(),
+        description: description.trim() || undefined,
         ...(urlChanged ? { script_verified: false } : {})
       })
       onSaved(res.data)
@@ -315,6 +337,34 @@ function EditProjectModal({ project, onClose, onSaved }: { project: Project; onC
             <p className="text-xs text-slate-400 mt-1.5">
               {project.script_verified ? t('project.url_locked') : t('project.url_editable_hint')}
             </p>
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Page Description <span className="font-normal text-slate-400">(optional)</span></label>
+              <button
+                type="button"
+                onClick={handleExtractDescription}
+                disabled={extracting || !pageUrl.trim()}
+                className="flex items-center gap-1 text-xs font-bold text-brand hover:text-brand/80 disabled:opacity-50 transition-colors"
+              >
+                {extracting
+                  ? <><div className="w-3 h-3 border-2 border-brand border-t-transparent rounded-full animate-spin" />Extracting…</>
+                  : <><Icon name="auto_awesome" className="text-sm" />Extract from URL</>
+                }
+              </button>
+            </div>
+            <textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="Describe what this page sells or does — who it's for, the main offer, and key benefits."
+              rows={3}
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all resize-none"
+            />
+            {extractError && (
+              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                <Icon name="error" className="text-sm" />{extractError}
+              </p>
+            )}
           </div>
           {urlChanged && (
             <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">

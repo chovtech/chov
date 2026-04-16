@@ -35,7 +35,8 @@ async def create(
         workspace_id=str(workspace['id']),
         name=body.name,
         page_url=body.page_url,
-        platform=body.platform
+        platform=body.platform,
+        description=body.description,
     )
     return project
 
