@@ -1346,7 +1346,7 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
                 {countdowns.map(cd => (
                   <button
                     key={cd.id}
-                    onClick={() => onUpdate({ countdown_id: cd.id, countdown_ends_at: cd.ends_at, countdown_expiry_action: cd.expiry_action, countdown_expiry_value: cd.expiry_value, countdown_config: cd.config })}
+                    onClick={() => onUpdate({ countdown_id: cd.id, countdown_ends_at: cd.ends_at, countdown_expiry_action: cd.expiry_action, countdown_expiry_value: cd.expiry_value, countdown_config: typeof cd.config === 'string' ? JSON.parse(cd.config) : cd.config })}
                     className={"flex items-center gap-2.5 p-2.5 rounded-xl border-2 text-left transition-all " + (block.countdown_id === cd.id ? 'border-brand bg-brand/5' : 'border-slate-100 hover:border-slate-300')}
                   >
                     <div className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center text-white text-sm" style={{ background: cd.config?.digit_bg || 'var(--color-primary)' }}>⏱</div>
