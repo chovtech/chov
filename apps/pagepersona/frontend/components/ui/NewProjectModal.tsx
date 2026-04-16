@@ -194,7 +194,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
     onClose()
   }
 
-  const canProceedStep1 = projectName.trim().length > 0 && urlValid === true && description.trim().length > 0
+  const canProceedStep1 = projectName.trim().length > 0 && urlValid === true && description.trim().length > 10
   const canProceedStep2 = platform !== ''
   const currentSteps = platformSteps[platform] || platformSteps.other
 
@@ -265,7 +265,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                   <button
                     type="button"
                     onClick={handleExtractDescription}
-                    disabled={extracting || !urlValid}
+                    disabled={extracting || !pageUrl.trim()}
                     className="flex items-center gap-1 text-xs font-bold text-brand hover:text-brand/80 disabled:opacity-40 transition-colors"
                   >
                     {extracting
@@ -274,24 +274,31 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                     }
                   </button>
                 </div>
+                <div className="flex items-start gap-2 px-3 py-2.5 bg-brand/5 border border-brand/20 rounded-xl">
+                  <Icon name="auto_awesome" className="text-brand text-sm shrink-0 mt-0.5" />
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    This description gives our AI full context about your page — who it's for, what it sells, and the key offer. The richer it is, the better the personalised copy it writes for your visitors.
+                  </p>
+                </div>
                 <textarea
                   value={description}
                   onChange={e => setDescription(e.target.value)}
-                  placeholder="Paste your page URL above and click Extract from URL — or type a description of what this page sells, who it's for, and the main offer."
-                  rows={3}
+                  placeholder="Click Extract from URL to auto-fill — or type it yourself: what does this page sell, who is it for, what's the main offer or benefit?"
+                  rows={4}
                   className={`w-full rounded-xl border bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-[#1A56DB] focus:ring-2 focus:ring-[#1A56DB]/20 outline-none transition-all text-sm resize-none ${
-                    description.trim().length > 0 ? 'border-emerald-400' : 'border-slate-200'
+                    description.trim().length > 10 ? 'border-emerald-400' : 'border-slate-200'
                   }`}
                 />
                 {extractError && (
-                  <p className="text-xs text-red-500 flex items-center gap-1">
-                    <Icon name="error" className="text-sm" />{extractError}
-                  </p>
+                  <div className="flex items-start gap-2 p-2.5 bg-red-50 border border-red-200 rounded-xl">
+                    <Icon name="error" className="text-red-500 text-sm shrink-0 mt-0.5" />
+                    <p className="text-xs text-red-600">{extractError} Please type the description manually below.</p>
+                  </div>
                 )}
                 {!description.trim() && (
-                  <p className="text-xs text-slate-400 flex items-center gap-1">
-                    <Icon name="info" className="text-sm" />
-                    Required — helps AI write accurate copy for this project.
+                  <p className="text-xs text-amber-600 flex items-center gap-1 font-medium">
+                    <Icon name="warning" className="text-sm" />
+                    Required before continuing.
                   </p>
                 )}
               </div>
