@@ -315,16 +315,19 @@ Return ONLY a valid JSON array with this exact shape — no markdown, no explana
     raw = message.content[0].text.strip()
     tokens_used = message.usage.input_tokens + message.usage.output_tokens
 
-    # Strip markdown code fences if model wrapped the JSON
+    # Strip markdown code fences if model wrapped the JSON (e.g. ```json ... ```)
     if raw.startswith("```"):
-        raw = raw.split("```", 2)[-1] if raw.count("```") >= 2 else raw
-        raw = raw.lstrip("json").strip().rstrip("```").strip()
+        parts = raw.split("```")
+        # parts[0]="" parts[1]="json\n[...]" parts[2]="" — we want index 1
+        raw = parts[1].lstrip("json").strip() if len(parts) >= 2 else raw
 
     try:
         variants = json.loads(raw)
         if not isinstance(variants, list) or len(variants) == 0:
             raise ValueError("Bad shape")
-    except Exception:
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"copy/write JSON parse failed. raw={repr(raw[:300])} err={e}")
         raise HTTPException(status_code=502, detail="AI returned unexpected format. Please try again.")
 
     # ── Deduct coins ──────────────────────────────────────────────────────────
