@@ -40,6 +40,15 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
   }, [activeWorkspace?.id, isViewOnly])
 
   useEffect(() => {
+    const onCoinsUpdated = (e: Event) => {
+      const newBalance = (e as CustomEvent).detail
+      if (newBalance != null) setCoins(prev => prev ? { ...prev, balance: newBalance } : prev)
+    }
+    window.addEventListener('coinsUpdated', onCoinsUpdated)
+    return () => window.removeEventListener('coinsUpdated', onCoinsUpdated)
+  }, [])
+
+  useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (creditsRef.current && !creditsRef.current.contains(e.target as Node)) setShowCredits(false)
     }

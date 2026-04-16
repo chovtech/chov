@@ -56,7 +56,10 @@ export default function CopyWriter({
         },
       })
       setVariants(res.data.variants || [])
-      if (res.data.balance != null && onCoinsUpdated) onCoinsUpdated(res.data.balance)
+      if (res.data.balance != null) {
+        if (onCoinsUpdated) onCoinsUpdated(res.data.balance)
+        window.dispatchEvent(new CustomEvent('coinsUpdated', { detail: res.data.balance }))
+      }
     } catch (err: any) {
       const detail = err?.response?.data?.detail
       if (typeof detail === 'object' && detail?.error === 'insufficient_coins') {
