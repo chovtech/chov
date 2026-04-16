@@ -8,19 +8,23 @@ Endpoints:
   PUT  /api/ai/brand            — save brand knowledge for workspace
   POST /api/ai/brand/extract    — extract brand profile from website URL (free, Sonnet)
   POST /api/ai/copy/write       — generate 3 copy variants for a swap_text action
+  POST /api/ai/image/generate   — generate an image via fal.ai Flux Dev, upload to R2, save to assets
 """
 from fastapi import APIRouter, Depends, Query, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 import json
+import uuid
 import asyncpg
 import anthropic
 import httpx
+import fal_client
 from bs4 import BeautifulSoup
 from app.database import get_db
 from app.core.security import get_current_user
 from app.core.access import get_accessible_workspace
-from app.core.config import settings, AI_MODEL_FAST, AI_MODEL_SMART
+from app.core.config import settings, AI_MODEL_FAST, AI_MODEL_SMART, AI_IMAGE_MODEL
+from app.routers.upload import get_r2_client
 from app.services.coin_service import get_balance, check_coins, deduct_coins
 
 router = APIRouter(prefix="/api/ai", tags=["ai"])
@@ -436,5 +440,101 @@ Return ONLY a valid JSON array with this exact shape — no markdown, no explana
     return {
         "variants": variants[:3],
         "coins_used": 5,
+        "balance": new_balance,
+    }
+
+
+# ── Image Generator ───────────────────────────────────────────────────────────
+
+class ImageGenerateRequest(BaseModel):
+    workspace_id: Optional[str] = None
+    prompt: str
+    width: int = 1024
+    height: int = 576
+
+@router.post("/image/generate")
+async def generate_image(
+    body: ImageGenerateRequest,
+    current_user: dict = Depends(get_current_user),
+    db: asyncpg.Connection = Depends(get_db),
+):
+    """
+    Generate an image via fal.ai Flux Dev, upload to R2, save to assets library.
+    Costs 10 AI coins.
+    """
+    workspace = await get_accessible_workspace(db, current_user["id"], body.workspace_id)
+    ws_id = str(workspace["id"])
+
+    await check_coins(ws_id, "generate_image", db)
+
+    # Clamp dimensions to fal.ai supported range (multiples of 8, 256–2048)
+    def clamp(v: int) -> int:
+        v = max(256, min(2048, v))
+        return v - (v % 8)
+
+    width = clamp(body.width)
+    height = clamp(body.height)
+
+    # ── Call fal.ai Flux Dev ──────────────────────────────────────────────────
+    import os
+    os.environ["FAL_KEY"] = settings.FAL_API_KEY or ""
+
+    try:
+        result = await fal_client.run_async(
+            AI_IMAGE_MODEL,
+            arguments={
+                "prompt": body.prompt.strip(),
+                "image_size": {"width": width, "height": height},
+                "num_images": 1,
+                "enable_safety_checker": True,
+            },
+        )
+        image_url = result["images"][0]["url"]
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Image generation failed: {str(e)}")
+
+    # ── Download generated image and upload to R2 ─────────────────────────────
+    try:
+        async with httpx.AsyncClient(timeout=60) as client:
+            img_resp = await client.get(image_url)
+        img_data = img_resp.content
+        content_type = img_resp.headers.get("content-type", "image/jpeg").split(";")[0].strip()
+        ext = "jpg" if "jpeg" in content_type else content_type.split("/")[-1]
+
+        key = f"uploads/{uuid.uuid4().hex}.{ext}"
+        s3 = get_r2_client()
+        s3.put_object(
+            Bucket=settings.R2_BUCKET_NAME,
+            Key=key,
+            Body=img_data,
+            ContentType=content_type,
+            CacheControl="public, max-age=31536000",
+        )
+        public_url = f"{settings.R2_PUBLIC_URL}/{key}"
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Failed to store generated image: {str(e)}")
+
+    # ── Save to asset library ─────────────────────────────────────────────────
+    filename = f"ai-generated-{uuid.uuid4().hex[:8]}.{ext}"
+    await db.execute(
+        """INSERT INTO assets (workspace_id, user_id, url, filename, size, mime_type)
+           VALUES ($1, $2, $3, $4, $5, $6)""",
+        ws_id, current_user["id"], public_url,
+        filename, len(img_data), content_type,
+    )
+
+    # ── Deduct coins ──────────────────────────────────────────────────────────
+    new_balance = await deduct_coins(
+        workspace_id=ws_id,
+        action_type="generate_image",
+        db=db,
+        fal_image_generated=True,
+        metadata={"prompt": body.prompt[:200], "width": width, "height": height},
+    )
+
+    return {
+        "url": public_url,
+        "width": width,
+        "height": height,
         "balance": new_balance,
     }

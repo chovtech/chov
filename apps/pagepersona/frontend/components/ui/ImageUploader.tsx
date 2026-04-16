@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { apiClient } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import AssetLibrary from '@/components/ui/AssetLibrary'
+import ImageGenerator from '@/components/ui/ImageGenerator'
 
 interface ImageUploaderProps {
   value: string
@@ -176,6 +177,15 @@ export default function ImageUploader({ value, onChange, placeholder, workspaceI
           onInsert={onChange}
           onClose={() => setShowLibrary(false)}
           t={t}
+        />
+      )}
+
+      {/* AI Image Generator — only available in workspace context */}
+      {workspaceId && (
+        <ImageGenerator
+          workspaceId={workspaceId}
+          existingImageUrl={value || undefined}
+          onInsert={onChange}
         />
       )}
     </div>
