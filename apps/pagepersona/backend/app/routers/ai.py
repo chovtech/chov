@@ -315,6 +315,11 @@ Return ONLY a valid JSON array with this exact shape — no markdown, no explana
     raw = message.content[0].text.strip()
     tokens_used = message.usage.input_tokens + message.usage.output_tokens
 
+    # Strip markdown code fences if model wrapped the JSON
+    if raw.startswith("```"):
+        raw = raw.split("```", 2)[-1] if raw.count("```") >= 2 else raw
+        raw = raw.lstrip("json").strip().rstrip("```").strip()
+
     try:
         variants = json.loads(raw)
         if not isinstance(variants, list) or len(variants) == 0:
