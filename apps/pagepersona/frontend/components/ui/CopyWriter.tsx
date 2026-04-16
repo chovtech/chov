@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { aiApi } from '@/lib/api/client'
+import { useState, useEffect } from 'react'
+import { aiApi, projectApi } from '@/lib/api/client'
 import Icon from '@/components/ui/Icon'
 
 interface Variant {
@@ -38,6 +38,18 @@ export default function CopyWriter({
   const [variants, setVariants] = useState<Variant[]>([])
   const [error, setError] = useState('')
   const [applied, setApplied] = useState<number | null>(null)
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('__workspace__')
+
+  const needsProjectSelector = !projectId
+
+  useEffect(() => {
+    if (open && needsProjectSelector && workspaceId) {
+      projectApi.list(workspaceId).then((res: any) => {
+        setProjects(res.data || [])
+      }).catch(() => {})
+    }
+  }, [open, needsProjectSelector, workspaceId])
 
   const generate = async () => {
     if (!goal.trim()) return
@@ -55,7 +67,7 @@ export default function CopyWriter({
           current_text: currentText,
           conditions: conditions?.filter(c => c.signal),
           max_words: maxWords,
-          project_id: projectId,
+          project_id: projectId || (selectedProjectId !== '__workspace__' ? selectedProjectId : undefined),
         },
       })
       setVariants(res.data.variants || [])
@@ -118,6 +130,23 @@ export default function CopyWriter({
           <Icon name="close" className="text-sm" />
         </button>
       </div>
+
+      {/* Project selector — only shown in popup/workspace context where no projectId is pre-wired */}
+      {needsProjectSelector && (
+        <div>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Project context</label>
+          <select
+            value={selectedProjectId}
+            onChange={e => setSelectedProjectId(e.target.value)}
+            className="w-full px-3 py-2 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-slate-700"
+          >
+            <option value="__workspace__">Use workspace context</option>
+            {projects.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Goal input */}
       <div>
