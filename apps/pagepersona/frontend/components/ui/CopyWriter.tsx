@@ -12,6 +12,7 @@ interface Variant {
 interface CopyWriterProps {
   workspaceId?: string
   projectId?: string
+  workspaceOnly?: boolean
   pageUrl?: string
   elementSelector?: string
   currentText?: string
@@ -24,6 +25,7 @@ interface CopyWriterProps {
 export default function CopyWriter({
   workspaceId,
   projectId,
+  workspaceOnly,
   pageUrl,
   elementSelector,
   currentText,
@@ -41,7 +43,7 @@ export default function CopyWriter({
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
   const [selectedProjectId, setSelectedProjectId] = useState<string>('__workspace__')
 
-  const needsProjectSelector = !projectId
+  const needsProjectSelector = !projectId && !workspaceOnly
 
   useEffect(() => {
     if (open && needsProjectSelector && workspaceId) {

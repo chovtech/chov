@@ -354,6 +354,7 @@ function BrandKnowledgeTab({ t, inputClass, msgClass }: { t: any; inputClass: st
         {canEdit && (
           <CopyWriter
             workspaceId={workspaceId}
+            workspaceOnly
             maxWords={150}
             onApply={text => set('about_brand', text)}
           />
