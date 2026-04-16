@@ -294,7 +294,8 @@ Context:
 User's goal: {body.goal}
 
 Write exactly 3 short copy variants for this element. Each variant must be no more than {max_words} words.
-Be direct, specific, and conversion-focused. Match the tone to the element type and brand voice if provided.
+Be direct, specific, and conversion-focused.
+The brand context above sets the background voice and style — use it as a guide. The user's goal above is the primary directive and always overrides brand tone if there is any conflict.
 
 Return ONLY a valid JSON array with this exact shape — no markdown, no explanation:
 [

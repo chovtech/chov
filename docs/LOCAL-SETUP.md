@@ -52,21 +52,52 @@ See `apps/pagepersona/backend/.env` and `CLAUDE.local.md` for actual values.
 
 ### Backend `.env` keys
 ```
+# Database
 DATABASE_URL=postgresql://chov:chov_dev_password@localhost:5432/chov
-SECRET_KEY=...
+
+# JWT
+SECRET_KEY=your-super-secret-key-change-this-in-production
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_DAYS=30
+
+# App
+APP_NAME=PagePersona
+APP_VERSION=1.0.0
+DEBUG=True
 FRONTEND_URL=http://localhost:3000
-AWS_ACCESS_KEY_ID=...
-AWS_SECRET_ACCESS_KEY=...
-AWS_REGION=us-east-1
-SES_SENDER_EMAIL=noreply@usepagepersona.com
-R2_ACCOUNT_ID=...
-R2_ACCESS_KEY_ID=...
-R2_SECRET_ACCESS_KEY=...
+
+# Cloudflare R2
+R2_ACCOUNT_ID=<see KEYS.md>
+R2_ACCESS_KEY_ID=<see KEYS.md>
+R2_SECRET_ACCESS_KEY=<see KEYS.md>
 R2_BUCKET_NAME=chov-media
 R2_PUBLIC_URL=https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
+
+# Amazon SES
+AWS_ACCESS_KEY_ID=<see KEYS.md>
+AWS_SECRET_ACCESS_KEY=<see KEYS.md>
+AWS_REGION=us-east-1
+SES_SENDER_EMAIL=noreply@usepagepersona.com
+SES_SENDER_NAME=PagePersona
+
+# Mautic
+MAUTIC_API_URL=https://mailer.chovgroup.com/s/api
+MAUTIC_API_TOKEN=<see KEYS.md>
+MAUTIC_PAGEPERSONA_SEGMENT_ID=5
+
+# JVZoo
+JVZOO_SECRET_KEY=<see KEYS.md>
+
+# Google OAuth
+GOOGLE_CLIENT_ID=<see KEYS.md>
+GOOGLE_CLIENT_SECRET=<see KEYS.md>
 GOOGLE_REDIRECT_URI=http://localhost:8000/api/auth/google/callback
+
+# Anthropic API & Fal.ai
+ANTHROPIC_API_KEY=<see KEYS.md>
+FAL_API_KEY=<see KEYS.md>
+
 ```
 
 ### Production differences (VPS)
