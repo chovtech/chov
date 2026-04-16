@@ -848,22 +848,22 @@
 
 > Path: Dashboard → Project → Rules → New Rule → Add swap_text action
 
-- [ ] "Write with AI" link appears below the swap_text textarea
-- [ ] Shows "5 coins" indicator next to the link
-- [ ] Clicking opens the AI panel inline (does not navigate away)
-- [ ] Goal textarea accepts input
-- [ ] Cmd+Enter / Ctrl+Enter triggers generation
-- [ ] "Generate 3 variants" button is disabled when goal is empty
-- [ ] Spinner shows during generation
-- [ ] 3 variant cards appear with text + rationale
-- [ ] "Use this" button fills the swap_text textarea with the variant text
-- [ ] Applied variant shows "Applied" state (green tick)
-- [ ] Can apply a different variant after applying one (overwrites)
-- [ ] Closing the panel (✕) resets goal, variants, and error
-- [ ] Coin balance in topbar decrements by 5 after generation
-- [ ] Conditions set on the rule are sent as context to AI (verify via variant relevance)
-- [ ] Target element selector is sent as context (verify via variant relevance)
-- [ ] Page URL is sent as context
+- [x] "Write with AI" link appears below the swap_text textarea
+- [x] Shows "5 coins" indicator next to the link
+- [x] Clicking opens the AI panel inline (does not navigate away)
+- [x] Goal textarea accepts input
+- [x] Cmd+Enter / Ctrl+Enter triggers generation
+- [x] "Generate 3 variants" button is disabled when goal is empty
+- [x] Spinner shows during generation
+- [x] 3 variant cards appear with text + rationale
+- [x] "Use this" button fills the swap_text textarea with the variant text
+- [x] Applied variant shows "Applied" state (green tick)
+- [x] Can apply a different variant after applying one (overwrites)
+- [x] Closing the panel (✕) resets goal, variants, and error
+- [x] Coin balance in topbar decrements by 5 after generation
+- [x] Conditions set on the rule are sent as context to AI (verify via variant relevance)
+- [x] Target element selector is sent as context (verify via variant relevance)
+- [x] Page URL is sent as context
 
 ---
 
@@ -871,10 +871,10 @@
 
 > Path: Dashboard → Project → Rules → Edit existing rule with swap_text action
 
-- [ ] "Write with AI" link appears below the swap_text textarea
-- [ ] All generation behaviour identical to 13.2
-- [ ] Applying a variant overwrites the existing saved text in the textarea
-- [ ] Existing conditions are sent as context
+- [x] "Write with AI" link appears below the swap_text textarea
+- [x] All generation behaviour identical to 13.2
+- [x] Applying a variant overwrites the existing saved text in the textarea
+- [x] Existing conditions are sent as context
 
 ---
 
@@ -882,13 +882,13 @@
 
 > Path: Dashboard → Project → Open Picker → Click element → "Add Personalisation" → swap_text action
 
-- [ ] "Write with AI" link appears in the sidebar swap_text section
-- [ ] Panel fits within the narrow sidebar without overflow
-- [ ] `selectedEl.textContent` (current live page text) is sent as context — variants reference what they're replacing
-- [ ] `pageUrl` (the live page URL) is sent as context
-- [ ] Conditions added in picker sidebar are included as context
-- [ ] Applying a variant fills the sidebar textarea
-- [ ] Coin balance in topbar decrements by 5
+- [x] "Write with AI" link appears in the sidebar swap_text section
+- [x] Panel fits within the narrow sidebar without overflow
+- [x] `selectedEl.textContent` (current live page text) is sent as context — variants reference what they're replacing
+- [x] `pageUrl` (the live page URL) is sent as context
+- [x] Conditions added in picker sidebar are included as context
+- [x] Applying a variant fills the sidebar textarea
+- [x] Coin balance in topbar decrements by 5
 
 ---
 
@@ -896,9 +896,9 @@
 
 > Path: Picker → Click element with existing rule → Edit rule → swap_text action
 
-- [ ] "Write with AI" link appears
-- [ ] All behaviour identical to 13.4
-- [ ] Existing conditions correctly sent as context
+- [x] "Write with AI" link appears
+- [x] All behaviour identical to 13.4
+- [x] Existing conditions correctly sent as context
 
 ---
 
@@ -906,11 +906,11 @@
 
 > Path: Elements → Popups → New or Edit → Add/select Text block → click block to open properties
 
-- [ ] "Write with AI" link appears below the text content textarea
-- [ ] Panel opens inline in the properties sidebar
-- [ ] Applying a variant fills the text block content
-- [ ] Coin balance decrements by 5
-- [ ] No page URL / element context (user describes goal freely)
+- [x] "Write with AI" link appears below the text content textarea
+- [x] Panel opens inline in the properties sidebar
+- [x] Applying a variant fills the text block content
+- [x] Coin balance decrements by 5
+- [x] No page URL / element context (user describes goal freely)
 
 ---
 
@@ -918,10 +918,10 @@
 
 > Path: Elements → Popups → Button block → properties
 
-- [ ] "Write with AI" link appears below the Label input
-- [ ] Variants are short (≤ 5 words enforced via prompt)
-- [ ] Applying a variant fills the btn_label field
-- [ ] Coin balance decrements by 5
+- [x] "Write with AI" link appears below the Label input
+- [x] Variants are short (≤ 5 words enforced via prompt)
+- [x] Applying a variant fills the btn_label field
+- [x] Coin balance decrements by 5
 
 ---
 
@@ -929,10 +929,10 @@
 
 > Path: Elements → Popups → No Thanks block → properties
 
-- [ ] "Write with AI" link appears below the Label input
-- [ ] Variants are short dismissal phrases (≤ 5 words)
-- [ ] Applying a variant fills the no_thanks_label field
-- [ ] Coin balance decrements by 5
+- [x] "Write with AI" link appears below the Label input
+- [x] Variants are short dismissal phrases (≤ 5 words)
+- [x] Applying a variant fills the no_thanks_label field
+- [x] Coin balance decrements by 5
 
 ---
 
@@ -966,16 +966,21 @@
 
 | Sub-module | Manual tested | Bugs found | Notes |
 |------------|--------------|------------|-------|
-| 13.1 Coin balance topbar | [ ] | — | Wired to live API |
-| 13.2 Copy Writer — new rule | [ ] | — | |
-| 13.3 Copy Writer — edit rule | [ ] | — | |
-| 13.4 Copy Writer — picker (new) | [ ] | — | Has live element context |
-| 13.5 Copy Writer — picker (edit) | [ ] | — | |
-| 13.6 Copy Writer — popup text | [ ] | — | |
-| 13.7 Copy Writer — button label | [ ] | — | maxWords=5 |
-| 13.8 Copy Writer — no thanks | [ ] | — | maxWords=5 |
-| 13.9 Error handling | [ ] | — | |
-| 13.10 User type access | [ ] | — | |
+| 13.1 Coin balance topbar | [x] | — | Wired to live API |
+| 13.2 Copy Writer — new rule | [x] | — | |
+| 13.3 Copy Writer — edit rule | [x] | — | |
+| 13.4 Copy Writer — picker (new) | [x] | — | Has live element context |
+| 13.5 Copy Writer — picker (edit) | [x] | — | |
+| 13.6 Copy Writer — popup text | [x] | — | |
+| 13.7 Copy Writer — button label | [x] | — | maxWords=5 |
+| 13.8 Copy Writer — no thanks | [x] | — | maxWords=5 |
+| 13.9 Error handling | [ ] | — | Not yet tested |
+| 13.10 User type access | [ ] | — | Not yet tested |
+| 13.11 Brand Knowledge CopyWriter | [x] | — | workspaceOnly — no project selector |
+| 13.12 Project Description Extract | [x] | — | 3 coins, Sonnet |
+| 13.13 Popup Content Generator | [x] | — | Generated, customised, saved |
+| 13.14 Image Generator | [x] | — | Tested on Popup Builder + Live Picker |
+| 13.15 Countdown in Popup | [x] | fixed | countdown_config double-encoded bug fixed |
 
 ---
 
