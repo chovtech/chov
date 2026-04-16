@@ -408,3 +408,39 @@ All emails: EN + FR bilingual (where applicable), SES via boto3, `noreply@usepag
 ### After AI module complete
 - Entitlements / plan limits enforcement (coin allocations per plan)
 - JVZoo sales funnel pages (FE, OTO 1–5, thank-you pages)
+
+---
+
+## HANDOVER — Session ending 2026-04-16
+
+### What was completed today
+1. **CopyWriter project selector** — dropdown inside the AI write panel for popup context (`needsProjectSelector = !projectId && !workspaceOnly`). Rules/Picker pass `projectId` prop → no dropdown. Popup Builder has no `projectId` → dropdown shown.
+2. **CopyWriter `workspaceOnly` prop** — suppresses project selector on Brand Knowledge surface.
+3. **Image Generator** (`components/ui/ImageGenerator.tsx`) — fal.ai Flux Dev, style picker, auto W/H detection, R2 upload, asset library save, project selector in popup context, `projectId` threaded through `ImageUploader` to all 3 surfaces.
+4. **Popup Content Generator** — "Generate with AI · 5 coins" in template picker. Haiku picks layout + blocks + copy. Backend strict validation + style defaults by role. Two-column support.
+5. **Countdown in popup fix** — root cause: `GET /api/countdowns` (no workspace_id path) returned raw `dict(r)` without `_parse()`, so `config` was a string. Fixed by using `_parse()` consistently. SDK also defensively parses string configs for already-saved popups.
+6. **Documentation** — DONE.md sections 21–23 written, DATABASE-SCHEMA.md updated (projects.description, ai_coins, ai_coin_transactions tables), TESTING.md sections 13.11–13.18 added.
+
+### State of the codebase right now
+- All AI features (CopyWriter, Image Generator, Popup Generator) fully working and deployed
+- All 8 CopyWriter surfaces tested by user ✅
+- Image Generator tested on Popup Builder and Live Picker ✅
+- Popup Content Generator tested — generates, customises, countdown wired and working ✅
+- Branch: `main`, latest commit: `58b95a0`
+
+### Where to pick up tomorrow
+**Next feature: Rule Creation Hub — AI Path**
+
+The AI path is: user types a natural-language goal (e.g. "Show a discount popup to visitors from Google Ads who haven't bought yet") → backend scans the project page URL (httpx + BeautifulSoup, same pattern as brand/project extract) → reads real element selectors from the DOM → Sonnet returns 3–5 ready-to-use rules with conditions + actions → user reviews, edits if needed, accepts → rules saved.
+
+Key files to read before starting:
+- `apps/pagepersona/backend/app/routers/ai.py` — add new endpoint `POST /api/ai/rules/suggest`
+- `apps/pagepersona/frontend/app/dashboard/projects/[id]/rules/new/page.tsx` — where the 3-path entry point UI lives
+- `docs/SYSTEM-DESIGN.md` — signal library and action types reference
+- `docs/DONE.md` section 23 — feature spec
+
+Design agreed:
+- 3 entry paths on the New Rule page: Manual (existing), Template (pre-built), AI (new)
+- AI path costs: `rule_creation_ai` = 15 coins (already in COIN_COSTS)
+- Model: Sonnet (AI_MODEL_SMART) — needs page context + element selectors
+- Page scan: same httpx + BeautifulSoup pattern already used in brand extract and project describe endpoints

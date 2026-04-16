@@ -977,9 +977,79 @@
 | 13.9 Error handling | [ ] | — | |
 | 13.10 User type access | [ ] | — | |
 
-> **Next AI features to add here as built:**
-> - 13.11 Popup Content Generator (full popup AI fill)
-> - 13.12 Image Generator (swap_image via fal.ai)
-> - 13.13 Page Scanner (backend utility)
-> - 13.14 Analytics Insights
-> - 13.15 Rule Creation Hub
+---
+
+### 13.11 — Brand Knowledge CopyWriter (Settings → Brand Knowledge)
+
+> Path: Settings → Brand Knowledge → About Brand → "Write with AI"
+
+- [ ] "Write with AI · 5 coins" trigger appears below About Brand textarea
+- [ ] Panel opens — NO project selector (workspaceOnly mode)
+- [ ] Variants are brand-level, 150 words max
+- [ ] Applying a variant fills the About Brand field
+- [ ] Clicking Save Brand Knowledge persists the value
+- [ ] Coin balance decrements by 5
+
+---
+
+### 13.12 — Project Description Extract
+
+> Path: New Project or Edit Project → Description field → "Extract from URL"
+
+- [ ] Description textarea visible and required at creation (cannot proceed if < 10 chars)
+- [ ] "Extract from URL" button enabled when page_url has content
+- [ ] Clicking extracts a 4–6 sentence description via AI (3 coins)
+- [ ] Coin balance decrements by 3
+- [ ] User can edit the extracted description before saving
+- [ ] Description saves correctly on both Create and Edit
+
+---
+
+### 13.13 — Popup Content Generator
+
+> Path: Elements → Popups → New Popup → "Generate with AI"
+
+- [ ] "Generate with AI · 5 coins" button visible in template picker header
+- [ ] Panel opens with project selector + goal textarea
+- [ ] Close (×) button dismisses the panel
+- [ ] Generate produces a fully-built popup (layout, bg_color, blocks + copy)
+- [ ] Popup loads directly into the editor — no manual block-adding needed
+- [ ] Image blocks generated with empty image_url (user fills with image generator)
+- [ ] Countdown blocks generated as empty slots (user wires countdown in properties)
+- [ ] Coin balance decrements by 5
+- [ ] Two-column layout generated when appropriate (columns block with col_left/col_right)
+
+---
+
+### 13.14 — Image Generator
+
+> Path: Any surface with ImageUploader + workspaceId (Popup Builder image block, Rules swap_image, Live Picker swap_image)
+
+- [ ] "Generate with AI · 10 coins" trigger visible below upload zone
+- [ ] Panel opens with: project selector (popup context) / no selector (rules/picker), prompt textarea, style dropdown, W × H fields
+- [ ] W/H auto-populated from existing image dimensions if image already in slot
+- [ ] Style options: Photorealistic (default), Illustration, Anime, Abstract
+- [ ] Generate calls fal.ai Flux Dev — takes 10–20s
+- [ ] Generated image saved to R2 + appears in asset library
+- [ ] Preview shown — "Insert Image" applies URL to slot
+- [ ] Coin balance decrements by 10
+- [ ] Popup Builder: project selector shown (no projectId prop)
+- [ ] Rules/Picker: no project selector (projectId passed through ImageUploader)
+
+---
+
+### 13.15 — Countdown in Popup (Integration)
+
+> Path: Popup Builder → countdown block → select countdown → save → view on live site
+
+- [ ] Countdown block renders on live site after selecting a countdown in properties
+- [ ] Duration-type countdown ticks correctly (localStorage-based, persists across page loads)
+- [ ] Fixed-date countdown ticks toward end date
+- [ ] Expiry action works: hide / redirect / message
+- [ ] Countdown config not double-encoded (countdown_config stored as object not string)
+
+---
+
+### 13.16 — Analytics Insights *(not yet built)*
+### 13.17 — Rule Creation Hub — AI Path *(not yet built)*
+### 13.18 — AI Rule Suggestions *(not yet built)*
