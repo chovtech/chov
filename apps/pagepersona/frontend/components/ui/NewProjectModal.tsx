@@ -274,12 +274,6 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                     }
                   </button>
                 </div>
-                <div className="flex items-start gap-2 px-3 py-2.5 bg-brand/5 border border-brand/20 rounded-xl">
-                  <Icon name="auto_awesome" className="text-brand text-sm shrink-0 mt-0.5" />
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    This description gives our AI full context about your page — who it's for, what it sells, and the key offer. The richer it is, the better the personalised copy it writes for your visitors.
-                  </p>
-                </div>
                 <textarea
                   value={description}
                   onChange={e => setDescription(e.target.value)}
@@ -301,6 +295,12 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
                     Required before continuing.
                   </p>
                 )}
+                <div className="flex items-start gap-2 px-3 py-2.5 bg-brand/5 border border-brand/20 rounded-xl">
+                  <Icon name="auto_awesome" className="text-brand text-sm shrink-0 mt-0.5" />
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    This description gives our AI full context about your page — who it's for, what it sells, and the key offer. The richer it is, the better the personalised copy it writes for your visitors.
+                  </p>
+                </div>
               </div>
               {error && (
                 <p className="text-xs text-red-500 flex items-center gap-1">

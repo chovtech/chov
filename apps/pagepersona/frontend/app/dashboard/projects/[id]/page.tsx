@@ -365,6 +365,12 @@ function EditProjectModal({ project, onClose, onSaved }: { project: Project; onC
                 <Icon name="error" className="text-sm" />{extractError}
               </p>
             )}
+            <div className="flex items-start gap-2 px-3 py-2.5 bg-brand/5 border border-brand/20 rounded-xl">
+              <Icon name="auto_awesome" className="text-brand text-sm shrink-0 mt-0.5" />
+              <p className="text-xs text-slate-600 leading-relaxed">
+                This description gives our AI full context about your page — who it's for, what it sells, and the key offer. The richer it is, the better the personalised copy it writes for your visitors.
+              </p>
+            </div>
           </div>
           {urlChanged && (
             <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
