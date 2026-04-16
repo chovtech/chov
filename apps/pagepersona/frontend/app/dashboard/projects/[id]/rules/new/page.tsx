@@ -605,7 +605,7 @@ function NewRulePageInner() {
                         />
                         <CopyWriter
                           workspaceId={activeWorkspace?.id}
-                          pageUrl={projectPageUrl}
+                          projectId={projectId}
                           elementSelector={action.target_block}
                           conditions={conditions.map(c => ({ signal: c.signal, operator: c.operator, value: c.value }))}
                           onApply={text => onTextChange(text)}

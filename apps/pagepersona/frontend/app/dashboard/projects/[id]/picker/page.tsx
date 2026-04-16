@@ -768,7 +768,7 @@ function PickerPageInner() {
                                 className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:border-brand transition-all" />
                               <CopyWriter
                                 workspaceId={activeWorkspace?.id}
-                                pageUrl={pageUrl}
+                                projectId={projectId}
                                 elementSelector={action.target_block || selectedEl?.selector}
                                 currentText={selectedEl?.textContent}
                                 conditions={conditions.map(c => ({ signal: c.signal, operator: c.operator, value: c.value }))}
@@ -1127,7 +1127,7 @@ function PickerPageInner() {
                                   className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:border-brand transition-all" />
                                 <CopyWriter
                                   workspaceId={activeWorkspace?.id}
-                                  pageUrl={pageUrl}
+                                  projectId={projectId}
                                   elementSelector={action.target_block || selectedEl?.selector}
                                   currentText={selectedEl?.textContent}
                                   conditions={conditions.map(c => ({ signal: c.signal, operator: c.operator, value: c.value }))}

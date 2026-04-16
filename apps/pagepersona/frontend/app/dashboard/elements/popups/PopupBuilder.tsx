@@ -998,6 +998,7 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand" />
             <CopyWriter
               workspaceId={workspaceId}
+              currentText={block.text || ''}
               onApply={text => onTextChange(text)}
             />
             <div className="mt-2">
@@ -1116,6 +1117,7 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
             <CopyWriter
               workspaceId={workspaceId}
+              currentText={block.btn_label || ''}
               maxWords={5}
               onApply={text => onUpdate({ btn_label: text })}
             />
@@ -1177,6 +1179,7 @@ function BlockProperties({ block, onUpdate, onClose, t, countdowns, loadingCount
               className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/20" />
             <CopyWriter
               workspaceId={workspaceId}
+              currentText={block.no_thanks_label || ''}
               maxWords={5}
               onApply={text => onUpdate({ no_thanks_label: text })}
             />

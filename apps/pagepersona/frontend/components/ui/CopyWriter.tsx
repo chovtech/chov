@@ -11,6 +11,7 @@ interface Variant {
 
 interface CopyWriterProps {
   workspaceId?: string
+  projectId?: string
   pageUrl?: string
   elementSelector?: string
   currentText?: string
@@ -22,6 +23,7 @@ interface CopyWriterProps {
 
 export default function CopyWriter({
   workspaceId,
+  projectId,
   pageUrl,
   elementSelector,
   currentText,
@@ -53,6 +55,7 @@ export default function CopyWriter({
           current_text: currentText,
           conditions: conditions?.filter(c => c.signal),
           max_words: maxWords,
+          project_id: projectId,
         },
       })
       setVariants(res.data.variants || [])

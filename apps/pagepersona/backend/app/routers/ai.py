@@ -221,6 +221,7 @@ class CopyWriteContext(BaseModel):
     current_text: Optional[str] = None       # live text from picker selectedEl
     conditions: Optional[list] = None        # [{signal, operator, value}, ...]
     max_words: Optional[int] = None          # enforce short copy (e.g. button labels)
+    project_id: Optional[str] = None        # when set, fetches project name + page URL for context
 
 class CopyWriteRequest(BaseModel):
     workspace_id: Optional[str] = None
@@ -265,8 +266,18 @@ async def write_copy(
     # ── Build prompt ──────────────────────────────────────────────────────────
     ctx = body.context or CopyWriteContext()
 
+    # Fetch project context if project_id provided
+    project_context = ""
+    if ctx.project_id:
+        proj = await db.fetchrow(
+            "SELECT name, page_url FROM projects WHERE id = $1 AND workspace_id = $2",
+            ctx.project_id, ws_id
+        )
+        if proj:
+            project_context = f"\nPage context:\n- Project: {proj['name']}\n- Page URL: {proj['page_url']}\n"
+
     context_lines = []
-    if ctx.page_url:
+    if ctx.page_url and not ctx.project_id:
         context_lines.append(f"- Page URL: {ctx.page_url}")
     if ctx.element_selector:
         context_lines.append(f"- Target element selector: {ctx.element_selector}")
@@ -287,7 +298,7 @@ async def write_copy(
     brand_section = f"\nBrand context:\n{brand_block}\n" if brand_block else ""
 
     prompt = f"""You are an expert website conversion copywriter helping personalise a webpage for a specific visitor segment.
-{brand_section}
+{brand_section}{project_context}
 Context:
 {context_block}
 
