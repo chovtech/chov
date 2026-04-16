@@ -6,7 +6,7 @@ from app.database import get_db
 from app.core.security import get_current_user
 from app.core.access import get_accessible_workspace
 from app.services.countdown_service import (
-    create_countdown, get_countdowns, get_countdown, update_countdown, delete_countdown
+    create_countdown, get_countdowns, get_countdown, update_countdown, delete_countdown, _parse
 )
 
 router = APIRouter(prefix="/api/countdowns", tags=["countdowns"])
@@ -85,7 +85,7 @@ async def list_all(
            ORDER BY c.created_at DESC""",
         current_user['id']
     )
-    return [dict(r) for r in rows]
+    return [_parse(r) for r in rows]
 
 
 @router.get("/{countdown_id}")

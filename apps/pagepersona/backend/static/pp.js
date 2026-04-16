@@ -388,7 +388,7 @@
   // Builds and returns a countdown DOM element. Used by insertCountdown and popup _renderBlock.
   function _buildCountdownEl(cfg, onExpire) {
     var rawCfg = cfg.config || {};
-    var style  = (typeof rawCfg === 'string') ? (function(){ try { return JSON.parse(rawCfg); } catch(e) { return {}; } })() : rawCfg;
+    var style  = (typeof rawCfg === 'string') ? (function(){ try{ return JSON.parse(rawCfg); }catch(e){ return {}; } })() : rawCfg;
     var type       = style.countdown_type || 'fixed';
     var endsAt;
     if (type === 'duration') {
