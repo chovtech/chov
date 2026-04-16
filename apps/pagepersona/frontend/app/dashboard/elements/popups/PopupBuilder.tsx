@@ -671,7 +671,12 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
                 {/* AI Generator panel */}
                 {showAiGen && (
                   <div className="mb-5 p-4 bg-brand/5 border border-brand/20 rounded-xl space-y-3">
-                    <p className="text-xs text-slate-500">Describe what this popup should achieve — AI will choose the layout, blocks, and copy.</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-slate-500">Describe what this popup should achieve — AI will choose the layout, blocks, and copy.</p>
+                      <button type="button" onClick={() => { setShowAiGen(false); setAiError('') }} className="text-slate-400 hover:text-slate-600 transition-colors ml-3 flex-shrink-0">
+                        <Icon name="close" className="text-sm" />
+                      </button>
+                    </div>
 
                     {/* Project selector */}
                     <div>
