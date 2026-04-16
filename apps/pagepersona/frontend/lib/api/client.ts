@@ -278,6 +278,8 @@ export const aiApi = {
     apiClient.post('/api/ai/project/extract-description', data),
   generateImage: (data: { workspace_id?: string; prompt: string; style?: string; width: number; height: number; project_id?: string }) =>
     apiClient.post('/api/ai/image/generate', data),
+  generatePopup: (data: { workspace_id?: string; project_id?: string; goal: string }) =>
+    apiClient.post('/api/ai/popup/generate', data),
 }
 
 // Rules API

@@ -444,6 +444,221 @@ Return ONLY a valid JSON array with this exact shape — no markdown, no explana
     }
 
 
+# ── Popup Generator ───────────────────────────────────────────────────────────
+
+class PopupGenerateRequest(BaseModel):
+    workspace_id: Optional[str] = None
+    project_id: Optional[str] = None
+    goal: str
+
+@router.post("/popup/generate")
+async def generate_popup(
+    body: PopupGenerateRequest,
+    current_user: dict = Depends(get_current_user),
+    db: asyncpg.Connection = Depends(get_db),
+):
+    """
+    Generate a full popup config (blocks + layout + bg_color) from a goal description.
+    AI picks structure and content. Backend applies style defaults per block role.
+    Costs 5 AI coins.
+    """
+    workspace = await get_accessible_workspace(db, current_user["id"], body.workspace_id)
+    ws_id = str(workspace["id"])
+
+    await check_coins(ws_id, "popup_content", db)
+
+    # ── Brand context ─────────────────────────────────────────────────────────
+    brand_row = await db.fetchrow(
+        "SELECT * FROM workspace_ai_settings WHERE workspace_id = $1", ws_id
+    )
+    brand_lines = []
+    if brand_row:
+        for key, label in [
+            ("brand_name", "Brand name"), ("industry", "Industry"),
+            ("tone_of_voice", "Tone of voice"), ("target_audience", "Target audience"),
+            ("key_benefits", "Key benefits"), ("about_brand", "About the brand"),
+        ]:
+            if brand_row.get(key):
+                brand_lines.append(f"{label}: {brand_row[key]}")
+
+    # ── Project context ───────────────────────────────────────────────────────
+    project_context = ""
+    if body.project_id:
+        proj = await db.fetchrow(
+            "SELECT name, page_url, description FROM projects WHERE id = $1 AND workspace_id = $2",
+            body.project_id, ws_id
+        )
+        if proj:
+            project_context = f"\nPage context:\n- Project: {proj['name']}\n- URL: {proj['page_url']}"
+            if proj["description"]:
+                project_context += f"\n- About this page: {proj['description']}"
+
+    brand_section = "\nBrand context:\n" + "\n".join(brand_lines) + "\n" if brand_lines else ""
+
+    prompt = f"""You are a popup designer. Generate a complete popup for a website based on the goal below.
+{brand_section}{project_context}
+
+Goal: {body.goal}
+
+Return ONLY a valid JSON object with this exact shape — no markdown, no explanation:
+{{
+  "layout": "single",
+  "bg_color": "#hex",
+  "blocks": [
+    {{"type": "text", "role": "headline", "text": "..."}},
+    {{"type": "text", "role": "body", "text": "..."}},
+    {{"type": "image"}},
+    {{"type": "button", "btn_label": "..."}},
+    {{"type": "no_thanks", "no_thanks_label": "..."}},
+    {{"type": "countdown"}}
+  ]
+}}
+
+Rules:
+- layout must be "single" or "two-column"
+- If two-column: replace "blocks" with "left_blocks" and "right_blocks" arrays using the same block shapes
+- bg_color must be a valid hex colour that matches the goal's emotion/urgency
+- Include only the blocks that make sense for this goal — do not include all of them every time
+- For two-column: put image in one side, text+button in the other
+- "image" blocks have no other fields — leave them empty for the user to fill
+- "countdown" blocks have no other fields
+- text roles: "headline" (main hook), "body" (supporting detail), "badge" (short label e.g. "LIMITED TIME")
+- btn_label must be action-oriented and specific to the goal
+- no_thanks_label must be a polite decline relevant to the offer
+- Keep text concise and conversion-focused
+- Return ONLY the JSON object"""
+
+    client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+    message = client.messages.create(
+        model=AI_MODEL_FAST,
+        max_tokens=800,
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    raw = message.content[0].text.strip()
+    tokens_used = message.usage.input_tokens + message.usage.output_tokens
+
+    # Strip markdown fences if present
+    if raw.startswith("```"):
+        parts = raw.split("```")
+        raw = parts[1].lstrip("json").strip() if len(parts) >= 2 else raw
+
+    try:
+        data = json.loads(raw)
+    except Exception:
+        raise HTTPException(status_code=502, detail="AI returned unexpected format. Please try again.")
+
+    # ── Strict validation ─────────────────────────────────────────────────────
+    layout = data.get("layout", "single")
+    if layout not in ("single", "two-column"):
+        layout = "single"
+    bg_color = data.get("bg_color", "#1A56DB")
+    if not isinstance(bg_color, str) or not bg_color.startswith("#"):
+        bg_color = "#1A56DB"
+
+    # ── Style defaults by role ────────────────────────────────────────────────
+    def is_dark(hex_color: str) -> bool:
+        try:
+            h = hex_color.lstrip("#")
+            r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+            return (0.299 * r + 0.587 * g + 0.114 * b) < 128
+        except Exception:
+            return True
+
+    dark_bg = is_dark(bg_color)
+    text_color = "#ffffff" if dark_bg else "#0F172A"
+    text_color_muted = "rgba(255,255,255,0.85)" if dark_bg else "#475569"
+    btn_color = "#ffffff" if dark_bg else bg_color
+    btn_text_color = bg_color if dark_bg else "#ffffff"
+
+    ALLOWED_TYPES = {"text", "image", "button", "no_thanks", "countdown"}
+
+    def build_block(b: dict) -> Optional[dict]:
+        btype = b.get("type")
+        if btype not in ALLOWED_TYPES:
+            return None
+        block_id = str(uuid.uuid4())[:8]
+        if btype == "text":
+            role = b.get("role", "body")
+            text_val = b.get("text", "")
+            if not isinstance(text_val, str):
+                text_val = str(text_val)
+            if role == "headline":
+                return {"id": block_id, "type": "text", "text": text_val,
+                        "font_size": 24, "font_weight": "800", "text_align": "center", "text_color": text_color}
+            elif role == "badge":
+                return {"id": block_id, "type": "text", "text": text_val,
+                        "font_size": 11, "font_weight": "700", "text_align": "center", "text_color": text_color_muted}
+            else:  # body
+                return {"id": block_id, "type": "text", "text": text_val,
+                        "font_size": 14, "font_weight": "400", "text_align": "center", "text_color": text_color_muted}
+        elif btype == "image":
+            return {"id": block_id, "type": "image", "image_url": "", "image_height": 200, "image_fit": "cover", "image_link": ""}
+        elif btype == "button":
+            label = b.get("btn_label", "Click Here")
+            if not isinstance(label, str):
+                label = "Click Here"
+            return {"id": block_id, "type": "button", "btn_label": label,
+                    "btn_url": "", "btn_action": "link",
+                    "btn_color": btn_color, "btn_text_color": btn_text_color,
+                    "btn_radius": 10, "btn_bold": True}
+        elif btype == "no_thanks":
+            label = b.get("no_thanks_label", "No thanks")
+            if not isinstance(label, str):
+                label = "No thanks"
+            return {"id": block_id, "type": "no_thanks", "no_thanks_label": label,
+                    "no_thanks_color": text_color_muted, "no_thanks_dont_show": False}
+        elif btype == "countdown":
+            return {"id": block_id, "type": "countdown", "countdown_id": "",
+                    "countdown_expiry_action": "hide", "countdown_expiry_value": ""}
+        return None
+
+    def build_blocks(raw_list: list) -> list:
+        if not isinstance(raw_list, list):
+            return []
+        result = []
+        for b in raw_list:
+            if isinstance(b, dict):
+                built = build_block(b)
+                if built:
+                    result.append(built)
+        return result
+
+    # Build final blocks
+    if layout == "two-column":
+        left = build_blocks(data.get("left_blocks", []))
+        right = build_blocks(data.get("right_blocks", []))
+        if not left and not right:
+            # Fallback: treat blocks as single
+            layout = "single"
+            final_blocks = build_blocks(data.get("blocks", []))
+        else:
+            col_id = str(uuid.uuid4())[:8]
+            final_blocks = [{"id": col_id, "type": "columns",
+                             "col_left": left, "col_right": right}]
+    else:
+        final_blocks = build_blocks(data.get("blocks", []))
+
+    if not final_blocks:
+        raise HTTPException(status_code=502, detail="AI returned no valid blocks. Please try again.")
+
+    # ── Deduct coins ──────────────────────────────────────────────────────────
+    new_balance = await deduct_coins(
+        workspace_id=ws_id,
+        action_type="popup_content",
+        db=db,
+        claude_tokens_used=tokens_used,
+        metadata={"goal": body.goal[:200]},
+    )
+
+    return {
+        "layout": layout,
+        "bg_color": bg_color,
+        "blocks": final_blocks,
+        "balance": new_balance,
+    }
+
+
 # ── Image Generator ───────────────────────────────────────────────────────────
 
 STYLE_KEYWORDS: dict[str, str] = {

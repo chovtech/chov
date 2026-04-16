@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/layouts/Sidebar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
-import { apiClient } from '@/lib/api/client'
+import { apiClient, aiApi, projectApi } from '@/lib/api/client'
 import ImageUploader from '@/components/ui/ImageUploader'
 import CopyWriter from '@/components/ui/CopyWriter'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
@@ -361,6 +361,12 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
   const [editingName, setEditingName] = useState(false)
   const [countdowns, setCountdowns] = useState<any[]>([])
   const [loadingCountdowns, setLoadingCountdowns] = useState(true)
+  const [showAiGen, setShowAiGen] = useState(false)
+  const [aiGoal, setAiGoal] = useState('')
+  const [aiProjectId, setAiProjectId] = useState('__workspace__')
+  const [aiProjects, setAiProjects] = useState<{ id: string; name: string }[]>([])
+  const [aiGenerating, setAiGenerating] = useState(false)
+  const [aiError, setAiError] = useState('')
 
   useEffect(() => {
     apiClient.get('/api/countdowns')
@@ -368,6 +374,14 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
       .catch(() => null)
       .finally(() => setLoadingCountdowns(false))
   }, [])
+
+  useEffect(() => {
+    if (showAiGen && activeWorkspace?.id) {
+      projectApi.list(activeWorkspace.id).then((res: any) => {
+        setAiProjects(res.data || [])
+      }).catch(() => {})
+    }
+  }, [showAiGen, activeWorkspace?.id])
 
   useEffect(() => {
     if (!isEdit) return
@@ -507,6 +521,38 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
     setSelectedBlockId(null)
   }
 
+  const handleAiGenerate = async () => {
+    if (!aiGoal.trim()) return
+    setAiGenerating(true)
+    setAiError('')
+    try {
+      const res = await aiApi.generatePopup({
+        workspace_id: activeWorkspace?.id,
+        project_id: aiProjectId !== '__workspace__' ? aiProjectId : undefined,
+        goal: aiGoal.trim(),
+      })
+      const { layout, bg_color, blocks, balance } = res.data
+      setConfig(prev => ({ ...prev, layout: layout || 'single', bg_color: bg_color || prev.bg_color, blocks }))
+      if (balance != null) {
+        window.dispatchEvent(new CustomEvent('coinsUpdated', { detail: balance }))
+      }
+      setShowAiGen(false)
+      setShowTemplates(false)
+      setHasStarted(true)
+      setSelectedBlockId(null)
+      setAiGoal('')
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail
+      if (typeof detail === 'object' && detail?.error === 'insufficient_coins') {
+        setAiError(`Not enough coins. You need 5 coins but have ${detail.balance}.`)
+      } else {
+        setAiError(typeof detail === 'string' ? detail : 'Generation failed. Please try again.')
+      }
+    } finally {
+      setAiGenerating(false)
+    }
+  }
+
   const isBar = config.position === 'top_bar' || config.position === 'bottom_bar'
   const isFullscreen = config.position === 'fullscreen'
 
@@ -608,11 +654,72 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
                   </div>
                   <div className="flex gap-2">
                     {(hasStarted || isEdit) && (
-                      <button onClick={() => setShowTemplates(false)} className="text-xs font-bold text-slate-600 hover:text-slate-900 px-3 py-1.5 border border-slate-200 rounded-lg transition-colors">{t('popup_builder.cancel')}</button>
+                      <button onClick={() => { setShowTemplates(false); setShowAiGen(false) }} className="text-xs font-bold text-slate-600 hover:text-slate-900 px-3 py-1.5 border border-slate-200 rounded-lg transition-colors">{t('popup_builder.cancel')}</button>
                     )}
-                    <button onClick={() => { setShowTemplates(false); setHasStarted(true) }} className="text-xs font-bold text-white bg-slate-600 hover:bg-slate-700 px-4 py-1.5 rounded-lg transition-colors">{t('popup_builder.start_blank')}</button>
+                    <button
+                      onClick={() => setShowAiGen(v => !v)}
+                      className={`flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-lg transition-colors ${showAiGen ? 'bg-brand text-white' : 'bg-brand/10 text-brand hover:bg-brand/20'}`}
+                    >
+                      <Icon name="auto_awesome" className="text-sm" />
+                      Generate with AI
+                      <span className="text-[10px] font-medium opacity-70 ml-0.5">5 coins</span>
+                    </button>
+                    <button onClick={() => { setShowTemplates(false); setShowAiGen(false); setHasStarted(true) }} className="text-xs font-bold text-white bg-slate-600 hover:bg-slate-700 px-4 py-1.5 rounded-lg transition-colors">{t('popup_builder.start_blank')}</button>
                   </div>
                 </div>
+
+                {/* AI Generator panel */}
+                {showAiGen && (
+                  <div className="mb-5 p-4 bg-brand/5 border border-brand/20 rounded-xl space-y-3">
+                    <p className="text-xs text-slate-500">Describe what this popup should achieve — AI will choose the layout, blocks, and copy.</p>
+
+                    {/* Project selector */}
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Project context</label>
+                      <select
+                        value={aiProjectId}
+                        onChange={e => setAiProjectId(e.target.value)}
+                        className="w-full px-3 py-2 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-slate-700"
+                      >
+                        <option value="__workspace__">Use workspace context</option>
+                        {aiProjects.map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Goal */}
+                    <textarea
+                      value={aiGoal}
+                      onChange={e => setAiGoal(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAiGenerate() }}
+                      placeholder="e.g. Exit intent popup offering 15% discount for first-time buyers. Urgent tone, single CTA."
+                      rows={3}
+                      className="w-full px-3 py-2 bg-white border border-brand/20 rounded-lg text-xs resize-none focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all placeholder:text-slate-400"
+                    />
+
+                    {aiError && (
+                      <div className="flex items-center gap-2 p-2.5 bg-red-50 border border-red-200 rounded-lg">
+                        <Icon name="error" className="text-red-500 text-sm shrink-0" />
+                        <p className="text-xs text-red-600">{aiError}</p>
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handleAiGenerate}
+                      disabled={aiGenerating || !aiGoal.trim()}
+                      className="w-full flex items-center justify-center gap-2 py-2 bg-brand hover:bg-brand/90 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition-all"
+                    >
+                      {aiGenerating ? (
+                        <><Icon name="sync" className="text-sm animate-spin" />Generating your popup...</>
+                      ) : (
+                        <><Icon name="auto_awesome" className="text-sm" />Generate Popup</>
+                      )}
+                    </button>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-4">
                   {TEMPLATES.map(tpl => (
                     <button key={tpl.key} onClick={() => applyTemplate(tpl)}
