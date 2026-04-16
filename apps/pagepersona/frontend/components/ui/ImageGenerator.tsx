@@ -162,44 +162,46 @@ export default function ImageGenerator({
           onChange={e => setPrompt(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate() }}
           placeholder="Describe the image, e.g. 'Confident professional woman at a desk in a modern office, warm natural light'"
-          rows={2}
+          rows={4}
           className="w-full px-3 py-2 bg-white border border-brand/20 rounded-lg text-xs resize-none focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all placeholder:text-slate-400"
         />
       </div>
 
-      {/* Style + Dimensions row */}
+      {/* Style */}
+      <div>
+        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Style</label>
+        <select
+          value={style}
+          onChange={e => setStyle(e.target.value)}
+          className="w-full px-3 py-2 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-slate-700"
+        >
+          {STYLES.map(s => (
+            <option key={s.value} value={s.value}>{s.label}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Dimensions */}
       <div className="flex items-end gap-2">
         <div className="flex-1">
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Style</label>
-          <select
-            value={style}
-            onChange={e => setStyle(e.target.value)}
-            className="w-full px-3 py-2 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-slate-700"
-          >
-            {STYLES.map(s => (
-              <option key={s.value} value={s.value}>{s.label}</option>
-            ))}
-          </select>
-        </div>
-        <div className="w-20">
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Width</label>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Width (px)</label>
           <input
             type="number"
             value={width}
             onChange={e => setWidth(Number(e.target.value))}
             min={256} max={2048} step={8}
-            className="w-full px-2 py-2 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
+            className="w-full px-2 py-1.5 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
           />
         </div>
-        <div className="text-slate-300 font-bold text-sm pb-2">×</div>
-        <div className="w-20">
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Height</label>
+        <div className="text-slate-300 font-bold text-sm pb-1.5">×</div>
+        <div className="flex-1">
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Height (px)</label>
           <input
             type="number"
             value={height}
             onChange={e => setHeight(Number(e.target.value))}
             min={256} max={2048} step={8}
-            className="w-full px-2 py-2 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
+            className="w-full px-2 py-1.5 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
           />
         </div>
       </div>
