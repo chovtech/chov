@@ -194,7 +194,7 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
     onClose()
   }
 
-  const canProceedStep1 = projectName.trim().length > 0 && urlValid === true
+  const canProceedStep1 = projectName.trim().length > 0 && urlValid === true && description.trim().length > 0
   const canProceedStep2 = platform !== ''
   const currentSteps = platformSteps[platform] || platformSteps.other
 
@@ -261,31 +261,37 @@ export default function NewProjectModal({ isOpen, onClose }: Props) {
               </div>
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-semibold text-slate-700">Page Description <span className="text-slate-400 font-normal">(optional)</span></label>
-                  {urlValid && (
-                    <button
-                      type="button"
-                      onClick={handleExtractDescription}
-                      disabled={extracting}
-                      className="flex items-center gap-1 text-xs font-bold text-brand hover:text-brand/80 disabled:opacity-50 transition-colors"
-                    >
-                      {extracting
-                        ? <><div className="w-3 h-3 border-2 border-brand border-t-transparent rounded-full animate-spin" />Extracting…</>
-                        : <><Icon name="auto_awesome" className="text-sm" />Extract from URL</>
-                      }
-                    </button>
-                  )}
+                  <label className="text-sm font-semibold text-slate-700">Page Description</label>
+                  <button
+                    type="button"
+                    onClick={handleExtractDescription}
+                    disabled={extracting || !urlValid}
+                    className="flex items-center gap-1 text-xs font-bold text-brand hover:text-brand/80 disabled:opacity-40 transition-colors"
+                  >
+                    {extracting
+                      ? <><div className="w-3 h-3 border-2 border-brand border-t-transparent rounded-full animate-spin" />Extracting…</>
+                      : <><Icon name="auto_awesome" className="text-sm" />Extract from URL</>
+                    }
+                  </button>
                 </div>
                 <textarea
                   value={description}
                   onChange={e => setDescription(e.target.value)}
-                  placeholder="Describe what this page sells or does — who it's for, the main offer, and key benefits. This helps AI generate more accurate copy for this project."
+                  placeholder="Paste your page URL above and click Extract from URL — or type a description of what this page sells, who it's for, and the main offer."
                   rows={3}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition-all text-sm resize-none"
+                  className={`w-full rounded-xl border bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-[#1A56DB] focus:ring-2 focus:ring-[#1A56DB]/20 outline-none transition-all text-sm resize-none ${
+                    description.trim().length > 0 ? 'border-emerald-400' : 'border-slate-200'
+                  }`}
                 />
                 {extractError && (
                   <p className="text-xs text-red-500 flex items-center gap-1">
                     <Icon name="error" className="text-sm" />{extractError}
+                  </p>
+                )}
+                {!description.trim() && (
+                  <p className="text-xs text-slate-400 flex items-center gap-1">
+                    <Icon name="info" className="text-sm" />
+                    Required — helps AI write accurate copy for this project.
                   </p>
                 )}
               </div>

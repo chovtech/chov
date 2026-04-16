@@ -340,7 +340,7 @@ function EditProjectModal({ project, onClose, onSaved }: { project: Project; onC
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Page Description <span className="font-normal text-slate-400">(optional)</span></label>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Page Description</label>
               <button
                 type="button"
                 onClick={handleExtractDescription}
