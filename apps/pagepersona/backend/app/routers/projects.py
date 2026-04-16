@@ -122,7 +122,8 @@ async def update(
         script_verified=body.script_verified,
         page_url=body.page_url,
         thumbnail_url=body.thumbnail_url,
-        platform=body.platform
+        platform=body.platform,
+        description=body.description,
     )
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
