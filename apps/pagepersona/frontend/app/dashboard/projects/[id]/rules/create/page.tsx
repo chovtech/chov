@@ -290,7 +290,7 @@ export default function RulesCreatePage() {
           <Icon name="chevron_right" className="text-base" />
           <button onClick={() => router.push(`/dashboard/projects/${projectId}/rules`)} className="hover:text-brand transition-colors">{t('rules.heading')}</button>
           <Icon name="chevron_right" className="text-base" />
-          <span className="text-slate-900 font-semibold">{t('rules.new_rule')}</span>
+          <span className="text-slate-900 font-semibold">{t('rules.mode_template')}</span>
         </div>
 
         {/* ── MODE PICKER ─────────────────────────────────────────────────── */}

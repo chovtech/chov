@@ -144,8 +144,6 @@ export default function AiSuggestPage() {
           <Icon name="chevron_right" className="text-base" />
           <button onClick={() => router.push(`/dashboard/projects/${projectId}/rules`)} className="hover:text-brand transition-colors">{t('rules.heading')}</button>
           <Icon name="chevron_right" className="text-base" />
-          <button onClick={() => router.push(`/dashboard/projects/${projectId}/rules/create`)} className="hover:text-brand transition-colors">{t('rules.new_rule')}</button>
-          <Icon name="chevron_right" className="text-base" />
           <span className="text-slate-900 font-semibold">{t('rules.mode_ai')}</span>
         </div>
 
