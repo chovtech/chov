@@ -2,6 +2,7 @@ import pytest
 import asyncio
 from httpx import AsyncClient, ASGITransport
 from app.main import app
+from app.database import get_pool
 
 
 @pytest.fixture(scope="session")
@@ -17,3 +18,11 @@ async def client():
     """Single HTTP client for the whole session — keeps the DB pool alive."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         yield c
+
+
+@pytest.fixture(scope="session")
+async def db():
+    """Raw asyncpg connection for direct DB assertions in tests."""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        yield conn

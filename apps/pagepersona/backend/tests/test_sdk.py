@@ -216,3 +216,52 @@ async def test_sdk_rules_popup_config_resolved_live(client):
     rule = res.json()["rules"][0]
     action_val = json.loads(rule["actions"][0]["value"])
     assert action_val["config"]["bg_color"] == "#FF0000"
+
+
+async def test_sdk_rules_includes_page_url(client):
+    """Active project rules response includes the project page_url."""
+    headers, project = await auth_headers_and_project(client)
+    res = await client.get(f"/api/sdk/rules?script_id={project['script_id']}")
+    assert res.status_code == 200
+    data = res.json()
+    assert "page_url" in data
+    assert data["page_url"] == "https://example.com"
+
+
+async def test_sdk_rules_includes_geo_object(client):
+    """Active project rules response includes a geo object (may have null fields in test env)."""
+    headers, project = await auth_headers_and_project(client)
+    res = await client.get(f"/api/sdk/rules?script_id={project['script_id']}")
+    assert res.status_code == 200
+    data = res.json()
+    assert "geo" in data
+    assert isinstance(data["geo"], dict)
+
+
+async def test_sdk_rules_insert_countdown_config_resolved(client):
+    """insert_countdown action has live countdown config merged into action value."""
+    headers, project = await auth_headers_and_project(client)
+    pid = project["id"]
+
+    # Create a countdown
+    cd_res = await client.post("/api/countdowns", json={
+        "name": "Flash Sale",
+        "ends_at": "2099-12-31T23:59:59Z",
+        "expiry_action": "hide",
+        "expiry_value": "",
+        "config": {"color": "#FF0000"},
+    }, headers=headers)
+    assert cd_res.status_code == 200, cd_res.text
+    countdown_id = cd_res.json()["id"]
+
+    await add_rule(client, headers, pid,
+        actions=[{"type": "insert_countdown", "target_block": "#banner",
+                  "value": json.dumps({"countdown_id": countdown_id})}],
+    )
+
+    res = await client.get(f"/api/sdk/rules?script_id={project['script_id']}")
+    assert res.status_code == 200
+    rule = res.json()["rules"][0]
+    action_val = json.loads(rule["actions"][0]["value"])
+    assert "config" in action_val
+    assert action_val["config"]["color"] == "#FF0000"

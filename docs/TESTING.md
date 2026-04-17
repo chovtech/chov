@@ -75,6 +75,24 @@
 - [x] `test_login_with_correct_credentials`
 - [x] `test_login_wrong_password_fails`
 - [x] `test_login_unknown_email_fails`
+- [x] `test_get_me_returns_user`
+- [x] `test_get_me_without_token_returns_403`
+- [x] `test_logout_invalidates_session`
+- [x] `test_refresh_token_returns_new_access_token`
+- [x] `test_refresh_token_invalid_returns_401`
+- [x] `test_verify_email_success`
+- [x] `test_verify_email_invalid_token_returns_400`
+- [x] `test_verify_email_missing_token_returns_400`
+- [x] `test_forgot_password_returns_success`
+- [x] `test_forgot_password_unknown_email_still_returns_200`
+- [x] `test_reset_password_success`
+- [x] `test_reset_password_invalid_token_returns_400`
+- [x] `test_magic_link_request_always_returns_200`
+- [x] `test_magic_link_verify_success`
+- [x] `test_magic_link_verify_invalid_returns_400`
+- [x] `test_signup_creates_trial_entitlement`
+- [x] `test_signup_creates_ai_coins_with_trial_balance`
+- [x] `test_signup_rejects_short_password`
 
 ---
 
@@ -99,6 +117,8 @@
 - [x] `test_update_profile_email_duplicate_rejected`
 - [x] `test_change_password_success`
 - [x] `test_change_password_wrong_current`
+- [x] `test_update_language`
+- [x] `test_change_password_short_new_password_rejected`
 
 ---
 
@@ -122,9 +142,13 @@
 |---|-------------|-------|-------------|
 
 ### Automated Tests — `tests/test_workspaces.py`
-- [X] `test_default_workspace_created_on_signup`
-- [X] `test_list_workspaces`
-- [X] `test_rename_workspace`
+- [x] `test_default_workspace_created_on_signup`
+- [x] `test_list_workspaces`
+- [x] `test_rename_workspace`
+- [x] `test_list_workspaces_includes_stats_fields`
+- [x] `test_onboarding_completed_false_on_signup`
+- [x] `test_complete_onboarding`
+- [x] `test_patch_white_label_settings`
 
 ---
 
@@ -171,6 +195,15 @@
 - [x] `test_toggle_project_status` — draft ↔ active toggle works
 - [x] `test_delete_project` — deleted project removed from list
 - [x] `test_cannot_access_other_users_project` — returns 404 for wrong user
+- [x] `test_create_project_with_description`
+- [x] `test_edit_project_description`
+- [x] `test_trigger_scan_returns_scan_started`
+- [x] `test_add_custom_block`
+- [x] `test_add_custom_block_no_duplicate`
+- [x] `test_bulk_add_blocks`
+- [x] `test_update_block`
+- [x] `test_delete_block`
+- [x] `test_import_blocks_from_rules`
 
 ---
 
@@ -376,8 +409,9 @@
 - [x] `test_sdk_ping_no_cache_header`
 - [x] `test_sdk_rules_only_active_rules_returned`
 - [x] `test_sdk_rules_popup_config_resolved_live`
-- [x] `test_sdk_visit_recorded` — requires beacon endpoint
-- [x] `test_sdk_event_recorded` — requires beacon endpoint
+- [x] `test_sdk_rules_includes_page_url`
+- [x] `test_sdk_rules_includes_geo_object`
+- [x] `test_sdk_rules_insert_countdown_config_resolved`
 
 ---
 

@@ -411,17 +411,23 @@ All emails: EN + FR bilingual (where applicable), SES via boto3, `noreply@usepag
 
 ---
 
-## HANDOVER — Session ending 2026-04-17
+## HANDOVER — Session ending 2026-04-17 (part 2)
 
 ### What was completed today
-1. **AI Module tests** (`tests/test_ai.py`) — 30 new automated tests covering: coin balance, coin history, brand knowledge CRUD, brand extract (mocked), project description extract (mocked), CopyWriter variants + coin deduction + error handling, Popup Generator + style defaults, Rule Suggester + signal validation, Image Generator + R2 save + dimension clamping (all external calls mocked).
-2. **Full schema SQL** (`database/schema/full.sql`) — Complete local DB bootstrap script (19 tables + indexes). Required because local chov-db Docker container was empty. Apply with: `docker exec -i chov-db psql -U chov -d chov < ~/chov/database/schema/full.sql`
-3. **Total test count: 145 / 145 passing** (was 115 before this session).
-4. **TESTING.md updated** — Module 13 automated tests section added; progress summary updated.
+Systematic test update pass — reviewed every existing test module against the current codebase and added tests for all endpoints/features added since the last test run.
+
+1. **`test_auth.py`** — added 18 new tests: GET /me, logout, refresh (valid + invalid), verify-email (valid + invalid + missing token), forgot-password (known + unknown email), reset-password (success + invalid token + password change verification), magic-link (request + verify success + verify invalid), signup creates trial entitlement, signup creates ai_coins balance=20, short password rejected.
+2. **`test_users.py`** — added 2 tests: language update, short new_password rejected.
+3. **`test_workspaces.py`** — added 4 tests: stats fields in list response, onboarding_completed=false on signup, complete-onboarding endpoint, white-label PATCH.
+4. **`test_projects.py`** — added 9 tests: description field, edit description, trigger scan, add custom block, no-duplicate block, bulk add blocks, update block, delete block, import from rules.
+5. **`test_sdk.py`** — added 3 tests: page_url in response, geo object in response, insert_countdown config resolved live.
+6. **`conftest.py`** — added `db` fixture (session-scoped asyncpg connection) for direct DB assertions.
+
+**Total test count: 181 / 181 passing** (was 145 before this session).
 
 ### State of the codebase right now
-- All 145 tests passing
-- AI module fully tested (CopyWriter, Popup Generator, Rule Suggester, Image Generator, Brand Extract, Project Describe, Coin service)
+- All 181 tests passing
+- All 5 updated test modules fully reflect current codebase
 - Branch: `main`
 
 ### Where to pick up next
