@@ -52,7 +52,7 @@ export default function AiSuggestPage() {
   const { activeWorkspace } = useWorkspace()
 
   const [project, setProject] = useState<any>(null)
-  const [hasScan, setHasScan] = useState(false)
+  const [blockCount, setBlockCount] = useState(0)
   const [generating, setGenerating] = useState(false)
   const [suggestions, setSuggestions] = useState<AiRule[] | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
@@ -64,10 +64,10 @@ export default function AiSuggestPage() {
     projectApi.get(projectId).then((res: any) => {
       setProject(res.data)
       const scan = res.data.page_scan || {}
-      setHasScan(!!(
-        scan.headings?.length || scan.ctas?.length ||
-        scan.images?.length || scan.sections?.length || scan.custom_blocks?.length
-      ))
+      setBlockCount(
+        (scan.headings?.length || 0) + (scan.ctas?.length || 0) +
+        (scan.images?.length || 0) + (scan.sections?.length || 0) + (scan.custom_blocks?.length || 0)
+      )
     }).catch(() => {})
 
     if (activeWorkspace?.id) {
@@ -148,67 +148,47 @@ export default function AiSuggestPage() {
         </div>
 
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl font-black tracking-tight text-slate-900">{t('rules.mode_ai')}</h1>
-              <p className="text-sm text-slate-500 mt-1">{t('rules.mode_ai_desc')}</p>
-            </div>
-            {balance !== null && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-brand/10 rounded-lg">
-                <Icon name="toll" className="text-brand text-sm" />
-                <span className="text-xs font-bold text-brand">{balance} coins</span>
-              </div>
-            )}
+        <div className="flex items-start justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-black tracking-tight text-slate-900">{t('rules.mode_ai')}</h1>
+            <p className="text-sm text-slate-500 mt-1">{t('rules.mode_ai_desc')}</p>
           </div>
-
-          {/* Scan context indicator */}
-          {!generating && !suggestions && (
-            <div className={
-              'mt-4 flex items-start gap-3 p-4 rounded-xl border ' +
-              (hasScan
-                ? 'bg-emerald-50 border-emerald-200'
-                : 'bg-amber-50 border-amber-200')
-            }>
-              <Icon
-                name={hasScan ? 'check_circle' : 'info'}
-                className={'text-base ' + (hasScan ? 'text-emerald-600' : 'text-amber-600')}
-              />
-              <div>
-                <p className={'text-xs font-bold ' + (hasScan ? 'text-emerald-700' : 'text-amber-700')}>
-                  {hasScan
-                    ? 'Content blocks set up — AI will use your actual page elements'
-                    : 'No content blocks yet — AI will use project description only'}
-                </p>
-                {!hasScan && (
-                  <p className="text-xs text-amber-600 mt-0.5">
-                    For better results,{' '}
-                    <a href={`/dashboard/projects/${projectId}/content-blocks`} className="font-bold underline">
-                      add content blocks first
-                    </a>
-                    .
-                  </p>
-                )}
-              </div>
+          {balance !== null && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-brand/10 rounded-lg">
+              <Icon name="toll" className="text-brand text-sm" />
+              <span className="text-xs font-bold text-brand">{balance} coins</span>
             </div>
           )}
         </div>
 
-        {/* Generate button (pre-generation state) */}
+        {/* Generate card (pre-generation state) */}
         {!generating && !suggestions && (
-          <div className="flex flex-col items-center justify-center py-20 bg-white border border-slate-200 rounded-xl text-center">
+          <div className="flex flex-col items-center justify-center py-16 bg-white border border-slate-200 rounded-xl text-center px-8">
             <div className="w-16 h-16 rounded-2xl bg-brand/10 flex items-center justify-center mb-5">
               <Icon name="auto_awesome" className="text-brand text-3xl" />
             </div>
-            <h2 className="text-lg font-black text-slate-900 mb-2">Ready to generate</h2>
-            <p className="text-sm text-slate-500 max-w-sm mb-6">
-              AI will analyse your page and suggest personalisation rules based on your content and brand.
-            </p>
+
+            <h2 className="text-lg font-black text-slate-900 mb-3">Ready to generate</h2>
+
+            {blockCount > 0 ? (
+              <p className="text-sm text-slate-500 max-w-sm mb-8">
+                AI will use your project description and{' '}
+                <span className="font-bold text-slate-700">{blockCount} content block{blockCount !== 1 ? 's' : ''}</span>{' '}
+                to generate rules targeting real elements on your page.
+              </p>
+            ) : (
+              <p className="text-sm text-slate-500 max-w-sm mb-8">
+                AI will generate rules using your project description and brand profile. For more precise rules that target
+                specific elements on your page, add content blocks first — you can always link them to rules later.
+              </p>
+            )}
+
             {error && (
-              <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 max-w-sm">
+              <div className="mb-5 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 max-w-sm w-full">
                 {error}
               </div>
             )}
+
             <button
               onClick={handleGenerate}
               className="flex items-center gap-2 px-8 py-3 bg-brand text-white font-bold rounded-xl shadow-md shadow-brand/20 hover:bg-brand/90 transition-all"
@@ -216,6 +196,16 @@ export default function AiSuggestPage() {
               <Icon name="auto_awesome" className="text-base" />
               Generate rules · 15 coins
             </button>
+
+            {blockCount === 0 && (
+              <button
+                onClick={() => router.push(`/dashboard/projects/${projectId}/content-blocks`)}
+                className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-brand hover:underline"
+              >
+                <Icon name="add_box" className="text-base" />
+                Add content blocks first
+              </button>
+            )}
           </div>
         )}
 
