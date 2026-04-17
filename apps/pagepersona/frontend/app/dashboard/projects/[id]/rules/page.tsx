@@ -107,6 +107,7 @@ export default function RulesPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [newRuleDropdown, setNewRuleDropdown] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -260,19 +261,64 @@ export default function RulesPage() {
                 </div>
               )}
             </div>
-            <div className="relative group">
-              <button
-                onClick={() => { if (project?.script_verified) router.push("/dashboard/projects/" + projectId + "/rules/create") }}
-                disabled={!project?.script_verified}
-                className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white text-sm font-bold rounded-xl shadow-md shadow-brand/20 hover:bg-brand/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
-                <Icon name="add" className="text-base" />
-                {t("rules.new_rule")}
-              </button>
+            <div className="relative">
+              <div className={`flex items-center rounded-xl shadow-md shadow-brand/20 overflow-hidden ${!project?.script_verified ? 'opacity-40' : ''}`}>
+                <button
+                  onClick={() => { if (project?.script_verified) router.push("/dashboard/projects/" + projectId + "/rules/new") }}
+                  disabled={!project?.script_verified}
+                  className="flex items-center gap-2 pl-5 pr-4 py-2.5 bg-brand text-white text-sm font-bold hover:bg-brand/90 disabled:cursor-not-allowed transition-all">
+                  <Icon name="add" className="text-base" />
+                  {t("rules.new_rule")}
+                </button>
+                <div className="w-px h-8 bg-white/20" />
+                <button
+                  onClick={() => { if (project?.script_verified) setNewRuleDropdown(v => !v) }}
+                  disabled={!project?.script_verified}
+                  className="flex items-center px-2.5 py-2.5 bg-brand text-white hover:bg-brand/90 disabled:cursor-not-allowed transition-all">
+                  <Icon name="expand_more" className="text-base" />
+                </button>
+              </div>
               {!project?.script_verified && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 text-center">
+                <div className="absolute bottom-full right-0 mb-2 w-64 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg pointer-events-none z-10 text-center">
                   {t('project.verify_first')}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
+                  <div className="absolute top-full right-4 border-4 border-transparent border-t-slate-900" />
                 </div>
+              )}
+              {newRuleDropdown && project?.script_verified && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setNewRuleDropdown(false)} />
+                  <div className="absolute right-0 top-full mt-1.5 w-52 bg-white border border-slate-200 rounded-xl shadow-xl z-20 overflow-hidden">
+                    <button
+                      onClick={() => { setNewRuleDropdown(false); router.push("/dashboard/projects/" + projectId + "/rules/new") }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors text-left">
+                      <Icon name="build" className="text-slate-400 text-xl" />
+                      <div>
+                        <p className="font-bold text-slate-900">{t('rules.mode_manual')}</p>
+                        <p className="text-xs text-slate-500">Build from scratch</p>
+                      </div>
+                    </button>
+                    <div className="border-t border-slate-100" />
+                    <button
+                      onClick={() => { setNewRuleDropdown(false); router.push("/dashboard/projects/" + projectId + "/rules/create?mode=template") }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors text-left">
+                      <Icon name="flag" className="text-slate-400 text-xl" />
+                      <div>
+                        <p className="font-bold text-slate-900">{t('rules.mode_template')}</p>
+                        <p className="text-xs text-slate-500">Pick a goal</p>
+                      </div>
+                    </button>
+                    <div className="border-t border-slate-100" />
+                    <button
+                      onClick={() => { setNewRuleDropdown(false); router.push("/dashboard/projects/" + projectId + "/rules/ai-suggest") }}
+                      className="flex items-center gap-3 w-full px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors text-left">
+                      <Icon name="auto_awesome" className="text-slate-400 text-xl" />
+                      <div>
+                        <p className="font-bold text-slate-900">{t('rules.mode_ai')}</p>
+                        <p className="text-xs text-slate-500">{t('rules.mode_ai_coins')}</p>
+                      </div>
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -432,9 +478,22 @@ export default function RulesPage() {
             <p className="text-sm text-slate-500 max-w-md mb-8">{t("rules.empty_desc")}</p>
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <button
-                onClick={() => router.push("/dashboard/projects/" + projectId + "/rules/create")}
+                onClick={() => router.push("/dashboard/projects/" + projectId + "/rules/new")}
                 className="flex items-center gap-2 px-6 py-2.5 bg-brand text-white text-sm font-bold rounded-xl shadow-lg shadow-brand/20 hover:bg-brand/90 transition-all">
-                {t("rules.empty_cta")}
+                <Icon name="build" className="text-base" />
+                {t("rules.mode_manual")}
+              </button>
+              <button
+                onClick={() => router.push("/dashboard/projects/" + projectId + "/rules/create?mode=template")}
+                className="flex items-center gap-2 px-6 py-2.5 border-2 border-brand text-brand text-sm font-bold rounded-xl hover:bg-brand/5 transition-all">
+                <Icon name="flag" className="text-base" />
+                {t("rules.mode_template")}
+              </button>
+              <button
+                onClick={() => router.push("/dashboard/projects/" + projectId + "/rules/ai-suggest")}
+                className="flex items-center gap-2 px-6 py-2.5 border-2 border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 transition-all">
+                <Icon name="auto_awesome" className="text-brand text-base" />
+                {t("rules.mode_ai")}
               </button>
             </div>
             <div className="mt-12 flex items-center gap-8 text-slate-400">

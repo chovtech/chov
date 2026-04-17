@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
@@ -203,9 +203,12 @@ export default function RulesCreatePage() {
   const { t } = useTranslation('common')
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const projectId = params.id as string
 
-  const [mode, setMode] = useState<Mode>('picker')
+  const [mode, setMode] = useState<Mode>(() =>
+    searchParams.get('mode') === 'template' ? 'template_goals' : 'picker'
+  )
   const [project, setProject] = useState<any>(null)
   const [scan, setScan] = useState<any>(null)
   const [goals, setGoals] = useState<TemplateGoal[]>([])
@@ -355,7 +358,10 @@ export default function RulesCreatePage() {
           <>
             <div className="flex items-center gap-4 mb-8">
               <button
-                onClick={() => setMode('picker')}
+                onClick={() => searchParams.get('mode') === 'template'
+                  ? router.push(`/dashboard/projects/${projectId}/rules`)
+                  : setMode('picker')
+                }
                 className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 transition-colors font-semibold"
               >
                 <Icon name="arrow_back" className="text-base" />
