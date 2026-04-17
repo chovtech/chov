@@ -286,7 +286,7 @@ export default function RulesPage() {
                       <Icon name="build" className="text-slate-400 text-xl" />
                       <div>
                         <p className="font-bold text-slate-900">{t('rules.mode_manual')}</p>
-                        <p className="text-xs text-slate-500">Build from scratch</p>
+                        <p className="text-xs text-slate-500">Full control, no limits</p>
                       </div>
                     </button>
                     <div className="border-t border-slate-100" />
@@ -296,7 +296,7 @@ export default function RulesPage() {
                       <Icon name="flag" className="text-slate-400 text-xl" />
                       <div>
                         <p className="font-bold text-slate-900">{t('rules.mode_template')}</p>
-                        <p className="text-xs text-slate-500">Pick a goal</p>
+                        <p className="text-xs text-slate-500">Pre-built rule sets</p>
                       </div>
                     </button>
                     <div className="border-t border-slate-100" />
