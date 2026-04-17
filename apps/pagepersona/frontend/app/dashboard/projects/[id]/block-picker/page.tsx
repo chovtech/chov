@@ -93,20 +93,23 @@ function BlockPickerInner() {
   const [saving,        setSaving]        = useState(false)
   const [saveToast,     setSaveToast]     = useState('')
   const [sidebarTab,    setSidebarTab]    = useState<'tray' | 'saved'>('tray')
+  const [initialised,   setInitialised]   = useState(false)
 
   const existingSelectors = new Set(savedBlocks.map(b => b.selector))
 
   // ── Load project + existing blocks ──────────────────────────────────────────
 
-  const loadProject = useCallback(async () => {
-    try {
-      const res = await projectApi.get(projectId)
+  // On first mount: if there are already saved blocks, open on Saved tab
+  useEffect(() => {
+    if (initialised) return
+    setInitialised(true)
+    projectApi.get(projectId).then((res: any) => {
       setProjectName(res.data.name || 'Project')
-      setSavedBlocks(normalizeSavedBlocks(res.data.page_scan))
-    } catch {}
-  }, [projectId])
-
-  useEffect(() => { loadProject() }, [loadProject])
+      const blocks = normalizeSavedBlocks(res.data.page_scan)
+      setSavedBlocks(blocks)
+      if (blocks.length > 0) setSidebarTab('saved')
+    }).catch(() => {})
+  }, [projectId, initialised])
 
   // ── Picker message handler ───────────────────────────────────────────────────
 
@@ -162,24 +165,20 @@ function BlockPickerInner() {
     setTray(prev => prev.filter(t => t.selector !== selector))
   }
 
-  // ── Save — sequential to avoid race condition ────────────────────────────────
+  // ── Save — single bulk request (one DB write, no race conditions) ────────────
 
   const handleSaveAll = async () => {
     if (tray.length === 0) return
     const count = tray.length
     setSaving(true)
     try {
-      for (const item of tray) {
-        await projectApi.addCustomBlock(projectId, {
-          selector: item.selector,
-          label:    item.label,
-          type:     item.type,
-        })
-      }
+      const res = await projectApi.bulkAddBlocks(projectId,
+        tray.map(item => ({ selector: item.selector, label: item.label, type: item.type }))
+      )
+      setSavedBlocks(normalizeSavedBlocks(res.data.page_scan))
       setTray([])
-      await loadProject()            // refresh saved blocks list
-      setSidebarTab('saved')         // switch to saved tab to show the result
-      setSaveToast(`${count} block${count !== 1 ? 's' : ''} saved`)
+      setSidebarTab('saved')
+      setSaveToast(`${res.data.added} block${res.data.added !== 1 ? 's' : ''} saved`)
       setTimeout(() => setSaveToast(''), 3000)
     } catch {} finally {
       setSaving(false)

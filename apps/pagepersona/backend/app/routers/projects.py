@@ -194,6 +194,53 @@ class CustomBlockAdd(BaseModel):
     type: str = "custom"
 
 
+class BulkBlockItem(BaseModel):
+    selector: str
+    label: str
+    type: str = "custom"
+
+
+class BulkBlocksAdd(BaseModel):
+    blocks: list[BulkBlockItem]
+
+
+@router.post("/{project_id}/scan/bulk-add-blocks")
+async def bulk_add_blocks(
+    project_id: str,
+    body: BulkBlocksAdd,
+    db: asyncpg.Connection = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Add multiple blocks in a single DB write. Skips duplicates."""
+    project = await _get_accessible_project(db, project_id, current_user['id'])
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    await require_admin_or_owner(db, current_user['id'], str(project['workspace_id']))
+
+    scan = _load_scan(project)
+
+    existing_selectors = {b.get('selector') for arr in _BLOCK_ARRAYS for b in scan.get(arr, [])}
+    custom_blocks = list(scan.get('custom_blocks', []))
+    added = 0
+    for item in body.blocks:
+        if item.selector and item.selector not in existing_selectors:
+            custom_blocks.append({
+                "selector": item.selector,
+                "label":    item.label,
+                "type":     item.type,
+            })
+            existing_selectors.add(item.selector)
+            added += 1
+
+    scan['custom_blocks'] = custom_blocks
+    await db.execute(
+        "UPDATE projects SET page_scan = $1::jsonb WHERE id = $2",
+        json.dumps(scan),
+        project['id']
+    )
+    return {"page_scan": scan, "added": added}
+
+
 @router.post("/{project_id}/scan/custom-blocks")
 async def add_custom_block(
     project_id: str,

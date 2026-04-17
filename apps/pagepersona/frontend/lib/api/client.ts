@@ -141,6 +141,8 @@ export const projectApi = {
     apiClient.post(`/api/projects/${id}/scan`),
   addCustomBlock: (id: string, data: { selector: string; label: string; type?: string }) =>
     apiClient.post(`/api/projects/${id}/scan/custom-blocks`, data),
+  bulkAddBlocks: (id: string, blocks: { selector: string; label: string; type: string }[]) =>
+    apiClient.post(`/api/projects/${id}/scan/bulk-add-blocks`, { blocks }),
   removeCustomBlock: (id: string, selector: string) =>
     apiClient.delete(`/api/projects/${id}/scan/custom-blocks/${encodeURIComponent(selector)}`),
   updateBlock: (id: string, selector: string, data: { label: string; type: string }) =>
