@@ -1031,7 +1031,7 @@ export default function ProjectDashboardPage() {
                   <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('project.visitors.view_all')}</th>
                 </tr></thead>
                 <tbody className="divide-y divide-slate-100">
-                  {analyticsData.recent_visits.slice(0, 5).map((v: any, i: number) => (
+                  {analyticsData.recent_visits.slice(0, 10).map((v: any, i: number) => (
                     <tr key={i} className="hover:bg-slate-50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
