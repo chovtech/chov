@@ -1,6 +1,11 @@
 # PagePersona — Billing & Entitlement Plan
-> Draft for review. Change anything before we build.
 > Based on: FUNNEL-ANALYSIS.md, actual Anthropic + fal.ai API logs, current codebase.
+> Last updated: 2026-04-17
+
+### Locked decisions
+- ✅ **No monthly coin resets** — coins are a lifetime quota per plan. Use them, they're gone. Buy more if needed.
+- ✅ **Never delete on downgrade** — lock access to over-limit items, never delete user data.
+- ✅ **Bundle (Fastpass) = Agency plan** — $297 all-access bundle gives same access as Agency (500 coins, all features).
 
 ---
 
@@ -16,7 +21,7 @@
 | Popups | 3 |
 | Countdown timers | 2 |
 | Client accounts | 0 |
-| AI Coins (one-time) | 20 |
+| AI Coins (lifetime quota) | 20 |
 
 ---
 
@@ -30,7 +35,7 @@
 | Popups | 10 |
 | Countdown timers | 5 |
 | Client accounts | 0 |
-| AI Coins (monthly reset) | 50 |
+| AI Coins (lifetime quota) | 50 |
 | Powered by PagePersona | Shown |
 
 ---
@@ -45,7 +50,7 @@
 | Popups | Unlimited |
 | Countdown timers | Unlimited |
 | Client accounts | 0 |
-| AI Coins (monthly reset) | 200 |
+| AI Coins (lifetime quota) | 200 |
 | Powered by PagePersona | Shown |
 
 ---
@@ -58,7 +63,7 @@
 |---------|-------|
 | Projects | 5 (same as FE unless they also have Unlimited) |
 | Rules per project | 10 (same as FE unless stacked) |
-| AI Coins (monthly reset) | 200 |
+| AI Coins (lifetime quota) | 200 |
 | Remove "Powered by PagePersona" | ✅ |
 | Custom sender name on emails | ✅ |
 | Branded email templates | ✅ |
@@ -67,6 +72,17 @@
 > **Note:** Professional is cosmetic — it layers ON TOP of FE or Unlimited.
 > If they buy Professional only (not Unlimited), they still have FE limits on features.
 > Stacking (FE + Professional + Unlimited) unlocks all three layers.
+
+---
+
+### Bundle / All-Access Fastpass — Bump ($297 OT)
+> Buys everything at once. Identical access to Agency. Saves $161 vs buying individually.
+
+| Feature | Value |
+|---------|-------|
+| Everything in Agency | ✅ |
+| AI Coins (lifetime quota) | 500 |
+| Entitlement plan stored as | `agency` |
 
 ---
 
@@ -80,7 +96,7 @@
 | Popups | Unlimited |
 | Countdown timers | Unlimited |
 | Client accounts | 100 |
-| AI Coins (monthly reset) | 500 |
+| AI Coins (lifetime quota) | 500 |
 | Remove "Powered by PagePersona" | ✅ |
 | Custom domain | ✅ |
 | White-label logo + brand color | ✅ |
@@ -131,16 +147,16 @@
 | popup_content | 5 | $0.001 | ~$0.0002 |
 | generate_image | 10 | $0.025 | ~$0.003 |
 
-**Worst-case scenario per plan (all coins spent on images):**
-| Plan | Coins | API cost if all spent on images | Monthly revenue |
-|------|-------|--------------------------------|-----------------|
-| Trial | 20 (one-time) | $0.05 one-time | $0 (free) |
-| FE | 50/month | $0.125/month | ~$3.08/month ($37/12) |
-| Unlimited | 200/month | $0.50/month | $5.58/month |
-| Professional | 200/month | $0.50/month | $3.91/month |
-| Agency | 500/month | $1.25/month | $16.42/month |
+**Worst-case per plan (all coins spent on image generation @ $0.025/image):**
+| Plan | Coins (lifetime) | Worst-case API cost | Revenue |
+|------|-----------------|---------------------|---------|
+| Trial | 20 | $0.05 | $0 (free) |
+| FE | 50 | $0.125 | $37–47 OT |
+| Unlimited | 200 | $0.50 | $67/year |
+| Professional | 200 | $0.50 | $47/year |
+| Agency / Bundle | 500 | $1.25 | $197/year or $297 OT |
 
-**Verdict:** Even at worst case (all images), API costs are under 10% of revenue at every tier. Model is safe.
+**Verdict:** Since coins are lifetime (not monthly), API costs are a one-time hit per customer — not recurring. Even better margin than monthly reset model. Model is very safe.
 
 ### Coin recharge packs — margins
 | Pack | Coins | Price | Worst-case API cost | Margin |
@@ -214,10 +230,12 @@ The webhook at `POST /api/webhooks/jvzoo` creates a new account when someone pur
 | JVZoo Product | plan value | coins to seed |
 |---------------|-----------|--------------|
 | FE (product ID: TBD) | `fe` | 50 |
+| Bundle Bump / Fastpass (product ID: TBD) | `agency` | 500 |
 | OTO 1 Unlimited (product ID: TBD) | `unlimited` | 200 |
 | OTO 2 Professional (product ID: TBD) | `professional` | 200 |
 | OTO 3 Agency (product ID: TBD) | `agency` | 500 |
-| Bundle Bump (product ID: TBD) | `agency` | 500 |
+
+> **Bundle note:** Bundle sends one IPN. Map it to `agency` — same as buying all OTOs individually. If user already has a higher plan, coins are NOT re-seeded (use plan hierarchy check).
 
 ### Upgraded IPN flow
 ```
@@ -243,18 +261,20 @@ PLAN_RANK = {'trial': 0, 'fe': 1, 'professional': 2, 'unlimited': 3, 'agency': 4
 
 ---
 
-## 5. MONTHLY COIN RESET
+## 5. COIN QUOTA — NO RESETS
 
-Coins reset monthly for recurring plans (Unlimited, Professional, Agency). FE coins are one-time (they get 50 on purchase, no monthly reset — coins are a bonus, not a core promise of the FE).
+Coins are a **lifetime quota** per plan. No monthly resets for anyone.
 
-> ⚠️ DECISION NEEDED: Do FE users get coin resets, or is their 50 coins one-time?
-> Recommendation: One-time. Monthly resets only for paid recurring plans. This creates upgrade pressure.
+- Trial signup → 20 coins, one-time
+- FE purchase → 50 coins added to balance
+- Unlimited purchase → 200 coins added to balance
+- Professional purchase → 200 coins added to balance
+- Agency/Bundle purchase → 500 coins added to balance
+- Downgrade → coins already spent stay spent; balance unchanged
 
-### Reset mechanism options
-**Option A — Cron job (recommended):** Daily cron at midnight UTC checks `ai_coins.last_reset_at`, reseeds any workspace where it's been > 30 days.
-**Option B — On-demand:** Reset checked at time of `check_coins()` call — no cron needed.
+When they run out: they buy a recharge pack (see Section 7).
 
-Recommendation: Option B (simpler, no cron management).
+> **This simplifies the backend significantly** — no cron job, no reset logic, no `last_reset_at` needed operationally.
 
 ---
 
@@ -283,15 +303,33 @@ Apr 16       Popup Content    -5
 
 ---
 
-## 7. COIN RECHARGE — STRIPE FLOW
+## 7. COIN RECHARGE PACKS
 
-> ⚠️ DECISION NEEDED: Build Stripe recharge now, or post-launch?
-> Recommendation: Post-launch. JVZoo recurring handles most revenue. Add Stripe recharge in v1.1.
+When a user runs out of coins, they can buy more without upgrading their plan. These are **standalone purchases** — not OTOs, not subscriptions.
 
-If built now:
-- `POST /api/billing/recharge` → create Stripe checkout session → redirect
-- Stripe webhook → add coins to balance (no subscription, just one-time credit)
-- No recurring billing — coins are a one-time top-up each purchase
+| Pack | Coins | Price |
+|------|-------|-------|
+| Starter | 100 | $7 |
+| Growth | 500 | $27 |
+| Pro | 2,000 | $67 |
+| Agency | 10,000 | $197 |
+
+### How payment works
+These packs are sold inside the app (on the Billing tab), NOT through the JVZoo funnel. They need a card payment processor. The two options:
+
+**Option A — Stripe (recommended for packs)**
+- User clicks "Buy 500 coins — $27" in the app
+- Backend creates a Stripe Checkout session (one-time payment, no subscription)
+- Stripe redirects back after payment → webhook fires → coins added to balance
+- Takes ~1 week to set up
+
+**Option B — JVZoo (simpler short-term)**
+- Link users to a separate JVZoo product page for each pack
+- JVZoo IPN fires → coins added to balance
+- No Stripe account needed, but worse UX (leaves the app)
+
+> ⚠️ DECISION NEEDED: Which option, and when?
+> Recommendation: Launch without coin recharge. Add it in v1.1 after first sales. Users who need more coins can upgrade their plan via JVZoo for now.
 
 ---
 
@@ -319,15 +357,15 @@ If built now:
 
 ## 9. OPEN DECISIONS (resolve before building)
 
-| # | Decision | Options | Recommendation |
-|---|----------|---------|----------------|
-| 1 | Do FE users get monthly coin resets? | One-time 50 / Monthly 50 | One-time — drives upgrades |
-| 2 | Does Professional stack with FE limits? | Yes / No — Agency overrides both | Yes, stacks. Agency = all-in-one |
-| 3 | When to build Stripe coin recharge? | Now / Post-launch | Post-launch |
-| 4 | JVZoo product IDs | TBD when funnel built | Confirm when creating products in JVZoo |
-| 5 | Show coin balance to trial users? | Yes / No | Yes — let them see what they'd get |
-| 6 | Grace period when plan expires? | 7 days / Immediate | 7-day grace, then downgrade to `fe` |
-| 7 | What happens to existing rules if downgraded past limit? | Lock (can't edit) / Delete | Lock — never delete user data |
+| # | Decision | Status | Resolution |
+|---|----------|--------|------------|
+| 1 | Coin resets? | ✅ LOCKED | No resets — lifetime quota per plan |
+| 2 | Downgrade — lock or delete? | ✅ LOCKED | Lock — never delete user data |
+| 3 | Does Professional stack with FE limits? | ✅ LOCKED | Yes, stacks. Agency = all-in-one |
+| 4 | JVZoo product IDs | ⏳ TBD | Confirm when creating products in JVZoo dashboard |
+| 5 | Show coin balance to trial users? | ⏳ DECIDE | Yes — let them see what they'd get |
+| 6 | Grace period when plan expires (yearly plans)? | ⏳ DECIDE | Recommendation: 7-day grace, then lock to `fe` limits |
+| 7 | Build coin recharge (Stripe) before or after launch? | ⏳ DECIDE | See Section 7 — needs your call |
 
 ---
 
