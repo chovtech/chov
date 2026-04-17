@@ -1004,7 +1004,8 @@
     "loading": "Chargement des analytiques...",
     "error": "Impossible de charger les analytiques.",
     "project_analytics_title": "Analytiques du projet",
-    "workspace_analytics_title": "Analytiques de l'espace de travail"
+    "workspace_analytics_title": "Analytiques de l'espace de travail",
+    "workspace_subtitle": "Analytiques de tous les projets de votre espace de travail."
   },
   "library": {
     "title": "Médiathèque",

@@ -1004,7 +1004,8 @@
     "loading": "Loading analytics...",
     "error": "Could not load analytics.",
     "project_analytics_title": "Project Analytics",
-    "workspace_analytics_title": "Workspace Analytics"
+    "workspace_analytics_title": "Workspace Analytics",
+    "workspace_subtitle": "Analytics across all projects in your workspace."
   },
   "library": {
     "title": "Media Library",
