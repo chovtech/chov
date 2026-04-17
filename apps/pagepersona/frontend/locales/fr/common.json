@@ -385,7 +385,7 @@
       "heading": "Blocs de contenu",
       "subheading": "Votre bibliothèque d éléments de page — utilisée par l IA et les modèles pour générer des règles.",
       "pick_elements": "Sélectionner des éléments",
-      "import_from_rules": "Importer {count} sélecteur(s) non enregistré(s)",
+      "import_from_rules": "Importer {count} depuis les règles",
       "filter_all": "Tous",
       "filter_healthy": "Actifs",
       "filter_not_setup": "Non configurés",

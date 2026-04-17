@@ -385,7 +385,7 @@
       "heading": "Content Blocks",
       "subheading": "Your page element library — used by AI and templates to generate personalisation rules.",
       "pick_elements": "Pick elements from page",
-      "import_from_rules": "Import {count} unregistered selector(s)",
+      "import_from_rules": "Import {count} from rules",
       "filter_all": "All",
       "filter_healthy": "Healthy",
       "filter_not_setup": "Not set up",

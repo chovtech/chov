@@ -324,7 +324,7 @@ async def import_blocks_from_rules(
     await require_admin_or_owner(db, current_user['id'], str(project['workspace_id']))
 
     rules = await db.fetch(
-        "SELECT actions FROM rules WHERE project_id = $1",
+        "SELECT name, actions FROM rules WHERE project_id = $1",
         project['id']
     )
 
@@ -338,6 +338,7 @@ async def import_blocks_from_rules(
     custom_blocks = list(scan.get('custom_blocks', []))
     imported = 0
     for rule in rules:
+        rule_name = rule['name'] or 'Rule'
         actions = rule['actions']
         if isinstance(actions, str):
             try:
@@ -346,10 +347,13 @@ async def import_blocks_from_rules(
                 continue
         for action in (actions or []):
             sel = action.get('target_block', '')
-            if sel and sel not in existing_selectors:
-                custom_blocks.append({"selector": sel, "label": sel, "type": "custom"})
-                existing_selectors.add(sel)
-                imported += 1
+            if not sel or sel in existing_selectors:
+                continue
+            action_type = action.get('type', '').replace('_', ' ').title()
+            label = f"{rule_name} — {action_type}" if action_type else rule_name
+            custom_blocks.append({"selector": sel, "label": label, "type": "custom"})
+            existing_selectors.add(sel)
+            imported += 1
 
     scan['custom_blocks'] = custom_blocks
 
