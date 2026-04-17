@@ -256,9 +256,9 @@ CREATE TABLE IF NOT EXISTS workspace_ai_settings (
 CREATE TABLE IF NOT EXISTS ai_coins (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     workspace_id    UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
-    balance         INTEGER NOT NULL DEFAULT 100,
-    lifetime_earned INTEGER NOT NULL DEFAULT 100,
-    last_reset_at   TIMESTAMPTZ,
+    balance         INTEGER NOT NULL DEFAULT 0,
+    lifetime_earned INTEGER NOT NULL DEFAULT 0,
+    last_reset_at   TIMESTAMPTZ DEFAULT NOW(),
     created_at      TIMESTAMPTZ DEFAULT NOW(),
     updated_at      TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(workspace_id)
@@ -272,7 +272,7 @@ CREATE TABLE IF NOT EXISTS ai_coin_transactions (
     coins_deducted      INTEGER NOT NULL,
     claude_tokens_used  INTEGER,
     fal_image_generated BOOLEAN DEFAULT FALSE,
-    metadata            JSONB,
+    metadata            JSONB DEFAULT '{}',
     created_at          TIMESTAMPTZ DEFAULT NOW()
 );
 
