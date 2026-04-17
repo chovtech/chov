@@ -3,9 +3,13 @@
 > Last updated: 2026-04-17
 
 ### Locked decisions
-- ✅ **No monthly coin resets** — coins are a lifetime quota per plan. Use them, they're gone. Buy more if needed.
+- ✅ **No monthly coin resets** — coins are a lifetime quota per plan. Use them, they're gone. Buy more via PayPal recharge packs.
 - ✅ **Never delete on downgrade** — lock access to over-limit items, never delete user data.
 - ✅ **Bundle (Fastpass) = Agency plan** — $297 all-access bundle gives same access as Agency (500 coins, all features).
+- ✅ **7-day grace on plan expiry** — send warning email when plan expires; 7-day grace before locking to FE limits.
+- ✅ **Show coin balance to all users including trial** — visible in topbar immediately on signup.
+- ✅ **Coin recharge via PayPal** — standalone coin top-up packs sold via PayPal (not Stripe, not JVZoo OTOs).
+- ✅ **DFY = service OTO, no software entitlement change** — JVZoo IPN triggers email to Chike only; no plan upgrade in app.
 
 ---
 
@@ -105,6 +109,26 @@
 | DFY promo website template | ✅ |
 
 > **Agency includes everything.** Buying Agency = Unlimited + Professional + Agency in one. No stacking needed.
+
+---
+
+### DFY — OTO 4 ($147 OT)
+> Service purchase — not a software plan. Chike does the work.
+
+| What buyer gets | Detail |
+|----------------|--------|
+| First 3 projects set up | Chike creates projects, adds page URLs, installs script |
+| First 5 rules configured | Chike builds rules per buyer's goals |
+| White-label branding installed | Logo, brand color, domain applied |
+| 1-hour live onboarding call | Zoom call — screen share, walkthrough, Q&A |
+| Slots | 20/month — hard cap, reopens next month |
+
+**In the app:** DFY buyer gets no plan change. They already have FE (minimum) when they buy DFY. What triggers:
+- Chike receives email: "DFY slot claimed — [name] [email]"
+- Buyer receives confirmation: "Your DFY setup has been booked — Chike will contact you within 24 hours"
+- Chike manually schedules call + does the setup work
+
+**No backend entitlement change.** DFY is Chike's time, not software.
 
 ---
 
@@ -227,15 +251,17 @@ The webhook at `POST /api/webhooks/jvzoo` creates a new account when someone pur
 > ⚠️ DECISION NEEDED: Confirm product IDs when funnel is set up in JVZoo.
 > These are placeholders — replace with real JVZoo product IDs before launch.
 
-| JVZoo Product | plan value | coins to seed |
-|---------------|-----------|--------------|
-| FE (product ID: TBD) | `fe` | 50 |
-| Bundle Bump / Fastpass (product ID: TBD) | `agency` | 500 |
-| OTO 1 Unlimited (product ID: TBD) | `unlimited` | 200 |
-| OTO 2 Professional (product ID: TBD) | `professional` | 200 |
-| OTO 3 Agency (product ID: TBD) | `agency` | 500 |
+| JVZoo Product | plan value | coins to seed | Notes |
+|---------------|-----------|--------------|-------|
+| FE (product ID: TBD) | `fe` | 50 | |
+| Bundle Bump / Fastpass (product ID: TBD) | `agency` | 500 | Maps to agency — includes everything |
+| OTO 1 Unlimited (product ID: TBD) | `unlimited` | 200 | |
+| OTO 2 Professional (product ID: TBD) | `professional` | 200 | |
+| OTO 3 Agency (product ID: TBD) | `agency` | 500 | |
+| OTO 4 DFY (product ID: TBD) | **no plan change** | 0 | Email Chike only — service delivery, not software |
 
-> **Bundle note:** Bundle sends one IPN. Map it to `agency` — same as buying all OTOs individually. If user already has a higher plan, coins are NOT re-seeded (use plan hierarchy check).
+> **Bundle note:** Bundle sends one IPN. Map it to `agency`. If user already has a higher plan, coins are NOT re-seeded.
+> **DFY note:** DFY is a service. No entitlement row created. Backend emails Chike with buyer details + triggers confirmation email to buyer.
 
 ### Upgraded IPN flow
 ```
@@ -305,7 +331,7 @@ Apr 16       Popup Content    -5
 
 ## 7. COIN RECHARGE PACKS
 
-When a user runs out of coins, they can buy more without upgrading their plan. These are **standalone purchases** — not OTOs, not subscriptions.
+When a user runs out of coins, they can buy more without touching their plan. These are **standalone purchases** — completely separate from the JVZoo funnel.
 
 | Pack | Coins | Price |
 |------|-------|-------|
@@ -314,26 +340,62 @@ When a user runs out of coins, they can buy more without upgrading their plan. T
 | Pro | 2,000 | $67 |
 | Agency | 10,000 | $197 |
 
-### How payment works
-These packs are sold inside the app (on the Billing tab), NOT through the JVZoo funnel. They need a card payment processor. The two options:
+### Payment processor — PayPal
+Chike has PayPal but not Stripe. PayPal supports one-time checkout with IPN (Instant Payment Notification) — same pattern as JVZoo IPN.
 
-**Option A — Stripe (recommended for packs)**
-- User clicks "Buy 500 coins — $27" in the app
-- Backend creates a Stripe Checkout session (one-time payment, no subscription)
-- Stripe redirects back after payment → webhook fires → coins added to balance
-- Takes ~1 week to set up
+**Flow:**
+1. User clicks "Buy 500 coins — $27" on Billing tab
+2. Redirected to PayPal checkout (PayPal-hosted page)
+3. User pays → PayPal sends IPN to `POST /api/webhooks/paypal`
+4. Backend verifies IPN → adds coins to workspace balance → logs transaction
 
-**Option B — JVZoo (simpler short-term)**
-- Link users to a separate JVZoo product page for each pack
-- JVZoo IPN fires → coins added to balance
-- No Stripe account needed, but worse UX (leaves the app)
+**What we need to build:**
+- PayPal product/button for each pack (set up in PayPal dashboard — no code)
+- `POST /api/webhooks/paypal` endpoint (verifies + credits coins)
+- Billing tab UI — coin pack picker + PayPal redirect links
 
-> ⚠️ DECISION NEEDED: Which option, and when?
-> Recommendation: Launch without coin recharge. Add it in v1.1 after first sales. Users who need more coins can upgrade their plan via JVZoo for now.
+> **Build timing:** Post-launch. At launch, users who run out can upgrade their plan via JVZoo.
+> Add PayPal recharge in v1.1 once first sales validate the model.
 
 ---
 
-## 8. IMPLEMENTATION ORDER
+## 8. PLAN EXPIRY — YEARLY PLANS
+
+Unlimited ($67/year), Professional ($47/year), and Agency ($197/year) are recurring. When they don't renew:
+
+### Expiry flow
+```
+JVZoo sends cancellation/refund IPN → OR expires_at date passes
+
+Day 0 (expiry):   Send "Your plan has expired" email
+                  Update entitlement status = 'expired'
+                  Start 7-day grace period
+
+Day 7 (grace end): Lock down to FE limits
+                   Do NOT delete projects/rules/popups over the limit
+                   Show "Plan expired — upgrade to unlock" banner in app
+                   Locked items shown greyed out with lock icon
+
+User renews:       JVZoo sends new IPN → reactivate entitlement → remove locks
+```
+
+### What "locked" means in practice
+- Projects 6+ → listed but can't edit/activate (read-only)
+- Rules 11+ in a project → listed but `is_active` forced to false
+- Popups 11+ → listed but can't be attached to new rules
+- Client accounts → still exist, clients can't be invited to new ones (over 0 limit)
+- No data deleted ever
+
+### Expiry emails
+| Timing | Email |
+|--------|-------|
+| 7 days before expiry | "Your plan renews in 7 days — [renew link]" |
+| Day of expiry | "Your plan has expired — renew to keep full access" |
+| Day 7 (grace end) | "Your account has been limited — some features are now locked" |
+
+---
+
+## 11. IMPLEMENTATION ORDER
 
 ### Phase 1 — Gate the product (before launch)
 1. `entitlement_service.py` — `get_plan()`, `check_limit()` functions
@@ -355,21 +417,22 @@ These packs are sold inside the app (on the Billing tab), NOT through the JVZoo 
 
 ---
 
-## 9. OPEN DECISIONS (resolve before building)
+## 10. OPEN DECISIONS (resolve before building)
 
 | # | Decision | Status | Resolution |
 |---|----------|--------|------------|
 | 1 | Coin resets? | ✅ LOCKED | No resets — lifetime quota per plan |
 | 2 | Downgrade — lock or delete? | ✅ LOCKED | Lock — never delete user data |
-| 3 | Does Professional stack with FE limits? | ✅ LOCKED | Yes, stacks. Agency = all-in-one |
-| 4 | JVZoo product IDs | ⏳ TBD | Confirm when creating products in JVZoo dashboard |
-| 5 | Show coin balance to trial users? | ⏳ DECIDE | Yes — let them see what they'd get |
-| 6 | Grace period when plan expires (yearly plans)? | ⏳ DECIDE | Recommendation: 7-day grace, then lock to `fe` limits |
-| 7 | Build coin recharge (Stripe) before or after launch? | ⏳ DECIDE | See Section 7 — needs your call |
+| 3 | Professional stacking with FE? | ✅ LOCKED | Yes, stacks. Agency = all-in-one |
+| 4 | Plan expiry grace period | ✅ LOCKED | 7 days + 3 emails (7 days before, day of, day 7) |
+| 5 | Show coins to trial users | ✅ LOCKED | Yes — visible in topbar from signup |
+| 6 | DFY handling | ✅ LOCKED | Email Chike + confirm buyer. No entitlement change |
+| 7 | Coin recharge payment | ✅ LOCKED | PayPal IPN. Build post-launch (v1.1) |
+| 8 | JVZoo product IDs | ⏳ TBD | Fill in when creating products in JVZoo |
 
 ---
 
-## 10. WHAT IS ALREADY BUILT
+## 12. WHAT IS ALREADY BUILT
 
 | Item | Status |
 |------|--------|
