@@ -411,6 +411,28 @@ All emails: EN + FR bilingual (where applicable), SES via boto3, `noreply@usepag
 
 ---
 
+## HANDOVER — Session ending 2026-04-17
+
+### What was completed today
+1. **AI Module tests** (`tests/test_ai.py`) — 30 new automated tests covering: coin balance, coin history, brand knowledge CRUD, brand extract (mocked), project description extract (mocked), CopyWriter variants + coin deduction + error handling, Popup Generator + style defaults, Rule Suggester + signal validation, Image Generator + R2 save + dimension clamping (all external calls mocked).
+2. **Full schema SQL** (`database/schema/full.sql`) — Complete local DB bootstrap script (19 tables + indexes). Required because local chov-db Docker container was empty. Apply with: `docker exec -i chov-db psql -U chov -d chov < ~/chov/database/schema/full.sql`
+3. **Total test count: 145 / 145 passing** (was 115 before this session).
+4. **TESTING.md updated** — Module 13 automated tests section added; progress summary updated.
+
+### State of the codebase right now
+- All 145 tests passing
+- AI module fully tested (CopyWriter, Popup Generator, Rule Suggester, Image Generator, Brand Extract, Project Describe, Coin service)
+- Branch: `main`
+
+### Where to pick up next
+**Next feature: Billing & Entitlements enforcement**
+- Wire plan limits: per-plan coin allocations, feature gating by plan
+- JVZoo IPN → auto-upgrade entitlement → reseed coins
+- Entitlement check middleware for plan-locked features
+- Settings → Billing tab showing real plan + coin usage
+
+---
+
 ## HANDOVER — Session ending 2026-04-16
 
 ### What was completed today

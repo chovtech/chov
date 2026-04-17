@@ -816,8 +816,9 @@
 | 10. Agency / Client | 48 / 49 (WP plugin branding pending) | 0 | 20 / 20 ✅ |
 | 11. Team | ✅ All 52 items | 11 bugs (all fixed) | 15 / 15 ✅ |
 | 12. Media Library | ✅ All 16 items | 1 (fixed) | 12 / 12 ✅ |
+| 13. AI Module | Partial (see 13.1–13.15) | 1 (fixed) | 30 / 30 ✅ |
 
-**Total automated tests: 115 / 115 passing**
+**Total automated tests: 145 / 145 passing**
 
 
 
@@ -1058,3 +1059,37 @@
 ### 13.16 — Analytics Insights *(not yet built)*
 ### 13.17 — Rule Creation Hub — AI Path *(not yet built)*
 ### 13.18 — AI Rule Suggestions *(not yet built)*
+
+---
+
+### Automated Tests — `tests/test_ai.py`
+- [x] `test_coins_balance_returns_shape` — GET /api/ai/coins returns expected keys
+- [x] `test_coins_balance_initial_trial` — new workspace has 20 coins, plan=trial, not unlimited
+- [x] `test_coins_history_initially_empty` — fresh workspace has no transaction history
+- [x] `test_coins_unauthenticated_returns_401` — coin endpoints require auth
+- [x] `test_get_brand_empty_for_new_workspace` — brand GET returns {} before first save
+- [x] `test_save_and_retrieve_brand` — PUT saves all brand fields; GET retrieves them
+- [x] `test_save_brand_overwrites_on_second_put` — second PUT replaces first (no duplicate rows)
+- [x] `test_brand_extract_returns_fields` — POST /api/ai/brand/extract returns brand knowledge shape (mocked AI + HTTP)
+- [x] `test_brand_extract_invalid_url_returns_422` — unreachable URL returns 422
+- [x] `test_project_describe_returns_description` — POST /api/ai/project/extract-description returns text (mocked)
+- [x] `test_project_describe_deducts_3_coins` — project describe costs 3 coins
+- [x] `test_write_copy_returns_3_variants` — POST /api/ai/copy/write returns 3 variants with text + rationale (mocked)
+- [x] `test_write_copy_deducts_5_coins` — balance decrements by 5 after generation
+- [x] `test_write_copy_logs_transaction` — write_copy transaction appears in coin history
+- [x] `test_write_copy_insufficient_coins_returns_402` — 402 with insufficient_coins detail when balance < 5
+- [x] `test_write_copy_bad_ai_response_returns_502` — non-JSON AI response → 502
+- [x] `test_write_copy_with_project_context` — project_id passed → project description loaded as context
+- [x] `test_popup_generate_returns_blocks` — POST /api/ai/popup/generate returns layout + bg_color + blocks (mocked)
+- [x] `test_popup_generate_deducts_5_coins` — balance decrements by 5
+- [x] `test_popup_generate_applies_style_defaults` — headline blocks have font_size 24, font_weight 800
+- [x] `test_popup_generate_bad_ai_response_returns_502` — malformed AI JSON → 502
+- [x] `test_rule_suggest_returns_rules` — POST /api/ai/rules/suggest returns rules list with valid shape (mocked)
+- [x] `test_rule_suggest_deducts_15_coins` — balance decrements by 15
+- [x] `test_rule_suggest_unknown_project_returns_404` — project not in workspace → 404
+- [x] `test_rule_suggest_validates_signals_and_actions` — invalid signals stripped; only valid rules survive
+- [x] `test_image_generate_returns_url_and_balance` — POST /api/ai/image/generate returns URL + dimensions + balance (mocked fal + R2)
+- [x] `test_image_generate_deducts_10_coins` — balance decrements by 10
+- [x] `test_image_generate_saved_to_asset_library` — generated URL appears in /api/assets
+- [x] `test_image_generate_fal_failure_returns_502` — fal.ai exception → 502
+- [x] `test_image_generate_clamps_dimensions` — dimensions clamped to 256–2048, multiples of 8
