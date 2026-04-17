@@ -261,25 +261,17 @@ export default function RulesPage() {
                 </div>
               )}
             </div>
-            <div className="relative">
-              <div className={`flex items-center rounded-xl shadow-md shadow-brand/20 overflow-hidden ${!project?.script_verified ? 'opacity-40' : ''}`}>
-                <button
-                  onClick={() => { if (project?.script_verified) router.push("/dashboard/projects/" + projectId + "/rules/new") }}
-                  disabled={!project?.script_verified}
-                  className="flex items-center gap-2 pl-5 pr-4 py-2.5 bg-brand text-white text-sm font-bold hover:bg-brand/90 disabled:cursor-not-allowed transition-all">
-                  <Icon name="add" className="text-base" />
-                  {t("rules.new_rule")}
-                </button>
-                <div className="w-px h-8 bg-white/20" />
-                <button
-                  onClick={() => { if (project?.script_verified) setNewRuleDropdown(v => !v) }}
-                  disabled={!project?.script_verified}
-                  className="flex items-center px-2.5 py-2.5 bg-brand text-white hover:bg-brand/90 disabled:cursor-not-allowed transition-all">
-                  <Icon name="expand_more" className="text-base" />
-                </button>
-              </div>
+            <div className="relative group">
+              <button
+                onClick={() => { if (project?.script_verified) setNewRuleDropdown(v => !v) }}
+                disabled={!project?.script_verified}
+                className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white text-sm font-bold rounded-xl shadow-md shadow-brand/20 hover:bg-brand/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                <Icon name="add" className="text-base" />
+                {t("rules.new_rule")}
+                <Icon name="expand_more" className="text-base" />
+              </button>
               {!project?.script_verified && (
-                <div className="absolute bottom-full right-0 mb-2 w-64 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg pointer-events-none z-10 text-center">
+                <div className="absolute bottom-full right-0 mb-2 w-64 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 text-center">
                   {t('project.verify_first')}
                   <div className="absolute top-full right-4 border-4 border-transparent border-t-slate-900" />
                 </div>
