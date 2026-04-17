@@ -1,6 +1,6 @@
 # DONE.md — PagePersona Completed Features
 > Living document. Updated from actual backend endpoints + local DB.
-> Last updated: 2026-04-14
+> Last updated: 2026-04-17
 
 ---
 
@@ -60,6 +60,7 @@
 | `/api/workspaces/{id}` | PATCH | Rename workspace; update white-label (brand name, logo, color); update custom domain |
 | `/api/workspaces/{id}` | DELETE | Delete workspace — cascades invites + members via FK |
 | `/api/workspaces/{id}/clients` | GET | List client workspaces for agency |
+| `/api/workspaces/{id}/complete-onboarding` | POST | Mark onboarding as complete — sets `onboarding_completed = true` |
 | `/api/workspaces/{id}/verify-domain` | POST | DNS verification — checks A record points to `app.usepagepersona.com` |
 
 **Stats subqueries on GET list:** `project_count`, `active_rules_count`, `sessions_this_month`, `last_activity`
@@ -82,8 +83,17 @@
 | `/api/projects/{id}` | DELETE | Delete project — with confirmation modal |
 | `/api/projects/{id}/wordpress-plugin` | GET | Download branded WordPress plugin ZIP (uses agency brand name + domain) |
 | `/api/projects/{id}/send-install-email` | POST | Send script install instructions email to developer (branded per agency) |
+| `/api/projects/{id}/scan` | POST | Trigger page re-scan (async) — preserves existing custom_blocks |
+| `/api/projects/{id}/scan/custom-blocks` | POST | Add a custom content block (CSS selector) to page_scan |
+| `/api/projects/{id}/scan/custom-blocks/{selector}` | DELETE | Remove a custom block from page_scan |
+| `/api/projects/{id}/scan/bulk-add-blocks` | POST | Add multiple blocks in one write — skips duplicates |
+| `/api/projects/{id}/scan/blocks/{selector}` | PUT | Update a block's label/type — moves to custom_blocks |
+| `/api/projects/{id}/scan/blocks/{selector}` | DELETE | Remove a block from any category array |
+| `/api/projects/{id}/scan/import-from-rules` | POST | Import rule `target_block` selectors as custom blocks |
 
 **Script:** Unique `PP-XXXXXX` identifier per project; verified by backend fetching page and checking for script tag
+
+**Page scan:** `page_scan JSONB` on projects stores `{headings, ctas, images, sections, custom_blocks}` arrays — populated by async scan; managed via scan endpoints above
 
 **Frontend:** Project dashboard with Overview tab (status, rules count, install modal) + Analytics tab; status toggle (Draft ↔ Active); thumbnail upload
 
@@ -342,7 +352,7 @@ All emails: EN + FR bilingual (where applicable), SES via boto3, `noreply@usepag
 
 | Item | Detail |
 |------|--------|
-| `ai_coins` table | Balance per workspace, default 100 coins, `last_reset_at` |
+| `ai_coins` table | Balance per workspace — `balance` default `0`, set to plan allocation by `seed_coins()` on signup; `lifetime_earned` tracks total ever earned |
 | `ai_coin_transactions` table | Full audit log — `action_type`, `coins_deducted`, `claude_tokens_used`, `fal_image_generated`, `metadata` |
 | `coin_service.py` | `get_balance()`, `check_coins()`, `deduct_coins()` — owner plan always bypasses |
 | Coin balance in topbar | Live badge, updates via `coinsUpdated` custom DOM event after every AI action |
@@ -385,6 +395,11 @@ All emails: EN + FR bilingual (where applicable), SES via boto3, `noreply@usepag
 - Two-column: AI returns `left_blocks` + `right_blocks` → backend wraps in `columns` block
 - Loads into popup editor — user fills image slots, wires countdown, saves
 
+### AI Rule Suggestions (`POST /api/ai/rules/suggest`) — 15 coins
+- User types a natural-language goal → Sonnet reads page scan (selectors from `page_scan` JSONB) + brand knowledge → returns 3–5 ready rules with conditions + actions
+- Backend validates all signals + action types; strips invalid ones before returning
+- Frontend: Rule Creation Hub — 3-path entry (Manual, Template, AI)
+
 ### Technical Stack (locked)
 | Layer | Choice |
 |-------|--------|
@@ -401,9 +416,7 @@ All emails: EN + FR bilingual (where applicable), SES via boto3, `noreply@usepag
 ### Remaining AI Features
 | # | Feature | Where | Notes |
 |---|---------|--------|-------|
-| 1 | **Rule Creation Hub** | New rule entry point | 3 paths: Manual (unchanged), Template (goal → pre-built rule), AI (goal → scans page → ready rules) |
-| 2 | **AI Rule Suggestions** | Project overview / rule list | Contextual nudges from traffic + analytics |
-| 3 | **Analytics Insights** | Analytics page per project | Plain-English story from rule fires + visitor breakdown |
+| 1 | **Analytics Insights** | Analytics page per project | Plain-English story from rule fires + visitor breakdown |
 
 ### After AI module complete
 - Entitlements / plan limits enforcement (coin allocations per plan)
