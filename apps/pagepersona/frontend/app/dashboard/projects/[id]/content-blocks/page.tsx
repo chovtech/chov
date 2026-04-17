@@ -190,13 +190,18 @@ export default function ContentBlocksPage() {
 
   const handleBulkDelete = async () => {
     if (selected.size === 0) return
+    const count = selected.size
     setBulkDeleting(true)
     try {
-      await Promise.all([...selected].map(sel => projectApi.deleteBlock(projectId, sel)))
-      const res = await projectApi.get(projectId)
-      setScan(res.data.page_scan)
+      // Sequential — each call reads the scan written by the previous one
+      let lastScan = scan
+      for (const sel of selected) {
+        const res = await projectApi.deleteBlock(projectId, sel)
+        lastScan = res.data.page_scan
+      }
+      setScan(lastScan)
       setSelected(new Set())
-      showToast(`${selected.size} block(s) removed`)
+      showToast(`${count} block(s) removed`)
     } catch {} finally {
       setBulkDeleting(false)
     }
