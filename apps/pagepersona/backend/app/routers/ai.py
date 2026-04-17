@@ -815,6 +815,12 @@ async def suggest_rules(
         "SELECT * FROM workspace_ai_settings WHERE workspace_id = $1", workspace["id"]
     )
 
+    # ── Fetch existing rules ──────────────────────────────────────────────────
+    existing_rules = await db.fetch(
+        "SELECT name, conditions, actions FROM rules WHERE project_id = $1 ORDER BY priority",
+        uuid_mod.UUID(body.project_id)
+    )
+
     # ── Build context strings ─────────────────────────────────────────────────
     brand_lines = []
     if brand_row:
@@ -846,7 +852,16 @@ async def suggest_rules(
     for cb in (page_scan.get("custom_blocks") or []):
         elem_lines.append(f"  custom [{cb.get('selector')}]: \"{cb.get('label','')}\"")
 
-    elements_context = "\n".join(elem_lines) if elem_lines else "  No scan data — use generic selectors like h1, .btn-primary, .hero"
+    elements_context = "\n".join(elem_lines) if elem_lines else "  No content blocks yet — use generic selectors like h1, .btn-primary, .hero"
+
+    existing_rules_lines = []
+    for r in existing_rules:
+        conditions = r["conditions"] if isinstance(r["conditions"], list) else (json.loads(r["conditions"]) if r["conditions"] else [])
+        actions = r["actions"] if isinstance(r["actions"], list) else (json.loads(r["actions"]) if r["actions"] else [])
+        signals = ", ".join(c.get("signal", "") for c in conditions) if conditions else "—"
+        acts = ", ".join(a.get("type", "") for a in actions) if actions else "—"
+        existing_rules_lines.append(f"  - \"{r['name']}\" (signals: {signals} → actions: {acts})")
+    existing_rules_context = "\n".join(existing_rules_lines) if existing_rules_lines else "  None yet"
 
     prompt = f"""You are an expert at website personalisation. Analyse the following page and suggest 3–5 ready-to-use personalisation rules.
 
@@ -856,6 +871,9 @@ async def suggest_rules(
 
 ## Detected page elements
 {elements_context}
+
+## Already-created rules (DO NOT duplicate these signals or actions)
+{existing_rules_context}
 
 ## Available signals
 - visit_count: number — operators: is greater than, is less than, equals
@@ -883,9 +901,10 @@ async def suggest_rules(
 ## Rules
 1. Return ONLY a valid JSON array — no prose, no markdown, no explanation.
 2. Use real selectors from the page elements above wherever possible.
-3. If a selector is a guess (not from page scan), use common patterns like h1, .btn-primary, #hero.
+3. If a selector is a guess (not from content blocks), use common patterns like h1, .btn-primary, #hero.
 4. For show_popup actions, always leave value as "".
 5. Make rules practical and business-relevant.
+6. Do NOT suggest rules that duplicate signals already covered in the already-created rules list above.
 
 ## Required JSON format
 Return exactly this structure:
