@@ -9,6 +9,8 @@ Endpoints:
   POST /api/ai/brand/extract    — extract brand profile from website URL (free, Sonnet)
   POST /api/ai/copy/write       — generate 3 copy variants for a swap_text action
   POST /api/ai/image/generate   — generate an image via fal.ai Flux Dev, upload to R2, save to assets
+  POST /api/ai/popup/generate   — generate a full popup layout + blocks from a goal description
+  POST /api/ai/rules/suggest    — suggest 3–5 personalisation rules based on page scan + brand context
 """
 from fastapi import APIRouter, Depends, Query, HTTPException
 from pydantic import BaseModel
@@ -766,3 +768,229 @@ async def generate_image(
         "height": height,
         "balance": new_balance,
     }
+
+
+# ── Rule Suggestion ───────────────────────────────────────────────────────────
+
+class RuleSuggestRequest(BaseModel):
+    workspace_id: Optional[str] = None
+    project_id: str
+
+
+@router.post("/rules/suggest")
+async def suggest_rules(
+    body: RuleSuggestRequest,
+    current_user: dict = Depends(get_current_user),
+    db: asyncpg.Connection = Depends(get_db),
+):
+    """
+    Use Claude Sonnet to analyse the project's page scan + description + brand context
+    and return 3–5 ready-to-use rule suggestions.
+    Costs 15 AI coins.
+    """
+    import uuid as uuid_mod
+
+    workspace = await get_accessible_workspace(db, current_user["id"], body.workspace_id)
+    ws_id = str(workspace["id"])
+
+    await check_coins(ws_id, "rule_creation_ai", db)
+
+    # ── Fetch project ─────────────────────────────────────────────────────────
+    project = await db.fetchrow(
+        "SELECT * FROM projects WHERE id = $1 AND workspace_id = $2",
+        uuid_mod.UUID(body.project_id), workspace["id"]
+    )
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    page_scan = project.get("page_scan") or {}
+    if isinstance(page_scan, str):
+        try:
+            page_scan = json.loads(page_scan)
+        except Exception:
+            page_scan = {}
+
+    # ── Fetch brand knowledge ─────────────────────────────────────────────────
+    brand_row = await db.fetchrow(
+        "SELECT * FROM workspace_ai_settings WHERE workspace_id = $1", workspace["id"]
+    )
+
+    # ── Build context strings ─────────────────────────────────────────────────
+    brand_lines = []
+    if brand_row:
+        if brand_row.get("brand_name"):
+            brand_lines.append(f"Brand: {brand_row['brand_name']}")
+        if brand_row.get("industry"):
+            brand_lines.append(f"Industry: {brand_row['industry']}")
+        if brand_row.get("tone_of_voice"):
+            brand_lines.append(f"Tone: {brand_row['tone_of_voice']}")
+        if brand_row.get("target_audience"):
+            brand_lines.append(f"Audience: {brand_row['target_audience']}")
+        if brand_row.get("key_benefits"):
+            brand_lines.append(f"Key benefits: {brand_row['key_benefits']}")
+        if brand_row.get("about_brand"):
+            brand_lines.append(f"About: {brand_row['about_brand'][:200]}")
+
+    description_line = f"Page description: {project['description']}" if project.get("description") else ""
+
+    # Build page element summary
+    elem_lines = []
+    for h in (page_scan.get("headings") or [])[:4]:
+        elem_lines.append(f"  heading [{h.get('selector')}]: \"{h.get('text','')}\"")
+    for c in (page_scan.get("ctas") or [])[:4]:
+        elem_lines.append(f"  cta [{c.get('selector')}]: \"{c.get('text','')}\"")
+    for img in (page_scan.get("images") or [])[:3]:
+        elem_lines.append(f"  image [{img.get('selector')}]: alt=\"{img.get('alt','')}\"")
+    for s in (page_scan.get("sections") or [])[:4]:
+        elem_lines.append(f"  section [{s.get('selector')}]: \"{s.get('preview','')}\"")
+    for cb in (page_scan.get("custom_blocks") or []):
+        elem_lines.append(f"  custom [{cb.get('selector')}]: \"{cb.get('label','')}\"")
+
+    elements_context = "\n".join(elem_lines) if elem_lines else "  No scan data — use generic selectors like h1, .btn-primary, .hero"
+
+    prompt = f"""You are an expert at website personalisation. Analyse the following page and suggest 3–5 ready-to-use personalisation rules.
+
+## Page context
+{description_line}
+{chr(10).join(brand_lines)}
+
+## Detected page elements
+{elements_context}
+
+## Available signals
+- visit_count: number — operators: is greater than, is less than, equals
+- time_on_page: seconds — operators: is greater than, is less than
+- scroll_depth: 0-100 % — operators: is greater than, is less than
+- exit_intent: operators: is detected (no value needed)
+- visitor_type: select: new / returning — operator: is
+- utm_source: text — operators: is, contains
+- utm_medium: text — operators: is, contains
+- utm_campaign: text — operators: is, contains
+- referrer_url: text — operators: contains, is
+- query_param: text — operators: contains, is
+- device_type: select: mobile / tablet / desktop — operator: is
+- geo_country: country name e.g. "United States" — operator: is
+
+## Available actions
+- swap_text: CSS selector + replacement text (leave as plain string, not JSON)
+- swap_image: CSS selector + image URL (leave value as empty string if no image)
+- hide_section: CSS selector + empty value
+- show_element: CSS selector + empty value
+- swap_url: CSS selector + new URL
+- show_popup: no selector needed, leave value as empty string
+- insert_countdown: CSS selector + empty string
+
+## Rules
+1. Return ONLY a valid JSON array — no prose, no markdown, no explanation.
+2. Use real selectors from the page elements above wherever possible.
+3. If a selector is a guess (not from page scan), use common patterns like h1, .btn-primary, #hero.
+4. For show_popup actions, always leave value as "".
+5. Make rules practical and business-relevant.
+
+## Required JSON format
+Return exactly this structure:
+[
+  {{
+    "name": "...",
+    "description": "one sentence — why this rule helps",
+    "conditions": [{{"signal": "...", "operator": "...", "value": "..."}}],
+    "condition_operator": "AND",
+    "actions": [{{"type": "...", "target_block": "...", "value": "..."}}]
+  }}
+]"""
+
+    # ── Call Claude Sonnet ────────────────────────────────────────────────────
+    client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+    message = client.messages.create(
+        model=AI_MODEL_SMART,
+        max_tokens=2048,
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    raw = message.content[0].text.strip()
+    tokens_used = message.usage.input_tokens + message.usage.output_tokens
+
+    # ── Parse + validate ──────────────────────────────────────────────────────
+    try:
+        # Strip markdown code fences if present
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        suggestions = json.loads(raw)
+        if not isinstance(suggestions, list):
+            raise ValueError("Expected list")
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"AI returned invalid JSON: {str(e)}")
+
+    VALID_SIGNALS = {
+        "visit_count", "time_on_page", "scroll_depth", "exit_intent",
+        "visitor_type", "utm_source", "utm_medium", "utm_campaign",
+        "referrer_url", "query_param", "device_type", "operating_system",
+        "browser", "geo_country", "day_time",
+    }
+    VALID_ACTIONS = {
+        "swap_text", "swap_image", "hide_section", "show_element",
+        "swap_url", "show_popup", "insert_countdown",
+    }
+    VALID_OPERATORS = {
+        "is", "is not", "is greater than", "is less than", "equals",
+        "contains", "is between", "is detected",
+    }
+
+    clean = []
+    for rule in suggestions[:5]:
+        if not isinstance(rule, dict):
+            continue
+        name = str(rule.get("name") or "").strip()[:100] or "AI Rule"
+        description = str(rule.get("description") or "").strip()[:200]
+        cond_op = "AND" if rule.get("condition_operator", "AND") == "AND" else "OR"
+
+        conditions = []
+        for c in (rule.get("conditions") or []):
+            if not isinstance(c, dict):
+                continue
+            sig = c.get("signal", "")
+            op = c.get("operator", "")
+            val = str(c.get("value") or "")
+            if sig not in VALID_SIGNALS or op not in VALID_OPERATORS:
+                continue
+            conditions.append({"signal": sig, "operator": op, "value": val})
+
+        actions = []
+        for a in (rule.get("actions") or []):
+            if not isinstance(a, dict):
+                continue
+            atype = a.get("type", "")
+            if atype not in VALID_ACTIONS:
+                continue
+            actions.append({
+                "type": atype,
+                "target_block": str(a.get("target_block") or "")[:200],
+                "value": str(a.get("value") or "")[:500],
+            })
+
+        if not conditions or not actions:
+            continue
+
+        clean.append({
+            "name": name,
+            "description": description,
+            "conditions": conditions,
+            "condition_operator": cond_op,
+            "actions": actions,
+        })
+
+    if not clean:
+        raise HTTPException(status_code=422, detail="AI could not generate valid rules for this page.")
+
+    # ── Deduct coins ──────────────────────────────────────────────────────────
+    new_balance = await deduct_coins(
+        workspace_id=ws_id,
+        action_type="rule_creation_ai",
+        db=db,
+        claude_tokens_used=tokens_used,
+        metadata={"project_id": body.project_id, "rules_count": len(clean)},
+    )
+
+    return {"rules": clean, "balance": new_balance}

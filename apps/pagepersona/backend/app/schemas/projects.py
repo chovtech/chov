@@ -21,6 +21,7 @@ class ProjectResponse(BaseModel):
     status: str
     thumbnail_url: Optional[str] = None
     description: Optional[str] = None
+    page_scan: Optional[dict] = None
     created_at: datetime
     updated_at: datetime
     class Config:

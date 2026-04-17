@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 import asyncpg
+import asyncio
 import io
 import zipfile
 import re
@@ -16,6 +17,7 @@ from app.services.project_service import (
     create_project, get_projects, get_project,
     update_project, delete_project
 )
+from app.services.page_scan_service import run_scan_and_save
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
@@ -38,6 +40,8 @@ async def create(
         platform=body.platform,
         description=body.description,
     )
+    # Fire page scan in background — doesn't block the response
+    asyncio.create_task(run_scan_and_save(str(project['id']), body.page_url))
     return project
 
 
@@ -127,6 +131,15 @@ async def update(
     )
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+
+    # Re-scan when script is being verified (page is now live with SDK)
+    if body.script_verified is True:
+        scan_url = body.page_url or existing['page_url']
+        existing_custom = []
+        if existing.get('page_scan') and isinstance(existing['page_scan'], dict):
+            existing_custom = existing['page_scan'].get('custom_blocks', [])
+        asyncio.create_task(run_scan_and_save(project_id, scan_url, existing_custom))
+
     return project
 
 
@@ -146,6 +159,94 @@ async def delete(
     if not deleted:
         raise HTTPException(status_code=404, detail="Project not found")
     return {"message": "Project deleted"}
+
+
+@router.post("/{project_id}/scan")
+async def trigger_scan(
+    project_id: str,
+    db: asyncpg.Connection = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Manually trigger a page re-scan. Preserves existing custom_blocks."""
+    project = await _get_accessible_project(db, project_id, current_user['id'])
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    await require_admin_or_owner(db, current_user['id'], str(project['workspace_id']))
+
+    existing_custom = []
+    if project.get('page_scan') and isinstance(project['page_scan'], dict):
+        existing_custom = project['page_scan'].get('custom_blocks', [])
+
+    asyncio.create_task(run_scan_and_save(project_id, project['page_url'], existing_custom))
+    return {"message": "Scan started"}
+
+
+class CustomBlockAdd(BaseModel):
+    selector: str
+    label: str
+
+
+@router.post("/{project_id}/scan/custom-blocks")
+async def add_custom_block(
+    project_id: str,
+    body: CustomBlockAdd,
+    db: asyncpg.Connection = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Add a user-defined content block (CSS selector) to the page scan."""
+    project = await _get_accessible_project(db, project_id, current_user['id'])
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    await require_admin_or_owner(db, current_user['id'], str(project['workspace_id']))
+
+    scan = project.get('page_scan') or {}
+    if isinstance(scan, str):
+        import json
+        scan = json.loads(scan)
+    custom_blocks = list(scan.get('custom_blocks', []))
+
+    # Avoid duplicates
+    if any(b['selector'] == body.selector for b in custom_blocks):
+        return {"page_scan": scan}
+
+    custom_blocks.append({"selector": body.selector, "label": body.label, "type": "custom"})
+    scan['custom_blocks'] = custom_blocks
+
+    import json
+    await db.execute(
+        "UPDATE projects SET page_scan = $1 WHERE id = $2",
+        json.dumps(scan),
+        project['id']
+    )
+    return {"page_scan": scan}
+
+
+@router.delete("/{project_id}/scan/custom-blocks/{selector:path}")
+async def remove_custom_block(
+    project_id: str,
+    selector: str,
+    db: asyncpg.Connection = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Remove a custom content block from the page scan."""
+    project = await _get_accessible_project(db, project_id, current_user['id'])
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    await require_admin_or_owner(db, current_user['id'], str(project['workspace_id']))
+
+    scan = project.get('page_scan') or {}
+    if isinstance(scan, str):
+        import json
+        scan = json.loads(scan)
+    scan['custom_blocks'] = [b for b in scan.get('custom_blocks', []) if b['selector'] != selector]
+
+    import json
+    await db.execute(
+        "UPDATE projects SET page_scan = $1 WHERE id = $2",
+        json.dumps(scan),
+        project['id']
+    )
+    return {"page_scan": scan}
 
 
 @router.get("/{project_id}/wordpress-plugin")

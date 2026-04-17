@@ -262,7 +262,7 @@ export default function RulesPage() {
             </div>
             <div className="relative group">
               <button
-                onClick={() => { if (project?.script_verified) router.push("/dashboard/projects/" + projectId + "/rules/new") }}
+                onClick={() => { if (project?.script_verified) router.push("/dashboard/projects/" + projectId + "/rules/create") }}
                 disabled={!project?.script_verified}
                 className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white text-sm font-bold rounded-xl shadow-md shadow-brand/20 hover:bg-brand/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
                 <Icon name="add" className="text-base" />
@@ -432,12 +432,9 @@ export default function RulesPage() {
             <p className="text-sm text-slate-500 max-w-md mb-8">{t("rules.empty_desc")}</p>
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <button
-                onClick={() => router.push("/dashboard/projects/" + projectId + "/rules/new")}
+                onClick={() => router.push("/dashboard/projects/" + projectId + "/rules/create")}
                 className="flex items-center gap-2 px-6 py-2.5 bg-brand text-white text-sm font-bold rounded-xl shadow-lg shadow-brand/20 hover:bg-brand/90 transition-all">
                 {t("rules.empty_cta")}
-              </button>
-              <button className="flex items-center gap-2 px-6 py-2.5 border border-slate-200 bg-white text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-50 transition-all">
-                {t("rules.browse_templates")}
               </button>
             </div>
             <div className="mt-12 flex items-center gap-8 text-slate-400">

@@ -85,7 +85,7 @@ async def update_project(
     **kwargs
 ) -> dict | None:
     # Build SET clause dynamically from provided kwargs
-    allowed = {'name', 'status', 'script_verified', 'page_url', 'thumbnail_url', 'platform', 'description'}
+    allowed = {'name', 'status', 'script_verified', 'page_url', 'thumbnail_url', 'platform', 'description', 'page_scan'}
     fields = {k: v for k, v in kwargs.items() if k in allowed and v is not None}
     if not fields:
         return await get_project(db, project_id, workspace_id)

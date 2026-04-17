@@ -918,6 +918,10 @@ export default function ProjectDashboardPage() {
                 <div className="flex items-center gap-3"><Icon name="edit_note" className="text-slate-400 group-hover:text-brand transition-colors" /><span className="text-sm font-semibold text-slate-700">{t('project.actions.setup_rules')}</span></div>
                 <Icon name="chevron_right" className="text-slate-300 group-hover:text-brand transition-colors" />
               </a>}
+              {!isViewOnly && <a href={'/dashboard/projects/' + project.id + '/content-blocks'} className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-brand/30 transition-all">
+                <div className="flex items-center gap-3"><Icon name="grid_view" className="text-slate-400 group-hover:text-brand transition-colors" /><span className="text-sm font-semibold text-slate-700">{t('project.actions.content_blocks')}</span></div>
+                <Icon name="chevron_right" className="text-slate-300 group-hover:text-brand transition-colors" />
+              </a>}
               {!isViewOnly && <button onClick={() => setShowInstall(true)} className="w-full flex items-center justify-between group p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-brand/30 transition-all">
                 <div className="flex items-center gap-3"><Icon name="code" className="text-slate-400 group-hover:text-brand transition-colors" /><span className="text-sm font-semibold text-slate-700">Installation</span></div>
                 <Icon name="chevron_right" className="text-slate-300 group-hover:text-brand transition-colors" />

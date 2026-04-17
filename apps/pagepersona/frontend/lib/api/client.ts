@@ -137,6 +137,12 @@ export const projectApi = {
     apiClient.put(`/api/projects/${id}`, data),
   delete: (id: string) =>
     apiClient.delete(`/api/projects/${id}`),
+  triggerScan: (id: string) =>
+    apiClient.post(`/api/projects/${id}/scan`),
+  addCustomBlock: (id: string, data: { selector: string; label: string }) =>
+    apiClient.post(`/api/projects/${id}/scan/custom-blocks`, data),
+  removeCustomBlock: (id: string, selector: string) =>
+    apiClient.delete(`/api/projects/${id}/scan/custom-blocks/${encodeURIComponent(selector)}`),
   downloadWordPressPlugin: async (id: string) => {
     const res = await apiClient.get(`/api/projects/${id}/wordpress-plugin`, { responseType: 'blob' })
     const url = window.URL.createObjectURL(new Blob([res.data]))
@@ -280,6 +286,8 @@ export const aiApi = {
     apiClient.post('/api/ai/image/generate', data),
   generatePopup: (data: { workspace_id?: string; project_id?: string; goal: string }) =>
     apiClient.post('/api/ai/popup/generate', data),
+  suggestRules: (data: { workspace_id?: string; project_id: string }) =>
+    apiClient.post('/api/ai/rules/suggest', data),
 }
 
 // Rules API
