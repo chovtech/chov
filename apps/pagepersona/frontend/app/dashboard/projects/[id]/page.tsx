@@ -549,17 +549,15 @@ export default function ProjectDashboardPage() {
   const activeRulesCount = rules.filter((r: any) => r.is_active).length
   const personalisationRate = analyticsData?.headline?.personalisation_rate ?? null
 
-  // Recent activity derived from real data
+  // Recent activity — up to 5 items from rules performance + recent visits interleaved
   const activityItems: { bg: string; color: string; icon: string; title: string; desc: string; time: string }[] = []
-  if (analyticsData?.rules_performance?.length > 0) {
-    const top = analyticsData.rules_performance[0]
-    activityItems.push({ bg: 'bg-blue-100', color: 'text-blue-600', icon: 'bolt', title: `"${top.name}" fired`, desc: `${top.fires.toLocaleString()} times across ${top.unique_sessions.toLocaleString()} sessions`, time: '' })
+  for (const r of (analyticsData?.rules_performance || []).slice(0, 3)) {
+    activityItems.push({ bg: 'bg-blue-100', color: 'text-blue-600', icon: 'bolt', title: `"${r.name}" fired`, desc: `${r.fires.toLocaleString()} times · ${r.unique_sessions.toLocaleString()} sessions`, time: '' })
   }
-  if (analyticsData?.recent_visits?.length > 0) {
-    const v = analyticsData.recent_visits[0]
-    activityItems.push({ bg: 'bg-slate-100', color: 'text-slate-600', icon: 'person', title: `Visitor from ${v.country || 'Unknown'}`, desc: `${v.device} · ${v.is_new_visitor ? 'New visitor' : 'Returning visitor'}${v.rule_name ? ` · Rule: ${v.rule_name}` : ''}`, time: v.last_active || '' })
+  for (const v of (analyticsData?.recent_visits || []).slice(0, 3)) {
+    activityItems.push({ bg: 'bg-slate-100', color: 'text-slate-600', icon: 'person', title: `Visitor from ${v.country || 'Unknown'}`, desc: `${v.device} · ${v.is_new_visitor ? 'New' : 'Returning'}${v.rule_name ? ` · ${v.rule_name}` : ''}`, time: v.last_active || '' })
   }
-  if (project?.script_verified && activityItems.length < 2) {
+  if (project?.script_verified && activityItems.length === 0) {
     activityItems.push({ bg: 'bg-emerald-100', color: 'text-emerald-600', icon: 'check_circle', title: 'Script verified', desc: 'PagePersona is live and tracking visitors on your page', time: '' })
   }
   if (activityItems.length === 0) {
@@ -1033,7 +1031,7 @@ export default function ProjectDashboardPage() {
                   <th className="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('project.visitors.view_all')}</th>
                 </tr></thead>
                 <tbody className="divide-y divide-slate-100">
-                  {analyticsData.recent_visits.map((v: any, i: number) => (
+                  {analyticsData.recent_visits.slice(0, 5).map((v: any, i: number) => (
                     <tr key={i} className="hover:bg-slate-50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
