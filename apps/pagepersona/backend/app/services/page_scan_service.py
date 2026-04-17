@@ -141,7 +141,7 @@ async def run_scan_and_save(project_id: str, url: str, preserve_custom: list = N
     pool = await get_pool()
     async with pool.acquire() as db:
         await db.execute(
-            "UPDATE projects SET page_scan = $1 WHERE id = $2",
+            "UPDATE projects SET page_scan = $1::jsonb WHERE id = $2",
             json.dumps(result),
             uuid_mod.UUID(project_id)
         )

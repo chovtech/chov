@@ -214,7 +214,7 @@ async def add_custom_block(
 
     import json
     await db.execute(
-        "UPDATE projects SET page_scan = $1 WHERE id = $2",
+        "UPDATE projects SET page_scan = $1::jsonb WHERE id = $2",
         json.dumps(scan),
         project['id']
     )
@@ -242,7 +242,7 @@ async def remove_custom_block(
 
     import json
     await db.execute(
-        "UPDATE projects SET page_scan = $1 WHERE id = $2",
+        "UPDATE projects SET page_scan = $1::jsonb WHERE id = $2",
         json.dumps(scan),
         project['id']
     )

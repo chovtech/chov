@@ -1,7 +1,8 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, field_validator
 from typing import Optional
 from datetime import datetime
 import uuid
+import json
 
 class ProjectCreate(BaseModel):
     name: str
@@ -24,6 +25,17 @@ class ProjectResponse(BaseModel):
     page_scan: Optional[dict] = None
     created_at: datetime
     updated_at: datetime
+
+    @field_validator('page_scan', mode='before')
+    @classmethod
+    def parse_page_scan(cls, v):
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except Exception:
+                return None
+        return v
+
     class Config:
         from_attributes = True
 
