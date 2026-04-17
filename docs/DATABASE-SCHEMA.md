@@ -4,7 +4,7 @@
 **Local:** `postgresql://chov:chov_dev_password@localhost:5432/chov` (Docker: `chov-db`)
 **VPS:** `postgresql://chov:chov_dev_password@localhost/chov`
 
-All 16 tables exist locally and on VPS. `countdowns` is owned by `postgres` on VPS (not `chov`) — functionally fine.
+All 19 tables exist locally and on VPS. `countdowns` is owned by `postgres` on VPS (not `chov`) — functionally fine.
 
 ---
 
@@ -48,6 +48,7 @@ All 16 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | brand_name | TEXT | Legacy — do not use; use `white_label_brand_name` |
 | logo_url | TEXT | Legacy — do not use; use `white_label_logo` |
 | brand_color | TEXT | Legacy — do not use; use `white_label_primary_color` |
+| onboarding_completed | BOOLEAN NOT NULL | Default `false` — set via `POST /api/workspaces/{id}/complete-onboarding` |
 | created_at | TIMESTAMPTZ | Default `now()` |
 | updated_at | TIMESTAMPTZ | Default `now()` |
 
@@ -93,8 +94,8 @@ All 16 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | id | UUID PK | Default `gen_random_uuid()` |
 | workspace_id | UUID FK → workspaces NOT NULL | UNIQUE per (workspace_id, product_id) |
 | product_id | VARCHAR(100) NOT NULL | e.g. `pagepersona` |
-| plan | VARCHAR(100) NOT NULL | `fe`, `unlimited`, `professional`, `agency`, `owner` |
-| source | VARCHAR(50) NOT NULL | `jvzoo`, `stripe`, `internal` |
+| plan | VARCHAR(100) NOT NULL | `trial`, `fe`, `unlimited`, `professional`, `agency`, `owner` |
+| source | VARCHAR(50) NOT NULL | `direct` (signup), `jvzoo`, `stripe` |
 | status | VARCHAR(50) NOT NULL | `active`, `expired`, `cancelled` — default `active` |
 | affiliate_id | VARCHAR(255) | Nullable — JVZoo affiliate ref |
 | purchased_at | TIMESTAMPTZ | Default `now()` |
@@ -170,7 +171,8 @@ All 16 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | script_verified | BOOLEAN | Default `false` |
 | status | VARCHAR(50) NOT NULL | `draft`, `active` — default `draft` |
 | thumbnail_url | TEXT | R2 URL |
-| description | TEXT | AI context — what the page sells/does. Required at creation. Used by CopyWriter and Image Generator for project-specific copy. |
+| description | TEXT | AI context — what the page sells/does. Used by CopyWriter and Image Generator. |
+| page_scan | JSONB | Scanned page structure: `{headings, ctas, images, sections, custom_blocks}` arrays |
 | created_at | TIMESTAMPTZ | Default `now()` |
 | updated_at | TIMESTAMPTZ | Default `now()` |
 
@@ -296,8 +298,9 @@ All 16 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 |--------|------|-------|
 | id | UUID PK | Default `gen_random_uuid()` |
 | workspace_id | UUID FK → workspaces NOT NULL | UNIQUE per workspace |
-| balance | INTEGER NOT NULL | Current coin balance — default `100` |
-| last_reset_at | TIMESTAMPTZ | When coins were last topped up |
+| balance | INTEGER NOT NULL | Current spendable balance — default `0`; set by `seed_coins()` on signup |
+| lifetime_earned | INTEGER NOT NULL | Total coins ever earned — default `0`; set by `seed_coins()` |
+| last_reset_at | TIMESTAMPTZ | Default `now()` — updated when coins are topped up |
 | created_at | TIMESTAMPTZ | Default `now()` |
 | updated_at | TIMESTAMPTZ | Default `now()` |
 
