@@ -199,7 +199,7 @@ export default function AiSuggestPage() {
 
             {blockCount === 0 && (
               <button
-                onClick={() => router.push(`/dashboard/projects/${projectId}/content-blocks`)}
+                onClick={() => router.push(`/dashboard/projects/${projectId}/block-picker`)}
                 className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-brand hover:underline"
               >
                 <Icon name="add_box" className="text-base" />
