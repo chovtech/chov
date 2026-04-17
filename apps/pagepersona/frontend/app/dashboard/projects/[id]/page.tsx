@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
-import { projectApi, apiClient, aiApi } from '@/lib/api/client'
+import { projectApi, rulesApi, apiClient, aiApi } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
 import AssetLibrary from '@/components/ui/AssetLibrary'
 import {
@@ -468,14 +468,19 @@ export default function ProjectDashboardPage() {
   const [analyticsData, setAnalyticsData] = useState<any>(null)
   const [analyticsLoading, setAnalyticsLoading] = useState(false)
   const [analyticsError, setAnalyticsError] = useState(false)
+  const [rules, setRules] = useState<any[]>([])
 
   useEffect(() => {
     if (!projectId || workspaceLoading) return
     const fetchProject = async () => {
       try {
-        const res = await projectApi.get(projectId)
+        const [res, rulesRes] = await Promise.all([
+          projectApi.get(projectId),
+          rulesApi.list(projectId).catch(() => ({ data: [] })),
+        ])
         const p = res.data
         setProject(p)
+        setRules(rulesRes.data || [])
         // Silent background re-verify — only if previously verified
         if (p.script_verified) {
           apiClient.post(`/api/sdk/verify/${projectId}`)
@@ -537,10 +542,45 @@ export default function ProjectDashboardPage() {
     }
   }
 
-  const activityItems = [
-    { bg: 'bg-blue-100', color: 'text-blue-600', icon: 'bolt', title: 'No rules fired yet', desc: 'Rules will appear here once active and visitors arrive', time: '' },
-    { bg: 'bg-emerald-100', color: 'text-emerald-600', icon: 'check_circle', title: 'Script installed', desc: 'PagePersona script was verified on your page', time: 'Just now' },
-  ]
+  const todayStr = new Date().toISOString().split('T')[0]
+  const todaySeries = analyticsData?.daily_series?.find((d: any) => d.date === todayStr)
+  const visitsToday = todaySeries?.visits ?? 0
+  const rulesFiredToday = todaySeries?.rules_fired ?? 0
+  const activeRulesCount = rules.filter((r: any) => r.is_active).length
+  const personalisationRate = analyticsData?.headline?.personalisation_rate ?? null
+
+  // Recent activity derived from real data
+  const activityItems: { bg: string; color: string; icon: string; title: string; desc: string; time: string }[] = []
+  if (analyticsData?.rules_performance?.length > 0) {
+    const top = analyticsData.rules_performance[0]
+    activityItems.push({ bg: 'bg-blue-100', color: 'text-blue-600', icon: 'bolt', title: `"${top.name}" fired`, desc: `${top.fires.toLocaleString()} times across ${top.unique_sessions.toLocaleString()} sessions`, time: '' })
+  }
+  if (analyticsData?.recent_visits?.length > 0) {
+    const v = analyticsData.recent_visits[0]
+    activityItems.push({ bg: 'bg-slate-100', color: 'text-slate-600', icon: 'person', title: `Visitor from ${v.country || 'Unknown'}`, desc: `${v.device} · ${v.is_new_visitor ? 'New visitor' : 'Returning visitor'}${v.rule_name ? ` · Rule: ${v.rule_name}` : ''}`, time: v.last_active || '' })
+  }
+  if (project?.script_verified && activityItems.length < 2) {
+    activityItems.push({ bg: 'bg-emerald-100', color: 'text-emerald-600', icon: 'check_circle', title: 'Script verified', desc: 'PagePersona is live and tracking visitors on your page', time: '' })
+  }
+  if (activityItems.length === 0) {
+    activityItems.push({ bg: 'bg-blue-100', color: 'text-blue-600', icon: 'bolt', title: 'No activity yet', desc: 'Rules will appear here once active and visitors arrive', time: '' })
+  }
+
+  // Contextual AI tip
+  let aiTipText = t('project.ai_tips.tip1')
+  let aiTipAction = t('project.ai_tips.action1')
+  let aiTipRoute = `/dashboard/projects/${projectId}/rules/ai-suggest`
+  if (rules.length === 0) {
+    aiTipText = 'You have no rules yet. Generate your first personalisation rules with AI — it takes seconds.'
+    aiTipAction = 'Generate with AI'
+  } else if (analyticsData?.rules_performance?.length > 0) {
+    const top = analyticsData.rules_performance[0]
+    aiTipText = `"${top.name}" is your top rule with ${top.fires} fires. Generate more rules to cover additional visitor segments.`
+    aiTipAction = 'Generate more rules'
+  } else {
+    aiTipText = 'Your rules are live. Generate additional rules to personalise for more visitor segments.'
+    aiTipAction = 'Generate with AI'
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
@@ -876,17 +916,19 @@ export default function ProjectDashboardPage() {
         {/* Overview Tab */}
         {activeTab === 'overview' && <><div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
           {[
-            { label: t('project.stats.active_rules'), value: '0', delta: '0%', deltaColor: 'text-slate-400' },
-            { label: t('project.stats.sessions_today'), value: '0', delta: '+0%', deltaColor: 'text-emerald-500' },
-            { label: t('project.stats.conversions_today'), value: '0', delta: '+0%', deltaColor: 'text-emerald-500' },
-            { label: t('project.stats.conversion_lift'), value: '—', delta: '', deltaColor: '' },
+            { label: t('project.stats.active_rules'), value: activeRulesCount.toString(), icon: 'bolt' },
+            { label: t('project.stats.sessions_today'), value: visitsToday.toLocaleString(), icon: 'visibility' },
+            { label: t('project.stats.rules_fired_today'), value: rulesFiredToday.toLocaleString(), icon: 'settings_suggest' },
+            { label: t('project.stats.personalisation_rate'), value: personalisationRate !== null ? personalisationRate + '%' : '—', icon: 'auto_awesome' },
           ].map((stat) => (
             <div key={stat.label} className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-              <p className="text-slate-500 text-sm font-medium mb-2">{stat.label}</p>
-              <div className="flex items-baseline justify-between">
-                <h3 className="text-3xl font-bold text-slate-900">{stat.value}</h3>
-                {stat.delta && <span className={'text-sm font-medium ' + stat.deltaColor}>{stat.delta}</span>}
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center">
+                  <Icon name={stat.icon} className="text-brand text-base" />
+                </div>
+                <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider">{stat.label}</p>
               </div>
+              <h3 className="text-3xl font-bold text-slate-900">{stat.value}</h3>
             </div>
           ))}
         </div>
@@ -965,10 +1007,14 @@ export default function ProjectDashboardPage() {
             )}
           </div>
           <div className="bg-gradient-to-br from-brand to-blue-700 p-6 rounded-xl text-white shadow-lg shadow-brand/20 flex flex-col">
-            <Icon name="lightbulb" className="text-3xl mb-4" />
+            <Icon name="auto_awesome" className="text-3xl mb-4" />
             <h5 className="font-bold text-lg mb-2">{t('project.ai_tips.heading')}</h5>
-            <p className="text-blue-100 text-sm leading-relaxed mb-6 flex-1">{t('project.ai_tips.tip1')}</p>
-            <button className="bg-white/20 hover:bg-white/30 transition-colors text-white py-2.5 px-4 rounded-xl text-sm font-bold w-full backdrop-blur-sm">{t('project.ai_tips.action1')}</button>
+            <p className="text-blue-100 text-sm leading-relaxed mb-6 flex-1">{aiTipText}</p>
+            <button
+              onClick={() => router.push(aiTipRoute)}
+              className="bg-white/20 hover:bg-white/30 transition-colors text-white py-2.5 px-4 rounded-xl text-sm font-bold w-full backdrop-blur-sm">
+              {aiTipAction}
+            </button>
           </div>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-8">

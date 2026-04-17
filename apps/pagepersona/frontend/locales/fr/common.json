@@ -366,8 +366,8 @@
     "stats": {
       "active_rules": "Règles actives",
       "sessions_today": "Sessions aujourd hui",
-      "conversions_today": "Conversions aujourd hui",
-      "conversion_lift": "Gain de conversion"
+      "rules_fired_today": "Règles déclenchées aujourd'hui",
+      "personalisation_rate": "Taux de personnalisation"
     },
     "actions": {
       "setup_rules": "Configurer les règles",

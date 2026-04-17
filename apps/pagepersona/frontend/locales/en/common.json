@@ -366,8 +366,8 @@
     "stats": {
       "active_rules": "Active Rules",
       "sessions_today": "Sessions Today",
-      "conversions_today": "Conversions Today",
-      "conversion_lift": "Conversion Lift"
+      "rules_fired_today": "Rules Fired Today",
+      "personalisation_rate": "Personalisation Rate"
     },
     "actions": {
       "setup_rules": "Set Up Rules",
