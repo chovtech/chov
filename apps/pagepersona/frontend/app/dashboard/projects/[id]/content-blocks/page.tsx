@@ -238,18 +238,16 @@ export default function ContentBlocksPage() {
   // ── Drag to reclassify ─────────────────────────────────────────────────────
 
   const handleDrop = async (newType: string) => {
-    if (!dragSelector || dragSelector === '' || newType === dragOverType) {
-      setDragSelector(null); setDragOverType(null); return
-    }
-    const block = allBlocks.find(b => b.selector === dragSelector)
-    if (!block) { setDragSelector(null); setDragOverType(null); return }
-    if (block.type === newType) { setDragSelector(null); setDragOverType(null); return }
+    const sel = dragSelector
+    setDragSelector(null); setDragOverType(null)
+    if (!sel) return
+    const block = allBlocks.find(b => b.selector === sel)
+    if (!block || block.type === newType) return
     try {
-      const res = await projectApi.updateBlock(projectId, dragSelector, { label: block.label, type: newType })
+      const res = await projectApi.updateBlock(projectId, sel, { label: block.label, type: newType })
       setScan(res.data.page_scan)
       showToast(`Moved to ${TYPE_META[newType]?.label || newType}`)
     } catch {}
-    setDragSelector(null); setDragOverType(null)
   }
 
   // ──────────────────────────────────────────────────────────────────────────
