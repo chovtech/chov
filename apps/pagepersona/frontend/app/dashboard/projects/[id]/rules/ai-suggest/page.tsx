@@ -63,7 +63,11 @@ export default function AiSuggestPage() {
   useEffect(() => {
     projectApi.get(projectId).then((res: any) => {
       setProject(res.data)
-      setHasScan(!!(res.data.page_scan?.headings?.length || res.data.page_scan?.ctas?.length))
+      const scan = res.data.page_scan || {}
+      setHasScan(!!(
+        scan.headings?.length || scan.ctas?.length ||
+        scan.images?.length || scan.sections?.length || scan.custom_blocks?.length
+      ))
     }).catch(() => {})
 
     if (activeWorkspace?.id) {
@@ -175,14 +179,14 @@ export default function AiSuggestPage() {
               <div>
                 <p className={'text-xs font-bold ' + (hasScan ? 'text-emerald-700' : 'text-amber-700')}>
                   {hasScan
-                    ? 'Page scan available — AI will use your actual page elements'
-                    : 'No page scan yet — AI will use project description only'}
+                    ? 'Content blocks set up — AI will use your actual page elements'
+                    : 'No content blocks yet — AI will use project description only'}
                 </p>
                 {!hasScan && (
                   <p className="text-xs text-amber-600 mt-0.5">
                     For better results,{' '}
                     <a href={`/dashboard/projects/${projectId}/content-blocks`} className="font-bold underline">
-                      scan your page first
+                      add content blocks first
                     </a>
                     .
                   </p>

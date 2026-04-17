@@ -510,7 +510,7 @@
     "mode_manual_desc": "Build a rule from scratch. Full control over every condition and action.",
     "mode_template": "From a Goal",
     "mode_template_desc": "Pick a conversion goal and get 2–4 preset rules that work together.",
-    "mode_ai": "AI Suggest",
+    "mode_ai": "Generate with AI",
     "mode_ai_desc": "AI analyses your page and suggests rules based on your content.",
     "mode_ai_coins": "15 coins",
     "template_heading": "What is your goal?",

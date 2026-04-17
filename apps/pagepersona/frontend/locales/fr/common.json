@@ -510,7 +510,7 @@
     "mode_manual_desc": "Construisez une règle de zéro. Contrôle total sur chaque condition et action.",
     "mode_template": "Par objectif",
     "mode_template_desc": "Choisissez un objectif de conversion et obtenez 2 à 4 règles prédéfinies qui fonctionnent ensemble.",
-    "mode_ai": "Suggestion IA",
+    "mode_ai": "Générer avec IA",
     "mode_ai_desc": "L IA analyse votre page et suggère des règles basées sur votre contenu.",
     "mode_ai_coins": "15 pièces",
     "template_heading": "Quel est votre objectif ?",
