@@ -139,10 +139,16 @@ export const projectApi = {
     apiClient.delete(`/api/projects/${id}`),
   triggerScan: (id: string) =>
     apiClient.post(`/api/projects/${id}/scan`),
-  addCustomBlock: (id: string, data: { selector: string; label: string }) =>
+  addCustomBlock: (id: string, data: { selector: string; label: string; type?: string }) =>
     apiClient.post(`/api/projects/${id}/scan/custom-blocks`, data),
   removeCustomBlock: (id: string, selector: string) =>
     apiClient.delete(`/api/projects/${id}/scan/custom-blocks/${encodeURIComponent(selector)}`),
+  updateBlock: (id: string, selector: string, data: { label: string; type: string }) =>
+    apiClient.put(`/api/projects/${id}/scan/blocks/${encodeURIComponent(selector)}`, data),
+  deleteBlock: (id: string, selector: string) =>
+    apiClient.delete(`/api/projects/${id}/scan/blocks/${encodeURIComponent(selector)}`),
+  importBlocksFromRules: (id: string) =>
+    apiClient.post(`/api/projects/${id}/scan/import-from-rules`),
   downloadWordPressPlugin: async (id: string) => {
     const res = await apiClient.get(`/api/projects/${id}/wordpress-plugin`, { responseType: 'blob' })
     const url = window.URL.createObjectURL(new Blob([res.data]))
