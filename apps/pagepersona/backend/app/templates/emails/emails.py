@@ -148,3 +148,53 @@ def render_jvzoo_welcome(firstname: str, magic_link: str, lang: str = "en") -> t
       <p style="color:#64748b;font-size:14px">{t['footer']}</p>
     """, lang)
     return t["subject"], html
+
+
+def render_project_report(
+    sender_name: str,
+    project_name: str,
+    project_url: str,
+    report_url: str,
+    message: str,
+    snapshot: dict,
+    brand_name: str = "PagePersona",
+    brand_color: str = "#1A56DB",
+) -> tuple[str, str]:
+    """Email sent to report recipient — summary in body, link to full public report."""
+    total_visits    = snapshot.get("total_visits", 0)
+    rules_fired     = snapshot.get("rules_fired", 0)
+    personalisation = snapshot.get("personalisation_rate", 0)
+    period          = snapshot.get("period", 30)
+
+    message_block = f'<p style="background:#f8fafc;border-left:4px solid {brand_color};padding:12px 16px;border-radius:0 8px 8px 0;font-size:14px;color:#334155;margin:16px 0">{message}</p>' if message else ""
+
+    subject = f"{project_name} — Analytics Report"
+    html = base_layout(f"""
+      <h2 style="color:{brand_color}">{brand_name} Analytics Report</h2>
+      <p><strong>{sender_name}</strong> has shared an analytics report for <strong>{project_name}</strong>.</p>
+      {message_block}
+      <table style="width:100%;border-collapse:collapse;margin:20px 0">
+        <tr>
+          <td style="padding:14px;background:#f8fafc;border-radius:8px;text-align:center;width:33%">
+            <div style="font-size:26px;font-weight:900;color:#1e293b">{total_visits}</div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-top:2px">Visits</div>
+          </td>
+          <td style="width:2%"></td>
+          <td style="padding:14px;background:#f8fafc;border-radius:8px;text-align:center;width:33%">
+            <div style="font-size:26px;font-weight:900;color:#1e293b">{rules_fired}</div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-top:2px">Rules Fired</div>
+          </td>
+          <td style="width:2%"></td>
+          <td style="padding:14px;background:#f8fafc;border-radius:8px;text-align:center;width:33%">
+            <div style="font-size:26px;font-weight:900;color:{brand_color}">{personalisation}%</div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;margin-top:2px">Personalised</div>
+          </td>
+        </tr>
+      </table>
+      <p style="font-size:13px;color:#64748b">Data from the last <strong>{period} days</strong> for <a href="{project_url}" style="color:{brand_color}">{project_url}</a></p>
+      <a href="{report_url}" style="display:inline-block;padding:12px 24px;background:{brand_color};color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;margin:20px 0">
+        View Full Report →
+      </a>
+      <p style="color:#94a3b8;font-size:12px">This report was sent to you by {sender_name} via {brand_name}. No account needed to view it.</p>
+    """)
+    return subject, html

@@ -463,6 +463,7 @@ export default function ProjectDashboardPage() {
   const [showDelete, setShowDelete] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
   const [showThumbnailLibrary, setShowThumbnailLibrary] = useState(false)
+  const [showProjectMenu, setShowProjectMenu] = useState(false)
   const [activeTab, setActiveTab] = useState<'overview' | 'analytics'>('overview')
   const [analyticsPeriod, setAnalyticsPeriod] = useState(30)
   const [analyticsData, setAnalyticsData] = useState<any>(null)
@@ -660,13 +661,65 @@ export default function ProjectDashboardPage() {
             </div>
           </div>
           {!isViewOnly && <div className="flex items-center gap-3">
-            {canManageProject && <button onClick={() => setShowDelete(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-200 text-slate-500 bg-white hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all">
-              <Icon name="delete" className="text-base" />{t('project.delete_project')}
-            </button>}
             <button onClick={handlePublishToggle} disabled={publishing} className={project.status === 'active' ? 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 disabled:opacity-50 transition-all' : 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-brand/30 text-brand bg-brand/5 hover:bg-brand/10 disabled:opacity-50 transition-all'}>
               <Icon name={project.status === 'active' ? 'cloud_off' : 'cloud_upload'} className="text-base" />
               {publishing ? '...' : project.status === 'active' ? t('project.unpublish') : t('project.publish')}
             </button>
+
+            {/* 3-dot project menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowProjectMenu(v => !v)}
+                className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors">
+                <Icon name="more_vert" className="text-slate-600 text-lg" />
+              </button>
+              {showProjectMenu && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowProjectMenu(false)} />
+                  <div className="absolute right-0 top-12 z-20 w-56 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 overflow-hidden">
+                    <a href={project.page_url} target="_blank" rel="noopener noreferrer"
+                      onClick={() => setShowProjectMenu(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                      <Icon name="open_in_new" className="text-slate-400 text-base" />
+                      View Live Page
+                    </a>
+                    {canManageProject && (
+                      <button onClick={() => { setShowEdit(true); setShowProjectMenu(false) }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                        <Icon name="edit" className="text-slate-400 text-base" />
+                        Edit Project
+                      </button>
+                    )}
+                    <button onClick={() => { setShowInstall(true); setShowProjectMenu(false) }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                      <Icon name="code" className="text-slate-400 text-base" />
+                      Install Script
+                    </button>
+                    <button onClick={() => { router.push('/dashboard/projects/' + project.id + '/reports'); setShowProjectMenu(false) }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                      <Icon name="send" className="text-slate-400 text-base" />
+                      Send / View Reports
+                    </button>
+                    <button onClick={() => { router.push('/dashboard/projects/' + project.id + '/insights'); setShowProjectMenu(false) }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                      <Icon name="auto_awesome" className="text-slate-400 text-base" />
+                      AI Insights History
+                    </button>
+                    {canManageProject && (
+                      <>
+                        <div className="border-t border-slate-100 my-1" />
+                        <button onClick={() => { setShowDelete(true); setShowProjectMenu(false) }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                          <Icon name="delete" className="text-red-400 text-base" />
+                          Delete Project
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
             <div className="relative group">
               <button
                 onClick={() => { if (project.script_verified) router.push('/dashboard/projects/' + project.id + '/rules') }}

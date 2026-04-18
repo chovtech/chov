@@ -310,6 +310,18 @@ export const aiApi = {
     apiClient.get(`/api/ai/analytics/insights/${projectId}`, { params: workspaceId ? { workspace_id: workspaceId } : {} }),
 }
 
+// Reports API
+export const reportsApi = {
+  create: (projectId: string, data: { recipient_email: string; recipient_name?: string; message?: string; period?: number }) =>
+    apiClient.post(`/api/projects/${projectId}/reports`, data),
+  list: (projectId: string) =>
+    apiClient.get(`/api/projects/${projectId}/reports`),
+  resend: (projectId: string, reportId: string, recipientEmail?: string) =>
+    apiClient.post(`/api/projects/${projectId}/reports/${reportId}/resend`, recipientEmail ? { recipient_email: recipientEmail } : {}),
+  getPublic: (token: string) =>
+    apiClient.get(`/api/reports/${token}`),
+}
+
 // Rules API
 export const rulesApi = {
   create: (projectId: string, data: { name: string; conditions: any[]; condition_operator: string; actions: any[]; priority?: number }) =>
