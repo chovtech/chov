@@ -13,6 +13,7 @@ from app.schemas.projects import ProjectCreate, ProjectResponse, ProjectUpdate
 from app.routers.upload import delete_r2_image
 from app.services.email_service import send_install_email
 from app.core.access import require_admin_or_owner
+from app.core.plan_limits import enforce_plan_limit
 from pydantic import BaseModel, EmailStr
 from app.services.project_service import (
     create_project, get_projects, get_project,
@@ -48,6 +49,7 @@ async def create(
     from app.core.access import get_accessible_workspace
     workspace = await get_accessible_workspace(db, current_user['id'], body.workspace_id or None)
     await require_admin_or_owner(db, current_user['id'], str(workspace['id']))
+    await enforce_plan_limit("projects", str(workspace['id']), db, str(workspace['id']))
 
     project = await create_project(
         db=db,

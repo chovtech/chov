@@ -6,6 +6,7 @@ from app.schemas.rules import RuleCreate, RuleResponse, RuleUpdate
 from app.services.rules_service import (
     create_rule, get_rules, get_rule, update_rule, delete_rule
 )
+from app.core.plan_limits import enforce_plan_limit
 
 router = APIRouter(prefix="/api/projects/{project_id}/rules", tags=["rules"])
 
@@ -37,7 +38,8 @@ async def create(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    await verify_project_access(project_id, current_user, db)
+    project = await verify_project_access(project_id, current_user, db)
+    await enforce_plan_limit("rules_per_project", project_id, db, str(project['workspace_id']))
     rule = await create_rule(
         db=db,
         project_id=project_id,

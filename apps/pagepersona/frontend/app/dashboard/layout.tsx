@@ -7,6 +7,7 @@ import { authApi, authApiExtended } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { WorkspaceProvider, useWorkspace } from '@/lib/context/WorkspaceContext'
 import { WhiteLabelProvider } from '@/lib/context/WhiteLabelContext'
+import PlanLimitModal from '@/components/ui/PlanLimitModal'
 
 function DashboardInner({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation('common')
@@ -98,6 +99,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <WorkspaceProvider>
     <WhiteLabelProvider>
       <DashboardInner>{children}</DashboardInner>
+      <PlanLimitModal />
     </WhiteLabelProvider>
     </WorkspaceProvider>
   )

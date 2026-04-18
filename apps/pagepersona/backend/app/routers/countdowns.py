@@ -5,6 +5,7 @@ from typing import Optional
 from app.database import get_db
 from app.core.security import get_current_user
 from app.core.access import get_accessible_workspace
+from app.core.plan_limits import enforce_plan_limit
 from app.services.countdown_service import (
     create_countdown, get_countdowns, get_countdown, update_countdown, delete_countdown, _parse
 )
@@ -57,6 +58,7 @@ async def create(
     current_user: dict = Depends(get_current_user)
 ):
     workspace = await get_accessible_workspace(db, current_user['id'], body.workspace_id)
+    await enforce_plan_limit("countdowns", str(workspace['id']), db, str(workspace['id']))
     return await create_countdown(
         db, str(workspace['id']), body.name,
         body.ends_at, body.expiry_action, body.expiry_value, body.config

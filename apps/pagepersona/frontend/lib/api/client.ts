@@ -76,6 +76,14 @@ apiClient.interceptors.response.use(
       }
     }
 
+    // Handle 402 — plan limit reached
+    if (error.response?.status === 402 && typeof window !== 'undefined') {
+      const detail = error.response.data?.detail
+      if (detail?.error === 'plan_limit_reached') {
+        window.dispatchEvent(new CustomEvent('plan-limit-reached', { detail }))
+      }
+    }
+
     return Promise.reject(error)
   }
 )

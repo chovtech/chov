@@ -5,6 +5,7 @@ from typing import Optional
 from app.database import get_db
 from app.core.security import get_current_user
 from app.core.access import get_accessible_workspace
+from app.core.plan_limits import enforce_plan_limit
 from app.services.popup_service import (
     create_popup, get_popups, get_popup, update_popup, delete_popup
 )
@@ -62,6 +63,7 @@ async def create(
     current_user: dict = Depends(get_current_user)
 ):
     workspace = await get_accessible_workspace(db, current_user['id'], body.workspace_id)
+    await enforce_plan_limit("popups", str(workspace['id']), db, str(workspace['id']))
     return await create_popup(db, str(workspace['id']), body.name, body.config)
 
 
