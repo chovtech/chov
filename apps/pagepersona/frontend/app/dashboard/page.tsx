@@ -19,6 +19,7 @@ export default function DashboardPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
   const fetchProjects = async () => {
     setLoading(true)
@@ -164,13 +165,40 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center justify-between text-[11px] text-slate-400">
                     <span>{t('dashboard.project_card.edited')} {formatDate(project.updated_at)}</span>
-                    <div className="flex gap-2">
-                      <button className="hover:text-brand transition-colors">
-                        <Icon name="edit" className="text-[18px]" />
-                      </button>
-                      <button className="hover:text-brand transition-colors">
+                    <div className="relative">
+                      <button
+                        onClick={e => { e.preventDefault(); e.stopPropagation(); setOpenMenuId(openMenuId === project.id ? null : project.id) }}
+                        className="hover:text-brand transition-colors p-1">
                         <Icon name="more_vert" className="text-[18px]" />
                       </button>
+                      {openMenuId === project.id && (
+                        <>
+                          <div className="fixed inset-0 z-10" onClick={e => { e.preventDefault(); setOpenMenuId(null) }} />
+                          <div className="absolute right-0 bottom-8 z-20 w-52 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 overflow-hidden">
+                            <a href={`/dashboard/projects/${project.id}`}
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                              <Icon name="visibility" className="text-slate-400 text-base" />
+                              Open Project
+                            </a>
+                            <a href={project.page_url} target="_blank" rel="noopener noreferrer"
+                              onClick={e => e.stopPropagation()}
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                              <Icon name="open_in_new" className="text-slate-400 text-base" />
+                              View Live Page
+                            </a>
+                            <a href={`/dashboard/projects/${project.id}/reports`}
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                              <Icon name="send" className="text-slate-400 text-base" />
+                              Send / View Reports
+                            </a>
+                            <a href={`/dashboard/projects/${project.id}/insights`}
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                              <Icon name="auto_awesome" className="text-slate-400 text-base" />
+                              AI Insights History
+                            </a>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
