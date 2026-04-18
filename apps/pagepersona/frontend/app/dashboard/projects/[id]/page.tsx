@@ -469,6 +469,9 @@ export default function ProjectDashboardPage() {
   const [analyticsLoading, setAnalyticsLoading] = useState(false)
   const [analyticsError, setAnalyticsError] = useState(false)
   const [rules, setRules] = useState<any[]>([])
+  const [insight, setInsight] = useState<{ insight: string; action: string } | null>(null)
+  const [insightLoading, setInsightLoading] = useState(false)
+  const [insightDismissed, setInsightDismissed] = useState(false)
 
   useEffect(() => {
     if (!projectId || workspaceLoading) return
@@ -719,14 +722,21 @@ export default function ProjectDashboardPage() {
           const hasData = d && d.headline.total_visits > 0
           return (
             <div className="space-y-6">
-              {/* Period selector */}
-              <div className="flex items-center justify-end gap-2">
-                {[7, 30, 90].map(p => (
-                  <button key={p} onClick={() => setAnalyticsPeriod(p)}
-                    className={'px-4 py-1.5 text-xs font-semibold rounded-lg border transition-all ' + (analyticsPeriod === p ? 'bg-brand text-white border-brand' : 'bg-white text-slate-600 border-slate-200 hover:border-brand/40')}>
-                    {t(`analytics.period_${p}`)}
-                  </button>
-                ))}
+              {/* Period selector + insights link */}
+              <div className="flex items-center justify-between gap-2">
+                <button
+                  onClick={() => router.push(`/dashboard/projects/${projectId}/insights`)}
+                  className="text-xs text-brand font-semibold hover:underline flex items-center gap-1">
+                  <Icon name="history" className="text-sm" /> Past insights
+                </button>
+                <div className="flex items-center gap-2">
+                  {[7, 30, 90].map(p => (
+                    <button key={p} onClick={() => setAnalyticsPeriod(p)}
+                      className={'px-4 py-1.5 text-xs font-semibold rounded-lg border transition-all ' + (analyticsPeriod === p ? 'bg-brand text-white border-brand' : 'bg-white text-slate-600 border-slate-200 hover:border-brand/40')}>
+                      {t(`analytics.period_${p}`)}
+                    </button>
+                  ))}
+                </div>
               </div>
               {!hasData ? (
                 <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -1005,14 +1015,60 @@ export default function ProjectDashboardPage() {
             )}
           </div>
           <div className="bg-gradient-to-br from-brand to-blue-700 p-6 rounded-xl text-white shadow-lg shadow-brand/20 flex flex-col">
-            <Icon name="auto_awesome" className="text-3xl mb-4" />
-            <h5 className="font-bold text-lg mb-2">{t('project.ai_tips.heading')}</h5>
-            <p className="text-blue-100 text-sm leading-relaxed mb-6 flex-1">{aiTipText}</p>
-            <button
-              onClick={() => router.push(aiTipRoute)}
-              className="bg-white/20 hover:bg-white/30 transition-colors text-white py-2.5 px-4 rounded-xl text-sm font-bold w-full backdrop-blur-sm">
-              {aiTipAction}
-            </button>
+            <div className="flex items-start justify-between mb-3">
+              <Icon name="auto_awesome" className="text-2xl" />
+              {insight && !insightDismissed && (
+                <button onClick={() => setInsightDismissed(true)} className="text-white/60 hover:text-white transition-colors text-sm">
+                  <Icon name="close" className="text-base" />
+                </button>
+              )}
+            </div>
+            <h5 className="font-bold text-base mb-2">{t('project.ai_tips.heading')}</h5>
+            {insightDismissed || !insight ? (
+              <>
+                <p className="text-blue-100 text-sm leading-relaxed mb-5 flex-1">{aiTipText}</p>
+                <button
+                  disabled={insightLoading}
+                  onClick={async () => {
+                    setInsightLoading(true)
+                    setInsightDismissed(false)
+                    try {
+                      const res = await aiApi.generateInsight({
+                        project_id: projectId,
+                        workspace_id: activeWorkspace?.id,
+                        period: analyticsPeriod,
+                      })
+                      setInsight(res.data)
+                    } catch {
+                      // silently fail — keep showing static tip
+                    } finally {
+                      setInsightLoading(false)
+                    }
+                  }}
+                  className="bg-white/20 hover:bg-white/30 disabled:opacity-60 transition-colors text-white py-2.5 px-4 rounded-xl text-sm font-bold w-full backdrop-blur-sm flex items-center justify-center gap-2">
+                  {insightLoading
+                    ? <><Icon name="sync" className="animate-spin text-base" /> Generating…</>
+                    : <><Icon name="bolt" className="text-base" /> Generate AI Insight · 8 coins</>}
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-blue-100 text-sm leading-relaxed mb-4 flex-1">{insight.insight}</p>
+                <p className="text-white/80 text-xs font-semibold mb-4 border-t border-white/20 pt-3">{insight.action}</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => router.push(`/dashboard/projects/${projectId}/insights`)}
+                    className="bg-white/20 hover:bg-white/30 transition-colors text-white py-2 px-3 rounded-xl text-xs font-bold flex-1 backdrop-blur-sm">
+                    View history
+                  </button>
+                  <button
+                    onClick={() => setInsightDismissed(true)}
+                    className="bg-white/10 hover:bg-white/20 transition-colors text-white py-2 px-3 rounded-xl text-xs font-bold backdrop-blur-sm">
+                    Dismiss
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-8">

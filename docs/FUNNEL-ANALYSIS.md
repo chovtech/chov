@@ -41,12 +41,20 @@
 
 ## 2. UNIVERSAL PATTERNS EXTRACTED
 
-### Pattern 1 — The Stack Deal (Fastpass / Bundle Bump)
-Every successful funnel has a **bundle offer** either as a bump or early OTO that sells everything at a discount.
-- ShopReelAI: $230 Fastpass (shown right after FE purchase — "if yes" path)
-- Reddify: $317 Infinity Bundle (bump offer)
-- Why it works: impatient buyers who know they want everything skip the individual pitch pages. Higher AOV, lower refund risk (they're committed).
-- **Takeaway:** Always offer a bundle. Position it immediately after FE purchase.
+### Pattern 1 — The Stack Deal (FastPass vs Bundle — Same Product, Different Channels)
+Every successful funnel has a **bundle offer** that sells all OTOs at a yearly recurring discount. The naming reflects the **sales channel**, not a different product:
+
+| Name | Price | Channel | Buyer |
+|------|-------|---------|-------|
+| **FastPass** | $230/yr | FE order bump (cold) | Every FE buyer sees it automatically |
+| **Bundle** | $317/yr ($267 with coupon) | Webinar / replay (warm) | Webinar attendees only |
+| **MegaPass** | $77 OT | Bump after FastPass OR Bundle | Cross-product bonuses, VIP access |
+
+- **FastPass** = the self-serve path. Shown as a bump on the FE checkout. Cheaper because the buyer is cold and there's no human in the room.
+- **Bundle** = the webinar path. Same product, higher price, coupon shared live during webinar. Warmer buyer = willing to pay more. Vendors run "webinar-only" bundles to create exclusivity.
+- **MegaPass** = a second bump shown after FastPass or Bundle checkout. Always $77. Always cross-product bonuses + VIP training. Pure margin — costs nothing to deliver.
+- The fork still applies: FastPass/Bundle buyers → DFY. Skippers → individual OTOs.
+- **Takeaway for PagePersona launch:** Ship a FastPass bump ($247/yr) on the FE checkout. When you start webinars, offer Bundle at a higher price ($297/yr, coupon to $247). Add MegaPass post-launch.
 
 ### Pattern 2 — Unlimited Always Comes First
 Every single funnel puts "Unlimited" (remove limits) as OTO 1.
@@ -96,9 +104,13 @@ Agency is where the real money is and where the most value is packed:
 | Agency | $57–197 | Yearly (recurring) |
 | DFY | $147–197 | One-time |
 | White Label / Reseller | $97–497 | One-time |
-| Bundle | $197–317 | One-time |
+| FastPass (cold funnel bump) | $197–230 | Yearly (recurring) |
+| Bundle (webinar) | $267–317 | Yearly (recurring) |
+| MegaPass (bonus bump) | $67–77 | One-time |
 
 - Recurring OTOs = software features (justified as ongoing access)
+- FastPass and Bundle are both yearly — they bundle recurring OTOs into one annual payment
+- MegaPass is one-time because it's bonuses/VIP rights, not ongoing software
 - One-time OTOs = services, rights, or physical deliverables
 - **Takeaway:** Don't charge recurring for things that don't have ongoing cost.
 
@@ -137,10 +149,21 @@ Not all products have all of these — but the ones with more win more.
 ```
 FE: PagePersona Core ($37–47 OT)
 │
-├── BUMP: PagePersona All-Access Bundle ($297 OT)
-│         [OTO 1 + 2 + 3 + 4 bundled — saves $161 vs buying individually]
+├── BUMP on FE checkout: PagePersona FastPass ($247/yr)
+│         All OTOs (Unlimited + Professional + Agency) bundled at yearly recurring price
+│         Saves ~$64/yr vs buying individually — skips all OTO pages
+│         Cold buyers see this automatically
 │
-└── After purchase:
+├── [WEBINAR path — post-launch]: PagePersona Bundle ($297/yr, coupon to $247)
+│         Same product as FastPass, higher price, pitched during live webinar
+│         Webinar-only coupon creates exclusivity + urgency
+│
+├── [POST-LAUNCH ADDITION]: MegaPass ($67 OT)
+│         Shown as bump after FastPass or Bundle checkout
+│         Bonus content: VIP group, extra training, future product cross-access
+│         Pure margin play — no software cost
+│
+└── After purchase (for buyers who skip FastPass):
     │
     ├── OTO 1: PagePersona Unlimited ($67/year)
     │         Remove all project/rule/popup/countdown limits
@@ -196,7 +219,9 @@ FE: PagePersona Core ($37–47 OT)
 | Item | Price | Type | Reason |
 |------|-------|------|--------|
 | FE | $37–47 | OT | Low barrier entry |
-| Bundle bump | $297 | OT | 65% of $458 individual total — genuine deal |
+| FastPass bump (launch) | $247 | /year | Bundles OTO 1+2+3 — saves ~$64/yr vs individual |
+| Bundle (webinar — post-launch) | $297 | /year | Same as FastPass; higher price for warm webinar buyer |
+| MegaPass (post-launch) | $67 | OT | Bonuses bump after FastPass/Bundle — pure margin |
 | OTO 1 Unlimited | $67 | /year | Infrastructure cost |
 | OTO 2 Professional | $47 | /year | Email + branding cost |
 | OTO 3 Agency | $197 | /year | Server + client account hosting cost |
@@ -209,7 +234,9 @@ FE: PagePersona Core ($37–47 OT)
 - [x] Professional and Agency are split (different buyer, different identity)
 - [x] Reseller rights bundled into Agency OTO (not a separate OTO)
 - [x] DFY = 20 real slots/month, real cap, reopens monthly
-- [x] Bundle = $297 (65% of individual total)
+- [x] FastPass = $247/yr on FE bump (launch); Bundle = $297/yr via webinar (post-launch)
+- [x] FastPass and Bundle are the same product — different channels, different prices
+- [x] MegaPass = $67 OT bonus bump after FastPass/Bundle — add post-launch
 - [x] Self-Hosted = $497 OT + $397/year optional after 3 months
 
 ---
@@ -294,8 +321,9 @@ Finish the full manual product first. Then audit every feature for where AI adds
 3. **Professional = cosmetic white-label** (remove branding)
 4. **Agency = business white-label** (sell to clients)
 5. **DFY = your time, not code** — one-time, high margin, limited slots
-6. **Bundle/Fastpass = serve the "just give me everything" buyer** — always offer it
-7. **Agency OTO should feel like a complete business-in-a-box**
-8. **Recurring = software features. One-time = rights, services, deliverables**
-9. **Name OTOs after the identity the buyer wants to become**
-10. **The fork (if yes / if no) maximises revenue from both buyer types**
+6. **FastPass = cold bump ($247/yr). Bundle = webinar offer ($297/yr). Same product, different channels, different prices.**
+7. **MegaPass ($67 OT) = bonus bump after FastPass/Bundle — pure margin, add post-launch**
+8. **Agency OTO should feel like a complete business-in-a-box**
+9. **Recurring = software features. One-time = rights, services, deliverables**
+10. **Name OTOs after the identity the buyer wants to become**
+11. **The fork (if yes / if no) maximises revenue from both buyer types**

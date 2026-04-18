@@ -11,6 +11,8 @@ Endpoints:
   POST /api/ai/image/generate   — generate an image via fal.ai Flux Dev, upload to R2, save to assets
   POST /api/ai/popup/generate   — generate a full popup layout + blocks from a goal description
   POST /api/ai/rules/suggest    — suggest 3–5 personalisation rules based on page scan + brand context
+  POST /api/ai/analytics/insights — generate plain-English analytics insight for a project (8 coins)
+  GET  /api/ai/analytics/insights/{project_id} — return past insights from ai_coin_transactions
 """
 from fastapi import APIRouter, Depends, Query, HTTPException
 from pydantic import BaseModel
@@ -768,6 +770,210 @@ async def generate_image(
         "height": height,
         "balance": new_balance,
     }
+
+
+# ── Analytics Insights ───────────────────────────────────────────────────────
+
+class InsightsRequest(BaseModel):
+    workspace_id: Optional[str] = None
+    project_id: str
+    period: int = 30
+
+
+@router.post("/analytics/insights")
+async def generate_analytics_insights(
+    body: InsightsRequest,
+    current_user: dict = Depends(get_current_user),
+    db: asyncpg.Connection = Depends(get_db),
+):
+    """
+    Generate a plain-English insight summary for a project's analytics data.
+    Costs 8 AI coins. Insight text is stored in ai_coin_transactions metadata.
+    """
+    from datetime import datetime, timezone, timedelta
+
+    workspace = await get_accessible_workspace(db, current_user["id"], body.workspace_id)
+    ws_id = str(workspace["id"])
+
+    await check_coins(ws_id, "analytics_insights", db)
+
+    # ── Verify project access ─────────────────────────────────────────────────
+    project = await db.fetchrow(
+        "SELECT id, name, description FROM projects WHERE id = $1 AND workspace_id = $2",
+        body.project_id, workspace["id"]
+    )
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # ── Fetch analytics summary ───────────────────────────────────────────────
+    period = max(7, min(90, body.period))
+    start = datetime.now(timezone.utc) - timedelta(days=period)
+
+    total_visits = await db.fetchval(
+        "SELECT COUNT(*) FROM page_visits WHERE project_id=$1 AND timestamp>=$2",
+        body.project_id, start
+    ) or 0
+    unique_visitors = await db.fetchval(
+        "SELECT COUNT(DISTINCT session_id) FROM page_visits WHERE project_id=$1 AND timestamp>=$2",
+        body.project_id, start
+    ) or 0
+    rules_fired = await db.fetchval(
+        "SELECT COUNT(*) FROM rule_events WHERE project_id=$1 AND timestamp>=$2",
+        body.project_id, start
+    ) or 0
+    avg_time = await db.fetchval(
+        "SELECT AVG(time_on_page) FROM page_visits WHERE project_id=$1 AND timestamp>=$2 AND time_on_page IS NOT NULL",
+        body.project_id, start
+    )
+    avg_scroll = await db.fetchval(
+        "SELECT AVG(scroll_depth) FROM page_visits WHERE project_id=$1 AND timestamp>=$2 AND scroll_depth IS NOT NULL",
+        body.project_id, start
+    )
+    personalisation_rate = round((rules_fired / total_visits * 100), 1) if total_visits else 0
+
+    top_rules = await db.fetch(
+        """SELECT r.name, COUNT(*) AS fires, COUNT(DISTINCT re.session_id) AS sessions
+           FROM rule_events re JOIN rules r ON r.id = re.rule_id
+           WHERE re.project_id=$1 AND re.timestamp>=$2
+           GROUP BY r.name ORDER BY fires DESC LIMIT 5""",
+        body.project_id, start
+    )
+    top_countries = await db.fetch(
+        """SELECT country, COUNT(*) AS cnt FROM page_visits
+           WHERE project_id=$1 AND timestamp>=$2 AND country IS NOT NULL
+           GROUP BY country ORDER BY cnt DESC LIMIT 5""",
+        body.project_id, start
+    )
+    device_rows = await db.fetch(
+        """SELECT COALESCE(device, 'unknown') AS device, COUNT(*) AS cnt
+           FROM page_visits WHERE project_id=$1 AND timestamp>=$2
+           GROUP BY device ORDER BY cnt DESC""",
+        body.project_id, start
+    )
+    source_rows = await db.fetch(
+        """SELECT COALESCE(utm_source, 'direct') AS source, COUNT(*) AS cnt
+           FROM page_visits WHERE project_id=$1 AND timestamp>=$2
+           GROUP BY source ORDER BY cnt DESC LIMIT 5""",
+        body.project_id, start
+    )
+
+    # ── Build data summary for prompt ─────────────────────────────────────────
+    rules_lines = "\n".join(
+        f"  - \"{r['name']}\": {r['fires']} fires across {r['sessions']} sessions"
+        for r in top_rules
+    ) or "  None fired yet"
+
+    countries_lines = ", ".join(f"{r['country']} ({r['cnt']})" for r in top_countries) or "No data"
+    devices_lines = ", ".join(f"{r['device']} ({r['cnt']})" for r in device_rows) or "No data"
+    sources_lines = ", ".join(f"{r['source']} ({r['cnt']})" for r in source_rows) or "No data"
+
+    description_line = f"Page description: {project['description']}" if project.get("description") else ""
+
+    prompt = f"""You are a website conversion analyst. Analyse the following analytics data and write a short, plain-English insight summary for the page owner.
+
+## Project
+Name: {project['name']}
+{description_line}
+Period: last {period} days
+
+## Key numbers
+- Total visits: {total_visits}
+- Unique visitors: {unique_visitors}
+- Rules fired (personalisations shown): {rules_fired}
+- Personalisation rate: {personalisation_rate}%
+- Average time on page: {round(avg_time or 0)}s
+- Average scroll depth: {round(avg_scroll or 0)}%
+
+## Top performing rules
+{rules_lines}
+
+## Top traffic sources
+{sources_lines}
+
+## Top countries
+{countries_lines}
+
+## Device breakdown
+{devices_lines}
+
+Write ONLY a valid JSON object with exactly these two keys — no markdown, no explanation:
+{{
+  "insight": "3-4 sentences of plain-English analysis. What is going well, what stands out, what the numbers mean in practical terms. Be specific — reference actual numbers and rule names where relevant. Avoid generic advice.",
+  "action": "One specific, concrete next step the user should take based on this data. Start with an action verb."
+}}"""
+
+    client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+    message = client.messages.create(
+        model=AI_MODEL_SMART,
+        max_tokens=512,
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    raw = message.content[0].text.strip()
+    tokens_used = message.usage.input_tokens + message.usage.output_tokens
+
+    if raw.startswith("```"):
+        parts = raw.split("```")
+        raw = parts[1].lstrip("json").strip() if len(parts) >= 2 else raw
+
+    try:
+        parsed = json.loads(raw)
+        insight = str(parsed.get("insight", "")).strip()
+        action = str(parsed.get("action", "")).strip()
+        if not insight:
+            raise ValueError("empty insight")
+    except Exception:
+        raise HTTPException(status_code=502, detail="AI returned unexpected format. Please try again.")
+
+    new_balance = await deduct_coins(
+        workspace_id=ws_id,
+        action_type="analytics_insights",
+        db=db,
+        claude_tokens_used=tokens_used,
+        metadata={
+            "project_id": body.project_id,
+            "project_name": project["name"],
+            "period": period,
+            "insight": insight,
+            "action": action,
+        },
+    )
+
+    return {"insight": insight, "action": action, "balance": new_balance}
+
+
+@router.get("/analytics/insights/{project_id}")
+async def get_insights_history(
+    project_id: str,
+    workspace_id: str | None = Query(default=None),
+    limit: int = Query(default=20, le=50),
+    current_user: dict = Depends(get_current_user),
+    db: asyncpg.Connection = Depends(get_db),
+):
+    """Return past AI insights for a project, newest first."""
+    workspace = await get_accessible_workspace(db, current_user["id"], workspace_id)
+    ws_id = str(workspace["id"])
+
+    rows = await db.fetch(
+        """SELECT metadata, created_at FROM ai_coin_transactions
+           WHERE workspace_id = $1
+             AND action_type = 'analytics_insights'
+             AND metadata->>'project_id' = $2
+           ORDER BY created_at DESC
+           LIMIT $3""",
+        ws_id, project_id, limit
+    )
+
+    history = []
+    for r in rows:
+        m = r["metadata"] if isinstance(r["metadata"], dict) else {}
+        history.append({
+            "insight": m.get("insight", ""),
+            "action": m.get("action", ""),
+            "period": m.get("period", 30),
+            "created_at": r["created_at"].isoformat(),
+        })
+    return history
 
 
 # ── Rule Suggestion ───────────────────────────────────────────────────────────

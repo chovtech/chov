@@ -296,6 +296,10 @@ export const aiApi = {
     apiClient.post('/api/ai/popup/generate', data),
   suggestRules: (data: { workspace_id?: string; project_id: string }) =>
     apiClient.post('/api/ai/rules/suggest', data),
+  generateInsight: (data: { workspace_id?: string; project_id: string; period?: number }) =>
+    apiClient.post('/api/ai/analytics/insights', data),
+  getInsightHistory: (projectId: string, workspaceId?: string) =>
+    apiClient.get(`/api/ai/analytics/insights/${projectId}`, { params: workspaceId ? { workspace_id: workspaceId } : {} }),
 }
 
 // Rules API
