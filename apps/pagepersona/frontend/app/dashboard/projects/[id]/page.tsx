@@ -637,21 +637,40 @@ export default function ProjectDashboardPage() {
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-2xl font-black tracking-tight text-slate-900">{project.name}</h1>
               {canManageProject && <button onClick={() => setShowEdit(true)} className="p-1.5 text-slate-400 hover:text-brand hover:bg-brand/5 rounded-lg transition-colors" title={t('project.edit_project')}><Icon name="edit" className="text-base" /></button>}
-              {project.status === 'active' ? (
-                <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase tracking-wider border border-green-200">{t('status.active')}</span>
-              ) : (
-                <span className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full uppercase tracking-wider border border-slate-200">{t('status.draft')}</span>
-              )}
-              {isViewOnly ? (
-                <span className={project.script_verified ? 'flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-emerald-50 border-emerald-200 text-emerald-700' : 'flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-amber-50 border-amber-200 text-amber-700'}>
-                  <Icon name={project.script_verified ? 'check_circle' : 'warning'} className="text-sm" />
-                  {project.script_verified ? t('project.script_live') : t('project.script_not_verified')}
-                </span>
-              ) : (
-                <button onClick={() => setShowInstall(true)} className={project.script_verified ? 'flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition-colors' : 'flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 transition-colors'}>
-                  <Icon name={project.script_verified ? 'check_circle' : 'warning'} className="text-sm" />
-                  {project.script_verified ? t('project.script_live') : t('project.script_not_verified')}
+              {/* Active/Draft badge — clickable to toggle publish for managers */}
+              {canManageProject ? (
+                <button
+                  onClick={handlePublishToggle}
+                  disabled={publishing}
+                  title={project.status === 'active' ? 'Click to unpublish' : 'Click to publish'}
+                  className={project.status === 'active'
+                    ? 'px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase tracking-wider border border-green-200 hover:bg-green-200 disabled:opacity-60 transition-colors cursor-pointer'
+                    : 'px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full uppercase tracking-wider border border-slate-200 hover:bg-slate-200 disabled:opacity-60 transition-colors cursor-pointer'}>
+                  {publishing ? '…' : project.status === 'active' ? t('status.active') : t('status.draft')}
                 </button>
+              ) : (
+                project.status === 'active'
+                  ? <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full uppercase tracking-wider border border-green-200">{t('status.active')}</span>
+                  : <span className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full uppercase tracking-wider border border-slate-200">{t('status.draft')}</span>
+              )}
+              {/* Icon actions — delete, report, insights */}
+              {!isViewOnly && (
+                <div className="flex items-center gap-1.5">
+                  {canManageProject && (
+                    <button onClick={() => setShowDelete(true)} title="Delete project"
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all">
+                      <Icon name="delete" className="text-base" />
+                    </button>
+                  )}
+                  <button onClick={() => router.push('/dashboard/projects/' + project.id + '/reports')} title="Send / view reports"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-brand/5 hover:text-brand transition-all">
+                    <Icon name="send" className="text-base" />
+                  </button>
+                  <button onClick={() => router.push('/dashboard/projects/' + project.id + '/insights')} title="AI insights history"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-brand/5 hover:text-brand transition-all">
+                    <Icon name="auto_awesome" className="text-base" />
+                  </button>
+                </div>
               )}
             </div>
             <a href={project.page_url} target="_blank" rel="noopener noreferrer" className="text-sm text-slate-500 hover:text-brand flex items-center gap-1 transition-colors">
@@ -660,24 +679,18 @@ export default function ProjectDashboardPage() {
             </div>
           </div>
           {!isViewOnly && <div className="flex items-center gap-3">
-            {canManageProject && (
-              <button onClick={() => setShowDelete(true)} title="Delete project"
-                className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all">
-                <Icon name="delete" className="text-base" />
+            {/* Script live badge — next to create rule */}
+            {isViewOnly ? (
+              <span className={project.script_verified ? 'flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-emerald-50 border-emerald-200 text-emerald-700' : 'flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-amber-50 border-amber-200 text-amber-700'}>
+                <Icon name={project.script_verified ? 'check_circle' : 'warning'} className="text-sm" />
+                {project.script_verified ? t('project.script_live') : t('project.script_not_verified')}
+              </span>
+            ) : (
+              <button onClick={() => setShowInstall(true)} className={project.script_verified ? 'flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition-colors' : 'flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-semibold bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 transition-colors'}>
+                <Icon name={project.script_verified ? 'check_circle' : 'warning'} className="text-sm" />
+                {project.script_verified ? t('project.script_live') : t('project.script_not_verified')}
               </button>
             )}
-            <button onClick={() => router.push('/dashboard/projects/' + project.id + '/reports')} title="Send / view reports"
-              className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:bg-brand/5 hover:border-brand/30 hover:text-brand transition-all">
-              <Icon name="send" className="text-base" />
-            </button>
-            <button onClick={() => router.push('/dashboard/projects/' + project.id + '/insights')} title="AI insights history"
-              className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:bg-brand/5 hover:border-brand/30 hover:text-brand transition-all">
-              <Icon name="auto_awesome" className="text-base" />
-            </button>
-            <button onClick={handlePublishToggle} disabled={publishing} className={project.status === 'active' ? 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 disabled:opacity-50 transition-all' : 'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-brand/30 text-brand bg-brand/5 hover:bg-brand/10 disabled:opacity-50 transition-all'}>
-              <Icon name={project.status === 'active' ? 'cloud_off' : 'cloud_upload'} className="text-base" />
-              {publishing ? '...' : project.status === 'active' ? t('project.unpublish') : t('project.publish')}
-            </button>
 
             <div className="relative group">
               <button
