@@ -966,7 +966,16 @@ async def get_insights_history(
 
     history = []
     for r in rows:
-        m = r["metadata"] if isinstance(r["metadata"], dict) else {}
+        raw = r["metadata"]
+        if isinstance(raw, dict):
+            m = raw
+        elif isinstance(raw, str):
+            try:
+                m = json.loads(raw)
+            except Exception:
+                m = {}
+        else:
+            m = {}
         history.append({
             "insight": m.get("insight", ""),
             "action": m.get("action", ""),

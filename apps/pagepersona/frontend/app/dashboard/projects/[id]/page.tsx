@@ -469,7 +469,7 @@ export default function ProjectDashboardPage() {
   const [analyticsLoading, setAnalyticsLoading] = useState(false)
   const [analyticsError, setAnalyticsError] = useState(false)
   const [rules, setRules] = useState<any[]>([])
-  const [insight, setInsight] = useState<{ insight: string; action: string } | null>(null)
+  const [insight, setInsight] = useState<{ insight: string; action: string; created_at?: string } | null>(null)
   const [insightLoading, setInsightLoading] = useState(false)
   const [insightDismissed, setInsightDismissed] = useState(false)
 
@@ -510,6 +510,13 @@ export default function ProjectDashboardPage() {
       .catch(() => setAnalyticsError(true))
       .finally(() => setAnalyticsLoading(false))
   }, [analyticsPeriod, projectId])
+
+  useEffect(() => {
+    if (!projectId || !activeWorkspace?.id) return
+    aiApi.getInsightHistory(projectId, activeWorkspace.id)
+      .then(res => { if (res.data?.length > 0) setInsight(res.data[0]) })
+      .catch(() => {})
+  }, [projectId, activeWorkspace?.id])
 
   if (loading || notFound || !project) return (
     <div className="flex flex-col min-h-screen">
@@ -1014,62 +1021,78 @@ export default function ProjectDashboardPage() {
               </div>
             )}
           </div>
-          <div className="bg-gradient-to-br from-brand to-blue-700 p-6 rounded-xl text-white shadow-lg shadow-brand/20 flex flex-col">
-            <div className="flex items-start justify-between mb-3">
-              <Icon name="auto_awesome" className="text-2xl" />
-              {insight && !insightDismissed && (
-                <button onClick={() => setInsightDismissed(true)} className="text-white/60 hover:text-white transition-colors text-sm">
-                  <Icon name="close" className="text-base" />
-                </button>
-              )}
-            </div>
-            <h5 className="font-bold text-base mb-2">{t('project.ai_tips.heading')}</h5>
-            {insightDismissed || !insight ? (
-              <>
-                <p className="text-blue-100 text-sm leading-relaxed mb-5 flex-1">{aiTipText}</p>
-                <button
-                  disabled={insightLoading}
-                  onClick={async () => {
-                    setInsightLoading(true)
-                    setInsightDismissed(false)
-                    try {
-                      const res = await aiApi.generateInsight({
-                        project_id: projectId,
-                        workspace_id: activeWorkspace?.id,
-                        period: analyticsPeriod,
-                      })
-                      setInsight(res.data)
-                    } catch {
-                      // silently fail — keep showing static tip
-                    } finally {
-                      setInsightLoading(false)
-                    }
-                  }}
-                  className="bg-white/20 hover:bg-white/30 disabled:opacity-60 transition-colors text-white py-2.5 px-4 rounded-xl text-sm font-bold w-full backdrop-blur-sm flex items-center justify-center gap-2">
-                  {insightLoading
-                    ? <><Icon name="sync" className="animate-spin text-base" /> Generating…</>
-                    : <><Icon name="bolt" className="text-base" /> Generate AI Insight · 8 coins</>}
-                </button>
-              </>
-            ) : (
-              <>
-                <p className="text-blue-100 text-sm leading-relaxed mb-4 flex-1">{insight.insight}</p>
-                <p className="text-white/80 text-xs font-semibold mb-4 border-t border-white/20 pt-3">{insight.action}</p>
-                <div className="flex gap-2">
+          {(() => {
+            const showInsight = insight && !insightDismissed
+            const preview = insight ? insight.insight.slice(0, 140) + (insight.insight.length > 140 ? '…' : '') : ''
+            const timeAgo = (iso?: string) => {
+              if (!iso) return ''
+              const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
+              if (diff < 60) return `${diff}s ago`
+              if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+              if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+              return `${Math.floor(diff / 86400)}d ago`
+            }
+            return (
+              <div className="bg-gradient-to-br from-brand to-blue-700 p-6 rounded-xl text-white shadow-lg shadow-brand/20 flex flex-col">
+                <div className="flex items-start justify-between mb-3">
+                  <Icon name="auto_awesome" className="text-2xl" />
                   <button
                     onClick={() => router.push(`/dashboard/projects/${projectId}/insights`)}
-                    className="bg-white/20 hover:bg-white/30 transition-colors text-white py-2 px-3 rounded-xl text-xs font-bold flex-1 backdrop-blur-sm">
-                    View history
-                  </button>
-                  <button
-                    onClick={() => setInsightDismissed(true)}
-                    className="bg-white/10 hover:bg-white/20 transition-colors text-white py-2 px-3 rounded-xl text-xs font-bold backdrop-blur-sm">
-                    Dismiss
+                    className="text-white/60 hover:text-white transition-colors text-xs font-semibold flex items-center gap-1">
+                    <Icon name="history" className="text-sm" /> History
                   </button>
                 </div>
-              </>
-            )}
-          </div>
+                <h5 className="font-bold text-base mb-2">{t('project.ai_tips.heading')}</h5>
+                {showInsight ? (
+                  <>
+                    {insight.created_at && (
+                      <p className="text-white/50 text-xs mb-2">{timeAgo(insight.created_at)}</p>
+                    )}
+                    <p className="text-blue-100 text-sm leading-relaxed mb-3 flex-1">{preview}</p>
+                    <div className="flex gap-2 mt-auto">
+                      <button
+                        onClick={() => router.push(`/dashboard/projects/${projectId}/insights`)}
+                        className="bg-white/20 hover:bg-white/30 transition-colors text-white py-2 px-3 rounded-xl text-xs font-bold flex-1 backdrop-blur-sm">
+                        View more
+                      </button>
+                      <button
+                        disabled={insightLoading}
+                        onClick={async () => {
+                          setInsightLoading(true)
+                          try {
+                            const res = await aiApi.generateInsight({ project_id: projectId, workspace_id: activeWorkspace?.id, period: analyticsPeriod })
+                            setInsight({ ...res.data, created_at: new Date().toISOString() })
+                            setInsightDismissed(false)
+                          } catch { } finally { setInsightLoading(false) }
+                        }}
+                        className="bg-white/10 hover:bg-white/20 disabled:opacity-50 transition-colors text-white py-2 px-3 rounded-xl text-xs font-bold backdrop-blur-sm">
+                        {insightLoading ? <Icon name="sync" className="animate-spin text-sm" /> : 'Refresh'}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-blue-100 text-sm leading-relaxed mb-5 flex-1">{aiTipText}</p>
+                    <button
+                      disabled={insightLoading}
+                      onClick={async () => {
+                        setInsightLoading(true)
+                        setInsightDismissed(false)
+                        try {
+                          const res = await aiApi.generateInsight({ project_id: projectId, workspace_id: activeWorkspace?.id, period: analyticsPeriod })
+                          setInsight({ ...res.data, created_at: new Date().toISOString() })
+                        } catch { } finally { setInsightLoading(false) }
+                      }}
+                      className="bg-white/20 hover:bg-white/30 disabled:opacity-60 transition-colors text-white py-2.5 px-4 rounded-xl text-sm font-bold w-full backdrop-blur-sm flex items-center justify-center gap-2">
+                      {insightLoading
+                        ? <><Icon name="sync" className="animate-spin text-base" /> Generating…</>
+                        : <><Icon name="bolt" className="text-base" /> Generate AI Insight · 8 coins</>}
+                    </button>
+                  </>
+                )}
+              </div>
+            )
+          })()}
         </div>
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-8">
           <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
