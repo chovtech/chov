@@ -658,16 +658,16 @@ export default function ProjectDashboardPage() {
                 <div className="flex items-center gap-1.5">
                   {canManageProject && (
                     <button onClick={() => setShowDelete(true)} title="Delete project"
-                      className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all">
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 transition-all">
                       <Icon name="delete" className="text-base" />
                     </button>
                   )}
                   <button onClick={() => router.push('/dashboard/projects/' + project.id + '/reports')} title="Send / view reports"
-                    className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-brand/5 hover:text-brand transition-all">
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-500 hover:bg-emerald-100 hover:text-emerald-700 transition-all">
                     <Icon name="send" className="text-base" />
                   </button>
                   <button onClick={() => router.push('/dashboard/projects/' + project.id + '/insights')} title="AI insights history"
-                    className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-brand/5 hover:text-brand transition-all">
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-brand/10 text-brand hover:bg-brand/20 transition-all">
                     <Icon name="auto_awesome" className="text-base" />
                   </button>
                 </div>
