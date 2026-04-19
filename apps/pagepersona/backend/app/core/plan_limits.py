@@ -26,9 +26,9 @@ PLAN_LIMITS: dict[str, dict] = {
         "workspaces":        1,
         "client_accounts":   0,
     },
-    "unlimited":    {"projects": None, "rules_per_project": None, "popups": None, "countdowns": None, "workspaces": None, "client_accounts": 0},
-    "professional": {"projects": None, "rules_per_project": None, "popups": None, "countdowns": None, "workspaces": None, "client_accounts": 0},
-    "agency":       {"projects": None, "rules_per_project": None, "popups": None, "countdowns": None, "workspaces": None, "client_accounts": 100},
+    "unlimited":    {"projects": None, "rules_per_project": None, "popups": None, "countdowns": None, "workspaces": 1, "client_accounts": 0},
+    "professional": {"projects": None, "rules_per_project": None, "popups": None, "countdowns": None, "workspaces": 1, "client_accounts": 0},
+    "agency":       {"projects": None, "rules_per_project": None, "popups": None, "countdowns": None, "workspaces": 1, "client_accounts": 100},
     "owner":        {"projects": None, "rules_per_project": None, "popups": None, "countdowns": None, "workspaces": None, "client_accounts": None},
 }
 

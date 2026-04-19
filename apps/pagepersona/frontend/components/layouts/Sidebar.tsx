@@ -257,19 +257,26 @@ export default function Sidebar() {
               <p className="text-xs font-bold text-white">{planLabel ?? '...'}</p>
             </div>
           </div>
-          {['trial', 'fe'].includes(planKey) && (
-            <>
-              <p className="text-[10px] text-white/70 mb-3 leading-relaxed">{t('sidebar.upgradeDescription')}</p>
-              <a
-                href="https://usepagepersona.com/upgrade"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full py-2 text-center bg-white text-brand rounded-xl text-xs font-bold hover:bg-white/90 transition-colors"
-              >
-                {t('sidebar.upgradeNow')}
-              </a>
-            </>
-          )}
+          {planKey !== 'owner' && (() => {
+            const next: Record<string, { label: string; teaser: string; href: string }> = {
+              trial:        { label: 'Upgrade to Core',             teaser: '5 projects, 10 rules & more.',              href: 'https://usepagepersona.com/upgrade' },
+              fe:           { label: 'Upgrade to Unlimited',        teaser: 'Unlimited projects, rules & countdowns.',   href: 'https://usepagepersona.com/upgrade' },
+              unlimited:    { label: 'Upgrade to Professional',     teaser: 'Remove branding + branded emails.',         href: 'https://usepagepersona.com/upgrade' },
+              professional: { label: 'Upgrade to Agency',           teaser: '100 client accounts + white-label.',        href: 'https://usepagepersona.com/upgrade' },
+              agency:       { label: 'Get Self-Hosted',             teaser: 'Your own SaaS on your domain.',             href: 'mailto:support@usepagepersona.com?subject=White-Label Self-Hosted Enquiry' },
+            }
+            const n = next[planKey]
+            if (!n) return null
+            return (
+              <>
+                <p className="text-[10px] text-white/70 mb-3 leading-relaxed">{n.teaser}</p>
+                <a href={n.href} target="_blank" rel="noopener noreferrer"
+                  className="block w-full py-2 text-center bg-white text-brand rounded-xl text-xs font-bold hover:bg-white/90 transition-colors">
+                  {n.label}
+                </a>
+              </>
+            )
+          })()}
         </div>
       </div>}
 
