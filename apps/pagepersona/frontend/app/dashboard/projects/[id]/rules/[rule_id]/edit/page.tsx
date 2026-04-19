@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
@@ -28,6 +28,8 @@ const SIGNAL_CONFIGS: Record<string, { label: string; operators: string[]; value
   geo_country:      { label: 'Country',        operators: ['is','is not'],                             valueType: 'select', options: ['Afghanistan','Albania','Algeria','Argentina','Australia','Austria','Bangladesh','Belgium','Bolivia','Brazil','Cambodia','Canada','Chile','China','Colombia','Croatia','Czech Republic','Denmark','Ecuador','Egypt','Ethiopia','Finland','France','Germany','Ghana','Greece','Guatemala','Honduras','Hungary','India','Indonesia','Iran','Iraq','Ireland','Israel','Italy','Japan','Jordan','Kenya','Kuwait','Malaysia','Mexico','Morocco','Netherlands','New Zealand','Nigeria','Norway','Pakistan','Peru','Philippines','Poland','Portugal','Qatar','Romania','Russia','Saudi Arabia','Senegal','Singapore','South Africa','South Korea','Spain','Sri Lanka','Sweden','Switzerland','Taiwan','Tanzania','Thailand','Turkey','Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Venezuela','Vietnam','Zimbabwe'] },
   day_time:         { label: 'Time of day',    operators: ['is','is between'],                         valueType: 'text' },
 }
+
+const NEEDS_ELEMENT_TYPES = ['swap_text', 'swap_image', 'hide_section', 'show_element', 'swap_url', 'insert_countdown']
 
 const ACTION_TYPES = [
   { key: 'swap_text',        label: 'Swap text block',  icon: 'text_fields',    needsElement: true  },
@@ -198,8 +200,6 @@ function EditRulePageInner() {
   const [loadingPopups, setLoadingPopups] = useState(true)
   const [countdowns, setCountdowns] = useState<any[]>([])
   const [loadingCountdowns, setLoadingCountdowns] = useState(true)
-  const searchParams = useSearchParams()
-
   // Load popups and countdowns for pickers
   useEffect(() => {
     const wsParam = activeWorkspace?.id ? `?workspace_id=${activeWorkspace.id}` : ''
@@ -213,9 +213,38 @@ function EditRulePageInner() {
       .finally(() => setLoadingCountdowns(false))
   }, [activeWorkspace?.id])
 
-  // Load rule and project on mount
+  // Load rule and project on mount (also handles returning from picker via sessionStorage draft)
   useEffect(() => {
     const load = async () => {
+      const params = new URLSearchParams(window.location.search)
+      const pickedSelector = params.get('pickedSelector')
+      const actionIndexParam = params.get('actionIndex')
+      const draftStr = sessionStorage.getItem('pp_edit_rule_draft')
+
+      if (pickedSelector && draftStr) {
+        // Returning from picker — restore draft with picker selector applied
+        try {
+          const draft = JSON.parse(draftStr)
+          const actionIndex = actionIndexParam !== null ? parseInt(actionIndexParam, 10) : -1
+          setRuleName(draft.ruleName || '')
+          setConditionOperator(draft.conditionOperator || 'AND')
+          setConditions(draft.conditions || [])
+          setActions((draft.actions || []).map((a: any, i: number) =>
+            i === actionIndex ? { ...a, target_block: decodeURIComponent(pickedSelector) } : a
+          ))
+          sessionStorage.removeItem('pp_edit_rule_draft')
+          window.history.replaceState(null, '', window.location.pathname)
+          try {
+            const projRes = await projectApi.get(projectId)
+            setProjectName(projRes.data.name)
+            setProjectPageUrl(projRes.data.page_url || '')
+          } catch {}
+          setLoading(false)
+          return
+        } catch {}
+      }
+
+      // Normal server load
       try {
         const [projRes, ruleRes] = await Promise.all([
           projectApi.get(projectId),
@@ -226,7 +255,6 @@ function EditRulePageInner() {
         const rule = ruleRes.data
         setRuleName(rule.name)
         setConditionOperator(rule.condition_operator || 'AND')
-        // Reconstruct full condition objects from saved minimal shape
         setConditions((rule.conditions || []).map((c: any, i: number) => {
           const cfg = SIGNAL_CONFIGS[c.signal] || { label: c.signal || '', operators: [c.operator || 'is'], valueType: 'text' }
           return {
@@ -240,7 +268,6 @@ function EditRulePageInner() {
             options: cfg.options || [],
           }
         }))
-        // Reconstruct full action objects
         setActions((rule.actions || []).map((a: any, i: number) => {
           const actionDef = ACTION_TYPES.find(t => t.key === a.type)
           return {
@@ -312,18 +339,6 @@ function EditRulePageInner() {
       return { ...a, value: serializeSwapText(parts.text + ' ' + token, parts.fallbacks) }
     }))
 
-  // Receive selector back from picker
-  useEffect(() => {
-    const pickedSelector = searchParams.get('pickedSelector')
-    const actionIndex = searchParams.get('actionIndex')
-    if (!pickedSelector || actionIndex === null) return
-    const index = parseInt(actionIndex, 10)
-    setActions(prev => prev.map((a, i) =>
-      i === index ? { ...a, target_block: decodeURIComponent(pickedSelector) } : a
-    ))
-    window.history.replaceState(null, '', window.location.pathname)
-  }, [searchParams])
-
   const openPicker = (actionIndex: number) => {
     if (!projectPageUrl) return
     sessionStorage.setItem('pp_edit_rule_draft', JSON.stringify({
@@ -342,12 +357,14 @@ function EditRulePageInner() {
   const handleSave = async () => {
     if (!canSave) return
     setSaving(true)
+    const element_mapped = actions.every(a => !NEEDS_ELEMENT_TYPES.includes(a.type) || a.target_block.trim().length > 0)
     try {
       await rulesApi.update(projectId, ruleId, {
         name: ruleName,
         conditions: conditions.map(c => ({ signal: c.signal, operator: c.operator, value: c.value })),
         condition_operator: conditionOperator,
         actions: actions.map(a => ({ type: a.type, target_block: a.target_block, value: a.value })),
+        element_mapped,
       })
       router.push('/dashboard/projects/' + projectId + '/rules')
     } catch (err) {

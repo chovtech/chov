@@ -10,6 +10,7 @@ class RuleCreate(BaseModel):
     condition_operator: str = 'AND'
     actions: List[Any] = []
     priority: int = 0
+    element_mapped: bool = False
 
 
 class RuleResponse(BaseModel):
@@ -21,6 +22,7 @@ class RuleResponse(BaseModel):
     actions: List[Any]
     priority: int
     is_active: bool
+    element_mapped: bool
     created_at: datetime
     updated_at: datetime
 
@@ -35,3 +37,4 @@ class RuleUpdate(BaseModel):
     actions: Optional[List[Any]] = None
     priority: Optional[int] = None
     is_active: Optional[bool] = None
+    element_mapped: Optional[bool] = None

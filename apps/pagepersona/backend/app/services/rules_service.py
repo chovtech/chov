@@ -20,14 +20,15 @@ async def create_rule(
     conditions: list,
     condition_operator: str,
     actions: list,
-    priority: int = 0
+    priority: int = 0,
+    element_mapped: bool = False
 ) -> dict:
     rule = await db.fetchrow(
         """
         INSERT INTO rules
-            (id, project_id, name, conditions, condition_operator, actions, priority, is_active)
+            (id, project_id, name, conditions, condition_operator, actions, priority, is_active, element_mapped)
         VALUES
-            ($1, $2, $3, $4::jsonb, $5, $6::jsonb, $7, FALSE)
+            ($1, $2, $3, $4::jsonb, $5, $6::jsonb, $7, FALSE, $8)
         RETURNING *
         """,
         uuid.uuid4(),
@@ -36,7 +37,8 @@ async def create_rule(
         json.dumps(conditions),
         condition_operator,
         json.dumps(actions),
-        priority
+        priority,
+        element_mapped
     )
     return parse_rule(dict(rule))
 
@@ -62,7 +64,7 @@ async def get_rule(db: asyncpg.Connection, rule_id: str, project_id: str) -> dic
 
 
 async def update_rule(db: asyncpg.Connection, rule_id: str, project_id: str, **kwargs) -> dict | None:
-    allowed = {'name', 'conditions', 'condition_operator', 'actions', 'priority', 'is_active'}
+    allowed = {'name', 'conditions', 'condition_operator', 'actions', 'priority', 'is_active', 'element_mapped'}
     fields = {k: v for k, v in kwargs.items() if k in allowed and v is not None}
     if not fields:
         return await get_rule(db, rule_id, project_id)

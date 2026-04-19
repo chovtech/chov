@@ -330,7 +330,7 @@ export const reportsApi = {
 
 // Rules API
 export const rulesApi = {
-  create: (projectId: string, data: { name: string; conditions: any[]; condition_operator: string; actions: any[]; priority?: number }) =>
+  create: (projectId: string, data: { name: string; conditions: any[]; condition_operator: string; actions: any[]; priority?: number; element_mapped?: boolean }) =>
     apiClient.post(`/api/projects/${projectId}/rules`, data),
   list: (projectId: string) =>
     apiClient.get(`/api/projects/${projectId}/rules`),

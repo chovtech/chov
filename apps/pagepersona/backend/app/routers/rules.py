@@ -47,7 +47,8 @@ async def create(
         conditions=body.conditions,
         condition_operator=body.condition_operator,
         actions=body.actions,
-        priority=body.priority
+        priority=body.priority,
+        element_mapped=body.element_mapped
     )
     return rule
 
@@ -92,7 +93,8 @@ async def update(
         condition_operator=body.condition_operator,
         actions=body.actions,
         priority=body.priority,
-        is_active=body.is_active
+        is_active=body.is_active,
+        element_mapped=body.element_mapped
     )
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")

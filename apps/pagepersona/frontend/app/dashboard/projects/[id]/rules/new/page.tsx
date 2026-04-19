@@ -11,6 +11,8 @@ import CopyWriter from '@/components/ui/CopyWriter'
 import { rulesApi, projectApi, apiClient } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
 
+const NEEDS_ELEMENT_TYPES = ['swap_text', 'swap_image', 'hide_section', 'show_element', 'swap_url', 'insert_countdown']
+
 const ACTION_TYPES = [
   { key: "swap_text",         labelKey: "picker.action_swap_text",         icon: "text_fields",    needsElement: true  },
   { key: "swap_image",        labelKey: "picker.action_swap_image",        icon: "image",          needsElement: true  },
@@ -314,13 +316,15 @@ function NewRulePageInner() {
   const handleSave = async () => {
     if (!canSave) return
     setSaving(true)
+    const element_mapped = actions.every(a => !NEEDS_ELEMENT_TYPES.includes(a.type) || a.target_block.trim().length > 0)
     try {
       await rulesApi.create(projectId, {
         name: ruleName,
         conditions: conditions.map(c => ({ signal: c.signal, operator: c.operator, value: c.value })),
         condition_operator: conditionOperator,
         actions: actions.map(a => ({ type: a.type, target_block: a.target_block, value: a.value })),
-        priority: 0
+        priority: 0,
+        element_mapped
       })
       router.push("/dashboard/projects/" + projectId + "/rules")
     } catch (err) {

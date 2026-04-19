@@ -52,6 +52,8 @@ const ACTION_LABELS: Record<string, string> = {
   send_webhook: "Send webhook",
 }
 
+const NEEDS_ELEMENT_TYPES = ['swap_text', 'swap_image', 'hide_section', 'show_element', 'swap_url', 'insert_countdown']
+
 const ACTION_ICONS: Record<string, string> = {
   swap_text: "text_fields",
   swap_image: "image",
@@ -84,6 +86,7 @@ interface Rule {
   actions: any[]
   priority: number
   is_active: boolean
+  element_mapped: boolean
   created_at: string
 }
 
@@ -375,7 +378,18 @@ export default function RulesPage() {
                     <td className="px-4 py-4 text-slate-300 cursor-grab">
                       <Icon name="drag_indicator" className="text-xl" />
                     </td>
-                    <td className="px-6 py-4 text-sm font-semibold text-slate-900">{rule.name}</td>
+                    <td className="px-6 py-4">
+                      <p className="text-sm font-semibold text-slate-900">{rule.name}</p>
+                      {!rule.element_mapped && rule.actions.some((a: any) => NEEDS_ELEMENT_TYPES.includes(a.type)) && (
+                        <button
+                          onClick={() => router.push(`/dashboard/projects/${projectId}/rules/${rule.id}/edit`)}
+                          className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold hover:bg-amber-200 transition-colors"
+                        >
+                          <Icon name="warning" className="text-[11px]" />
+                          Not mapped
+                        </button>
+                      )}
+                    </td>
                     <td className="px-6 py-4">
                       {rule.conditions.length > 0 ? (
                         <div className="flex flex-col gap-1">
