@@ -75,6 +75,13 @@ async def billing_summary(
     countdowns_used = await db.fetchval(
         "SELECT COUNT(*) FROM countdowns WHERE workspace_id = $1", ws_id
     ) or 0
+    workspaces_used = await db.fetchval(
+        "SELECT COUNT(*) FROM workspaces WHERE owner_id = $1 AND parent_workspace_id IS NULL",
+        current_user["id"]
+    ) or 0
+    client_accounts_used = await db.fetchval(
+        "SELECT COUNT(*) FROM workspaces WHERE parent_workspace_id = $1", ws_id
+    ) or 0
 
     return {
         "plan": plan,
@@ -99,6 +106,14 @@ async def billing_summary(
             "countdowns": {
                 "used": int(countdowns_used),
                 "limit": limits["countdowns"],
+            },
+            "workspaces": {
+                "used": int(workspaces_used),
+                "limit": limits["workspaces"],
+            },
+            "client_accounts": {
+                "used": int(client_accounts_used),
+                "limit": limits["client_accounts"],
             },
         },
     }

@@ -486,17 +486,37 @@ function BillingTab({ workspaceId }: { workspaceId?: string }) {
         {u.projects && <UsageMeter label="Projects" used={u.projects.used} limit={u.projects.limit} icon="folder" />}
         {u.popups && <UsageMeter label="Popups" used={u.popups.used} limit={u.popups.limit} icon="layers" />}
         {u.countdowns && <UsageMeter label="Countdown Timers" used={u.countdowns.used} limit={u.countdowns.limit} icon="timer" />}
-        {u.rules_per_project && (
-          <div className="flex items-center justify-between py-2 border-t border-slate-100">
-            <div className="flex items-center gap-1.5">
-              <Icon name="rule" className="text-slate-400 text-sm" />
-              <span className="text-sm font-semibold text-slate-700">Rules per project</span>
-            </div>
-            <span className="text-xs font-bold text-slate-500">
-              {u.rules_per_project.limit === null ? 'Unlimited' : `Up to ${u.rules_per_project.limit}`}
-            </span>
-          </div>
+        {u.workspaces && <UsageMeter label="Workspaces" used={u.workspaces.used} limit={u.workspaces.limit} icon="hub" />}
+        {u.client_accounts && u.client_accounts.limit !== 0 && (
+          <UsageMeter label="Client Accounts" used={u.client_accounts.used} limit={u.client_accounts.limit} icon="groups" />
         )}
+        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+          <div className="flex items-center gap-1.5">
+            <Icon name="rule" className="text-slate-400 text-sm" />
+            <span className="text-sm font-semibold text-slate-700">Rules per project</span>
+          </div>
+          <span className="text-xs font-bold text-slate-500">
+            {u.rules_per_project?.limit === null ? 'Unlimited' : `Up to ${u.rules_per_project?.limit ?? '—'}`}
+          </span>
+        </div>
+        <div className="flex items-center justify-between border-t border-slate-100 pt-2">
+          <div className="flex items-center gap-1.5">
+            <Icon name="palette" className="text-slate-400 text-sm" />
+            <span className="text-sm font-semibold text-slate-700">Remove PagePersona branding</span>
+          </div>
+          <span className={`text-xs font-bold ${['professional','agency','owner'].includes(plan) ? 'text-green-600' : 'text-slate-400'}`}>
+            {['professional','agency','owner'].includes(plan) ? 'Included' : 'Professional+'}
+          </span>
+        </div>
+        <div className="flex items-center justify-between border-t border-slate-100 pt-2">
+          <div className="flex items-center gap-1.5">
+            <Icon name="domain" className="text-slate-400 text-sm" />
+            <span className="text-sm font-semibold text-slate-700">White-label dashboard</span>
+          </div>
+          <span className={`text-xs font-bold ${['agency','owner'].includes(plan) ? 'text-green-600' : 'text-slate-400'}`}>
+            {['agency','owner'].includes(plan) ? 'Included' : 'Agency+'}
+          </span>
+        </div>
       </div>
 
       {/* AI Coins */}
@@ -515,7 +535,26 @@ function BillingTab({ workspaceId }: { workspaceId?: string }) {
             <p className="text-xs text-slate-400 mt-1">{data.lifetime_coins_earned.toLocaleString()} earned lifetime</p>
           </>
         )}
-        <p className="text-xs text-slate-500 mt-3">Coins are used for AI actions — generating copy, insights, images, and rule suggestions.</p>
+        <p className="text-xs text-slate-500 mt-3">Coins power AI features — copy writing, insights, image generation, and rule suggestions.</p>
+        {!data.is_unlimited_coins && (
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <p className="text-xs font-bold text-slate-500 mb-2">Top-up packs (one-time purchase)</p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { coins: '100 coins', price: '$7' },
+                { coins: '500 coins', price: '$27' },
+                { coins: '2,000 coins', price: '$67' },
+                { coins: '10,000 coins', price: '$197' },
+              ].map(pack => (
+                <div key={pack.coins} className="flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
+                  <span className="text-xs font-bold text-slate-700">{pack.coins}</span>
+                  <span className="text-xs font-black text-brand">{pack.price}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-slate-400 mt-3">Coin top-ups are purchased via PayPal. Coming soon — contact support to top up now.</p>
+          </div>
+        )}
       </div>
 
       {/* Upgrade CTA */}

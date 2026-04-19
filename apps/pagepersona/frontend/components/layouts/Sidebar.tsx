@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import Icon from '@/components/ui/Icon'
-import { authApi } from '@/lib/api/client'
+import { authApi, billingApi } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
 import { useWhiteLabel } from '@/lib/context/WhiteLabelContext'
 
@@ -47,9 +47,17 @@ export default function Sidebar() {
   const { t } = useTranslation('common')
   const [user, setUser] = useState<User | null>(null)
   const [workspaceOpen, setWorkspaceOpen] = useState(false)
+  const [planLabel, setPlanLabel] = useState<string | null>(null)
+  const [planKey, setPlanKey] = useState<string>('trial')
   const { workspaces, activeWorkspace, setActiveWorkspaceId } = useWorkspace()
   const router = useRouter()
 
+  useEffect(() => {
+    if (!activeWorkspace?.id) return
+    billingApi.summary(activeWorkspace.id)
+      .then(res => { setPlanLabel(res.data.plan_label); setPlanKey(res.data.plan) })
+      .catch(() => null)
+  }, [activeWorkspace?.id])
 
   useEffect(() => {
     authApi.me().then(res => setUser(res.data)).catch(() => null)
@@ -245,13 +253,22 @@ export default function Sidebar() {
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase tracking-widest text-white/70">{t('sidebar.currentPlan')}</p>
-              <p className="text-xs font-bold text-white">{t('sidebar.soloPlan')}</p>
+              <p className="text-xs font-bold text-white">{planLabel ?? '...'}</p>
             </div>
           </div>
-          <p className="text-[10px] text-white/70 mb-3 leading-relaxed">{t('sidebar.upgradeDescription')}</p>
-          <button className="w-full py-2 bg-white text-brand rounded-xl text-xs font-bold hover:bg-white/90 transition-colors">
-            {t('sidebar.upgradeNow')}
-          </button>
+          {['trial', 'fe'].includes(planKey) && (
+            <>
+              <p className="text-[10px] text-white/70 mb-3 leading-relaxed">{t('sidebar.upgradeDescription')}</p>
+              <a
+                href="https://usepagepersona.com/upgrade"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full py-2 text-center bg-white text-brand rounded-xl text-xs font-bold hover:bg-white/90 transition-colors"
+              >
+                {t('sidebar.upgradeNow')}
+              </a>
+            </>
+          )}
         </div>
       </div>}
 
