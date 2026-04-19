@@ -1,0 +1,104 @@
+"""
+Billing summary endpoint — returns plan, coins, expiry, and usage meters.
+"""
+import uuid
+import asyncpg
+from fastapi import APIRouter, Depends, Query
+from typing import Optional
+from app.database import get_db
+from app.core.security import get_current_user
+from app.core.plan_limits import PLAN_LIMITS
+
+router = APIRouter(prefix="/api/billing", tags=["billing"])
+
+PLAN_LABELS = {
+    "trial":        "Free Trial",
+    "fe":           "Core",
+    "unlimited":    "Unlimited",
+    "professional": "Professional",
+    "agency":       "Agency",
+    "owner":        "Owner",
+}
+
+
+@router.get("/summary")
+async def billing_summary(
+    workspace_id: Optional[str] = Query(None),
+    db: asyncpg.Connection = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    # Resolve workspace
+    if workspace_id:
+        ws = await db.fetchrow(
+            "SELECT id FROM workspaces WHERE id = $1 AND owner_id = $2",
+            workspace_id, current_user["id"]
+        )
+    else:
+        ws = await db.fetchrow(
+            "SELECT id FROM workspaces WHERE owner_id = $1 ORDER BY created_at ASC LIMIT 1",
+            current_user["id"]
+        )
+
+    if not ws:
+        return {"plan": "trial", "plan_label": "Free Trial", "expires_at": None,
+                "coins_balance": 0, "is_unlimited_coins": False, "usage": {}}
+
+    ws_id = uuid.UUID(str(ws["id"]))
+
+    # Entitlement
+    ent = await db.fetchrow(
+        """SELECT plan, expires_at, status FROM entitlements
+           WHERE workspace_id = $1 AND product_id = 'pagepersona' AND status = 'active'
+           ORDER BY created_at DESC LIMIT 1""",
+        ws_id
+    )
+    plan = ent["plan"] if ent else "trial"
+    expires_at = ent["expires_at"].isoformat() if ent and ent["expires_at"] else None
+
+    # Coins
+    coins_row = await db.fetchrow(
+        "SELECT balance, lifetime_earned FROM ai_coins WHERE workspace_id = $1", ws_id
+    )
+    coins_balance = int(coins_row["balance"]) if coins_row else 0
+    lifetime_earned = int(coins_row["lifetime_earned"]) if coins_row else 0
+    is_unlimited_coins = (plan == "owner")
+
+    # Usage counts
+    limits = PLAN_LIMITS.get(plan, PLAN_LIMITS["trial"])
+
+    projects_used = await db.fetchval(
+        "SELECT COUNT(*) FROM projects WHERE workspace_id = $1", ws_id
+    ) or 0
+    popups_used = await db.fetchval(
+        "SELECT COUNT(*) FROM popups WHERE workspace_id = $1", ws_id
+    ) or 0
+    countdowns_used = await db.fetchval(
+        "SELECT COUNT(*) FROM countdowns WHERE workspace_id = $1", ws_id
+    ) or 0
+
+    return {
+        "plan": plan,
+        "plan_label": PLAN_LABELS.get(plan, plan.title()),
+        "expires_at": expires_at,
+        "coins_balance": coins_balance,
+        "lifetime_coins_earned": lifetime_earned,
+        "is_unlimited_coins": is_unlimited_coins,
+        "usage": {
+            "projects": {
+                "used": int(projects_used),
+                "limit": limits["projects"],
+            },
+            "rules_per_project": {
+                "used": None,
+                "limit": limits["rules_per_project"],
+            },
+            "popups": {
+                "used": int(popups_used),
+                "limit": limits["popups"],
+            },
+            "countdowns": {
+                "used": int(countdowns_used),
+                "limit": limits["countdowns"],
+            },
+        },
+    }

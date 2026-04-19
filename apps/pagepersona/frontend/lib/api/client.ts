@@ -265,6 +265,12 @@ export const assetsApi = {
     apiClient.delete(`/api/assets/${id}`),
 }
 
+// Billing API
+export const billingApi = {
+  summary: (workspaceId?: string) =>
+    apiClient.get('/api/billing/summary', { params: workspaceId ? { workspace_id: workspaceId } : {} }),
+}
+
 // AI API
 export const aiApi = {
   getCoins: (workspaceId?: string) =>

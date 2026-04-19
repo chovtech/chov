@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
-import { authApi, userApi, workspaceApi, teamApi, aiApi } from '@/lib/api/client'
+import { authApi, userApi, workspaceApi, teamApi, aiApi, billingApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { useLanguage } from '@/lib/hooks/useLanguage'
 import ImageUploader from '@/components/ui/ImageUploader'
@@ -373,6 +373,173 @@ function BrandKnowledgeTab({ t, inputClass, msgClass }: { t: any; inputClass: st
         </button>
       )}
     </form>
+  )
+}
+
+const PLAN_COLORS: Record<string, string> = {
+  trial:        'from-slate-500 to-slate-600',
+  fe:           'from-brand to-brand/80',
+  unlimited:    'from-violet-600 to-violet-500',
+  professional: 'from-emerald-600 to-emerald-500',
+  agency:       'from-orange-500 to-amber-500',
+  owner:        'from-slate-900 to-slate-700',
+}
+
+const PLAN_FEATURES: Record<string, string[]> = {
+  trial:        ['1 project', '3 rules/project', '1 popup', '1 countdown', '20 AI coins'],
+  fe:           ['5 projects', '10 rules/project', '10 popups', '5 countdowns', '50 AI coins'],
+  unlimited:    ['Unlimited projects', 'Unlimited rules', 'Unlimited popups', 'Unlimited countdowns', '200 AI coins'],
+  professional: ['Everything in Unlimited', 'No PagePersona branding', 'Custom sender name', 'Branded emails'],
+  agency:       ['Everything in Professional', '100 client sub-accounts', 'White-label dashboard'],
+  owner:        ['Everything unlocked', 'Unlimited AI coins', 'Internal access'],
+}
+
+function UsageMeter({ label, used, limit, icon }: { label: string; used: number; limit: number | null; icon: string }) {
+  const pct = limit ? Math.min(used / limit * 100, 100) : 0
+  const atLimit = limit !== null && used >= limit
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-1.5">
+          <Icon name={icon} className="text-slate-400 text-sm" />
+          <span className="text-sm font-semibold text-slate-700">{label}</span>
+        </div>
+        <span className={`text-xs font-bold ${atLimit ? 'text-red-500' : 'text-slate-500'}`}>
+          {used} / {limit === null ? '∞' : limit}
+        </span>
+      </div>
+      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+        {limit === null ? (
+          <div className="h-full w-full bg-brand/20 rounded-full" />
+        ) : (
+          <div
+            className={`h-full rounded-full transition-all ${atLimit ? 'bg-red-400' : pct > 75 ? 'bg-amber-400' : 'bg-brand'}`}
+            style={{ width: `${pct}%` }}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+function BillingTab({ workspaceId }: { workspaceId?: string }) {
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!workspaceId) return
+    billingApi.summary(workspaceId)
+      .then(r => setData(r.data))
+      .catch(() => null)
+      .finally(() => setLoading(false))
+  }, [workspaceId])
+
+  if (loading) return (
+    <div className="flex justify-center py-16">
+      <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+
+  if (!data) return null
+
+  const plan: string = data.plan ?? 'trial'
+  const gradientClass = PLAN_COLORS[plan] ?? PLAN_COLORS.trial
+  const features = PLAN_FEATURES[plan] ?? []
+  const expiresAt = data.expires_at ? new Date(data.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null
+  const isUpgradeable = ['trial', 'fe'].includes(plan)
+  const u = data.usage ?? {}
+
+  return (
+    <div className="max-w-3xl space-y-6">
+
+      {/* Plan card */}
+      <div className={`bg-gradient-to-br ${gradientClass} rounded-2xl p-6 text-white shadow-lg`}>
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-white/60 mb-1">Current Plan</p>
+            <h2 className="text-2xl font-black">{data.plan_label}</h2>
+            {expiresAt ? (
+              <p className="text-sm text-white/70 mt-1">Renews {expiresAt}</p>
+            ) : (
+              <p className="text-sm text-white/70 mt-1">Lifetime access — never expires</p>
+            )}
+          </div>
+          <div className="size-12 rounded-xl bg-white/10 flex items-center justify-center">
+            <Icon name="workspace_premium" className="text-2xl text-white" />
+          </div>
+        </div>
+        {features.length > 0 && (
+          <div className="mt-5 pt-5 border-t border-white/20 grid grid-cols-2 gap-2">
+            {features.map(f => (
+              <div key={f} className="flex items-center gap-2">
+                <Icon name="check_circle" className="text-white/70 text-[16px] shrink-0" />
+                <span className="text-sm text-white/80">{f}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Usage meters */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-5">
+        <h3 className="text-sm font-bold text-slate-900">Usage</h3>
+        {u.projects && <UsageMeter label="Projects" used={u.projects.used} limit={u.projects.limit} icon="folder" />}
+        {u.popups && <UsageMeter label="Popups" used={u.popups.used} limit={u.popups.limit} icon="layers" />}
+        {u.countdowns && <UsageMeter label="Countdown Timers" used={u.countdowns.used} limit={u.countdowns.limit} icon="timer" />}
+        {u.rules_per_project && (
+          <div className="flex items-center justify-between py-2 border-t border-slate-100">
+            <div className="flex items-center gap-1.5">
+              <Icon name="rule" className="text-slate-400 text-sm" />
+              <span className="text-sm font-semibold text-slate-700">Rules per project</span>
+            </div>
+            <span className="text-xs font-bold text-slate-500">
+              {u.rules_per_project.limit === null ? 'Unlimited' : `Up to ${u.rules_per_project.limit}`}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* AI Coins */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold text-slate-900">AI Coins</h3>
+          {data.is_unlimited_coins && (
+            <span className="px-2.5 py-1 bg-brand/10 text-brand text-xs font-bold rounded-full">Unlimited</span>
+          )}
+        </div>
+        {data.is_unlimited_coins ? (
+          <p className="text-3xl font-black text-brand">∞</p>
+        ) : (
+          <>
+            <p className="text-3xl font-black text-slate-900">{data.coins_balance.toLocaleString()}</p>
+            <p className="text-xs text-slate-400 mt-1">{data.lifetime_coins_earned.toLocaleString()} earned lifetime</p>
+          </>
+        )}
+        <p className="text-xs text-slate-500 mt-3">Coins are used for AI actions — generating copy, insights, images, and rule suggestions.</p>
+      </div>
+
+      {/* Upgrade CTA */}
+      {isUpgradeable && (
+        <div className="bg-brand/5 border border-brand/20 rounded-2xl p-6 flex items-center justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-bold text-slate-900 mb-1">Unlock more</h3>
+            <p className="text-xs text-slate-500">Upgrade your plan to remove limits and get more AI coins.</p>
+          </div>
+          <a
+            href="https://usepagepersona.com/upgrade"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-shrink-0 px-5 py-2.5 bg-brand text-white text-sm font-bold rounded-xl hover:bg-brand/90 transition-colors">
+            Upgrade
+          </a>
+        </div>
+      )}
+
+      {/* JVZoo note */}
+      <p className="text-xs text-slate-400 text-center">
+        Purchased via JVZoo? Your plan is managed there. Contact support if your plan is not showing correctly.
+      </p>
+    </div>
   )
 }
 
@@ -768,49 +935,7 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'billing' && (
-            <div className="max-w-3xl space-y-6">
-              {/* Current plan card */}
-              <div className="bg-gradient-to-br from-brand to-brand/90 rounded-2xl p-6 text-white shadow-lg shadow-brand/20">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-widest text-white/60 mb-1">{t('billing.current_plan')}</p>
-                    <h2 className="text-2xl font-black">{t('billing.ltd_plan')}</h2>
-                    <p className="text-sm text-white/70 mt-1">{t('billing.ltd_desc')}</p>
-                  </div>
-                  <div className="size-12 rounded-xl bg-white/10 flex items-center justify-center">
-                    <Icon name="workspace_premium" className="text-2xl text-white" />
-                  </div>
-                </div>
-                <div className="mt-6 pt-5 border-t border-white/20">
-                  <p className="text-xs text-white/60 mb-3">{t('billing.includes')}</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {(['billing.feature_projects','billing.feature_rules','billing.feature_popups','billing.feature_countdowns','billing.feature_analytics','billing.feature_team','billing.feature_agency','billing.feature_whitelabel'] as const).map(key => (
-                      <div key={key} className="flex items-center gap-2">
-                        <Icon name="check_circle" className="text-white/70 text-[16px]" />
-                        <span className="text-sm text-white/80">{t(key)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              {/* Manage billing */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="size-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                    <Icon name="credit_card" className="text-slate-500 text-xl" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('billing.manage_title')}</h3>
-                    <p className="text-xs text-slate-500">{t('billing.manage_desc')}</p>
-                  </div>
-                </div>
-                <button disabled className="flex items-center gap-2 px-5 py-2.5 bg-slate-100 text-slate-400 rounded-xl text-sm font-bold cursor-not-allowed">
-                  <Icon name="open_in_new" className="text-[18px]" />
-                  {t('billing.manage_btn')}
-                </button>
-                <p className="text-xs text-slate-400 mt-3">{t('billing.jvzoo_note')}</p>
-              </div>
-            </div>
+            <BillingTab workspaceId={activeWorkspace?.id} />
           )}
 
           {activeTab === 'brand_knowledge' && (
