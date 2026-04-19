@@ -4,29 +4,110 @@
 
 ---
 
-## PHASE 1 — Finish the AI Features
-
-1. **Analytics Insights**
-   The AI tip card already exists on the project page (the blue card). Right now it shows a fixed message. We need to make it generate a real AI insight based on actual visitor data — telling the user what's working, what's not, and what to do next. There will also be a page where all past insights are saved, linked from the analytics tab.
-
-2. **Send Report button**
-   The backend for this is already built. We just need to turn the button on. Any user (not just agency users) can type an email address and send a summary of their project's analytics to anyone they want.
 
 ---
 
 ## PHASE 2 — Billing: Enforce Plan Limits
 
-3. **Stop users when they hit their plan limit**
-   Right now nothing stops a free user from creating unlimited projects or rules. We need to add those checks. When someone hits their limit, they get a clear message telling them which plan to upgrade to, with a link to buy it.
-
-4. **Show real billing info in Settings**
-   The billing tab in Settings currently shows placeholder content. We need to show the user's actual plan, how many AI coins they have left, when their plan expires, and how much of their limits they've used.
+4. **Show real billing info in Settings** ✅ DONE
+   Live plan, coin balance, usage meters, upgrade CTAs per plan, client workspace breakdown.
 
 5. **Handle plan upgrades from JVZoo**
-   When someone buys a higher plan on JVZoo, we need to automatically update their account — give them the new plan and add the extra coins that come with it. Currently this only works for brand new users, not existing ones.
+   When someone buys a higher plan on JVZoo, automatically update their account — upgrade plan + top up coins. Currently only works for brand new users, not existing ones buying a higher OTO.
 
-6. **Let users buy more AI coins (via PayPal)**
-   When a user runs out of AI coins, they should be able to buy more without changing their plan. Four pack sizes: $7, $27, $67, or $197. PayPal handles the payment and coins are added instantly.
+6. **Let users buy more AI coins**
+   Coin top-up packs ($7 / $27 / $67 / $197) shown on billing page. Currently sends an email request — full PayPal/Stripe integration is a later phase.
+
+---
+
+## PHASE 2B — Plan Enforcement (detailed build + test plan)
+
+### What each plan can do
+
+| Resource | trial | Core (fe) | Unlimited | Professional | Agency | Owner |
+|---|---|---|---|---|---|---|
+| Projects | 1 | 5 | ∞ | ∞ | ∞ | ∞ |
+| Rules per project | 3 | 10 | ∞ | ∞ | ∞ | ∞ |
+| Popups | 1 | 10 | ∞ | ∞ | ∞ | ∞ |
+| Countdowns | 1 | 5 | ∞ | ∞ | ∞ | ∞ |
+| Client accounts | 0 | 0 | 0 | 0 | 100 | ∞ |
+| Remove branding | ✗ | ✗ | ✗ | ✅ | ✅ | ✅ |
+| White-label dashboard (brand/logo/color) | ✗ | ✗ | ✗ | ✗ | ✅ | ✅ |
+| Custom domain | ✗ | ✗ | ✗ | ✗ | ✅ | ✅ |
+| AI coins | 20 | 50 | 200 | 200 | 200 | ∞ |
+
+---
+
+### Backend — what to build
+
+#### A. Fix plan lookup for client sub-workspaces ❌
+`enforce_plan_limit()` looks up the plan by `workspace_id`. Client sub-workspaces have no entitlement row of their own — the entitlement is on the parent (agency) workspace. Right now any create inside a client workspace defaults to trial limits immediately.
+- Fix: in `enforce_plan_limit()`, check if `workspace_id` has a `parent_workspace_id` — if so, use the parent's `workspace_id` for the plan lookup.
+- Same fix needed in `billing.py` `_get_plan()` helper.
+
+#### B. Backend 402 gates — status
+
+| Endpoint | Resource gated | Status |
+|---|---|---|
+| `POST /api/projects` | projects | ✅ done |
+| `POST /api/projects/{id}/rules` | rules_per_project | ✅ done |
+| `POST /api/popups` | popups | ✅ done |
+| `POST /api/countdowns` | countdowns | ✅ done |
+| `POST /api/clients/invite` | client_accounts | ❌ missing |
+
+#### C. White-label feature gating ❌
+Currently any owner can save white-label settings regardless of plan. Backend needs to enforce:
+- `hide_powered_by = true` → reject unless Professional, Agency, or Owner
+- Brand name / logo / icon / primary color → reject unless Agency or Owner
+- Custom domain save/verify → reject unless Agency or Owner
+- Gate in: `PATCH /api/workspaces/{id}`
+
+---
+
+### Frontend — what to build
+
+#### D. Create button gates ❌
+Every "create" button needs to check usage vs limit before the user clicks. When at limit, the button is disabled and shows an inline upgrade nudge. No silent API failure.
+
+| Button / action | Page | Gate needed |
+|---|---|---|
+| New Project | `/dashboard` project list | projects limit |
+| Add Rule | `/dashboard/projects/[id]/rules` | rules_per_project limit |
+| New Popup | `/dashboard/elements` popups tab | popups limit |
+| New Countdown | `/dashboard/elements` countdowns tab | countdowns limit |
+| Invite Client | `/dashboard/agency` | client_accounts limit |
+| White-label settings form | Settings → White Label tab | agency plan check |
+| Custom domain form | Settings → White Label tab | agency plan check |
+| Remove branding toggle | Settings → White Label tab | professional plan check |
+
+#### E. Upgrade nudge copy — by stakeholder
+- **Owner** → "You've reached your [plan] limit. Upgrade to [next plan] to get more."
+- **Team member (admin/member)** → "This workspace has reached its limit. Ask the workspace owner to upgrade."
+- **Client (full access)** → No upgrade path — they can't buy. Show: "Your agency account has reached its limit. Contact your agency."
+- **Client (view-only)** → Can't create anything — no gates needed.
+- **Owner plan** → Never shown any limit or upgrade message.
+
+---
+
+### Test plan — verify plan by plan, stakeholder by stakeholder
+
+When building is done, manually test each row:
+
+#### Plan tests (logged in as workspace owner)
+- [ ] **trial** — can create 1 project, 1 popup, 1 countdown, 3 rules. 2nd of each is blocked with upgrade message.
+- [ ] **Core (fe)** — can create 5 projects, 10 popups, 5 countdowns, 10 rules. 6th project blocked. White-label tab visible but saving branding/domain blocked.
+- [ ] **Unlimited** — projects/rules/popups/countdowns all unrestricted. Client invite button hidden (0 slots). White-label blocked.
+- [ ] **Professional** — same as Unlimited. Remove branding toggle works and saves. White-label brand/logo still blocked. Custom domain blocked.
+- [ ] **Agency** — everything unrestricted. Client invite works up to 100. White-label brand/logo/domain all work.
+- [ ] **Owner** — zero limits shown anywhere. All features open.
+
+#### Stakeholder tests (with Core plan workspace as the base)
+- [ ] **Team admin** — hits project limit → sees "ask owner to upgrade" message (not upgrade link).
+- [ ] **Team member** — same as admin for limits. Cannot see billing tab (only owner can).
+- [ ] **Agency → client workspace (full access)** — agency plan applies, not trial. Client can create projects up to agency limit.
+- [ ] **Agency → client workspace (view-only)** — no create buttons shown at all.
+- [ ] **Client (full access)** — hitting limit shows "contact your agency" not upgrade link.
+- [ ] **Owner plan user** — no limits, no upgrade nudges anywhere.
 
 ---
 

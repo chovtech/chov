@@ -63,7 +63,6 @@ Everything in FE, plus:
 - Unlimited rules per project
 - Unlimited popups
 - Unlimited countdown timers
-- Unlimited workspaces
 - 200 AI coins (one-time; added on purchase, never resets monthly)
 - Priority support
 
