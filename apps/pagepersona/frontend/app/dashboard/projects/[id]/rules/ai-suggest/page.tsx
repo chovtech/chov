@@ -7,6 +7,7 @@ import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { projectApi, rulesApi, aiApi } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
+import { usePlanLimits } from '@/lib/hooks/usePlanLimits'
 
 const ACTION_ICONS: Record<string, string> = {
   swap_text: 'text_fields',
@@ -59,6 +60,11 @@ export default function AiSuggestPage() {
   const [error, setError] = useState('')
   const [balance, setBalance] = useState<number | null>(null)
   const [creating, setCreating] = useState(false)
+  const [existingRulesCount, setExistingRulesCount] = useState(0)
+  const { limitOf } = usePlanLimits()
+  const rulesLimit = limitOf('rules_per_project')
+  const slotsAvailable = rulesLimit === null ? Infinity : Math.max(0, rulesLimit - existingRulesCount)
+  const atRulesLimit = slotsAvailable === 0
 
   useEffect(() => {
     projectApi.get(projectId).then((res: any) => {
@@ -68,6 +74,10 @@ export default function AiSuggestPage() {
         (scan.headings?.length || 0) + (scan.ctas?.length || 0) +
         (scan.images?.length || 0) + (scan.sections?.length || 0) + (scan.custom_blocks?.length || 0)
       )
+    }).catch(() => {})
+
+    rulesApi.list(projectId).then((res: any) => {
+      setExistingRulesCount(res.data?.length ?? 0)
     }).catch(() => {})
 
     if (activeWorkspace?.id) {
@@ -88,7 +98,9 @@ export default function AiSuggestPage() {
       })
       const rules: AiRule[] = res.data.rules
       setSuggestions(rules)
-      setSelectedIds(new Set(rules.map((_, i) => i)))
+      // Auto-select only as many as available slots allow
+      const autoSelect = rules.slice(0, slotsAvailable === Infinity ? rules.length : slotsAvailable)
+      setSelectedIds(new Set(autoSelect.map((_, i) => i)))
       setBalance(res.data.balance)
     } catch (err: any) {
       const msg = err?.response?.data?.detail || 'Could not generate suggestions. Try again.'
@@ -101,7 +113,13 @@ export default function AiSuggestPage() {
   const toggleRule = (i: number) => {
     setSelectedIds(prev => {
       const next = new Set(prev)
-      next.has(i) ? next.delete(i) : next.add(i)
+      if (next.has(i)) {
+        next.delete(i)
+      } else {
+        // Don't allow selecting more than available slots
+        if (slotsAvailable !== Infinity && next.size >= slotsAvailable) return prev
+        next.add(i)
+      }
       return next
     })
   }
@@ -165,10 +183,10 @@ export default function AiSuggestPage() {
         {!generating && !suggestions && (
           <div className="flex flex-col items-center justify-center py-16 bg-white border border-slate-200 rounded-xl text-center px-8">
             <div className="w-16 h-16 rounded-2xl bg-brand/10 flex items-center justify-center mb-5">
-              <Icon name="auto_awesome" className="text-brand text-3xl" />
+              <Icon name={atRulesLimit ? 'lock' : 'auto_awesome'} className="text-brand text-3xl" />
             </div>
 
-            <h2 className="text-lg font-black text-slate-900 mb-3">Ready to generate</h2>
+            <h2 className="text-lg font-black text-slate-900 mb-3">{atRulesLimit ? 'Rule limit reached' : 'Ready to generate'}</h2>
 
             {blockCount > 0 ? (
               <p className="text-sm text-slate-500 max-w-sm mb-8">
@@ -189,13 +207,23 @@ export default function AiSuggestPage() {
               </div>
             )}
 
-            <button
-              onClick={handleGenerate}
-              className="flex items-center gap-2 px-8 py-3 bg-brand text-white font-bold rounded-xl shadow-md shadow-brand/20 hover:bg-brand/90 transition-all"
-            >
-              <Icon name="auto_awesome" className="text-base" />
-              Generate rules · 15 coins
-            </button>
+            {atRulesLimit ? (
+              <div className="flex flex-col items-center gap-3">
+                <p className="text-sm text-slate-500 max-w-sm">You've used all {rulesLimit} rule slots on this project. Delete an existing rule or upgrade your plan to add more.</p>
+                <a href="https://usepagepersona.com/upgrade" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-8 py-3 bg-brand text-white font-bold rounded-xl shadow-md shadow-brand/20 hover:bg-brand/90 transition-all">
+                  Upgrade plan
+                </a>
+              </div>
+            ) : (
+              <button
+                onClick={handleGenerate}
+                className="flex items-center gap-2 px-8 py-3 bg-brand text-white font-bold rounded-xl shadow-md shadow-brand/20 hover:bg-brand/90 transition-all"
+              >
+                <Icon name="auto_awesome" className="text-base" />
+                Generate rules · 15 coins
+              </button>
+            )}
 
             {blockCount === 0 && (
               <button
@@ -230,6 +258,15 @@ export default function AiSuggestPage() {
         {/* Suggestions */}
         {suggestions && !generating && (
           <>
+            {slotsAvailable !== Infinity && suggestions.length > slotsAvailable && (
+              <div className="mb-4 flex items-start gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl">
+                <Icon name="warning" className="text-amber-500 text-base shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-800">
+                  <span className="font-bold">You have {slotsAvailable} rule slot{slotsAvailable !== 1 ? 's' : ''} remaining</span> on this project ({rulesLimit} max on your plan). Only {slotsAvailable} rule{slotsAvailable !== 1 ? 's' : ''} can be selected. Upgrade to create more.
+                </p>
+              </div>
+            )}
+
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm font-bold text-slate-900">{suggestions.length} rules generated</p>

@@ -10,6 +10,7 @@ import ImageUploader from '@/components/ui/ImageUploader'
 import CopyWriter from '@/components/ui/CopyWriter'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { useLanguage } from '@/lib/hooks/useLanguage'
+import { usePlanLimits } from '@/lib/hooks/usePlanLimits'
 
 interface SelectedElement {
   selector: string
@@ -100,6 +101,9 @@ function PickerPageInner() {
   const [existingRules,setExistingRules]= useState<ExistingRule[]>([])
   const [loadingRules, setLoadingRules] = useState(false)
   const [view,         setView]         = useState<SidebarView>('home')
+  const { limitOf } = usePlanLimits()
+  const rulesLimit = limitOf('rules_per_project')
+  const atRulesLimit = rulesLimit !== null && existingRules.length >= rulesLimit
 
   const [ruleName,          setRuleName]          = useState('')
   const [conditionOperator, setConditionOperator] = useState<'AND'|'OR'>('AND')
@@ -175,6 +179,7 @@ function PickerPageInner() {
   }
 
   const openRuleEditor = () => {
+    if (atRulesLimit) return
     setRuleName('')
     setConditionOperator('AND')
     setConditions([])
@@ -475,7 +480,13 @@ function PickerPageInner() {
               <div className="px-5 py-4 border-b border-slate-100">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm font-semibold text-slate-900">{t('picker.default_content')}</p>
-                  <button onClick={openRuleEditor} className="text-xs font-semibold text-brand hover:underline">{t('picker.start_personalising')}</button>
+                  {atRulesLimit ? (
+                    <span className="text-xs font-semibold text-slate-400 flex items-center gap-1">
+                      <Icon name="lock" className="text-xs" /> Rule limit reached
+                    </span>
+                  ) : (
+                    <button onClick={openRuleEditor} className="text-xs font-semibold text-brand hover:underline">{t('picker.start_personalising')}</button>
+                  )}
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-3">
                   <div className="flex-1 min-w-0">
