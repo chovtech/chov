@@ -435,6 +435,14 @@ const DEFAULT_BILLING = {
   },
 }
 
+const PLAN_NEXT_STEP: Record<string, { label: string; price: string; detail: string; href: string; isService?: boolean }> = {
+  trial:        { label: 'Upgrade to Core',             price: '$37 one-time', detail: '5 projects, 10 rules/project, 10 popups & 5 countdowns.',       href: 'https://usepagepersona.com/upgrade' },
+  fe:           { label: 'Upgrade to Unlimited',        price: '$67/yr',       detail: 'Unlimited projects, rules, popups & countdowns + 200 AI coins.', href: 'https://usepagepersona.com/upgrade' },
+  unlimited:    { label: 'Upgrade to Professional',     price: '$47/yr',       detail: 'Remove PagePersona branding + branded emails with your logo.',    href: 'https://usepagepersona.com/upgrade' },
+  professional: { label: 'Upgrade to Agency',           price: '$197/yr',      detail: '100 client sub-accounts, full white-label & reseller rights.',    href: 'https://usepagepersona.com/upgrade' },
+  agency:       { label: 'Get White-Label Self-Hosted', price: '$497 one-time', detail: 'Your own SaaS on your domain — sell it under your brand.',       href: 'mailto:support@usepagepersona.com?subject=White-Label Self-Hosted Enquiry', isService: true },
+}
+
 const PREVIEW_COUNT = 5
 
 function ClientWorkspacesCard({ workspaces, slotsUsed, slotsLimit }: {
@@ -526,14 +534,7 @@ function BillingTab() {
   const gradientClass = PLAN_COLORS[plan] ?? PLAN_COLORS.trial
   const features = PLAN_FEATURES[plan] ?? []
   const expiresAt = data.expires_at ? new Date(data.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null
-  const NEXT_PLAN: Record<string, { label: string; price: string; detail: string; href: string; isService?: true }> = {
-    trial:        { label: 'Upgrade to Core',              price: '$37 one-time', detail: '5 projects, 10 rules/project, 10 popups & 5 countdowns.',        href: 'https://usepagepersona.com/upgrade' },
-    fe:           { label: 'Upgrade to Unlimited',         price: '$67/yr',       detail: 'Unlimited projects, rules, popups & countdowns + 200 AI coins.',  href: 'https://usepagepersona.com/upgrade' },
-    unlimited:    { label: 'Upgrade to Professional',      price: '$47/yr',       detail: 'Remove PagePersona branding + branded emails with your logo.',     href: 'https://usepagepersona.com/upgrade' },
-    professional: { label: 'Upgrade to Agency',            price: '$197/yr',      detail: '100 client sub-accounts, full white-label & reseller rights.',     href: 'https://usepagepersona.com/upgrade' },
-    agency:       { label: 'Get White-Label Self-Hosted',  price: '$497 one-time', detail: 'Your own SaaS on your domain — sell it under your brand.',       href: 'mailto:support@usepagepersona.com?subject=White-Label Self-Hosted Enquiry', isService: true },
-  }
-  const nextPlan = NEXT_PLAN[plan] ?? null
+  const nextPlan = PLAN_NEXT_STEP[plan] ?? null
   const u = data.usage ?? {}
 
   return (
