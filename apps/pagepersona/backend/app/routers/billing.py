@@ -106,6 +106,36 @@ async def billing_summary(
     except Exception:
         client_accounts_used = 0
 
+    # Client workspace breakdown (for agency/owner plans)
+    client_workspaces = []
+    if limits["client_accounts"] != 0:
+        try:
+            rows = await db.fetch(
+                """SELECT w.id, w.name, w.client_name, w.client_email,
+                          COUNT(DISTINCT p.id)::int AS project_count,
+                          COUNT(DISTINCT r.id)::int AS rule_count
+                   FROM workspaces w
+                   LEFT JOIN projects p ON p.workspace_id = w.id
+                   LEFT JOIN rules r ON r.project_id = p.id
+                   WHERE w.parent_workspace_id = $1
+                   GROUP BY w.id
+                   ORDER BY w.name ASC""",
+                ws_id
+            )
+            client_workspaces = [
+                {
+                    "id": str(row["id"]),
+                    "name": row["name"],
+                    "client_name": row["client_name"],
+                    "client_email": row["client_email"],
+                    "project_count": row["project_count"],
+                    "rule_count": row["rule_count"],
+                }
+                for row in rows
+            ]
+        except Exception:
+            client_workspaces = []
+
     return {
         "plan": plan,
         "plan_label": PLAN_LABELS.get(plan, plan.title()),
@@ -139,4 +169,5 @@ async def billing_summary(
                 "limit": limits["client_accounts"],
             },
         },
+        "client_workspaces": client_workspaces,
     }

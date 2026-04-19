@@ -505,10 +505,13 @@ function BillingTab() {
         <div className="flex items-center justify-between pt-2 border-t border-slate-100">
           <div className="flex items-center gap-1.5">
             <Icon name="rule" className="text-slate-400 text-sm" />
-            <span className="text-sm font-semibold text-slate-700">Rules per project</span>
+            <div>
+              <span className="text-sm font-semibold text-slate-700">Rules per project</span>
+              <p className="text-[11px] text-slate-400">Max personalisation rules on any single project</p>
+            </div>
           </div>
-          <span className="text-xs font-bold text-slate-500">
-            {u.rules_per_project?.limit === null ? 'Unlimited' : `Up to ${u.rules_per_project?.limit ?? '—'}`}
+          <span className="text-xs font-bold text-slate-500 flex-shrink-0 ml-4">
+            {u.rules_per_project?.limit === null ? '∞ Unlimited' : `${u.rules_per_project?.limit ?? '—'} max`}
           </span>
         </div>
         <div className="flex items-center justify-between border-t border-slate-100 pt-2">
@@ -534,6 +537,44 @@ function BillingTab() {
           )}
         </div>
       </div>
+
+      {/* Client workspace breakdown — agency/owner only */}
+      {data.client_workspaces && data.client_workspaces.length > 0 && (
+        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">Client Workspaces</h3>
+              <p className="text-xs text-slate-400 mt-0.5">{data.client_workspaces.length} of {u.client_accounts?.limit === null ? '∞' : u.client_accounts?.limit} slots used</p>
+            </div>
+            <Icon name="groups" className="text-slate-300 text-2xl" />
+          </div>
+          <div className="divide-y divide-slate-100">
+            {data.client_workspaces.map((cws: any) => (
+              <div key={cws.id} className="flex items-center justify-between px-6 py-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="size-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand font-bold text-xs flex-shrink-0">
+                    {(cws.name || 'CL').slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-slate-900 truncate">{cws.client_name || cws.name}</p>
+                    {cws.client_email && <p className="text-xs text-slate-400 truncate">{cws.client_email}</p>}
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 flex-shrink-0 ml-4">
+                  <div className="text-center">
+                    <p className="text-sm font-black text-slate-900">{cws.project_count}</p>
+                    <p className="text-[10px] text-slate-400">projects</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-black text-slate-900">{cws.rule_count}</p>
+                    <p className="text-[10px] text-slate-400">rules</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* AI Coins */}
       <div className="bg-white border border-slate-200 rounded-2xl p-6">
