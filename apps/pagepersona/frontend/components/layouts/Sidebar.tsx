@@ -52,16 +52,13 @@ export default function Sidebar() {
   const { workspaces, activeWorkspace, setActiveWorkspaceId } = useWorkspace()
   const router = useRouter()
 
+  const mainWorkspace = workspaces.find(ws => ws.parent_workspace_id === null)
+
   useEffect(() => {
-    if (!activeWorkspace?.id) {
-      setPlanLabel('Free Trial')
-      setPlanKey('trial')
-      return
-    }
-    billingApi.summary(activeWorkspace.id)
+    billingApi.summary()
       .then(res => { setPlanLabel(res.data.plan_label); setPlanKey(res.data.plan) })
       .catch(() => { setPlanLabel('Free Trial'); setPlanKey('trial') })
-  }, [activeWorkspace?.id])
+  }, [mainWorkspace?.id])
 
   useEffect(() => {
     authApi.me().then(res => setUser(res.data)).catch(() => null)

@@ -435,21 +435,16 @@ const DEFAULT_BILLING = {
   },
 }
 
-function BillingTab({ workspaceId }: { workspaceId?: string }) {
+function BillingTab() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!workspaceId) {
-      setData(DEFAULT_BILLING)
-      setLoading(false)
-      return
-    }
-    billingApi.summary(workspaceId)
+    billingApi.summary()
       .then(r => setData(r.data))
       .catch(() => setData(DEFAULT_BILLING))
       .finally(() => setLoading(false))
-  }, [workspaceId])
+  }, [])
 
   if (loading) return (
     <div className="flex justify-center py-16">
@@ -521,18 +516,22 @@ function BillingTab({ workspaceId }: { workspaceId?: string }) {
             <Icon name="palette" className="text-slate-400 text-sm" />
             <span className="text-sm font-semibold text-slate-700">Remove PagePersona branding</span>
           </div>
-          <span className={`text-xs font-bold ${['professional','agency','owner'].includes(plan) ? 'text-green-600' : 'text-slate-400'}`}>
-            {['professional','agency','owner'].includes(plan) ? 'Included' : 'Professional+'}
-          </span>
+          {['professional','agency','owner'].includes(plan) ? (
+            <span className="flex items-center gap-1 text-xs font-bold text-green-600"><Icon name="check_circle" className="text-sm" />Included</span>
+          ) : (
+            <span className="flex items-center gap-1 text-xs font-bold text-slate-400"><Icon name="lock" className="text-sm" />Professional plan only</span>
+          )}
         </div>
         <div className="flex items-center justify-between border-t border-slate-100 pt-2">
           <div className="flex items-center gap-1.5">
             <Icon name="domain" className="text-slate-400 text-sm" />
             <span className="text-sm font-semibold text-slate-700">White-label dashboard</span>
           </div>
-          <span className={`text-xs font-bold ${['agency','owner'].includes(plan) ? 'text-green-600' : 'text-slate-400'}`}>
-            {['agency','owner'].includes(plan) ? 'Included' : 'Agency+'}
-          </span>
+          {['agency','owner'].includes(plan) ? (
+            <span className="flex items-center gap-1 text-xs font-bold text-green-600"><Icon name="check_circle" className="text-sm" />Included</span>
+          ) : (
+            <span className="flex items-center gap-1 text-xs font-bold text-slate-400"><Icon name="lock" className="text-sm" />Agency plan only</span>
+          )}
         </div>
       </div>
 
@@ -995,7 +994,7 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'billing' && (
-            <BillingTab workspaceId={activeWorkspace?.id} />
+            <BillingTab />
           )}
 
           {activeTab === 'brand_knowledge' && (

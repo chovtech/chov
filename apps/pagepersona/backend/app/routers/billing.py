@@ -27,17 +27,14 @@ async def billing_summary(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
-    # Resolve workspace
-    if workspace_id:
-        ws = await db.fetchrow(
-            "SELECT id FROM workspaces WHERE id = $1 AND owner_id = $2",
-            workspace_id, current_user["id"]
-        )
-    else:
-        ws = await db.fetchrow(
-            "SELECT id FROM workspaces WHERE owner_id = $1 ORDER BY created_at ASC LIMIT 1",
-            current_user["id"]
-        )
+    # Always resolve to the user's own top-level (main) workspace.
+    # Billing is per-user subscription — client sub-workspaces don't carry entitlements.
+    ws = await db.fetchrow(
+        """SELECT id FROM workspaces
+           WHERE owner_id = $1 AND parent_workspace_id IS NULL
+           ORDER BY created_at ASC LIMIT 1""",
+        current_user["id"]
+    )
 
     trial_limits = PLAN_LIMITS["trial"]
     if not ws:
