@@ -7,6 +7,7 @@ import NewProjectModal from '@/components/ui/NewProjectModal'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { projectApi } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
+import { usePlanLimits } from '@/lib/hooks/usePlanLimits'
 
 const tabKeys = ['all', 'active', 'drafts', 'archived']
 
@@ -15,6 +16,8 @@ export default function DashboardPage() {
   const { activeWorkspace, loading: wsLoading } = useWorkspace()
   const isViewOnly = activeWorkspace?.member_role === 'client' && activeWorkspace?.client_access_level === 'view_only'
   const canCreateProject = !isViewOnly && activeWorkspace?.member_role !== 'member'
+  const { isAtLimit, gateMessage } = usePlanLimits()
+  const projectsGate = gateMessage('projects')
   const [activeTab, setActiveTab] = useState('all')
   const [modalOpen, setModalOpen] = useState(false)
   const [projects, setProjects] = useState([])
@@ -79,13 +82,25 @@ export default function DashboardPage() {
                 {t('dashboard.subheading')}
               </p>
             </div>
-            {canCreateProject && <button
-              onClick={() => setModalOpen(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl font-bold shadow-lg shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-            >
-              <Icon name="add" className="text-lg" />
-              <span>{t('dashboard.new_project')}</span>
-            </button>}
+            {canCreateProject && (
+              <div className="flex flex-col items-end gap-1">
+                <button
+                  onClick={() => !isAtLimit('projects') && setModalOpen(true)}
+                  disabled={isAtLimit('projects')}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl font-bold shadow-lg shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  <Icon name={isAtLimit('projects') ? 'lock' : 'add'} className="text-lg" />
+                  <span>{t('dashboard.new_project')}</span>
+                </button>
+                {projectsGate && (
+                  <p className="text-xs text-slate-500">
+                    {projectsGate.href
+                      ? <><span>{projectsGate.text.replace('to get more', '')} — </span><a href={projectsGate.href} target="_blank" rel="noopener noreferrer" className="text-brand font-semibold hover:underline">Upgrade</a></>
+                      : projectsGate.text}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Tabs */}
@@ -206,24 +221,42 @@ export default function DashboardPage() {
             ))}
 
             {/* Add new project card */}
-            {canCreateProject && <div
-              onClick={() => setModalOpen(true)}
-              className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center p-8 text-center hover:border-brand/40 transition-colors cursor-pointer group"
-            >
-              <div className="size-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Icon name="post_add" className="text-3xl text-slate-300 group-hover:text-brand" />
-              </div>
-              <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                {t('dashboard.new_project')}
-              </h4>
-              <p className="text-xs text-slate-500 mt-2 max-w-[200px]">
-                {t('dashboard.add_another_desc')}
-              </p>
-              <span className="mt-4 text-xs font-bold text-brand flex items-center gap-1">
-                <Icon name="add" className="text-sm" />
-                {t('dashboard.empty_state.cta_primary')}
-              </span>
-            </div>}
+            {canCreateProject && (
+              isAtLimit('projects') ? (
+                <div className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center p-8 text-center">
+                  <div className="size-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4">
+                    <Icon name="lock" className="text-3xl text-slate-300" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-700">Project limit reached</h4>
+                  {projectsGate && (
+                    <p className="text-xs text-slate-500 mt-2 max-w-[200px]">
+                      {projectsGate.href
+                        ? <><a href={projectsGate.href} target="_blank" rel="noopener noreferrer" className="text-brand font-semibold hover:underline">{projectsGate.text.split(' to get')[0]}</a>{' to get more projects.'}</>
+                        : projectsGate.text}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div
+                  onClick={() => setModalOpen(true)}
+                  className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center p-8 text-center hover:border-brand/40 transition-colors cursor-pointer group"
+                >
+                  <div className="size-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Icon name="post_add" className="text-3xl text-slate-300 group-hover:text-brand" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                    {t('dashboard.new_project')}
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-2 max-w-[200px]">
+                    {t('dashboard.add_another_desc')}
+                  </p>
+                  <span className="mt-4 text-xs font-bold text-brand flex items-center gap-1">
+                    <Icon name="add" className="text-sm" />
+                    {t('dashboard.empty_state.cta_primary')}
+                  </span>
+                </div>
+              )
+            )}
           </div>
         </div>
 

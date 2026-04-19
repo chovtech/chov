@@ -7,6 +7,7 @@ import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { workspaceApi, clientsApi } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
+import { usePlanLimits } from '@/lib/hooks/usePlanLimits'
 import NewClientModal from './NewClientModal'
 import ManageAccessModal from './ManageAccessModal'
 
@@ -65,6 +66,8 @@ export default function AgencyPage() {
 
   // Modals
   const [newOpen, setNewOpen] = useState(false)
+  const { isAtLimit, gateMessage } = usePlanLimits()
+  const clientsGate = gateMessage('client_accounts')
   const [manageClient, setManageClient] = useState<ClientWorkspace | null>(null)
 
   const [reportClient, setReportClient] = useState<ClientWorkspace | null>(null)
@@ -223,13 +226,23 @@ export default function AgencyPage() {
             <h1 className="text-3xl font-black tracking-tight text-slate-900">{t('agency.title')}</h1>
             <p className="text-slate-500 text-sm mt-1">{t('agency.subtitle')}</p>
           </div>
-          <button
-            onClick={() => setNewOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl font-bold shadow-lg shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-          >
-            <Icon name="person_add" className="text-lg" />
-            {t('agency.add_client')}
-          </button>
+          <div className="flex flex-col items-end gap-1">
+            <button
+              onClick={() => !isAtLimit('client_accounts') && setNewOpen(true)}
+              disabled={isAtLimit('client_accounts')}
+              className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl font-bold shadow-lg shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            >
+              <Icon name={isAtLimit('client_accounts') ? 'lock' : 'person_add'} className="text-lg" />
+              {t('agency.add_client')}
+            </button>
+            {clientsGate && (
+              <p className="text-xs text-slate-500">
+                {clientsGate.href
+                  ? <><a href={clientsGate.href} target="_blank" rel="noopener noreferrer" className="text-brand font-semibold hover:underline">Upgrade</a>{' for more client slots'}</>
+                  : clientsGate.text}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Tabs */}
@@ -397,16 +410,32 @@ export default function AgencyPage() {
             })}
 
             {/* Add new client card */}
-            <div
-              onClick={() => setNewOpen(true)}
-              className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-10 text-center hover:border-brand/40 hover:bg-brand/5 transition-all cursor-pointer group"
-            >
-              <div className="size-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Icon name="person_add" className="text-3xl text-slate-300 group-hover:text-brand" />
+            {isAtLimit('client_accounts') ? (
+              <div className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-10 text-center">
+                <div className="size-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4">
+                  <Icon name="lock" className="text-3xl text-slate-300" />
+                </div>
+                <h4 className="text-sm font-bold text-slate-700">Client slot limit reached</h4>
+                {clientsGate && (
+                  <p className="text-xs text-slate-400 mt-1 max-w-[200px]">
+                    {clientsGate.href
+                      ? <><a href={clientsGate.href} target="_blank" rel="noopener noreferrer" className="text-brand font-semibold hover:underline">Upgrade</a>{' to add more clients'}</>
+                      : clientsGate.text}
+                  </p>
+                )}
               </div>
-              <h4 className="text-sm font-bold text-slate-700">{t('agency.add_new_client')}</h4>
-              <p className="text-xs text-slate-400 mt-1 max-w-[200px]">{t('agency.add_new_client_desc')}</p>
-            </div>
+            ) : (
+              <div
+                onClick={() => setNewOpen(true)}
+                className="bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-10 text-center hover:border-brand/40 hover:bg-brand/5 transition-all cursor-pointer group"
+              >
+                <div className="size-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Icon name="person_add" className="text-3xl text-slate-300 group-hover:text-brand" />
+                </div>
+                <h4 className="text-sm font-bold text-slate-700">{t('agency.add_new_client')}</h4>
+                <p className="text-xs text-slate-400 mt-1 max-w-[200px]">{t('agency.add_new_client_desc')}</p>
+              </div>
+            )}
 
           </div>
         )}

@@ -8,6 +8,7 @@ import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { apiClient } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
+import { usePlanLimits } from '@/lib/hooks/usePlanLimits'
 
 interface Popup {
   id: string
@@ -46,6 +47,9 @@ export default function ElementsPage() {
   const { t } = useTranslation('common')
   const { activeWorkspace } = useWorkspace()
   const router = useRouter()
+  const { isAtLimit, gateMessage } = usePlanLimits()
+  const popupsGate = gateMessage('popups')
+  const countdownsGate = gateMessage('countdowns')
   const [tab, setTab] = useState(() => {
     if (typeof window !== 'undefined') return localStorage.getItem('pp_elements_tab') || 'popups'
     return 'popups'
@@ -124,22 +128,42 @@ export default function ElementsPage() {
               <p className="text-sm text-slate-500 mt-0.5">{t('elements.subtitle')}</p>
             </div>
             {tab === 'popups' && (
-              <button
-                onClick={() => router.push('/dashboard/elements/popups/new')}
-                className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-brand/90 text-white text-sm font-bold rounded-xl transition-all shadow-sm"
-              >
-                <Icon name="add" className="text-base" />
-                {t('elements.popup_new')}
-              </button>
+              <div className="flex flex-col items-end gap-1">
+                <button
+                  onClick={() => !isAtLimit('popups') && router.push('/dashboard/elements/popups/new')}
+                  disabled={isAtLimit('popups')}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-brand/90 text-white text-sm font-bold rounded-xl transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Icon name={isAtLimit('popups') ? 'lock' : 'add'} className="text-base" />
+                  {t('elements.popup_new')}
+                </button>
+                {popupsGate && (
+                  <p className="text-xs text-slate-500">
+                    {popupsGate.href
+                      ? <><a href={popupsGate.href} target="_blank" rel="noopener noreferrer" className="text-brand font-semibold hover:underline">Upgrade</a>{' for more popups'}</>
+                      : popupsGate.text}
+                  </p>
+                )}
+              </div>
             )}
             {tab === 'countdown' && (
-              <button
-                onClick={() => router.push('/dashboard/elements/countdowns/new')}
-                className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-brand/90 text-white text-sm font-bold rounded-xl transition-all shadow-sm"
-              >
-                <Icon name="add" className="text-base" />
-                {t('elements.countdown_new')}
-              </button>
+              <div className="flex flex-col items-end gap-1">
+                <button
+                  onClick={() => !isAtLimit('countdowns') && router.push('/dashboard/elements/countdowns/new')}
+                  disabled={isAtLimit('countdowns')}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-brand/90 text-white text-sm font-bold rounded-xl transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Icon name={isAtLimit('countdowns') ? 'lock' : 'add'} className="text-base" />
+                  {t('elements.countdown_new')}
+                </button>
+                {countdownsGate && (
+                  <p className="text-xs text-slate-500">
+                    {countdownsGate.href
+                      ? <><a href={countdownsGate.href} target="_blank" rel="noopener noreferrer" className="text-brand font-semibold hover:underline">Upgrade</a>{' for more countdowns'}</>
+                      : countdownsGate.text}
+                  </p>
+                )}
+              </div>
             )}
           </div>
 

@@ -6,6 +6,8 @@ import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { projectApi, rulesApi } from '@/lib/api/client'
+import { useWorkspace } from '@/lib/context/WorkspaceContext'
+import { usePlanLimits } from '@/lib/hooks/usePlanLimits'
 
 // --- Formatters ---
 const SIGNAL_LABELS: Record<string, string> = {
@@ -107,6 +109,17 @@ export default function RulesPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
+  const { activeWorkspace } = useWorkspace()
+  const { limitOf } = usePlanLimits()
+  const rulesLimit = limitOf('rules_per_project')
+  const atRulesLimit = rulesLimit !== null && rules.length >= rulesLimit
+  const rulesGateText = atRulesLimit
+    ? activeWorkspace?.member_role === 'owner'
+      ? `${rules.length}/${rulesLimit} rules used — upgrade to add more`
+      : activeWorkspace?.member_role === 'client'
+        ? 'Contact your agency to increase the rule limit.'
+        : 'Ask the workspace owner to upgrade the plan.'
+    : null
   const [newRuleDropdown, setNewRuleDropdown] = useState(false)
 
   useEffect(() => {
@@ -261,16 +274,17 @@ export default function RulesPage() {
                 </div>
               )}
             </div>
+            <div className="flex flex-col items-end gap-1">
             <div className="relative group">
               <button
-                onClick={() => { if (project?.script_verified) setNewRuleDropdown(v => !v) }}
-                disabled={!project?.script_verified}
+                onClick={() => { if (project?.script_verified && !atRulesLimit) setNewRuleDropdown(v => !v) }}
+                disabled={!project?.script_verified || atRulesLimit}
                 className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white text-sm font-bold rounded-xl shadow-md shadow-brand/20 hover:bg-brand/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
-                <Icon name="add" className="text-base" />
+                <Icon name={atRulesLimit ? 'lock' : 'add'} className="text-base" />
                 {t("rules.new_rule")}
-                <Icon name="expand_more" className="text-base" />
+                {!atRulesLimit && <Icon name="expand_more" className="text-base" />}
               </button>
-              {!project?.script_verified && (
+              {!project?.script_verified && !atRulesLimit && (
                 <div className="absolute bottom-full right-0 mb-2 w-64 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 text-center">
                   {t('project.verify_first')}
                   <div className="absolute top-full right-4 border-4 border-transparent border-t-slate-900" />
@@ -312,6 +326,14 @@ export default function RulesPage() {
                   </div>
                 </>
               )}
+            </div>
+            {rulesGateText && (
+              <p className="text-xs text-slate-500">
+                {activeWorkspace?.member_role === 'owner'
+                  ? <><span>{rulesGateText.split(' — ')[0]} — </span><a href="https://usepagepersona.com/upgrade" target="_blank" rel="noopener noreferrer" className="text-brand font-semibold hover:underline">Upgrade</a></>
+                  : rulesGateText}
+              </p>
+            )}
             </div>
           </div>
         </div>
