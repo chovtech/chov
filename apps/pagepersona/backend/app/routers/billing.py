@@ -77,22 +77,37 @@ async def billing_summary(
     # Usage counts
     limits = PLAN_LIMITS.get(plan, PLAN_LIMITS["trial"])
 
-    projects_used = await db.fetchval(
-        "SELECT COUNT(*) FROM projects WHERE workspace_id = $1", ws_id
-    ) or 0
-    popups_used = await db.fetchval(
-        "SELECT COUNT(*) FROM popups WHERE workspace_id = $1", ws_id
-    ) or 0
-    countdowns_used = await db.fetchval(
-        "SELECT COUNT(*) FROM countdowns WHERE workspace_id = $1", ws_id
-    ) or 0
-    workspaces_used = await db.fetchval(
-        "SELECT COUNT(*) FROM workspaces WHERE owner_id = $1 AND parent_workspace_id IS NULL",
-        current_user["id"]
-    ) or 0
-    client_accounts_used = await db.fetchval(
-        "SELECT COUNT(*) FROM workspaces WHERE parent_workspace_id = $1", ws_id
-    ) or 0
+    try:
+        projects_used = await db.fetchval(
+            "SELECT COUNT(*) FROM projects WHERE workspace_id = $1", ws_id
+        ) or 0
+    except Exception:
+        projects_used = 0
+    try:
+        popups_used = await db.fetchval(
+            "SELECT COUNT(*) FROM popups WHERE workspace_id = $1", ws_id
+        ) or 0
+    except Exception:
+        popups_used = 0
+    try:
+        countdowns_used = await db.fetchval(
+            "SELECT COUNT(*) FROM countdowns WHERE workspace_id = $1", ws_id
+        ) or 0
+    except Exception:
+        countdowns_used = 0
+    try:
+        workspaces_used = await db.fetchval(
+            "SELECT COUNT(*) FROM workspaces WHERE owner_id = $1 AND parent_workspace_id IS NULL",
+            current_user["id"]
+        ) or 0
+    except Exception:
+        workspaces_used = 1
+    try:
+        client_accounts_used = await db.fetchval(
+            "SELECT COUNT(*) FROM workspaces WHERE parent_workspace_id = $1", ws_id
+        ) or 0
+    except Exception:
+        client_accounts_used = 0
 
     return {
         "plan": plan,
