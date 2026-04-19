@@ -53,7 +53,6 @@ export default function AiSuggestPage() {
   const { activeWorkspace } = useWorkspace()
 
   const [project, setProject] = useState<any>(null)
-  const [blockCount, setBlockCount] = useState(0)
   const [generating, setGenerating] = useState(false)
   const [suggestions, setSuggestions] = useState<AiRule[] | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
@@ -69,11 +68,6 @@ export default function AiSuggestPage() {
   useEffect(() => {
     projectApi.get(projectId).then((res: any) => {
       setProject(res.data)
-      const scan = res.data.page_scan || {}
-      setBlockCount(
-        (scan.headings?.length || 0) + (scan.ctas?.length || 0) +
-        (scan.images?.length || 0) + (scan.sections?.length || 0) + (scan.custom_blocks?.length || 0)
-      )
     }).catch(() => {})
 
     rulesApi.list(projectId).then((res: any) => {
@@ -188,18 +182,9 @@ export default function AiSuggestPage() {
 
             <h2 className="text-lg font-black text-slate-900 mb-3">{atRulesLimit ? 'Rule limit reached' : 'Ready to generate'}</h2>
 
-            {blockCount > 0 ? (
-              <p className="text-sm text-slate-500 max-w-sm mb-8">
-                AI will use your project description and{' '}
-                <span className="font-bold text-slate-700">{blockCount} content block{blockCount !== 1 ? 's' : ''}</span>{' '}
-                to generate rules targeting real elements on your page.
-              </p>
-            ) : (
-              <p className="text-sm text-slate-500 max-w-sm mb-8">
-                AI will generate rules using your project description and brand profile. For more precise rules that target
-                specific elements on your page, add content blocks first — you can always link them to rules later.
-              </p>
-            )}
+            <p className="text-sm text-slate-500 max-w-sm mb-8">
+              AI will generate personalisation rules using your project description and brand profile. Use the live picker to map elements after creation.
+            </p>
 
             {error && (
               <div className="mb-5 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 max-w-sm w-full">
@@ -225,15 +210,6 @@ export default function AiSuggestPage() {
               </button>
             )}
 
-            {blockCount === 0 && (
-              <button
-                onClick={() => router.push(`/dashboard/projects/${projectId}/block-picker`)}
-                className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-brand hover:underline"
-              >
-                <Icon name="add_box" className="text-base" />
-                Add content blocks first
-              </button>
-            )}
           </div>
         )}
 

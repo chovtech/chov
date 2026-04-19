@@ -1018,13 +1018,6 @@ async def suggest_rules(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    page_scan = project.get("page_scan") or {}
-    if isinstance(page_scan, str):
-        try:
-            page_scan = json.loads(page_scan)
-        except Exception:
-            page_scan = {}
-
     # ── Fetch brand knowledge ─────────────────────────────────────────────────
     brand_row = await db.fetchrow(
         "SELECT * FROM workspace_ai_settings WHERE workspace_id = $1", workspace["id"]
@@ -1054,20 +1047,7 @@ async def suggest_rules(
 
     description_line = f"Page description: {project['description']}" if project.get("description") else ""
 
-    # Build page element summary
-    elem_lines = []
-    for h in (page_scan.get("headings") or [])[:4]:
-        elem_lines.append(f"  heading [{h.get('selector')}]: \"{h.get('text','')}\"")
-    for c in (page_scan.get("ctas") or [])[:4]:
-        elem_lines.append(f"  cta [{c.get('selector')}]: \"{c.get('text','')}\"")
-    for img in (page_scan.get("images") or [])[:3]:
-        elem_lines.append(f"  image [{img.get('selector')}]: alt=\"{img.get('alt','')}\"")
-    for s in (page_scan.get("sections") or [])[:4]:
-        elem_lines.append(f"  section [{s.get('selector')}]: \"{s.get('preview','')}\"")
-    for cb in (page_scan.get("custom_blocks") or []):
-        elem_lines.append(f"  custom [{cb.get('selector')}]: \"{cb.get('label','')}\"")
-
-    elements_context = "\n".join(elem_lines) if elem_lines else "  No content blocks yet — use generic selectors like h1, .btn-primary, .hero"
+    elements_context = "  Use common CSS selectors like h1, h2, .btn-primary, .hero, .cta, img.hero-image based on the page URL and description."
 
     existing_rules_lines = []
     for r in existing_rules:
