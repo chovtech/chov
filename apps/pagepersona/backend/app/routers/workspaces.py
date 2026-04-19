@@ -7,6 +7,8 @@ from pydantic import BaseModel
 from typing import Optional
 from app.database import get_db
 from app.core.security import get_current_user
+from app.core.plan_limits import _get_plan
+import uuid
 
 router = APIRouter(prefix="/api/workspaces", tags=["workspaces"])
 
@@ -218,6 +220,27 @@ async def update_workspace(
         updates = {k: v for k, v in updates.items() if k == 'name'}
     if not updates:
         return _fmt(row)
+
+    # Plan-gated white-label fields
+    AGENCY_FIELDS = {'white_label_brand_name', 'white_label_logo', 'white_label_icon', 'white_label_primary_color', 'custom_domain'}
+    PROFESSIONAL_FIELDS = {'hide_powered_by'}
+    needs_agency = any(k in updates for k in AGENCY_FIELDS)
+    needs_professional = 'hide_powered_by' in updates and updates.get('hide_powered_by') is True
+
+    if needs_agency or needs_professional:
+        plan = await _get_plan(uuid.UUID(workspace_id), db)
+        agency_plans = {'agency', 'owner'}
+        professional_plans = {'professional', 'agency', 'owner'}
+        if needs_agency and plan not in agency_plans:
+            raise HTTPException(
+                status_code=402,
+                detail={"error": "plan_limit_reached", "resource": "white_label", "plan": plan}
+            )
+        if needs_professional and plan not in professional_plans:
+            raise HTTPException(
+                status_code=402,
+                detail={"error": "plan_limit_reached", "resource": "remove_branding", "plan": plan}
+            )
 
     set_parts = []
     values = []

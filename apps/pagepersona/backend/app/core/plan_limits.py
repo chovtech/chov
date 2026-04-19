@@ -37,15 +37,22 @@ _COUNT_QUERIES: dict[str, str] = {
     "popups":            "SELECT COUNT(*) FROM popups   WHERE workspace_id = $1",
     "countdowns":        "SELECT COUNT(*) FROM countdowns WHERE workspace_id = $1",
     "rules_per_project": "SELECT COUNT(*) FROM rules WHERE project_id = $1",
+    "client_accounts":   "SELECT COUNT(*) FROM workspaces WHERE parent_workspace_id = $1",
 }
 
 
 async def _get_plan(workspace_id: uuid.UUID, db: asyncpg.Connection) -> str:
+    # Client sub-workspaces have no entitlement — use the parent (agency) workspace's plan
+    parent_id = await db.fetchval(
+        "SELECT parent_workspace_id FROM workspaces WHERE id = $1", workspace_id
+    )
+    lookup_id = uuid.UUID(str(parent_id)) if parent_id else workspace_id
+
     row = await db.fetchrow(
         """SELECT plan FROM entitlements
            WHERE workspace_id = $1 AND product_id = 'pagepersona' AND status = 'active'
            ORDER BY created_at DESC LIMIT 1""",
-        workspace_id
+        lookup_id
     )
     return row["plan"] if row else "trial"
 

@@ -8,6 +8,7 @@ from typing import Optional
 from app.database import get_db
 from app.core.security import get_current_user, hash_password, create_access_token, create_refresh_token
 from app.services.email_service import send_client_access_restored_email
+from app.core.plan_limits import enforce_plan_limit
 
 router = APIRouter(prefix="/api/clients", tags=["clients"])
 
@@ -235,6 +236,13 @@ async def invite_client(
     )
     if not agency_ws:
         raise HTTPException(status_code=404, detail="Workspace not found")
+
+    await enforce_plan_limit(
+        resource='client_accounts',
+        scope_id=str(body.workspace_id),
+        db=db,
+        workspace_id=str(body.workspace_id),
+    )
 
     # Block if already active (accepted) — only count invites whose client workspace still exists.
     # Orphaned invite rows from deleted workspaces are ignored so re-invite always works cleanly.
