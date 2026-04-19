@@ -93,11 +93,17 @@ function PickerPageInner() {
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
+  // Selector mode — invoked from rule editor to pick an element for a specific action
+  const returnTo          = searchParams.get('returnTo') || ''
+  const returnActionIndex = searchParams.get('actionIndex') || ''
+  const isSelectorMode    = !!returnTo
+
   const [projectName,  setProjectName]  = useState(t('actions.loading'))
   const [activeRules,  setActiveRules]  = useState(0)
   const [iframeReady,  setIframeReady]  = useState(false)
   const [previewMode,  setPreviewMode]  = useState<PreviewMode>('desktop')
   const [selectedEl,   setSelectedEl]   = useState<SelectedElement | null>(null)
+  const [selectorDraftContext, setSelectorDraftContext] = useState<{ ruleName: string; actionLabel: string } | null>(null)
   const [existingRules,setExistingRules]= useState<ExistingRule[]>([])
   const [loadingRules, setLoadingRules] = useState(false)
   const [view,         setView]         = useState<SidebarView>('home')
@@ -122,6 +128,23 @@ function PickerPageInner() {
   const [popups,           setPopups]            = useState<any[]>([])
   const [loadingPopups,    setLoadingPopups]     = useState(true)
 
+  // Read draft rule context for selector mode sidebar
+  useEffect(() => {
+    if (!isSelectorMode) return
+    const draftStr = sessionStorage.getItem('pp_edit_rule_draft') || sessionStorage.getItem('pp_rule_draft')
+    if (!draftStr) return
+    try {
+      const draft = JSON.parse(draftStr)
+      const idx = parseInt(returnActionIndex, 10)
+      const action = (draft.actions || [])[isNaN(idx) ? 0 : idx]
+      const actionDef = action ? ACTION_TYPE_DEFS.find(a => a.key === action.type) : null
+      setSelectorDraftContext({
+        ruleName: draft.ruleName || 'Rule',
+        actionLabel: actionDef ? t(actionDef.labelKey) : (action?.type || 'action'),
+      })
+    } catch {}
+  }, [isSelectorMode, returnActionIndex])
+
   useEffect(() => {
     projectApi.get(projectId).then((res: any) => setProjectName(res.data.name || 'Project')).catch(() => {})
     rulesApi.list(projectId).then((res: any) => {
@@ -144,6 +167,10 @@ function PickerPageInner() {
         }
       }
       if (e.data.type === 'PP_ELEMENT_SELECTED') {
+        if (isSelectorMode) {
+          router.push(`${returnTo}?pickedSelector=${encodeURIComponent(e.data.selector)}&actionIndex=${returnActionIndex}`)
+          return
+        }
         setSelectedEl({ selector: e.data.selector, tagName: e.data.tagName, textContent: e.data.textContent })
         setView('block')
         fetchRulesForElement(e.data.selector)
@@ -248,6 +275,7 @@ function PickerPageInner() {
         condition_operator: conditionOperator,
         actions: actions.map(a => ({ type: a.type, target_block: a.target_block, value: a.value })),
         priority: 0,
+        element_mapped: true,
       })
       const res = await rulesApi.list(projectId)
       const all: ExistingRule[] = res.data || []
@@ -268,6 +296,7 @@ function PickerPageInner() {
         conditions: conditions.map(c => ({ signal: c.signal, operator: c.operator, value: c.value })),
         condition_operator: conditionOperator,
         actions: actions.map(a => ({ type: a.type, target_block: a.target_block, value: a.value })),
+        element_mapped: true,
       })
       const res = await rulesApi.list(projectId)
       const all: ExistingRule[] = res.data || []
@@ -405,6 +434,46 @@ function PickerPageInner() {
 
         {/* ── SIDEBAR ── */}
         <div className="w-96 bg-white border-l border-slate-200 flex flex-col shrink-0 shadow-xl">
+
+          {/* ═══ SELECTOR MODE ═══ */}
+          {isSelectorMode ? (
+            <>
+              <div className="px-5 py-5 border-b border-slate-100">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <Icon name="ads_click" className="text-amber-600 text-lg" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">Pick an element</p>
+                    <p className="text-xs text-slate-400">Click any element on your page</p>
+                  </div>
+                </div>
+                {selectorDraftContext && (
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Rule</p>
+                    <p className="text-sm font-bold text-slate-800 truncate">{selectorDraftContext.ruleName}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Mapping element for: <span className="font-semibold text-brand">{selectorDraftContext.actionLabel}</span></p>
+                  </div>
+                )}
+              </div>
+              <div className="px-5 py-5 flex-1">
+                <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0 mt-1.5" />
+                  <p className="text-xs text-slate-600 leading-relaxed">Hover over elements on your page to highlight them, then click to select one. The CSS selector will be mapped to your rule action.</p>
+                </div>
+              </div>
+              <div className="px-5 py-5 border-t border-slate-100 shrink-0">
+                <button
+                  onClick={() => router.push(returnTo)}
+                  className="w-full flex items-center justify-center gap-2 py-3 border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-50 transition-all"
+                >
+                  <Icon name="arrow_back" className="text-base" />
+                  Cancel
+                </button>
+              </div>
+            </>
+          ) : (
+          <>
 
           {/* ═══ HOME ═══ */}
           {view === 'home' && (
@@ -1285,6 +1354,9 @@ function PickerPageInner() {
               </div>
             </>
           )}
+
+          </>
+          )} {/* end isSelectorMode ternary */}
 
         </div>
       </div>

@@ -380,7 +380,7 @@ export default function RulesPage() {
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm font-semibold text-slate-900">{rule.name}</p>
-                      {!rule.element_mapped && rule.actions.some((a: any) => NEEDS_ELEMENT_TYPES.includes(a.type)) && (
+                      {!rule.element_mapped && (
                         <button
                           onClick={() => router.push(`/dashboard/projects/${projectId}/rules/${rule.id}/edit`)}
                           className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold hover:bg-amber-200 transition-colors"

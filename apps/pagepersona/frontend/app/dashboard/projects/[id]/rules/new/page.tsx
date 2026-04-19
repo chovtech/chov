@@ -316,7 +316,12 @@ function NewRulePageInner() {
   const handleSave = async () => {
     if (!canSave) return
     setSaving(true)
-    const element_mapped = actions.every(a => !NEEDS_ELEMENT_TYPES.includes(a.type) || a.target_block.trim().length > 0)
+    const element_mapped = actions.every(a => {
+      if (NEEDS_ELEMENT_TYPES.includes(a.type) && !a.target_block.trim()) return false
+      if (a.type === 'show_popup' && !a.value.trim()) return false
+      if (a.type === 'insert_countdown' && !a.value.trim()) return false
+      return true
+    })
     try {
       await rulesApi.create(projectId, {
         name: ruleName,
