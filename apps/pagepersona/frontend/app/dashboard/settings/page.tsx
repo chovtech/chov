@@ -435,6 +435,74 @@ const DEFAULT_BILLING = {
   },
 }
 
+const PREVIEW_COUNT = 5
+
+function ClientWorkspacesCard({ workspaces, slotsUsed, slotsLimit }: {
+  workspaces: any[]
+  slotsUsed: number
+  slotsLimit: number | null
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const [showAll, setShowAll] = useState(false)
+  const hasMore = workspaces.length > PREVIEW_COUNT
+  const visible = showAll ? workspaces : workspaces.slice(0, PREVIEW_COUNT)
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+      <button
+        onClick={() => setExpanded(e => !e)}
+        className="w-full px-6 py-4 border-b border-slate-100 flex items-center justify-between hover:bg-slate-50 transition-colors"
+      >
+        <div className="text-left">
+          <h3 className="text-sm font-bold text-slate-900">Client Workspaces</h3>
+          <p className="text-xs text-slate-400 mt-0.5">
+            {slotsUsed} of {slotsLimit === null ? '∞' : slotsLimit} slots used
+          </p>
+        </div>
+        <Icon name={expanded ? 'expand_less' : 'expand_more'} className="text-slate-400 text-xl" />
+      </button>
+
+      {expanded && (
+        <>
+          <div className="divide-y divide-slate-100">
+            {visible.map((cws: any) => (
+              <div key={cws.id} className="flex items-center justify-between px-6 py-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="size-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand font-bold text-xs flex-shrink-0">
+                    {(cws.name || 'CL').slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-slate-900 truncate">{cws.client_name || cws.name}</p>
+                    {cws.client_email && <p className="text-xs text-slate-400 truncate">{cws.client_email}</p>}
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 flex-shrink-0 ml-4">
+                  <div className="text-center">
+                    <p className="text-sm font-black text-slate-900">{cws.project_count}</p>
+                    <p className="text-[10px] text-slate-400">projects</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-black text-slate-900">{cws.rule_count}</p>
+                    <p className="text-[10px] text-slate-400">rules</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          {hasMore && (
+            <button
+              onClick={() => setShowAll(s => !s)}
+              className="w-full px-6 py-3 text-xs font-bold text-brand hover:bg-brand/5 transition-colors border-t border-slate-100"
+            >
+              {showAll ? 'Show less' : `Show all ${workspaces.length} clients`}
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
 function BillingTab() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -540,40 +608,11 @@ function BillingTab() {
 
       {/* Client workspace breakdown — agency/owner only */}
       {data.client_workspaces && data.client_workspaces.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-bold text-slate-900">Client Workspaces</h3>
-              <p className="text-xs text-slate-400 mt-0.5">{data.client_workspaces.length} of {u.client_accounts?.limit === null ? '∞' : u.client_accounts?.limit} slots used</p>
-            </div>
-            <Icon name="groups" className="text-slate-300 text-2xl" />
-          </div>
-          <div className="divide-y divide-slate-100">
-            {data.client_workspaces.map((cws: any) => (
-              <div key={cws.id} className="flex items-center justify-between px-6 py-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="size-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand font-bold text-xs flex-shrink-0">
-                    {(cws.name || 'CL').slice(0, 2).toUpperCase()}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-slate-900 truncate">{cws.client_name || cws.name}</p>
-                    {cws.client_email && <p className="text-xs text-slate-400 truncate">{cws.client_email}</p>}
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 flex-shrink-0 ml-4">
-                  <div className="text-center">
-                    <p className="text-sm font-black text-slate-900">{cws.project_count}</p>
-                    <p className="text-[10px] text-slate-400">projects</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm font-black text-slate-900">{cws.rule_count}</p>
-                    <p className="text-[10px] text-slate-400">rules</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <ClientWorkspacesCard
+          workspaces={data.client_workspaces}
+          slotsUsed={data.client_workspaces.length}
+          slotsLimit={u.client_accounts?.limit}
+        />
       )}
 
       {/* AI Coins */}
