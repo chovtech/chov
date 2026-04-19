@@ -558,18 +558,22 @@ function BillingTab({ workspaceId }: { workspaceId?: string }) {
             <p className="text-xs font-bold text-slate-500 mb-2">Top-up packs (one-time purchase)</p>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { coins: '100 coins', price: '$7' },
-                { coins: '500 coins', price: '$27' },
-                { coins: '2,000 coins', price: '$67' },
-                { coins: '10,000 coins', price: '$197' },
+                { coins: '100 coins', amount: 100, price: '$7' },
+                { coins: '500 coins', amount: 500, price: '$27' },
+                { coins: '2,000 coins', amount: 2000, price: '$67' },
+                { coins: '10,000 coins', amount: 10000, price: '$197' },
               ].map(pack => (
-                <div key={pack.coins} className="flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
-                  <span className="text-xs font-bold text-slate-700">{pack.coins}</span>
+                <a
+                  key={pack.coins}
+                  href={`mailto:support@usepagepersona.com?subject=Coin Top-up: ${pack.coins}&body=I'd like to purchase the ${pack.coins} pack (${pack.price}) for my PagePersona account.`}
+                  className="flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 hover:border-brand hover:bg-brand/5 rounded-xl transition-colors cursor-pointer group"
+                >
+                  <span className="text-xs font-bold text-slate-700 group-hover:text-brand">{pack.coins}</span>
                   <span className="text-xs font-black text-brand">{pack.price}</span>
-                </div>
+                </a>
               ))}
             </div>
-            <p className="text-[11px] text-slate-400 mt-3">Coin top-ups are purchased via PayPal. Coming soon — contact support to top up now.</p>
+            <p className="text-[11px] text-slate-400 mt-3">Click a pack to request a top-up via email. We'll send your payment link within 24 hours.</p>
           </div>
         )}
       </div>

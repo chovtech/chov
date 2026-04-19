@@ -53,10 +53,14 @@ export default function Sidebar() {
   const router = useRouter()
 
   useEffect(() => {
-    if (!activeWorkspace?.id) return
+    if (!activeWorkspace?.id) {
+      setPlanLabel('Free Trial')
+      setPlanKey('trial')
+      return
+    }
     billingApi.summary(activeWorkspace.id)
       .then(res => { setPlanLabel(res.data.plan_label); setPlanKey(res.data.plan) })
-      .catch(() => null)
+      .catch(() => { setPlanLabel('Free Trial'); setPlanKey('trial') })
   }, [activeWorkspace?.id])
 
   useEffect(() => {
