@@ -15,17 +15,21 @@ PLAN_LIMITS: dict[str, dict] = {
         "rules_per_project": 3,
         "popups":            1,
         "countdowns":        1,
+        "workspaces":        1,
+        "client_accounts":   0,
     },
     "fe": {
         "projects":          5,
         "rules_per_project": 10,
         "popups":            10,
         "countdowns":        5,
+        "workspaces":        1,
+        "client_accounts":   0,
     },
-    "unlimited":    {"projects": None, "rules_per_project": None, "popups": None, "countdowns": None},
-    "professional": {"projects": None, "rules_per_project": None, "popups": None, "countdowns": None},
-    "agency":       {"projects": None, "rules_per_project": None, "popups": None, "countdowns": None},
-    "owner":        {"projects": None, "rules_per_project": None, "popups": None, "countdowns": None},
+    "unlimited":    {"projects": None, "rules_per_project": None, "popups": None, "countdowns": None, "workspaces": None, "client_accounts": 0},
+    "professional": {"projects": None, "rules_per_project": None, "popups": None, "countdowns": None, "workspaces": None, "client_accounts": 0},
+    "agency":       {"projects": None, "rules_per_project": None, "popups": None, "countdowns": None, "workspaces": None, "client_accounts": 100},
+    "owner":        {"projects": None, "rules_per_project": None, "popups": None, "countdowns": None, "workspaces": None, "client_accounts": None},
 }
 
 _COUNT_QUERIES: dict[str, str] = {
