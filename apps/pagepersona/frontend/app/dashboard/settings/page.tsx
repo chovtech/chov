@@ -422,15 +422,32 @@ function UsageMeter({ label, used, limit, icon }: { label: string; used: number;
   )
 }
 
+const DEFAULT_BILLING = {
+  plan: 'trial', plan_label: 'Free Trial', expires_at: null,
+  coins_balance: 0, lifetime_coins_earned: 0, is_unlimited_coins: false,
+  usage: {
+    projects: { used: 0, limit: 1 },
+    popups: { used: 0, limit: 1 },
+    countdowns: { used: 0, limit: 1 },
+    rules_per_project: { used: null, limit: 3 },
+    workspaces: { used: 1, limit: 1 },
+    client_accounts: { used: 0, limit: 0 },
+  },
+}
+
 function BillingTab({ workspaceId }: { workspaceId?: string }) {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!workspaceId) return
+    if (!workspaceId) {
+      setData(DEFAULT_BILLING)
+      setLoading(false)
+      return
+    }
     billingApi.summary(workspaceId)
       .then(r => setData(r.data))
-      .catch(() => null)
+      .catch(() => setData(DEFAULT_BILLING))
       .finally(() => setLoading(false))
   }, [workspaceId])
 

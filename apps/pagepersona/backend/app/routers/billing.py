@@ -39,9 +39,20 @@ async def billing_summary(
             current_user["id"]
         )
 
+    trial_limits = PLAN_LIMITS["trial"]
     if not ws:
-        return {"plan": "trial", "plan_label": "Free Trial", "expires_at": None,
-                "coins_balance": 0, "is_unlimited_coins": False, "usage": {}}
+        return {
+            "plan": "trial", "plan_label": "Free Trial", "expires_at": None,
+            "coins_balance": 0, "lifetime_coins_earned": 0, "is_unlimited_coins": False,
+            "usage": {
+                "projects":          {"used": 0, "limit": trial_limits["projects"]},
+                "popups":            {"used": 0, "limit": trial_limits["popups"]},
+                "countdowns":        {"used": 0, "limit": trial_limits["countdowns"]},
+                "rules_per_project": {"used": None, "limit": trial_limits["rules_per_project"]},
+                "workspaces":        {"used": 0, "limit": trial_limits["workspaces"]},
+                "client_accounts":   {"used": 0, "limit": trial_limits["client_accounts"]},
+            },
+        }
 
     ws_id = uuid.UUID(str(ws["id"]))
 
