@@ -97,6 +97,7 @@ export default function Sidebar() {
   const isViewOnly = isClientUser && activeWorkspace?.client_access_level === 'view_only'
   const isInClientWorkspace = !isClientUser && activeWorkspace?.parent_workspace_id !== null
   const isTeamMember = activeWorkspace?.member_role === 'member' || activeWorkspace?.member_role === 'admin'
+  const canSeeAgency = ['agency', 'owner'].includes(planKey)
   const navigation = isViewOnly
     ? clientViewNavigation
     : isClientUser
@@ -105,7 +106,9 @@ export default function Sidebar() {
         ? fullNavigation.filter(item => item.key !== 'clients')
         : isTeamMember
           ? teamMemberNavigation
-          : fullNavigation
+          : canSeeAgency
+            ? fullNavigation
+            : fullNavigation.filter(item => item.key !== 'clients')
 
   return (
     <>

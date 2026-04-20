@@ -9,6 +9,7 @@ import { useLanguage } from '@/lib/hooks/useLanguage'
 import ImageUploader from '@/components/ui/ImageUploader'
 import CopyWriter from '@/components/ui/CopyWriter'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
+import { usePlanLimits } from '@/lib/hooks/usePlanLimits'
 
 interface User {
   id: string; name: string; email: string
@@ -696,6 +697,9 @@ export default function SettingsPage() {
   const { t } = useTranslation('common')
   const { language } = useLanguage()
   const { activeWorkspace, refreshWorkspaces } = useWorkspace()
+  const { plan: currentPlan } = usePlanLimits()
+  const canWhiteLabel = ['professional', 'agency', 'owner'].includes(currentPlan)
+  const canAgency = ['agency', 'owner'].includes(currentPlan)
   const [activeTab, setActiveTab] = useState<string>(() =>
     typeof window !== 'undefined' ? (localStorage.getItem('settings_active_tab') || 'general') : 'general'
   )
@@ -1091,7 +1095,24 @@ export default function SettingsPage() {
             <BrandKnowledgeTab t={t} inputClass={inputClass} msgClass={msgClass} />
           )}
 
-          {activeTab === 'whitelabel' && (
+          {activeTab === 'whitelabel' && !canWhiteLabel && (
+            <div className="max-w-2xl">
+              <div className="flex flex-col items-center justify-center py-20 bg-white border border-slate-200 rounded-2xl text-center px-8">
+                <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
+                  <Icon name="lock" className="text-slate-400 text-3xl" />
+                </div>
+                <h2 className="text-lg font-black text-slate-900 mb-2">White-label is a Professional plan feature</h2>
+                <p className="text-sm text-slate-500 max-w-sm mb-6">Remove PagePersona branding, add your own logo, brand colours, and custom domain. Available on Professional and Agency plans.</p>
+                <a href="https://usepagepersona.com/upgrade" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-8 py-3 bg-brand text-white font-bold rounded-xl shadow-md shadow-brand/20 hover:bg-brand/90 transition-all">
+                  <Icon name="rocket_launch" className="text-base" />
+                  Upgrade to Professional
+                </a>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'whitelabel' && canWhiteLabel && (
             <div className="max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-10">
               {/* Left: form sections */}
               <div className="lg:col-span-2 space-y-8">
@@ -1213,8 +1234,18 @@ export default function SettingsPage() {
 
                   <div className="border-t border-slate-100 dark:border-slate-800 my-6" />
 
-                  {/* Custom domain */}
-                  <div className="space-y-4">
+                  {/* Custom domain — agency+ only */}
+                  {!canAgency && (
+                    <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
+                      <Icon name="lock" className="text-slate-400 text-base shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-700">Custom domain</p>
+                        <p className="text-xs text-slate-400">Available on the Agency plan. <a href="https://usepagepersona.com/upgrade" target="_blank" rel="noopener noreferrer" className="text-brand font-semibold hover:underline">Upgrade</a></p>
+                      </div>
+                    </div>
+                  )}
+
+                  {canAgency && <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{t('settings.whitelabel.custom_domain')}</label>
                       <p className="text-xs text-slate-500">{t('settings.whitelabel.custom_domain_hint')}</p>
@@ -1308,7 +1339,7 @@ export default function SettingsPage() {
                         )}
                       </div>
                     )}
-                  </div>
+                  </div>}
                 </section>
 
               </div>
