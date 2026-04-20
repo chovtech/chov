@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { useWorkspace } from './WorkspaceContext'
 
 interface WhiteLabelValue {
@@ -23,6 +24,7 @@ const WhiteLabelContext = createContext<WhiteLabelValue>(defaults)
 
 export function WhiteLabelProvider({ children }: { children: React.ReactNode }) {
   const { activeWorkspace } = useWorkspace()
+  const pathname = usePathname()
 
   // Seed from cache on mount — no flash while workspace API resolves
   const [cached] = useState<WhiteLabelValue | null>(readCache)
@@ -43,7 +45,7 @@ export function WhiteLabelProvider({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     document.title = display.brandName
-  }, [display.brandName])
+  }, [display.brandName, pathname])
 
   useEffect(() => {
     document.documentElement.style.setProperty('--color-primary', display.primaryColor)
