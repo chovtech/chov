@@ -6,6 +6,7 @@ import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { aiApi } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
+import { useTranslation } from '@/lib/hooks/useTranslation'
 
 interface InsightEntry {
   insight: string
@@ -28,6 +29,7 @@ export default function InsightsHistoryPage() {
   const projectId = params.id as string
   const { activeWorkspace } = useWorkspace()
 
+  const { t } = useTranslation('common')
   const [entries, setEntries] = useState<InsightEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -53,8 +55,8 @@ export default function InsightsHistoryPage() {
             <Icon name="arrow_back" className="text-slate-600 text-lg" />
           </button>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">AI Insights History</h1>
-            <p className="text-sm text-slate-500">Every insight generated for this project</p>
+            <h1 className="text-xl font-bold text-slate-900">{t('analytics.insights_title')}</h1>
+            <p className="text-sm text-slate-500">{t('analytics.insights_subtitle')}</p>
           </div>
         </div>
 
@@ -62,14 +64,14 @@ export default function InsightsHistoryPage() {
         {loading && (
           <div className="flex items-center justify-center py-20 text-slate-400">
             <Icon name="sync" className="animate-spin text-2xl mr-3" />
-            <span className="text-sm">Loading…</span>
+            <span className="text-sm">{t('actions.loading')}</span>
           </div>
         )}
 
         {error && (
           <div className="flex items-center justify-center py-20 text-slate-400">
             <Icon name="error_outline" className="text-2xl mr-2 text-red-400" />
-            <span className="text-sm">Failed to load. Refresh to try again.</span>
+            <span className="text-sm">{t('analytics.load_error')}</span>
           </div>
         )}
 
@@ -78,12 +80,12 @@ export default function InsightsHistoryPage() {
             <div className="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center mb-4">
               <Icon name="auto_awesome" className="text-2xl text-brand" />
             </div>
-            <p className="font-semibold text-slate-800 mb-1">No insights yet</p>
-            <p className="text-sm text-slate-400 max-w-xs">Generate your first AI insight from the project overview page.</p>
+            <p className="font-semibold text-slate-800 mb-1">{t('analytics.no_insights_heading')}</p>
+            <p className="text-sm text-slate-400 max-w-xs">{t('analytics.no_insights_sub')}</p>
             <button
               onClick={() => router.back()}
               className="mt-5 px-5 py-2 bg-brand text-white text-sm font-semibold rounded-xl hover:bg-brand/90 transition-colors">
-              Back to project
+              {t('analytics.back_to_project')}
             </button>
           </div>
         )}
@@ -97,7 +99,7 @@ export default function InsightsHistoryPage() {
                     <span className="w-7 h-7 rounded-lg bg-brand/10 flex items-center justify-center">
                       <Icon name="auto_awesome" className="text-sm text-brand" />
                     </span>
-                    <span className="text-xs font-semibold text-slate-500">Last {entry.period} days</span>
+                    <span className="text-xs font-semibold text-slate-500">{t('analytics.last_n_days').replace('{{n}}', String(entry.period))}</span>
                   </div>
                   <span className="text-xs text-slate-400">{timeAgo(entry.created_at)}</span>
                 </div>

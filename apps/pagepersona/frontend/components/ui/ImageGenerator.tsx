@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { aiApi, projectApi } from '@/lib/api/client'
 import Icon from '@/components/ui/Icon'
+import { useTranslation } from '@/lib/hooks/useTranslation'
 
 const STYLES = [
   { value: 'photorealistic', label: 'Photorealistic' },
@@ -29,6 +30,7 @@ export default function ImageGenerator({
   onInsert,
   onCoinsUpdated,
 }: ImageGeneratorProps) {
+  const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const [prompt, setPrompt] = useState('')
   const [style, setStyle] = useState('photorealistic')
@@ -86,9 +88,9 @@ export default function ImageGenerator({
     } catch (err: any) {
       const detail = err?.response?.data?.detail
       if (typeof detail === 'object' && detail?.error === 'insufficient_coins') {
-        setError(`Not enough coins. You need 10 coins but have ${detail.balance}.`)
+        setError(t('image_gen.error_coins').replace('{{balance}}', String(detail.balance)))
       } else {
-        setError(typeof detail === 'string' ? detail : 'Generation failed. Please try again.')
+        setError(typeof detail === 'string' ? detail : t('image_gen.generation_failed'))
       }
     } finally {
       setLoading(false)
@@ -112,8 +114,8 @@ export default function ImageGenerator({
           className="flex items-center gap-1.5 text-xs font-bold text-brand hover:text-brand/80 transition-colors"
         >
           <Icon name="auto_awesome" className="text-sm" />
-          Generate with AI
-          <span className="text-[10px] font-medium text-slate-400 ml-0.5">10 coins</span>
+          {t('image_gen.generate_with_ai')}
+          <span className="text-[10px] font-medium text-slate-400 ml-0.5">{t('image_gen.ten_coins')}</span>
         </button>
       </div>
     )
@@ -126,8 +128,8 @@ export default function ImageGenerator({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <Icon name="auto_awesome" className="text-sm text-brand" />
-          <span className="text-xs font-bold text-brand">AI Image Generator</span>
-          <span className="text-[10px] text-slate-400">· 10 coins</span>
+          <span className="text-xs font-bold text-brand">{t('image_gen.title')}</span>
+          <span className="text-[10px] text-slate-400">· {t('image_gen.ten_coins')}</span>
         </div>
         <button
           type="button"
@@ -141,13 +143,13 @@ export default function ImageGenerator({
       {/* Project selector — popup/workspace context only */}
       {needsProjectSelector && (
         <div>
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Project context</label>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{t('image_gen.project_context')}</label>
           <select
             value={selectedProjectId}
             onChange={e => setSelectedProjectId(e.target.value)}
             className="w-full px-3 py-2 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-slate-700"
           >
-            <option value="__workspace__">Use workspace context</option>
+            <option value="__workspace__">{t('image_gen.use_workspace')}</option>
             {projects.map(p => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
@@ -161,7 +163,7 @@ export default function ImageGenerator({
           value={prompt}
           onChange={e => setPrompt(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate() }}
-          placeholder="Describe the image, e.g. 'Confident professional woman at a desk in a modern office, warm natural light'"
+          placeholder={t('image_gen.prompt_placeholder')}
           rows={4}
           className="w-full px-3 py-2 bg-white border border-brand/20 rounded-lg text-xs resize-none focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all placeholder:text-slate-400"
         />
@@ -169,14 +171,14 @@ export default function ImageGenerator({
 
       {/* Style */}
       <div>
-        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Style</label>
+        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{t('image_gen.style_label')}</label>
         <select
           value={style}
           onChange={e => setStyle(e.target.value)}
           className="w-full px-3 py-2 bg-white border border-brand/20 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-slate-700"
         >
           {STYLES.map(s => (
-            <option key={s.value} value={s.value}>{s.label}</option>
+            <option key={s.value} value={s.value}>{t(`image_gen.style_${s.value}`)}</option>
           ))}
         </select>
       </div>
@@ -184,7 +186,7 @@ export default function ImageGenerator({
       {/* Dimensions */}
       <div className="flex items-end gap-2">
         <div className="flex-1">
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Width (px)</label>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{t('image_gen.width_label')}</label>
           <input
             type="number"
             value={width}
@@ -195,7 +197,7 @@ export default function ImageGenerator({
         </div>
         <div className="text-slate-300 font-bold text-sm pb-1.5">×</div>
         <div className="flex-1">
-          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Height (px)</label>
+          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{t('image_gen.height_label')}</label>
           <input
             type="number"
             value={height}
@@ -216,12 +218,12 @@ export default function ImageGenerator({
         {loading ? (
           <>
             <Icon name="sync" className="text-sm animate-spin" />
-            Generating... this may take 10–20s
+            {t('image_gen.generating')}
           </>
         ) : (
           <>
             <Icon name="auto_awesome" className="text-sm" />
-            Generate Image
+            {t('image_gen.generate')}
           </>
         )}
       </button>
@@ -237,7 +239,7 @@ export default function ImageGenerator({
       {/* Result */}
       {result && (
         <div className="space-y-2">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Generated Image</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('image_gen.generated_label')}</p>
           <div className="rounded-xl overflow-hidden border border-slate-200">
             <img src={result} alt="Generated" className="w-full object-cover" />
           </div>
@@ -247,7 +249,7 @@ export default function ImageGenerator({
             className="w-full flex items-center justify-center gap-2 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-all"
           >
             <Icon name="check" className="text-sm" />
-            Insert Image
+            {t('image_gen.insert')}
           </button>
         </div>
       )}

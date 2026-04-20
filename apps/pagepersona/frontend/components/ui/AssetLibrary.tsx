@@ -208,7 +208,7 @@ export default function AssetLibrary({ workspaceId, onInsert, onClose, t }: Asse
         {/* Footer — Insert button */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 flex-shrink-0">
           <p className="text-xs text-slate-400">
-            {selectedUrl ? '1 image selected' : 'Click an image to select it'}
+            {selectedUrl ? t('library.image_selected') : t('library.click_to_select')}
           </p>
           <div className="flex items-center gap-3">
             <button
@@ -216,7 +216,7 @@ export default function AssetLibrary({ workspaceId, onInsert, onClose, t }: Asse
               onClick={onClose}
               className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
             >
-              Cancel
+              {t('actions.cancel')}
             </button>
             <button
               type="button"

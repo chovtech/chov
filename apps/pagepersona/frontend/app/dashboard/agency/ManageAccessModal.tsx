@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Icon from '@/components/ui/Icon'
 import { workspaceApi, clientsApi } from '@/lib/api/client'
+import { useTranslation } from '@/lib/hooks/useTranslation'
 
 interface ClientWorkspace {
   id: string
@@ -23,6 +24,7 @@ interface Props {
 }
 
 export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, onUpdated }: Props) {
+  const { t } = useTranslation('common')
   const [details, setDetails] = useState({
     client_name: client.client_name || '',
     client_email: client.client_email || '',
@@ -50,10 +52,10 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
         client_name: details.client_name || undefined,
         client_email: details.client_email || undefined,
       })
-      flash('ok', 'Details saved.')
+      flash('ok', t('agency.details_saved'))
       onUpdated()
     } catch {
-      flash('err', 'Failed to save details.')
+      flash('err', t('agency.details_save_failed'))
     } finally {
       setSavingDetails(false)
     }
@@ -63,17 +65,17 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
     setSavingAccess(true)
     try {
       await workspaceApi.update(client.id, { client_access_level: accessLevel })
-      flash('ok', 'Access level updated.')
+      flash('ok', t('agency.access_updated'))
       onUpdated()
     } catch {
-      flash('err', 'Failed to update access level.')
+      flash('err', t('agency.access_update_failed'))
     } finally {
       setSavingAccess(false)
     }
   }
 
   async function handleInvite() {
-    if (!details.client_email) { flash('err', 'Client email is required to send an invite.'); return }
+    if (!details.client_email) { flash('err', t('agency.email_required_invite')); return }
     setInviting(true)
     try {
       const res = await clientsApi.invite({ client_email: details.client_email, workspace_id: agencyWorkspaceId, client_workspace_id: client.id })
@@ -96,20 +98,20 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
     setRevoking(true)
     try {
       await clientsApi.revoke(client.id)
-      flash('ok', 'Access revoked.')
+      flash('ok', t('agency.access_revoked'))
       onUpdated()
     } catch {
-      flash('err', 'Failed to revoke access.')
+      flash('err', t('agency.revoke_failed'))
     } finally {
       setRevoking(false)
     }
   }
 
   const inviteStatusLabel: Record<string, { label: string; icon: string; color: string }> = {
-    none: { label: 'No invite sent yet', icon: 'mail', color: 'text-slate-500' },
-    pending: { label: 'Invite sent — awaiting acceptance', icon: 'schedule', color: 'text-amber-600' },
-    active: { label: 'Accepted — client is active', icon: 'check_circle', color: 'text-green-600' },
-    revoked: { label: 'Access revoked', icon: 'block', color: 'text-red-500' },
+    none: { label: t('agency.status_no_invite'), icon: 'mail', color: 'text-slate-500' },
+    pending: { label: t('agency.status_pending_invite'), icon: 'schedule', color: 'text-amber-600' },
+    active: { label: t('agency.status_active_client'), icon: 'check_circle', color: 'text-green-600' },
+    revoked: { label: t('agency.status_revoked_client'), icon: 'block', color: 'text-red-500' },
   }
   const statusInfo = inviteStatusLabel[client.invite_status] || inviteStatusLabel['none']
 
@@ -120,7 +122,7 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg my-4">
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
           <div>
-            <h2 className="text-base font-bold text-slate-900">Manage Access & Permissions</h2>
+            <h2 className="text-base font-bold text-slate-900">{t('agency.manage_access_title')}</h2>
             <p className="text-xs text-slate-400 mt-0.5">{client.name}</p>
           </div>
           <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
@@ -140,14 +142,14 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
           <section>
             <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
               <Icon name="person" className="text-[18px] text-slate-400" />
-              Client Details
+              {t('agency.client_details')}
             </h3>
             <form onSubmit={handleSaveDetails} className="space-y-3">
               <input
                 type="text"
                 value={details.client_name}
                 onChange={e => setDetails(p => ({ ...p, client_name: e.target.value }))}
-                placeholder="Client name"
+                placeholder={t('agency.client_name_placeholder')}
                 className={inputClass}
               />
               <div className="relative">
@@ -160,11 +162,11 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
                   className={`${inputClass} ${emailLocked ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : ''}`}
                 />
                 {emailLocked && (
-                  <p className="text-[11px] text-slate-400 mt-1">Email cannot be changed after an invite is sent.</p>
+                  <p className="text-[11px] text-slate-400 mt-1">{t('agency.email_locked_note')}</p>
                 )}
               </div>
               <button type="submit" disabled={savingDetails} className="px-4 py-2 text-sm font-bold text-white bg-brand rounded-xl hover:bg-brand/90 disabled:opacity-60 transition-colors">
-                {savingDetails ? 'Saving...' : 'Save Details'}
+                {savingDetails ? t('actions.saving') : t('agency.save_details')}
               </button>
             </form>
           </section>
@@ -175,12 +177,12 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
           <section>
             <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
               <Icon name="shield" className="text-[18px] text-slate-400" />
-              Access Level
+              {t('agency.access_level')}
             </h3>
             <div className="space-y-2 mb-3">
               {[
-                { value: 'full', label: 'Full Access', desc: 'Can manage projects, rules and elements' },
-                { value: 'view_only', label: 'View Only', desc: 'Can only view dashboard and analytics' },
+                { value: 'full', label: t('agency.full_access'), desc: t('agency.full_access_manage_desc') },
+                { value: 'view_only', label: t('agency.view_only'), desc: t('agency.view_only_manage_desc') },
               ].map(opt => (
                 <label key={opt.value} className="flex items-start gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-brand has-[:checked]:bg-brand/5">
                   <input
@@ -198,7 +200,7 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
               ))}
             </div>
             <button onClick={handleSaveAccess} disabled={savingAccess} className="px-4 py-2 text-sm font-bold text-white bg-brand rounded-xl hover:bg-brand/90 disabled:opacity-60 transition-colors">
-              {savingAccess ? 'Saving...' : 'Save Access Level'}
+              {savingAccess ? t('actions.saving') : t('agency.save_access_level')}
             </button>
           </section>
 
@@ -208,7 +210,7 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
           <section>
             <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
               <Icon name="send" className="text-[18px] text-slate-400" />
-              Invite Status
+              {t('agency.invite_status')}
             </h3>
             <div className={`flex items-center gap-2 mb-4 ${statusInfo.color}`}>
               <Icon name={statusInfo.icon} className="text-[18px]" />
@@ -225,7 +227,7 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
                   className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white bg-brand rounded-xl hover:bg-brand/90 disabled:opacity-60 transition-colors"
                 >
                   <Icon name="send" className="text-[16px]" />
-                  {inviting ? 'Sending...' : 'Send Invitation'}
+                  {inviting ? t('actions.sending') : t('agency.send_invitation')}
                 </button>
               )}
               {client.invite_status === 'pending' && (
@@ -234,7 +236,7 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
                   className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-brand bg-brand/10 rounded-xl hover:bg-brand/20 disabled:opacity-60 transition-colors"
                 >
                   <Icon name="refresh" className="text-[16px]" />
-                  {inviting ? 'Sending...' : 'Resend Invitation'}
+                  {inviting ? t('actions.sending') : t('agency.resend_invitation')}
                 </button>
               )}
               {client.invite_status === 'active' && (
@@ -243,7 +245,7 @@ export default function ManageAccessModal({ client, agencyWorkspaceId, onClose, 
                   className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-red-600 bg-red-50 rounded-xl hover:bg-red-100 disabled:opacity-60 transition-colors"
                 >
                   <Icon name="block" className="text-[16px]" />
-                  {revoking ? 'Revoking...' : 'Revoke Access'}
+                  {revoking ? t('agency.revoking') : t('agency.revoke_access')}
                 </button>
               )}
             </div>

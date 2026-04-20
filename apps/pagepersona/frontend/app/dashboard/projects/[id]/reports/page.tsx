@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
 import { reportsApi } from '@/lib/api/client'
+import { useTranslation } from '@/lib/hooks/useTranslation'
 
 interface Report {
   id: string
@@ -28,6 +29,7 @@ export default function ReportsListPage() {
   const params = useParams()
   const router = useRouter()
   const projectId = params.id as string
+  const { t } = useTranslation('common')
 
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
@@ -66,7 +68,7 @@ export default function ReportsListPage() {
       setSent(true)
       setTimeout(() => { setSent(false); setShowSend(false); setEmail(''); setName(''); setMessage(''); setPeriod(30) }, 2000)
     } catch {
-      setSendError('Failed to send. Try again.')
+      setSendError(t('analytics.send_failed'))
     } finally {
       setSending(false)
     }
@@ -98,15 +100,15 @@ export default function ReportsListPage() {
               <Icon name="arrow_back" className="text-slate-600 text-lg" />
             </button>
             <div>
-              <h1 className="text-xl font-bold text-slate-900">Reports Sent</h1>
-              <p className="text-sm text-slate-500">Analytics reports shared from this project</p>
+              <h1 className="text-xl font-bold text-slate-900">{t('analytics.reports_title')}</h1>
+              <p className="text-sm text-slate-500">{t('analytics.reports_subtitle')}</p>
             </div>
           </div>
           <button
             onClick={() => setShowSend(true)}
             className="flex items-center gap-2 px-4 py-2.5 bg-brand text-white text-sm font-semibold rounded-xl hover:bg-brand/90 transition-colors shadow-sm shadow-brand/20">
             <Icon name="send" className="text-base" />
-            Send Report
+            {t('analytics.send_report_btn')}
           </button>
         </div>
 
@@ -114,14 +116,14 @@ export default function ReportsListPage() {
         {loading && (
           <div className="flex items-center justify-center py-20 text-slate-400">
             <Icon name="sync" className="animate-spin text-2xl mr-3" />
-            <span className="text-sm">Loading…</span>
+            <span className="text-sm">{t('actions.loading')}</span>
           </div>
         )}
 
         {error && (
           <div className="flex items-center justify-center py-20 text-slate-400">
             <Icon name="error_outline" className="text-2xl mr-2 text-red-400" />
-            <span className="text-sm">Failed to load. Refresh to try again.</span>
+            <span className="text-sm">{t('analytics.load_error')}</span>
           </div>
         )}
 
@@ -130,12 +132,12 @@ export default function ReportsListPage() {
             <div className="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center mb-4">
               <Icon name="send" className="text-2xl text-brand" />
             </div>
-            <p className="font-semibold text-slate-800 mb-1">No reports sent yet</p>
-            <p className="text-sm text-slate-400 max-w-xs">Send your first analytics report and it will appear here.</p>
+            <p className="font-semibold text-slate-800 mb-1">{t('analytics.no_reports_heading')}</p>
+            <p className="text-sm text-slate-400 max-w-xs">{t('analytics.no_reports_sub')}</p>
             <button
               onClick={() => setShowSend(true)}
               className="mt-5 px-5 py-2 bg-brand text-white text-sm font-semibold rounded-xl hover:bg-brand/90 transition-colors">
-              Send Report
+              {t('analytics.send_report_btn')}
             </button>
           </div>
         )}
@@ -156,10 +158,10 @@ export default function ReportsListPage() {
                       <p className="text-xs text-slate-500 ml-6 line-clamp-2">{r.message}</p>
                     )}
                     <div className="flex items-center gap-3 mt-2 ml-6">
-                      <span className="text-xs text-slate-400">Last {r.period} days · {timeAgo(r.created_at)}</span>
+                      <span className="text-xs text-slate-400">{t('analytics.last_n_days').replace('{{n}}', String(r.period))} · {timeAgo(r.created_at)}</span>
                       <a href={r.report_url} target="_blank" rel="noopener noreferrer"
                         className="text-xs text-brand font-semibold hover:underline flex items-center gap-0.5">
-                        View <Icon name="open_in_new" className="text-xs" />
+                        {t('actions.view')} <Icon name="open_in_new" className="text-xs" />
                       </a>
                     </div>
                   </div>
@@ -167,7 +169,7 @@ export default function ReportsListPage() {
                     {resendingId === r.id ? (
                       resendDone === r.id ? (
                         <span className="text-xs text-green-600 font-semibold flex items-center gap-1">
-                          <Icon name="check_circle" className="text-sm" /> Sent
+                          <Icon name="check_circle" className="text-sm" /> {t('analytics.status_sent')}
                         </span>
                       ) : (
                         <div className="flex items-center gap-2">
@@ -181,7 +183,7 @@ export default function ReportsListPage() {
                           <button
                             onClick={() => handleResend(r)}
                             className="text-xs px-3 py-1.5 bg-brand text-white font-semibold rounded-lg hover:bg-brand/90">
-                            Send
+                            {t('actions.send')}
                           </button>
                           <button onClick={() => { setResendingId(null); setResendEmail('') }}
                             className="text-xs text-slate-400 hover:text-slate-600">
@@ -194,7 +196,7 @@ export default function ReportsListPage() {
                         onClick={() => setResendingId(r.id)}
                         className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-brand border border-slate-200 hover:border-brand/30 px-3 py-1.5 rounded-lg transition-colors">
                         <Icon name="forward_to_inbox" className="text-sm" />
-                        Resend
+                        {t('analytics.resend_btn')}
                       </button>
                     )}
                   </div>
@@ -210,7 +212,7 @@ export default function ReportsListPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-7">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-slate-900">Send Analytics Report</h2>
+              <h2 className="text-lg font-bold text-slate-900">{t('analytics.send_report_modal_title')}</h2>
               <button onClick={() => setShowSend(false)} className="text-slate-400 hover:text-slate-600">
                 <Icon name="close" />
               </button>
@@ -219,13 +221,13 @@ export default function ReportsListPage() {
             {sent ? (
               <div className="py-8 text-center">
                 <Icon name="check_circle" className="text-4xl text-green-500 mb-3" />
-                <p className="font-semibold text-slate-800">Report sent!</p>
-                <p className="text-sm text-slate-500 mt-1">The recipient will receive an email with a link to view the full report.</p>
+                <p className="font-semibold text-slate-800">{t('analytics.report_sent')}</p>
+                <p className="text-sm text-slate-500 mt-1">{t('analytics.report_sent_desc')}</p>
               </div>
             ) : (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Recipient Email *</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('analytics.recipient_email_label')} *</label>
                   <input
                     type="email"
                     value={email}
@@ -235,7 +237,7 @@ export default function ReportsListPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Recipient Name (optional)</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('analytics.recipient_name_label')}</label>
                   <input
                     type="text"
                     value={name}
@@ -245,20 +247,20 @@ export default function ReportsListPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Period</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('analytics.period_label')}</label>
                   <select
                     value={period}
                     onChange={e => setPeriod(Number(e.target.value))}
                     className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand bg-white">
-                    <option value={7}>Last 7 days</option>
-                    <option value={14}>Last 14 days</option>
-                    <option value={30}>Last 30 days</option>
-                    <option value={60}>Last 60 days</option>
-                    <option value={90}>Last 90 days</option>
+                    <option value={7}>{t('analytics.last_n_days').replace('{{n}}', '7')}</option>
+                    <option value={14}>{t('analytics.last_n_days').replace('{{n}}', '14')}</option>
+                    <option value={30}>{t('analytics.last_n_days').replace('{{n}}', '30')}</option>
+                    <option value={60}>{t('analytics.last_n_days').replace('{{n}}', '60')}</option>
+                    <option value={90}>{t('analytics.last_n_days').replace('{{n}}', '90')}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Note (optional)</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{t('analytics.note_label')}</label>
                   <textarea
                     value={message}
                     onChange={e => setMessage(e.target.value)}
@@ -272,13 +274,13 @@ export default function ReportsListPage() {
                   <button
                     onClick={() => setShowSend(false)}
                     className="flex-1 py-2.5 border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-50 transition-colors">
-                    Cancel
+                    {t('actions.cancel')}
                   </button>
                   <button
                     onClick={handleSend}
                     disabled={sending || !email.trim()}
                     className="flex-1 py-2.5 bg-brand text-white text-sm font-semibold rounded-xl hover:bg-brand/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
-                    {sending ? <><Icon name="sync" className="animate-spin text-base" />Sending…</> : <><Icon name="send" className="text-base" />Send Report</>}
+                    {sending ? <><Icon name="sync" className="animate-spin text-base" />{t('analytics.report_sending')}</> : <><Icon name="send" className="text-base" />{t('analytics.send_report_btn')}</>}
                   </button>
                 </div>
               </div>

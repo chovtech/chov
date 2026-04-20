@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Icon from '@/components/ui/Icon'
 import { workspaceApi, clientsApi } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
+import { useTranslation } from '@/lib/hooks/useTranslation'
 
 interface Props {
   onClose: () => void
@@ -12,6 +13,7 @@ interface Props {
 
 export default function NewClientModal({ onClose, onCreated }: Props) {
   const { activeWorkspace } = useWorkspace()
+  const { t } = useTranslation('common')
   const [form, setForm] = useState({
     name: '',
     client_name: '',
@@ -66,8 +68,8 @@ export default function NewClientModal({ onClose, onCreated }: Props) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
           <div>
-            <h2 className="text-base font-bold text-slate-900">New Client Workspace</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Create a workspace to manage a client's campaigns</p>
+            <h2 className="text-base font-bold text-slate-900">{t('agency.new_client_title')}</h2>
+            <p className="text-xs text-slate-400 mt-0.5">{t('agency.new_client_subtitle')}</p>
           </div>
           <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
             <Icon name="close" className="text-[20px]" />
@@ -77,7 +79,7 @@ export default function NewClientModal({ onClose, onCreated }: Props) {
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Workspace Name <span className="text-red-500">*</span>
+              {t('agency.workspace_name_label')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text" required autoFocus
@@ -90,7 +92,7 @@ export default function NewClientModal({ onClose, onCreated }: Props) {
 
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Client Name <span className="text-red-500">*</span>
+              {t('agency.client_name_label')} <span className="text-red-500">*</span>
             </label>
             <input
               type="text" required
@@ -103,7 +105,7 @@ export default function NewClientModal({ onClose, onCreated }: Props) {
 
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Client Email <span className="text-slate-400 font-normal">(optional — required to send invite)</span>
+              {t('agency.client_email_label')} <span className="text-slate-400 font-normal">({t('agency.client_email_optional')})</span>
             </label>
             <input
               type="email"
@@ -115,7 +117,7 @@ export default function NewClientModal({ onClose, onCreated }: Props) {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Access Level</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">{t('agency.access_level')}</label>
             <div className="space-y-2">
               <label className="flex items-start gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-brand has-[:checked]:bg-brand/5">
                 <input
@@ -125,8 +127,8 @@ export default function NewClientModal({ onClose, onCreated }: Props) {
                   className="mt-0.5 accent-brand"
                 />
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">Full Access</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Client can manage projects, rules, and elements</p>
+                  <p className="text-sm font-semibold text-slate-900">{t('agency.full_access')}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{t('agency.full_access_desc')}</p>
                 </div>
               </label>
               <label className="flex items-start gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors has-[:checked]:border-brand has-[:checked]:bg-brand/5">
@@ -137,8 +139,8 @@ export default function NewClientModal({ onClose, onCreated }: Props) {
                   className="mt-0.5 accent-brand"
                 />
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">View Only</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Client can only view their dashboard and analytics</p>
+                  <p className="text-sm font-semibold text-slate-900">{t('agency.view_only')}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{t('agency.view_only_desc')}</p>
                 </div>
               </label>
             </div>
@@ -153,10 +155,10 @@ export default function NewClientModal({ onClose, onCreated }: Props) {
 
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">
-              Cancel
+              {t('actions.cancel')}
             </button>
             <button type="submit" disabled={loading || !form.name.trim() || !form.client_name.trim()} className="px-5 py-2.5 text-sm font-bold text-white bg-brand rounded-xl hover:bg-brand/90 disabled:opacity-60 transition-colors">
-              {loading ? 'Creating...' : 'Create Workspace'}
+              {loading ? t('agency.creating') : t('agency.create_workspace')}
             </button>
           </div>
         </form>
