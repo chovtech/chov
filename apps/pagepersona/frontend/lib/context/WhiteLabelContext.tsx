@@ -15,7 +15,7 @@ const CACHE_KEY = 'pp_wl_branding'
 
 function readCache(): WhiteLabelValue | null {
   if (typeof window === 'undefined') return null
-  try { return JSON.parse(localStorage.getItem(CACHE_KEY) || 'null') } catch { return null }
+  try { return JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null') } catch { return null }
 }
 
 const defaults: WhiteLabelValue = { brandName: 'PagePersona', logo: null, icon: null, primaryColor: '#1A56DB' }
@@ -44,9 +44,9 @@ export function WhiteLabelProvider({ children }: { children: React.ReactNode }) 
 
   const display = live || cached || defaults
 
-  // Persist to localStorage whenever real workspace data arrives
+  // Persist to sessionStorage whenever real workspace data arrives
   useEffect(() => {
-    if (live) localStorage.setItem(CACHE_KEY, JSON.stringify(live))
+    if (live) sessionStorage.setItem(CACHE_KEY, JSON.stringify(live))
   }, [activeWorkspace?.id, live?.brandName, live?.logo, live?.icon, live?.primaryColor])
 
   useEffect(() => {
