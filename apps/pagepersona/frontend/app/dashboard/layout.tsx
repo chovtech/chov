@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/layouts/Sidebar'
-import { authApi, authApiExtended } from '@/lib/api/client'
+import { authApi, authApiExtended, billingApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { WorkspaceProvider, useWorkspace } from '@/lib/context/WorkspaceContext'
 import { WhiteLabelProvider } from '@/lib/context/WhiteLabelContext'
@@ -17,11 +17,20 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const [userEmail, setUserEmail] = useState('')
   const [resent, setResent] = useState(false)
   const [resending, setResending] = useState(false)
+  const [graceDaysRemaining, setGraceDaysRemaining] = useState<number | null>(null)
+  const [gracePlanLabel, setGracePlanLabel] = useState('')
 
   useEffect(() => {
     authApi.me().then(res => {
       setEmailVerified(res.data.email_verified)
       setUserEmail(res.data.email)
+    }).catch(() => null)
+
+    billingApi.summary().then(res => {
+      if (res.data.in_grace_period) {
+        setGraceDaysRemaining(res.data.grace_days_remaining)
+        setGracePlanLabel(res.data.plan_label)
+      }
     }).catch(() => null)
   }, [])
 
@@ -56,6 +65,25 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
       <Sidebar />
       <div className="ml-64">
+        {graceDaysRemaining !== null && (
+          <div className="bg-red-50 border-b border-red-200 px-6 py-3 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-red-500 text-lg">⚠️</span>
+              <p className="text-sm text-red-800 font-medium">
+                Your <strong>{gracePlanLabel}</strong> plan has expired.{' '}
+                {graceDaysRemaining > 0
+                  ? `You have ${graceDaysRemaining} day${graceDaysRemaining !== 1 ? 's' : ''} left before your account reverts to the Core plan.`
+                  : 'Your account will revert to the Core plan today.'}
+              </p>
+            </div>
+            <a
+              href="/dashboard/settings?tab=billing"
+              className="flex-shrink-0 text-xs font-bold text-red-700 border border-red-300 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors"
+            >
+              Renew now
+            </a>
+          </div>
+        )}
         {!emailVerified && (
           <div className="bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">

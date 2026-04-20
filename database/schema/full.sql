@@ -282,6 +282,15 @@ CREATE TABLE IF NOT EXISTS ai_coin_transactions (
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_workspaces_owner ON workspaces(owner_id);
 CREATE INDEX IF NOT EXISTS idx_workspaces_slug ON workspaces(slug);
+CREATE TABLE IF NOT EXISTS expiry_notifications (
+    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    entitlement_id    UUID NOT NULL REFERENCES entitlements(id) ON DELETE CASCADE,
+    notification_type VARCHAR(50) NOT NULL,
+    sent_at           TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(entitlement_id, notification_type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_expiry_notifications_ent ON expiry_notifications(entitlement_id);
 CREATE INDEX IF NOT EXISTS idx_entitlements_workspace ON entitlements(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
 CREATE INDEX IF NOT EXISTS idx_verification_tokens_token ON verification_tokens(token);

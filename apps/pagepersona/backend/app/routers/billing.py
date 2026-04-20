@@ -3,11 +3,12 @@ Billing summary endpoint — returns plan, coins, expiry, and usage meters.
 """
 import uuid
 import asyncpg
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Query
 from typing import Optional
 from app.database import get_db
 from app.core.security import get_current_user
-from app.core.plan_limits import PLAN_LIMITS
+from app.core.plan_limits import PLAN_LIMITS, GRACE_PERIOD_DAYS
 
 router = APIRouter(prefix="/api/billing", tags=["billing"])
 
@@ -60,8 +61,25 @@ async def billing_summary(
            ORDER BY created_at DESC LIMIT 1""",
         ws_id
     )
-    plan = ent["plan"] if ent else "trial"
-    expires_at = ent["expires_at"].isoformat() if ent and ent["expires_at"] else None
+    raw_plan = ent["plan"] if ent else "trial"
+    expires_at_dt = ent["expires_at"] if ent else None
+    expires_at = expires_at_dt.isoformat() if expires_at_dt else None
+
+    # Compute grace period state
+    in_grace_period = False
+    grace_days_remaining = None
+    now = datetime.now(timezone.utc)
+    if expires_at_dt and now > expires_at_dt:
+        days_expired = (now - expires_at_dt).days
+        if days_expired <= GRACE_PERIOD_DAYS:
+            in_grace_period = True
+            grace_days_remaining = GRACE_PERIOD_DAYS - days_expired
+
+    # Apply same expiry logic as plan_limits._get_plan
+    if expires_at_dt and now > expires_at_dt and not in_grace_period:
+        plan = "fe"
+    else:
+        plan = raw_plan
 
     # Coins
     coins_row = await db.fetchrow(
@@ -140,6 +158,8 @@ async def billing_summary(
         "plan": plan,
         "plan_label": PLAN_LABELS.get(plan, plan.title()),
         "expires_at": expires_at,
+        "in_grace_period": in_grace_period,
+        "grace_days_remaining": grace_days_remaining,
         "coins_balance": coins_balance,
         "lifetime_coins_earned": lifetime_earned,
         "is_unlimited_coins": is_unlimited_coins,

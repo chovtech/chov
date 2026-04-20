@@ -150,6 +150,49 @@ def render_jvzoo_welcome(firstname: str, magic_link: str, lang: str = "en") -> t
     return t["subject"], html
 
 
+# ── PLAN EXPIRY WARNING EMAILS ────────────────────────────
+EXPIRY_WARNING = {
+    "en": {
+        "subject_grace":  "Your {plan} plan has expired — {days} days to renew",
+        "subject_final":  "Last day — your {plan} plan locks tomorrow",
+        "heading":        "Your {plan} plan has expired",
+        "body_grace":     "Your {plan} plan expired {days_ago} day{s} ago. You still have full access for {days_left} more day{s2} — after that your account will revert to the Core (free) plan.",
+        "body_final":     "Your {plan} plan expired 7 days ago. Tomorrow your account will revert to the Core (free) plan and plan-exclusive features will be locked.",
+        "cta":            "Renew Now →",
+        "footer":         "Questions? Contact us at support@chovtech.com",
+    },
+}
+
+def render_expiry_warning(
+    firstname: str,
+    plan_label: str,
+    days_ago: int,
+    days_left: int,
+    upgrade_url: str,
+    lang: str = "en",
+) -> tuple[str, str]:
+    t = get_template(EXPIRY_WARNING, lang)
+    is_final = days_left <= 1
+    subject = (t["subject_final"] if is_final else t["subject_grace"]).format(
+        plan=plan_label, days=days_left
+    )
+    s  = "" if days_ago == 1 else "s"
+    s2 = "" if days_left == 1 else "s"
+    body = (t["body_final"] if is_final else t["body_grace"]).format(
+        plan=plan_label, days_ago=days_ago, days_left=days_left, s=s, s2=s2
+    )
+    html = base_layout(f"""
+      <h2 style="color:#f59e0b">⚠️ {t['heading'].format(plan=plan_label)}</h2>
+      <p>Hi {firstname},</p>
+      <p>{body}</p>
+      <a href="{upgrade_url}" style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
+        {t['cta']}
+      </a>
+      <p style="color:#64748b;font-size:14px">{t['footer']}</p>
+    """, lang)
+    return subject, html
+
+
 def render_project_report(
     sender_name: str,
     project_name: str,

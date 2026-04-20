@@ -6,6 +6,7 @@ Owner plan bypasses all limits.
 """
 import uuid
 import asyncpg
+from datetime import datetime, timezone
 from fastapi import HTTPException
 
 # None = unlimited
@@ -41,6 +42,8 @@ _COUNT_QUERIES: dict[str, str] = {
 }
 
 
+GRACE_PERIOD_DAYS = 7
+
 async def _get_plan(workspace_id: uuid.UUID, db: asyncpg.Connection) -> str:
     # Client sub-workspaces have no entitlement — use the parent (agency) workspace's plan
     parent_id = await db.fetchval(
@@ -49,12 +52,29 @@ async def _get_plan(workspace_id: uuid.UUID, db: asyncpg.Connection) -> str:
     lookup_id = uuid.UUID(str(parent_id)) if parent_id else workspace_id
 
     row = await db.fetchrow(
-        """SELECT plan FROM entitlements
+        """SELECT plan, expires_at FROM entitlements
            WHERE workspace_id = $1 AND product_id = 'pagepersona' AND status = 'active'
            ORDER BY created_at DESC LIMIT 1""",
         lookup_id
     )
-    return row["plan"] if row else "trial"
+    if not row:
+        return "trial"
+
+    plan = row["plan"]
+    expires_at = row["expires_at"]
+
+    if expires_at is None:
+        return plan  # lifetime deal — never expires
+
+    now = datetime.now(timezone.utc)
+    if now <= expires_at:
+        return plan  # active, not yet expired
+
+    days_expired = (now - expires_at).days
+    if days_expired <= GRACE_PERIOD_DAYS:
+        return plan  # within grace period — full access still applies
+
+    return "fe"  # past grace period — revert to core
 
 
 async def enforce_plan_limit(

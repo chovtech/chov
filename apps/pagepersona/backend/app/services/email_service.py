@@ -3,7 +3,8 @@ from botocore.exceptions import BotoCoreError, ClientError
 from app.core.config import settings
 from app.templates.emails.emails import (
     render_verification, render_welcome,
-    render_password_reset, render_jvzoo_welcome
+    render_password_reset, render_jvzoo_welcome,
+    render_expiry_warning,
 )
 from typing import Optional
 import logging
@@ -71,6 +72,19 @@ def send_password_reset_email(to_email: str, name: str, reset_token: str, lang: 
 def send_jvzoo_welcome_email(to_email: str, name: str, magic_link: str, lang: str = "en") -> bool:
     firstname = _get_firstname(name, to_email)
     subject, html = render_jvzoo_welcome(firstname, magic_link, lang)
+    return send_email(to_email, subject, html)
+
+def send_expiry_warning_email(
+    to_email: str,
+    name: str,
+    plan_label: str,
+    days_ago: int,
+    days_left: int,
+    lang: str = "en",
+) -> bool:
+    firstname = _get_firstname(name, to_email)
+    upgrade_url = f"{settings.FRONTEND_URL}/dashboard/settings?tab=billing"
+    subject, html = render_expiry_warning(firstname, plan_label, days_ago, days_left, upgrade_url, lang)
     return send_email(to_email, subject, html)
 
 def send_magic_link_email(to_email: str, name: str, magic_token: str, lang: str = "en") -> bool:

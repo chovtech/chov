@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 import os
+import asyncio
 import logging
 
 logging.basicConfig(
@@ -11,12 +12,30 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.database import get_pool, close_pool
+from app.services.expiry_service import send_expiry_warning_emails
 from app.routers import auth, users, webhooks, google_auth, projects, rules, sdk, upload, assets, popups, countdowns, analytics, sdk_analytics, workspaces, team, clients, ai, reports, billing
+
+logger = logging.getLogger(__name__)
+
+async def _daily_expiry_task():
+    """Runs once per day — sends grace period warning emails for expired plans."""
+    await asyncio.sleep(60)  # short delay on startup to let the pool warm up
+    while True:
+        try:
+            pool = await get_pool()
+            async with pool.acquire() as db:
+                await send_expiry_warning_emails(db)
+            logger.info("Daily expiry email check complete")
+        except Exception as exc:
+            logger.error(f"Daily expiry task error: {exc}")
+        await asyncio.sleep(24 * 60 * 60)  # 24 hours
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await get_pool()
     print(f"✓ Connected to PostgreSQL")
+    asyncio.create_task(_daily_expiry_task())
     yield
     await close_pool()
     print("✓ Database connections closed")
