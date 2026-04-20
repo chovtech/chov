@@ -76,6 +76,7 @@ async def create_order(
                     "application_context": {
                         "brand_name": "PagePersona",
                         "user_action": "PAY_NOW",
+                        "landing_page": "BILLING",  # defaults to card entry, not PayPal login
                     },
                 },
                 headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
