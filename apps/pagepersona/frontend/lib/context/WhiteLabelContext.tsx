@@ -54,7 +54,7 @@ export function WhiteLabelProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     const link = document.querySelector<HTMLLinkElement>('link[rel~="icon"]')
     if (link) link.href = display.icon || '/favicon.ico'
-  }, [display.icon])
+  }, [display.icon, pathname])
 
   return (
     <WhiteLabelContext.Provider value={display}>
