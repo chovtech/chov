@@ -33,7 +33,7 @@ PLAN_LIMITS: dict[str, dict] = {
 }
 
 _COUNT_QUERIES: dict[str, str] = {
-    "projects":          "SELECT COUNT(*) FROM projects WHERE workspace_id = $1",
+    "projects":          "SELECT COUNT(*) FROM projects WHERE workspace_id = $1 AND (deleted_at IS NULL OR script_verified = TRUE)",
     "popups":            "SELECT COUNT(*) FROM popups   WHERE workspace_id = $1",
     "countdowns":        "SELECT COUNT(*) FROM countdowns WHERE workspace_id = $1",
     "rules_per_project": "SELECT COUNT(*) FROM rules WHERE project_id = $1",

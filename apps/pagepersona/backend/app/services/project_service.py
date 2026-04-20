@@ -54,7 +54,7 @@ async def get_projects(
     rows = await db.fetch(
         """
         SELECT * FROM projects
-        WHERE workspace_id = $1
+        WHERE workspace_id = $1 AND deleted_at IS NULL
         ORDER BY created_at DESC
         """,
         uuid.UUID(workspace_id)
@@ -70,7 +70,7 @@ async def get_project(
     row = await db.fetchrow(
         """
         SELECT * FROM projects
-        WHERE id = $1 AND workspace_id = $2
+        WHERE id = $1 AND workspace_id = $2 AND deleted_at IS NULL
         """,
         uuid.UUID(project_id),
         uuid.UUID(workspace_id)
@@ -117,10 +117,11 @@ async def delete_project(
 ) -> bool:
     result = await db.execute(
         """
-        DELETE FROM projects
-        WHERE id = $1 AND workspace_id = $2
+        UPDATE projects
+        SET deleted_at = NOW()
+        WHERE id = $1 AND workspace_id = $2 AND deleted_at IS NULL
         """,
         uuid.UUID(project_id),
         uuid.UUID(workspace_id)
     )
-    return result == "DELETE 1"
+    return result == "UPDATE 1"

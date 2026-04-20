@@ -146,6 +146,7 @@ CREATE TABLE IF NOT EXISTS projects (
     thumbnail_url   TEXT,
     description     TEXT,
     page_scan       JSONB,
+    deleted_at      TIMESTAMPTZ DEFAULT NULL,
     created_at      TIMESTAMPTZ DEFAULT NOW(),
     updated_at      TIMESTAMPTZ DEFAULT NOW()
 );

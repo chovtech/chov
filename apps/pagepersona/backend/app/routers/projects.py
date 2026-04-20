@@ -77,7 +77,7 @@ async def _get_accessible_project(db: asyncpg.Connection, project_id: str, user_
     row = await db.fetchrow(
         """SELECT p.* FROM projects p
            JOIN workspaces w ON p.workspace_id = w.id
-           WHERE p.id = $1 AND (
+           WHERE p.id = $1 AND p.deleted_at IS NULL AND (
                w.owner_id = $2
                OR EXISTS (
                    SELECT 1 FROM workspace_members wm
