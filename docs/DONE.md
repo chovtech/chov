@@ -411,16 +411,36 @@ All emails: EN + FR bilingual (where applicable), SES via boto3, `noreply@usepag
 
 ---
 
-## 23. WHAT'S NEXT
+## 23. ANALYTICS INSIGHTS AI ✅
 
-### Remaining AI Features
-| # | Feature | Where | Notes |
-|---|---------|--------|-------|
-| 1 | **Analytics Insights** | Analytics page per project | Plain-English story from rule fires + visitor breakdown |
+| Item | Detail |
+|------|--------|
+| `POST /api/ai/analytics/insights` | Generates plain-English insight summary — reads rule fires + visitor breakdown; costs 8 coins |
+| `GET /api/ai/analytics/insights/{project_id}` | Returns past insights from `ai_coin_transactions` metadata, newest first |
+| Frontend | `/dashboard/projects/[id]/insights/page.tsx` — Generate Insight button, insight history |
 
-### After AI module complete
-- Entitlements / plan limits enforcement (coin allocations per plan)
-- JVZoo sales funnel pages (FE, OTO 1–5, thank-you pages)
+---
+
+## 24. BILLING & PLAN ENFORCEMENT ✅
+
+| Item | Detail |
+|------|--------|
+| Plan limits | Per-plan gates on projects, rules, popups, countdowns, workspaces — 402 on limit hit |
+| Soft delete | `deleted_at` on projects — verified projects keep counting against quota to prevent cycling |
+| Grace period | 7-day full access after plan expiry; `expiry_notifications` table tracks reminder emails sent |
+| Expiry emails | Daily background task sends reminders at days 1, 4, 7 post-expiry via SES |
+| JVZoo webhook | Rewrote: proper `PRODUCT_PLAN_MAP`, SALE/BILL/RFND/CGBK handling, never-downgrade hierarchy |
+| PayPal coin top-up | `POST /api/billing/coins/create-order` + `POST /api/billing/coins/capture-order`; guest card checkout via `landing_page: "BILLING"` |
+| Plan gating (UI) | White-label tab locked below Professional; Agency sidebar link hidden below Agency; custom domain locked below Agency |
+| Grace period banner | Red banner in dashboard layout when in grace period with days remaining + Renew link |
+
+---
+
+## 25. WHAT'S NEXT
+
+### Launch prerequisites
+- Replace placeholder JVZoo product IDs in `webhooks.py` with real IDs (after JVZoo product setup)
+- FE sales page, FastPass page, 5 OTO pages, thank-you pages
 
 ---
 
@@ -444,11 +464,7 @@ Systematic test update pass — reviewed every existing test module against the 
 - Branch: `main`
 
 ### Where to pick up next
-**Next feature: Billing & Entitlements enforcement**
-- Wire plan limits: per-plan coin allocations, feature gating by plan
-- JVZoo IPN → auto-upgrade entitlement → reseed coins
-- Entitlement check middleware for plan-locked features
-- Settings → Billing tab showing real plan + coin usage
+~~**Next feature: Billing & Entitlements enforcement**~~ ✅ Done (see section 24)
 
 ---
 
@@ -470,18 +486,4 @@ Systematic test update pass — reviewed every existing test module against the 
 - Branch: `main`, latest commit: `58b95a0`
 
 ### Where to pick up tomorrow
-**Next feature: Rule Creation Hub — AI Path**
-
-The AI path is: user types a natural-language goal (e.g. "Show a discount popup to visitors from Google Ads who haven't bought yet") → backend scans the project page URL (httpx + BeautifulSoup, same pattern as brand/project extract) → reads real element selectors from the DOM → Sonnet returns 3–5 ready-to-use rules with conditions + actions → user reviews, edits if needed, accepts → rules saved.
-
-Key files to read before starting:
-- `apps/pagepersona/backend/app/routers/ai.py` — add new endpoint `POST /api/ai/rules/suggest`
-- `apps/pagepersona/frontend/app/dashboard/projects/[id]/rules/new/page.tsx` — where the 3-path entry point UI lives
-- `docs/SYSTEM-DESIGN.md` — signal library and action types reference
-- `docs/DONE.md` section 23 — feature spec
-
-Design agreed:
-- 3 entry paths on the New Rule page: Manual (existing), Template (pre-built), AI (new)
-- AI path costs: `rule_creation_ai` = 15 coins (already in COIN_COSTS)
-- Model: Sonnet (AI_MODEL_SMART) — needs page context + element selectors
-- Page scan: same httpx + BeautifulSoup pattern already used in brand extract and project describe endpoints
+~~**Next feature: Rule Creation Hub — AI Path**~~ ✅ Done (see section 22 — AI Rule Suggestions)

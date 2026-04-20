@@ -26,6 +26,9 @@
 | SSH key | `~/.ssh/chov_github` |
 | VPS SSH | `ssh chov-vps` (key: `~/.ssh/chov_vps`) |
 
+
+
+
 ## Start Local Environment
 ```bash
 # Terminal 3 — Database (run first)
