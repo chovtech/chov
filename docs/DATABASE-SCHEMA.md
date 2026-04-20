@@ -342,7 +342,7 @@ Checked by the daily background task in `expiry_service.py`.
 |--------|------|-------|
 | id | UUID PK | Default `gen_random_uuid()` |
 | workspace_id | UUID FK → workspaces NOT NULL | CASCADE delete |
-| action_type | VARCHAR(50) NOT NULL | See table below |
+| action_type | VARCHAR(100) NOT NULL | See table below |
 | coins_deducted | INTEGER NOT NULL | |
 | claude_tokens_used | INTEGER | Nullable — set for Anthropic calls |
 | fal_image_generated | BOOLEAN | Default `false` — set for fal.ai image gen calls |
