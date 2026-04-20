@@ -294,7 +294,7 @@ export const aiApi = {
     apiClient.post('/api/ai/image/generate', data),
   generatePopup: (data: { workspace_id?: string; project_id?: string; goal: string }) =>
     apiClient.post('/api/ai/popup/generate', data),
-  suggestRules: (data: { workspace_id?: string; project_id: string }) =>
+  suggestRules: (data: { workspace_id?: string; project_id: string; user_prompt?: string }) =>
     apiClient.post('/api/ai/rules/suggest', data),
   generateInsight: (data: { workspace_id?: string; project_id: string; period?: number }) =>
     apiClient.post('/api/ai/analytics/insights', data),

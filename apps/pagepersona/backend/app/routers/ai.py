@@ -990,6 +990,7 @@ async def get_insights_history(
 class RuleSuggestRequest(BaseModel):
     workspace_id: Optional[str] = None
     project_id: str
+    user_prompt: Optional[str] = None
 
 
 @router.post("/rules/suggest")
@@ -1058,11 +1059,13 @@ async def suggest_rules(
         existing_rules_lines.append(f"  - \"{r['name']}\" (signals: {signals} → actions: {acts})")
     existing_rules_context = "\n".join(existing_rules_lines) if existing_rules_lines else "  None yet"
 
+    user_goal_section = f"\n## User's goal\n{body.user_prompt.strip()}" if body.user_prompt and body.user_prompt.strip() else ""
+
     prompt = f"""You are an expert at website personalisation. Analyse the following page and suggest 3–5 ready-to-use personalisation rules.
 
 ## Page context
 {description_line}
-{chr(10).join(brand_lines)}
+{chr(10).join(brand_lines)}{user_goal_section}
 
 ## Detected page elements
 {elements_context}
@@ -1100,6 +1103,7 @@ async def suggest_rules(
 4. For show_popup actions, always leave value as "".
 5. Make rules practical and business-relevant.
 6. Do NOT suggest rules that duplicate signals already covered in the already-created rules list above.
+7. If a "User's goal" section is present, prioritise rules that directly address that goal.
 
 ## Required JSON format
 Return exactly this structure:

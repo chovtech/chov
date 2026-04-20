@@ -59,6 +59,7 @@ export default function AiSuggestPage() {
   const [error, setError] = useState('')
   const [balance, setBalance] = useState<number | null>(null)
   const [creating, setCreating] = useState(false)
+  const [userPrompt, setUserPrompt] = useState('')
   const [existingRulesCount, setExistingRulesCount] = useState(0)
   const { limitOf } = usePlanLimits()
   const rulesLimit = limitOf('rules_per_project')
@@ -89,6 +90,7 @@ export default function AiSuggestPage() {
       const res = await aiApi.suggestRules({
         workspace_id: activeWorkspace?.id,
         project_id: projectId,
+        user_prompt: userPrompt.trim() || undefined,
       })
       const rules: AiRule[] = res.data.rules
       setSuggestions(rules)
@@ -185,6 +187,19 @@ export default function AiSuggestPage() {
             <p className="text-sm text-slate-500 max-w-sm mb-8">
               AI will generate personalisation rules using your project description and brand profile. Use the live picker to map elements after creation.
             </p>
+
+            {!atRulesLimit && (
+              <div className="w-full max-w-sm mb-6 text-left">
+                <label className="block text-xs font-bold text-slate-600 mb-1.5">What do you want to personalise? <span className="font-normal text-slate-400">(optional)</span></label>
+                <textarea
+                  value={userPrompt}
+                  onChange={e => setUserPrompt(e.target.value)}
+                  rows={3}
+                  placeholder="e.g. Show urgency copy for visitors from paid ads, highlight the free trial for first-time visitors..."
+                  className="w-full px-3.5 py-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand placeholder:text-slate-400"
+                />
+              </div>
+            )}
 
             {error && (
               <div className="mb-5 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 max-w-sm w-full">
