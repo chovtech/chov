@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     MAUTIC_PAGEPERSONA_SEGMENT_ID: int = 5
     # JVZoo
     JVZOO_SECRET_KEY: Optional[str] = None
+    # PayPal
+    PAYPAL_CLIENT_ID: Optional[str] = None
+    PAYPAL_CLIENT_SECRET: Optional[str] = None
+    PAYPAL_BASE_URL: str = "https://api-m.paypal.com"  # use https://api-m.sandbox.paypal.com for testing
     # AI — Anthropic Claude
     ANTHROPIC_API_KEY: Optional[str] = None
     # AI — fal.ai (Flux image generation)

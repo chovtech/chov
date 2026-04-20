@@ -257,6 +257,14 @@ export const billingApi = {
     apiClient.get('/api/billing/summary', { params: workspaceId ? { workspace_id: workspaceId } : {} }),
 }
 
+// Coins API
+export const coinsApi = {
+  createOrder: (pack: string, workspaceId?: string) =>
+    apiClient.post('/api/billing/coins/create-order', { pack, workspace_id: workspaceId }),
+  captureOrder: (orderId: string, pack: string, workspaceId?: string) =>
+    apiClient.post('/api/billing/coins/capture-order', { order_id: orderId, pack, workspace_id: workspaceId }),
+}
+
 // AI API
 export const aiApi = {
   getCoins: (workspaceId?: string) =>

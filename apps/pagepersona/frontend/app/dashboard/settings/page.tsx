@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Topbar from '@/components/layouts/Topbar'
 import Icon from '@/components/ui/Icon'
-import { authApi, userApi, workspaceApi, teamApi, aiApi, billingApi } from '@/lib/api/client'
+import { authApi, userApi, workspaceApi, teamApi, aiApi, billingApi, coinsApi } from '@/lib/api/client'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { useLanguage } from '@/lib/hooks/useLanguage'
 import ImageUploader from '@/components/ui/ImageUploader'
@@ -512,9 +512,19 @@ function ClientWorkspacesCard({ workspaces, slotsUsed, slotsLimit }: {
   )
 }
 
+const COIN_PACKS = [
+  { key: 'starter', coins: '100 coins',    amount: 100,   price: '$7'   },
+  { key: 'growth',  coins: '500 coins',    amount: 500,   price: '$27'  },
+  { key: 'pro',     coins: '2,000 coins',  amount: 2000,  price: '$67'  },
+  { key: 'agency',  coins: '10,000 coins', amount: 10000, price: '$197' },
+]
+
 function BillingTab() {
+  const { activeWorkspace } = useWorkspace()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [payingPack, setPayingPack] = useState<string | null>(null)
+  const [coinMsg, setCoinMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
     billingApi.summary()
@@ -522,6 +532,39 @@ function BillingTab() {
       .catch(() => setData(DEFAULT_BILLING))
       .finally(() => setLoading(false))
   }, [])
+
+  async function handleCoinPurchase(pack: typeof COIN_PACKS[0]) {
+    setPayingPack(pack.key)
+    setCoinMsg(null)
+    try {
+      const orderRes = await coinsApi.createOrder(pack.key, activeWorkspace?.id)
+      const orderId = orderRes.data.order_id
+
+      // Open PayPal in a popup
+      const paypalUrl = `https://www.paypal.com/checkoutnow?token=${orderId}`
+      const popup = window.open(paypalUrl, 'paypal_checkout', 'width=500,height=700,scrollbars=yes')
+
+      // Poll until popup closes
+      const poll = setInterval(async () => {
+        if (!popup || popup.closed) {
+          clearInterval(poll)
+          try {
+            const captureRes = await coinsApi.captureOrder(orderId, pack.key, activeWorkspace?.id)
+            const { coins_added, new_balance } = captureRes.data
+            setData((prev: any) => prev ? { ...prev, coins_balance: new_balance } : prev)
+            setCoinMsg({ type: 'success', text: `+${coins_added.toLocaleString()} coins added! New balance: ${new_balance.toLocaleString()}` })
+          } catch {
+            setCoinMsg({ type: 'error', text: 'Payment not completed. If you paid, contact support@chovtech.com.' })
+          } finally {
+            setPayingPack(null)
+          }
+        }
+      }, 1000)
+    } catch {
+      setCoinMsg({ type: 'error', text: 'Could not start payment. Please try again.' })
+      setPayingPack(null)
+    }
+  }
 
   if (loading) return (
     <div className="flex justify-center py-16">
@@ -644,24 +687,27 @@ function BillingTab() {
         {!data.is_unlimited_coins && (
           <div className="mt-4 pt-4 border-t border-slate-100">
             <p className="text-xs font-bold text-slate-500 mb-2">Top-up packs (one-time purchase)</p>
+            {coinMsg && (
+              <div className={`mb-3 px-3 py-2.5 rounded-xl text-xs font-semibold ${coinMsg.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                {coinMsg.text}
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-2">
-              {[
-                { coins: '100 coins', amount: 100, price: '$7' },
-                { coins: '500 coins', amount: 500, price: '$27' },
-                { coins: '2,000 coins', amount: 2000, price: '$67' },
-                { coins: '10,000 coins', amount: 10000, price: '$197' },
-              ].map(pack => (
-                <a
-                  key={pack.coins}
-                  href={`mailto:support@chovtech.com?subject=Coin Top-up: ${pack.coins}&body=I'd like to purchase the ${pack.coins} pack (${pack.price}) for my PagePersona account.`}
-                  className="flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 hover:border-brand hover:bg-brand/5 rounded-xl transition-colors cursor-pointer group"
+              {COIN_PACKS.map(pack => (
+                <button
+                  key={pack.key}
+                  onClick={() => handleCoinPurchase(pack)}
+                  disabled={!!payingPack}
+                  className="flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 hover:border-brand hover:bg-brand/5 rounded-xl transition-colors cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span className="text-xs font-bold text-slate-700 group-hover:text-brand">{pack.coins}</span>
+                  <span className="text-xs font-bold text-slate-700 group-hover:text-brand">
+                    {payingPack === pack.key ? 'Opening PayPal…' : pack.coins}
+                  </span>
                   <span className="text-xs font-black text-brand">{pack.price}</span>
-                </a>
+                </button>
               ))}
             </div>
-            <p className="text-[11px] text-slate-400 mt-3">Click a pack to request a top-up via email. We'll send your payment link within 24 hours.</p>
+            <p className="text-[11px] text-slate-400 mt-3">Secure payment via PayPal. Coins are added instantly after payment.</p>
           </div>
         )}
       </div>

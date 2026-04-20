@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.database import get_pool, close_pool
 from app.services.expiry_service import send_expiry_warning_emails
-from app.routers import auth, users, webhooks, google_auth, projects, rules, sdk, upload, assets, popups, countdowns, analytics, sdk_analytics, workspaces, team, clients, ai, reports, billing
+from app.routers import auth, users, webhooks, google_auth, projects, rules, sdk, upload, assets, popups, countdowns, analytics, sdk_analytics, workspaces, team, clients, ai, reports, billing, coins
 
 logger = logging.getLogger(__name__)
 
@@ -86,6 +86,7 @@ app.include_router(clients.router)
 app.include_router(ai.router)
 app.include_router(reports.router)
 app.include_router(billing.router)
+app.include_router(coins.router)
 
 @app.get("/")
 async def root():
