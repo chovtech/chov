@@ -4,7 +4,7 @@
 **Local:** `postgresql://chov:chov_dev_password@localhost:5432/chov` (Docker: `chov-db`)
 **VPS:** `postgresql://chov:chov_dev_password@localhost/chov`
 
-All 19 tables exist locally and on VPS. `countdowns` is owned by `postgres` on VPS (not `chov`) — functionally fine.
+Last synced from VPS: 2026-04-20 (via `pg_dump --schema-only`)
 
 ---
 
@@ -45,9 +45,9 @@ All 19 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | hide_powered_by | BOOLEAN NOT NULL | Default `false` |
 | custom_domain | TEXT UNIQUE | e.g. `clients.acmeagency.com` |
 | custom_domain_verified | BOOLEAN | Default `false` |
-| brand_name | TEXT | Legacy — do not use; use `white_label_brand_name` |
-| logo_url | TEXT | Legacy — do not use; use `white_label_logo` |
-| brand_color | TEXT | Legacy — do not use; use `white_label_primary_color` |
+| brand_name | TEXT | Legacy — always NULL; do not use; use `white_label_brand_name` |
+| logo_url | TEXT | Legacy — always NULL; do not use; use `white_label_logo` |
+| brand_color | TEXT | Legacy — always NULL; do not use; use `white_label_primary_color` |
 | onboarding_completed | BOOLEAN NOT NULL | Default `false` — set via `POST /api/workspaces/{id}/complete-onboarding` |
 | created_at | TIMESTAMPTZ | Default `now()` |
 | updated_at | TIMESTAMPTZ | Default `now()` |
@@ -79,29 +79,12 @@ All 19 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | email | TEXT NOT NULL | Invited client email — this is the active column |
 | token | TEXT UNIQUE NOT NULL | Accept link token |
 | status | TEXT NOT NULL | `pending`, `active`, `revoked` — default `pending` |
+| client_workspace_id | UUID FK → workspaces | Client workspace — SET NULL on delete |
+| client_email | TEXT | Legacy — always NULL; do not use; use `email` |
 | created_at | TIMESTAMPTZ NOT NULL | Default `now()` |
 | accepted_at | TIMESTAMPTZ | Nullable |
-| client_email | TEXT | Legacy — always NULL; do not use; use `email` |
-| client_workspace_id | UUID FK → workspaces | Client workspace — SET NULL on delete |
 
-> ⚠️ `email` (NOT NULL) is the active column. `client_email` is a legacy nullable column that is always NULL — never read from it.
-
----
-
-### entitlements
-| Column | Type | Notes |
-|--------|------|-------|
-| id | UUID PK | Default `gen_random_uuid()` |
-| workspace_id | UUID FK → workspaces NOT NULL | UNIQUE per (workspace_id, product_id) |
-| product_id | VARCHAR(100) NOT NULL | e.g. `pagepersona` |
-| plan | VARCHAR(100) NOT NULL | `trial`, `fe`, `unlimited`, `professional`, `agency`, `owner` |
-| source | VARCHAR(50) NOT NULL | `direct` (signup), `jvzoo`, `stripe` |
-| status | VARCHAR(50) NOT NULL | `active`, `expired`, `cancelled` — default `active` |
-| affiliate_id | VARCHAR(255) | Nullable — JVZoo affiliate ref |
-| purchased_at | TIMESTAMPTZ | Default `now()` |
-| expires_at | TIMESTAMPTZ | NULL = lifetime |
-| created_at | TIMESTAMPTZ | Default `now()` |
-| updated_at | TIMESTAMPTZ | Default `now()` |
+> ⚠️ `email` (NOT NULL) is the active column. `client_email` is a legacy nullable column — never read from it.
 
 ---
 
@@ -143,6 +126,39 @@ All 19 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 
 ---
 
+### entitlements
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID PK | Default `gen_random_uuid()` |
+| workspace_id | UUID FK → workspaces NOT NULL | UNIQUE per (workspace_id, product_id) — CASCADE delete |
+| product_id | VARCHAR(100) NOT NULL | `pagepersona` |
+| plan | VARCHAR(100) NOT NULL | `trial`, `fe`, `unlimited`, `professional`, `agency`, `owner` |
+| source | VARCHAR(50) NOT NULL | `direct` (signup), `jvzoo`, `stripe` |
+| status | VARCHAR(50) NOT NULL | `active`, `refunded` — default `active` |
+| affiliate_id | VARCHAR(255) | Nullable — JVZoo affiliate ref |
+| purchased_at | TIMESTAMPTZ | Default `now()` |
+| expires_at | TIMESTAMPTZ | NULL = lifetime deal; date = yearly plan expiry |
+| created_at | TIMESTAMPTZ | Default `now()` |
+| updated_at | TIMESTAMPTZ | Default `now()` |
+
+**Plan hierarchy (lowest → highest):** `trial(0)` → `fe(1)` → `unlimited(2)` → `professional(3)` → `agency(4)` → `owner(5)`
+Plans never downgrade — JVZoo webhook only upgrades.
+
+---
+
+### expiry_notifications
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID PK | Default `gen_random_uuid()` |
+| entitlement_id | UUID FK → entitlements NOT NULL | CASCADE delete |
+| notification_type | VARCHAR(50) NOT NULL | `grace_day1`, `grace_day4`, `grace_day7` |
+| sent_at | TIMESTAMPTZ | Default `now()` |
+
+UNIQUE(entitlement_id, notification_type) — prevents duplicate reminder emails.
+Checked by the daily background task in `expiry_service.py`.
+
+---
+
 ### pricing_tiers
 | Column | Type | Notes |
 |--------|------|-------|
@@ -165,16 +181,20 @@ All 19 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | id | UUID PK | Default `gen_random_uuid()` |
 | workspace_id | UUID FK → workspaces NOT NULL | CASCADE delete |
 | name | VARCHAR(255) NOT NULL | |
-| page_url | TEXT NOT NULL | Locked after script verified |
-| platform | VARCHAR(100) NOT NULL | `html`, `wordpress`, `shopify`, etc. — default `html` |
+| page_url | TEXT NOT NULL | Locked after `script_verified = true` |
+| platform | VARCHAR(100) NOT NULL | `html`, `wordpress`, `shopify`, `webflow`, etc. — default `html` |
 | script_id | VARCHAR(50) UNIQUE NOT NULL | `PP-XXXXXX` format |
 | script_verified | BOOLEAN | Default `false` |
 | status | VARCHAR(50) NOT NULL | `draft`, `active` — default `draft` |
 | thumbnail_url | TEXT | R2 URL |
 | description | TEXT | AI context — what the page sells/does. Used by CopyWriter and Image Generator. |
 | page_scan | JSONB | Scanned page structure: `{headings, ctas, images, sections, custom_blocks}` arrays |
+| deleted_at | TIMESTAMPTZ | NULL = not deleted. Soft delete — row stays for quota accounting. |
 | created_at | TIMESTAMPTZ | Default `now()` |
 | updated_at | TIMESTAMPTZ | Default `now()` |
+
+> **Soft delete quota rule:** Verified deleted projects (`script_verified = true`) still count against the plan quota. Unverified deleted projects free their slot.
+> Plan limit query: `WHERE workspace_id = $1 AND (deleted_at IS NULL OR script_verified = TRUE)`
 
 ---
 
@@ -189,6 +209,7 @@ All 19 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | actions | JSONB NOT NULL | Array of action objects — default `'[]'` |
 | priority | INTEGER NOT NULL | Default `0` — lower = higher priority |
 | is_active | BOOLEAN | Default `false` |
+| element_mapped | BOOLEAN NOT NULL | Default `false` — true when rule was created via the Live Picker |
 | created_at | TIMESTAMPTZ | Default `now()` |
 | updated_at | TIMESTAMPTZ | Default `now()` |
 
@@ -213,7 +234,7 @@ All 19 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | id | UUID PK | Default `gen_random_uuid()` |
 | workspace_id | UUID FK → workspaces NOT NULL | CASCADE delete |
 | name | VARCHAR(255) NOT NULL | |
-| ends_at | TIMESTAMPTZ | Fixed-date mode only; NULL for duration mode |
+| ends_at | TIMESTAMPTZ | Fixed-date mode only — NULL for duration mode |
 | expiry_action | VARCHAR(50) NOT NULL | `hide`, `redirect`, `message` — default `hide` |
 | expiry_value | TEXT NOT NULL | URL or message text — default `''` |
 | config | JSONB NOT NULL | Full style + display config — default `'{}'` |
@@ -242,8 +263,8 @@ All 19 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | utm_content | VARCHAR | |
 | utm_term | VARCHAR | |
 | is_new_visitor | BOOLEAN NOT NULL | Default `false` |
-| time_on_page | INTEGER | Seconds — updated at unload |
-| scroll_depth | INTEGER | % — updated at unload |
+| time_on_page | INTEGER | Seconds — updated at unload via keepalive beacon |
+| scroll_depth | INTEGER | % — updated at unload via keepalive beacon |
 
 ---
 
@@ -297,12 +318,22 @@ All 19 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | Column | Type | Notes |
 |--------|------|-------|
 | id | UUID PK | Default `gen_random_uuid()` |
-| workspace_id | UUID FK → workspaces NOT NULL | UNIQUE per workspace |
-| balance | INTEGER NOT NULL | Current spendable balance — default `0`; set by `seed_coins()` on signup |
-| lifetime_earned | INTEGER NOT NULL | Total coins ever earned — default `0`; set by `seed_coins()` |
-| last_reset_at | TIMESTAMPTZ | Default `now()` — updated when coins are topped up |
+| workspace_id | UUID FK → workspaces NOT NULL | UNIQUE per workspace — CASCADE delete |
+| balance | INTEGER NOT NULL | Current spendable balance — default `0`; seeded by `seed_coins()` on signup |
+| lifetime_earned | INTEGER NOT NULL | Total coins ever earned — default `0` |
+| last_reset_at | TIMESTAMPTZ | Default `now()` |
 | created_at | TIMESTAMPTZ | Default `now()` |
 | updated_at | TIMESTAMPTZ | Default `now()` |
+
+**Coin allocation by plan (seeded on signup / upgraded):**
+| Plan | Coins |
+|------|-------|
+| trial | 20 |
+| fe | 50 |
+| unlimited | 200 |
+| professional | 200 |
+| agency | 200 |
+| owner | ∞ (bypasses deduction entirely) |
 
 ---
 
@@ -310,17 +341,17 @@ All 19 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | Column | Type | Notes |
 |--------|------|-------|
 | id | UUID PK | Default `gen_random_uuid()` |
-| workspace_id | UUID FK → workspaces NOT NULL | |
-| action_type | VARCHAR(50) NOT NULL | `write_copy`, `generate_image`, `popup_content`, `project_describe`, etc. |
+| workspace_id | UUID FK → workspaces NOT NULL | CASCADE delete |
+| action_type | VARCHAR(50) NOT NULL | See table below |
 | coins_deducted | INTEGER NOT NULL | |
 | claude_tokens_used | INTEGER | Nullable — set for Anthropic calls |
 | fal_image_generated | BOOLEAN | Default `false` — set for fal.ai image gen calls |
-| metadata | JSONB | e.g. `{goal, prompt, style, width, height}` |
+| metadata | JSONB | e.g. `{goal, prompt, style, width, height, insight}` |
 | created_at | TIMESTAMPTZ | Default `now()` |
 
-**Coin costs (locked in `COIN_COSTS` constant):**
-| Action | Coins |
-|--------|-------|
+**Coin costs per action:**
+| action_type | Coins |
+|-------------|-------|
 | `write_copy` | 5 |
 | `generate_image` | 10 |
 | `popup_content` | 5 |
@@ -328,30 +359,50 @@ All 19 tables exist locally and on VPS. `countdowns` is owned by `postgres` on V
 | `analytics_insights` | 8 |
 | `rule_creation_ai` | 15 |
 | `rule_suggestion` | 3 |
+| `purchase` | 0 (credit, not deduction) |
+
+---
+
+### project_reports
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID PK | Default `gen_random_uuid()` |
+| project_id | UUID FK → projects NOT NULL | CASCADE delete |
+| workspace_id | UUID FK → workspaces NOT NULL | CASCADE delete |
+| recipient_email | TEXT NOT NULL | |
+| recipient_name | TEXT | Nullable |
+| message | TEXT | Nullable — custom message from sender |
+| public_token | TEXT UNIQUE NOT NULL | `encode(gen_random_bytes(24), 'hex')` — used in `/r/[token]` public URL |
+| analytics_snapshot | JSONB NOT NULL | Snapshot of analytics data at time of send — default `'{}'` |
+| period | INTEGER NOT NULL | Days of data included — default `30` |
+| created_at | TIMESTAMPTZ NOT NULL | Default `now()` |
 
 ---
 
 ## VPS Table Status
 
-| Table | Local | VPS |
-|-------|-------|-----|
-| users | ✅ | ✅ |
-| workspaces | ✅ | ✅ |
-| sessions | ✅ | ✅ |
-| verification_tokens | ✅ | ✅ |
-| password_reset_tokens | ✅ | ✅ |
-| entitlements | ✅ | ✅ |
-| pricing_tiers | ✅ | ✅ |
-| projects | ✅ | ✅ (`description` column added) |
-| rules | ✅ | ✅ |
-| popups | ✅ | ✅ |
-| workspace_members | ✅ | ✅ |
-| client_invites | ✅ | ✅ |
-| page_visits | ✅ | ✅ |
-| rule_events | ✅ | ✅ |
-| countdowns | ✅ | ✅ (owned by `postgres`, not `chov`) |
-| assets | ✅ | ✅ |
-| workspace_ai_settings | ✅ | ✅ |
-| ai_coins | ✅ | ✅ |
-| ai_coin_transactions | ✅ | ✅ |
-| workspaces.onboarding_completed | ✅ | ✅ |
+All 21 tables confirmed present on VPS as of 2026-04-20.
+
+| Table | VPS | Notes |
+|-------|-----|-------|
+| users | ✅ | |
+| workspaces | ✅ | |
+| workspace_members | ✅ | |
+| client_invites | ✅ | |
+| sessions | ✅ | |
+| verification_tokens | ✅ | |
+| password_reset_tokens | ✅ | |
+| entitlements | ✅ | |
+| expiry_notifications | ✅ | Added 2026-04-20 |
+| pricing_tiers | ✅ | |
+| projects | ✅ | `description`, `page_scan`, `deleted_at` columns present |
+| rules | ✅ | `element_mapped` column present |
+| popups | ✅ | |
+| countdowns | ✅ | |
+| page_visits | ✅ | |
+| rule_events | ✅ | |
+| assets | ✅ | |
+| workspace_ai_settings | ✅ | |
+| ai_coins | ✅ | |
+| ai_coin_transactions | ✅ | |
+| project_reports | ✅ | Added 2026-04-18 |
