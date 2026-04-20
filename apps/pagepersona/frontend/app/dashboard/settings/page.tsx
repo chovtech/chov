@@ -441,7 +441,7 @@ const PLAN_NEXT_STEP: Record<string, { label: string; price: string; detail: str
   fe:           { label: 'Upgrade to Unlimited',        price: '$67/yr',       detail: 'Unlimited projects, rules, popups & countdowns + 200 AI coins.', href: 'https://usepagepersona.com/upgrade' },
   unlimited:    { label: 'Upgrade to Professional',     price: '$47/yr',       detail: 'Remove PagePersona branding + branded emails with your logo.',    href: 'https://usepagepersona.com/upgrade' },
   professional: { label: 'Upgrade to Agency',           price: '$197/yr',      detail: '100 client sub-accounts, full white-label & reseller rights.',    href: 'https://usepagepersona.com/upgrade' },
-  agency:       { label: 'Get White-Label Self-Hosted', price: '$497 one-time', detail: 'Your own SaaS on your domain — sell it under your brand.',       href: 'mailto:support@usepagepersona.com?subject=White-Label Self-Hosted Enquiry', isService: true },
+  agency:       { label: 'Get White-Label Self-Hosted', price: '$497 one-time', detail: 'Your own SaaS on your domain — sell it under your brand.',       href: 'mailto:support@chovtech.com?subject=White-Label Self-Hosted Enquiry', isService: true },
 }
 
 const PREVIEW_COUNT = 5
@@ -653,7 +653,7 @@ function BillingTab() {
               ].map(pack => (
                 <a
                   key={pack.coins}
-                  href={`mailto:support@usepagepersona.com?subject=Coin Top-up: ${pack.coins}&body=I'd like to purchase the ${pack.coins} pack (${pack.price}) for my PagePersona account.`}
+                  href={`mailto:support@chovtech.com?subject=Coin Top-up: ${pack.coins}&body=I'd like to purchase the ${pack.coins} pack (${pack.price}) for my PagePersona account.`}
                   className="flex items-center justify-between px-3 py-2.5 bg-slate-50 border border-slate-200 hover:border-brand hover:bg-brand/5 rounded-xl transition-colors cursor-pointer group"
                 >
                   <span className="text-xs font-bold text-slate-700 group-hover:text-brand">{pack.coins}</span>

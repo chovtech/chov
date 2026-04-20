@@ -266,7 +266,7 @@ export default function Sidebar() {
               fe:           { label: 'Upgrade to Unlimited',        teaser: 'Unlimited projects, rules & countdowns.',   href: 'https://usepagepersona.com/upgrade' },
               unlimited:    { label: 'Upgrade to Professional',     teaser: 'Remove branding + branded emails.',         href: 'https://usepagepersona.com/upgrade' },
               professional: { label: 'Upgrade to Agency',           teaser: '100 client accounts + white-label.',        href: 'https://usepagepersona.com/upgrade' },
-              agency:       { label: 'Get Self-Hosted',             teaser: 'Your own SaaS on your domain.',             href: 'mailto:support@usepagepersona.com?subject=White-Label Self-Hosted Enquiry' },
+              agency:       { label: 'Get Self-Hosted',             teaser: 'Your own SaaS on your domain.',             href: 'mailto:support@chovtech.com?subject=White-Label Self-Hosted Enquiry' },
             }
             const n = next[planKey]
             if (!n) return null

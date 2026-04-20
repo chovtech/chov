@@ -248,7 +248,7 @@ function OnboardingInner() {
 
           <p className="mt-8 text-center text-slate-500 text-sm">
             Need help?{' '}
-            <a href="mailto:support@usepagepersona.com" className="text-brand font-semibold hover:underline">
+            <a href="mailto:support@chovtech.com" className="text-brand font-semibold hover:underline">
               Contact support
             </a>
           </p>
