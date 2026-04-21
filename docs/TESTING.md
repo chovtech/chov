@@ -414,17 +414,32 @@
 - [ ] Client browser (refresh) → **Access Revoked** page shown
 - [ ] Agency restores → client browser back to dashboard normally
 
-### 10.9 Client Self-Signup via Slug
+### 10.9 Client Self-Signup via Slug (PagePersona domain)
 - [ ] Visit `app.usepagepersona.com/join/[slug]` in incognito (fresh email)
 - [ ] Agency branding shown on signup page
 - [ ] Fill in details, submit → redirected to dashboard with agency branding
 - [ ] New client row appears in agency's client list
 
-### 10.10 White-Label on WordPress Plugin
+### 10.10 Client Signs Up via Agency Custom Domain
+> Requires Module 10.2 (custom domain verified). Skip this section if custom domain is not set up.
+> This simulates a real agency customer who never sees PagePersona at all — they only see the agency's brand.
+
+- [ ] Visit `clients.[agencydomain.com]/join` in incognito (fresh email)
+- [ ] Page loads with agency branding only — no PagePersona name, logo, or colour visible anywhere
+- [ ] Browser tab title shows agency brand name (not "PagePersona")
+- [ ] Signup form works: fill name + email + password, submit
+- [ ] After submit → redirected to dashboard at custom domain, agency branding throughout
+- [ ] New client row appears in agency's client list with correct email
+- [ ] Client account is correctly linked to the agency's workspace (not a standalone PagePersona account)
+- [ ] Client cannot log in at `app.usepagepersona.com` directly (no account there — only via custom domain)
+- [ ] Agency invite email arrives using agency brand name and custom domain link (not usepagepersona.com link)
+- [ ] Invite accept link goes to `clients.[agencydomain.com]/client-accept?token=...` not PagePersona URL
+
+### 10.11 White-Label on WordPress Plugin
 - [ ] Agency has brand name set
 - [ ] Download WP plugin from any project → plugin filename uses agency brand name
 
-### 10.11 Plan Gates on White-Label (Settings tab)
+### 10.12 Plan Gates on White-Label (Settings tab)
 > Test with plans below Professional and Agency
 
 | Plan | Brand name / logo / colour editable? | `hide_powered_by` toggle works? | Custom domain editable? |
