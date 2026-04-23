@@ -79,6 +79,7 @@ export function WhiteLabelProvider({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     document.documentElement.style.setProperty('--color-primary', display.primaryColor)
+    document.documentElement.style.setProperty('--color-brand', display.primaryColor)
   }, [display.primaryColor, pathname])
 
   useEffect(() => {
