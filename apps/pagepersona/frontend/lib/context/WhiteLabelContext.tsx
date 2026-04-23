@@ -55,8 +55,11 @@ export function WhiteLabelProvider({ children }: { children: React.ReactNode }) 
     if (c) setCached(c)
   }, [])
 
-  const live: WhiteLabelValue | null = activeWorkspace ? {
-    brandName: activeWorkspace.white_label_brand_name || 'PagePersona',
+  // Only treat as live white-label when the workspace actually has custom branding.
+  // Client sub-workspaces have white_label_brand_name = null, so live stays null
+  // and the cached auth branding (written during signup on a custom domain) wins instead.
+  const live: WhiteLabelValue | null = (activeWorkspace && activeWorkspace.white_label_brand_name) ? {
+    brandName: activeWorkspace.white_label_brand_name,
     logo: activeWorkspace.white_label_logo || null,
     icon: activeWorkspace.white_label_icon || null,
     primaryColor: activeWorkspace.white_label_primary_color || '#1A56DB',
