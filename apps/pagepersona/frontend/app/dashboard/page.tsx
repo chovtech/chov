@@ -7,12 +7,14 @@ import NewProjectModal from '@/components/ui/NewProjectModal'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { projectApi } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
+import { useWhiteLabel } from '@/lib/context/WhiteLabelContext'
 import { usePlanLimits } from '@/lib/hooks/usePlanLimits'
 
 const tabKeys = ['all', 'active', 'drafts', 'archived']
 
 export default function DashboardPage() {
   const { t } = useTranslation('common')
+  const { brandName } = useWhiteLabel()
   const { activeWorkspace, loading: wsLoading } = useWorkspace()
   const isViewOnly = activeWorkspace?.member_role === 'client' && activeWorkspace?.client_access_level === 'view_only'
   const canCreateProject = !isViewOnly && activeWorkspace?.member_role !== 'member'
@@ -296,7 +298,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-4">
-              {t('dashboard.empty_state.heading')}
+              {t('dashboard.empty_state.heading').replace('PagePersona', brandName)}
             </h2>
             <p className="mx-auto max-w-md text-lg text-slate-600 dark:text-slate-400 mb-10 leading-relaxed">
               {t('dashboard.empty_state.description')}
