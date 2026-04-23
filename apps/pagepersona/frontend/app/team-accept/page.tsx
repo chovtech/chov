@@ -12,7 +12,9 @@ interface InviteInfo {
   brand_name: string | null
   brand_color: string | null
   logo_url: string | null
+  icon_url: string | null
   hide_powered_by: boolean
+  slug: string
 }
 
 function TeamAcceptForm() {
@@ -31,8 +33,20 @@ function TeamAcceptForm() {
     if (!token) { setState('invalid'); setInvalidMsg('No invite token found.'); return }
     teamApi.inviteInfo(token)
       .then(res => {
-        setInfo(res.data)
-        setState(res.data.user_exists ? 'existing_user' : 'new_user')
+        const d = res.data
+        setInfo(d)
+        setState(d.user_exists ? 'existing_user' : 'new_user')
+        // Persist branding so auth pages (login, forgot-password) inherit it
+        if (d.brand_name && d.slug) {
+          localStorage.setItem('pp_auth_branding', JSON.stringify({
+            brand_name: d.brand_name,
+            brand_color: d.brand_color || '#1A56DB',
+            logo_url: d.logo_url || null,
+            icon_url: d.icon_url || null,
+            hide_powered_by: d.hide_powered_by || false,
+            slug: d.slug,
+          }))
+        }
       })
       .catch(err => {
         const status = err?.response?.status

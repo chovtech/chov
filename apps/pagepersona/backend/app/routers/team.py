@@ -124,8 +124,8 @@ async def invite_info(
     """Return workspace name and whether the invited email already has an account."""
     member = await db.fetchrow(
         """SELECT wm.id, wm.email, wm.role, wm.status,
-                  w.name as workspace_name, w.id as workspace_id,
-                  w.white_label_brand_name, w.white_label_logo,
+                  w.name as workspace_name, w.id as workspace_id, w.slug,
+                  w.white_label_brand_name, w.white_label_logo, w.white_label_icon,
                   w.white_label_primary_color, w.hide_powered_by
            FROM workspace_members wm
            JOIN workspaces w ON wm.workspace_id = w.id
@@ -148,7 +148,9 @@ async def invite_info(
         "brand_name": member["white_label_brand_name"] or None,
         "brand_color": member["white_label_primary_color"] or None,
         "logo_url": member["white_label_logo"] or None,
+        "icon_url": member["white_label_icon"] or None,
         "hide_powered_by": member["hide_powered_by"] or False,
+        "slug": member["slug"],
     }
 
 
