@@ -96,44 +96,64 @@ def get_template(template: dict, lang: str) -> dict:
     """Get template for language, fall back to English."""
     return template.get(lang) or template["en"]
 
-def render_verification(firstname: str, verify_url: str, lang: str = "en") -> tuple[str, str]:
+def render_verification(firstname: str, verify_url: str, lang: str = "en",
+                        brand_name: str = "PagePersona", brand_color: str = "#1A56DB",
+                        logo_url=None, hide_powered_by: bool = False) -> tuple[str, str]:
     t = get_template(VERIFICATION, lang)
-    html = base_layout(f"""
-      <h2 style="color:#1A56DB">{t['heading']}</h2>
+    subject = t["subject"].replace("PagePersona", brand_name)
+    logo = f'<img src="{logo_url}" alt="{brand_name}" style="max-height:48px;margin-bottom:16px;display:block"/>' if logo_url else ''
+    footer_line = f'<p style="color:#94a3b8;font-size:12px;text-align:center">{"PagePersona · usepagepersona.com" if brand_name == "PagePersona" else (brand_name if hide_powered_by else brand_name + " · Powered by PagePersona")}</p>'
+    html = f"""<html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1e293b">
+      {logo}
+      <h2 style="color:{brand_color}">{t['heading']}</h2>
       <p>Hi {firstname},</p>
       <p>{t['body']}</p>
-      <a href="{verify_url}" style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
-        {t['cta']}
-      </a>
+      <a href="{verify_url}" style="display:inline-block;padding:12px 24px;background:{brand_color};color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">{t['cta']}</a>
       <p style="color:#64748b;font-size:14px">{t['footer']}</p>
-    """, lang)
-    return t["subject"], html
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0"/>
+      {footer_line}
+    </body></html>"""
+    return subject, html
 
-def render_welcome(firstname: str, dashboard_url: str, lang: str = "en") -> tuple[str, str]:
+def render_welcome(firstname: str, dashboard_url: str, lang: str = "en",
+                   brand_name: str = "PagePersona", brand_color: str = "#1A56DB",
+                   logo_url=None, hide_powered_by: bool = False) -> tuple[str, str]:
     t = get_template(WELCOME, lang)
-    html = base_layout(f"""
-      <h2 style="color:#1A56DB">{t['heading']}</h2>
+    subject = t["subject"].replace("PagePersona", brand_name)
+    heading = t["heading"].replace("PagePersona", brand_name)
+    body = t["body"].replace("PagePersona", brand_name)
+    logo = f'<img src="{logo_url}" alt="{brand_name}" style="max-height:48px;margin-bottom:16px;display:block"/>' if logo_url else ''
+    footer_line = f'<p style="color:#94a3b8;font-size:12px;text-align:center">{"PagePersona · usepagepersona.com" if brand_name == "PagePersona" else (brand_name if hide_powered_by else brand_name + " · Powered by PagePersona")}</p>'
+    html = f"""<html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1e293b">
+      {logo}
+      <h2 style="color:{brand_color}">{heading}</h2>
       <p>Hi {firstname},</p>
-      <p>{t['body']}</p>
-      <a href="{dashboard_url}" style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
-        {t['cta']}
-      </a>
+      <p>{body}</p>
+      <a href="{dashboard_url}" style="display:inline-block;padding:12px 24px;background:{brand_color};color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">{t['cta']}</a>
       <p style="color:#64748b;font-size:14px">{t['footer']}</p>
-    """, lang)
-    return t["subject"], html
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0"/>
+      {footer_line}
+    </body></html>"""
+    return subject, html
 
-def render_password_reset(firstname: str, reset_url: str, lang: str = "en") -> tuple[str, str]:
+def render_password_reset(firstname: str, reset_url: str, lang: str = "en",
+                          brand_name: str = "PagePersona", brand_color: str = "#1A56DB",
+                          logo_url=None, hide_powered_by: bool = False) -> tuple[str, str]:
     t = get_template(PASSWORD_RESET, lang)
-    html = base_layout(f"""
-      <h2 style="color:#1A56DB">{t['heading']}</h2>
+    subject = t["subject"].replace("PagePersona", brand_name)
+    logo = f'<img src="{logo_url}" alt="{brand_name}" style="max-height:48px;margin-bottom:16px;display:block"/>' if logo_url else ''
+    footer_line = f'<p style="color:#94a3b8;font-size:12px;text-align:center">{"PagePersona · usepagepersona.com" if brand_name == "PagePersona" else (brand_name if hide_powered_by else brand_name + " · Powered by PagePersona")}</p>'
+    html = f"""<html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1e293b">
+      {logo}
+      <h2 style="color:{brand_color}">{t['heading']}</h2>
       <p>Hi {firstname},</p>
       <p>{t['body']}</p>
-      <a href="{reset_url}" style="display:inline-block;padding:12px 24px;background:#1A56DB;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
-        {t['cta']}
-      </a>
+      <a href="{reset_url}" style="display:inline-block;padding:12px 24px;background:{brand_color};color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">{t['cta']}</a>
       <p style="color:#64748b;font-size:14px">{t['footer']}</p>
-    """, lang)
-    return t["subject"], html
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0"/>
+      {footer_line}
+    </body></html>"""
+    return subject, html
 
 def render_jvzoo_welcome(firstname: str, magic_link: str, lang: str = "en") -> tuple[str, str]:
     t = get_template(JVZOO_WELCOME, lang)

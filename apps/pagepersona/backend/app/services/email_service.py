@@ -51,23 +51,35 @@ def _get_firstname(name: str, email: str) -> str:
     parts = (name or "").split()
     return parts[0] if parts else email.split('@')[0]
 
-def send_verification_email(to_email: str, name: str, verify_token: str, lang: str = "en") -> bool:
-    verify_url = f"{settings.FRONTEND_URL}/verify-email?token={verify_token}"
+def send_verification_email(to_email: str, name: str, verify_token: str, lang: str = "en",
+                            brand_name: str = "PagePersona", brand_color: str = "#1A56DB",
+                            logo_url=None, hide_powered_by: bool = False, base_url: str = None) -> bool:
+    url = base_url or settings.FRONTEND_URL
+    verify_url = f"{url}/verify-email?token={verify_token}"
     firstname = _get_firstname(name, to_email)
-    subject, html = render_verification(firstname, verify_url, lang)
-    return send_email(to_email, subject, html)
+    subject, html = render_verification(firstname, verify_url, lang, brand_name, brand_color, logo_url, hide_powered_by)
+    sender = brand_name if brand_name != "PagePersona" else None
+    return send_email(to_email, subject, html, sender_name=sender)
 
-def send_welcome_email(to_email: str, name: str, lang: str = "en") -> bool:
-    dashboard_url = f"{settings.FRONTEND_URL}/dashboard"
+def send_welcome_email(to_email: str, name: str, lang: str = "en",
+                       brand_name: str = "PagePersona", brand_color: str = "#1A56DB",
+                       logo_url=None, hide_powered_by: bool = False, base_url: str = None) -> bool:
+    url = base_url or settings.FRONTEND_URL
+    dashboard_url = f"{url}/dashboard"
     firstname = _get_firstname(name, to_email)
-    subject, html = render_welcome(firstname, dashboard_url, lang)
-    return send_email(to_email, subject, html)
+    subject, html = render_welcome(firstname, dashboard_url, lang, brand_name, brand_color, logo_url, hide_powered_by)
+    sender = brand_name if brand_name != "PagePersona" else None
+    return send_email(to_email, subject, html, sender_name=sender)
 
-def send_password_reset_email(to_email: str, name: str, reset_token: str, lang: str = "en") -> bool:
-    reset_url = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
+def send_password_reset_email(to_email: str, name: str, reset_token: str, lang: str = "en",
+                              brand_name: str = "PagePersona", brand_color: str = "#1A56DB",
+                              logo_url=None, hide_powered_by: bool = False, base_url: str = None) -> bool:
+    url = base_url or settings.FRONTEND_URL
+    reset_url = f"{url}/reset-password?token={reset_token}"
     firstname = _get_firstname(name, to_email)
-    subject, html = render_password_reset(firstname, reset_url, lang)
-    return send_email(to_email, subject, html)
+    subject, html = render_password_reset(firstname, reset_url, lang, brand_name, brand_color, logo_url, hide_powered_by)
+    sender = brand_name if brand_name != "PagePersona" else None
+    return send_email(to_email, subject, html, sender_name=sender)
 
 def send_jvzoo_welcome_email(to_email: str, name: str, magic_link: str, lang: str = "en") -> bool:
     firstname = _get_firstname(name, to_email)

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from urllib.parse import urlparse
 import asyncpg
 from pydantic import BaseModel, EmailStr
 from app.database import get_db
@@ -25,6 +26,28 @@ from app.core.security import decode_token
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 security = HTTPBearer()
+
+_PP_DOMAINS = {'app.usepagepersona.com', 'api.usepagepersona.com', 'localhost', '127.0.0.1'}
+
+async def _branding(db: asyncpg.Connection, request: Request) -> dict:
+    origin = request.headers.get('origin') or request.headers.get('referer') or ''
+    host = urlparse(origin).hostname or ''
+    if not host or host in _PP_DOMAINS or host.startswith('192.168.'):
+        return {}
+    row = await db.fetchrow(
+        "SELECT white_label_brand_name, white_label_logo, white_label_primary_color, hide_powered_by, custom_domain "
+        "FROM workspaces WHERE custom_domain = $1 AND white_label_brand_name IS NOT NULL",
+        host
+    )
+    if not row:
+        return {}
+    return {
+        "brand_name": row['white_label_brand_name'],
+        "brand_color": row['white_label_primary_color'] or '#1A56DB',
+        "logo_url": row['white_label_logo'],
+        "hide_powered_by": row['hide_powered_by'] or False,
+        "base_url": f"https://{row['custom_domain']}",
+    }
 
 class MagicLinkRequest(BaseModel):
     email: EmailStr
@@ -81,7 +104,8 @@ async def signup(
         verify_token = await create_verification_token(
             db, str(user['id']), 'email_verification'
         )
-        send_verification_email(data.email, data.name or firstname, verify_token, lang=data.language)
+        b = await _branding(db, request)
+        send_verification_email(data.email, data.name or firstname, verify_token, lang=data.language, **b)
     except Exception:
         pass
 
@@ -199,7 +223,8 @@ async def verify_email(
 
     # Send welcome email now that they're verified
     try:
-        send_welcome_email(user['email'], user.get('name') or user['email'].split('@')[0], lang=user.get('language', 'en'))
+        b = await _branding(db, request)
+        send_welcome_email(user['email'], user.get('name') or user['email'].split('@')[0], lang=user.get('language', 'en'), **b)
     except Exception:
         pass
 
@@ -209,6 +234,7 @@ async def verify_email(
 @router.post("/resend-verification", response_model=MessageResponse)
 async def resend_verification(
     data: MagicLinkRequest,
+    request: Request,
     db: asyncpg.Connection = Depends(get_db)
 ):
     user = await get_user_by_email(db, data.email)
@@ -227,11 +253,13 @@ async def resend_verification(
         verify_token = await create_verification_token(
             db, str(user['id']), 'email_verification'
         )
+        b = await _branding(db, request)
         send_verification_email(
             user['email'],
             user.get('name') or user['email'].split('@')[0],
             verify_token,
-            lang=user.get('language', 'en')
+            lang=user.get('language', 'en'),
+            **b
         )
     except Exception:
         pass
@@ -331,6 +359,7 @@ async def refresh_token(
 @router.post("/forgot-password", response_model=MessageResponse)
 async def forgot_password(
     data: ForgotPasswordRequest,
+    request: Request,
     db: asyncpg.Connection = Depends(get_db)
 ):
     user = await get_user_by_email(db, data.email)
@@ -339,11 +368,13 @@ async def forgot_password(
 
     token = await create_password_reset_token(db, str(user['id']))
     try:
+        b = await _branding(db, request)
         send_password_reset_email(
             to_email=data.email,
             name=user.get('name') or data.email.split('@')[0],
             reset_token=token,
-            lang=user.get('language', 'en')
+            lang=user.get('language', 'en'),
+            **b
         )
     except Exception:
         pass
