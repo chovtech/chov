@@ -191,7 +191,10 @@ async def invite_member(
         raise HTTPException(status_code=400, detail="An invitation is already pending for this email")
 
     token = str(uuid.uuid4())
-    accept_url = f"{settings.FRONTEND_URL}/team-accept?token={token}"
+    custom_domain = ws.get("custom_domain")
+    custom_domain_verified = ws.get("custom_domain_verified")
+    base_url = f"https://{custom_domain}" if (custom_domain and custom_domain_verified) else settings.FRONTEND_URL
+    accept_url = f"{base_url}/team-accept?token={token}"
 
     member = await db.fetchrow(
         """INSERT INTO workspace_members (workspace_id, email, role, status, invite_token)
@@ -243,7 +246,10 @@ async def resend_invite(
     ws = await _admin_or_owner_workspace(db, current_user, str(member["workspace_id"]))
 
     token = str(uuid.uuid4())
-    accept_url = f"{settings.FRONTEND_URL}/team-accept?token={token}"
+    custom_domain = ws.get("custom_domain")
+    custom_domain_verified = ws.get("custom_domain_verified")
+    base_url = f"https://{custom_domain}" if (custom_domain and custom_domain_verified) else settings.FRONTEND_URL
+    accept_url = f"{base_url}/team-accept?token={token}"
 
     updated = await db.fetchrow(
         "UPDATE workspace_members SET invite_token = $1, invited_at = NOW() WHERE id = $2 RETURNING *",

@@ -107,6 +107,15 @@ function TeamAcceptForm() {
   const logoUrl = info?.logo_url || null
   const hidePoweredBy = info?.hide_powered_by || false
 
+  useEffect(() => {
+    if (!info) return
+    document.title = brandName
+    const faviconUrl = info.icon_url || '/favicon.ico'
+    let link = document.querySelector<HTMLLinkElement>('link[rel~="icon"]')
+    if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link) }
+    link.href = faviconUrl
+  }, [info])
+
   const inputClass = 'w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 transition-all'
 
   if (state === 'loading') {
