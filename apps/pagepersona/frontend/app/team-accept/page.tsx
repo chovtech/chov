@@ -36,8 +36,9 @@ function TeamAcceptForm() {
         const d = res.data
         setInfo(d)
         setState(d.user_exists ? 'existing_user' : 'new_user')
-        // Persist branding so auth pages (login, forgot-password) inherit it
+        // Persist branding so auth pages (login, forgot-password) and dashboard inherit it
         if (d.brand_name && d.slug) {
+          // localStorage format — read by auth layout BrandingLoader (snake_case + slug)
           localStorage.setItem('pp_auth_branding', JSON.stringify({
             brand_name: d.brand_name,
             brand_color: d.brand_color || '#1A56DB',
@@ -45,6 +46,14 @@ function TeamAcceptForm() {
             icon_url: d.icon_url || null,
             hide_powered_by: d.hide_powered_by || false,
             slug: d.slug,
+          }))
+          // sessionStorage format — read by WhiteLabelContext on dashboard pages (camelCase)
+          sessionStorage.setItem('pp_wl_branding', JSON.stringify({
+            brandName: d.brand_name,
+            logo: d.logo_url || null,
+            icon: d.icon_url || null,
+            primaryColor: d.brand_color || '#1A56DB',
+            hidePoweredBy: d.hide_powered_by || false,
           }))
         }
       })
