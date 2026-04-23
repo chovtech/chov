@@ -9,6 +9,10 @@ interface InviteInfo {
   email: string
   role: string
   user_exists: boolean
+  brand_name: string | null
+  brand_color: string | null
+  logo_url: string | null
+  hide_powered_by: boolean
 }
 
 function TeamAcceptForm() {
@@ -75,13 +79,18 @@ function TeamAcceptForm() {
     document.cookie = `access_token=${access_token}; path=/; max-age=${60 * 60 * 24 * 30}`
   }
 
+  const brandColor = info?.brand_color || '#1A56DB'
+  const brandName = info?.brand_name || 'PagePersona'
+  const logoUrl = info?.logo_url || null
+  const hidePoweredBy = info?.hide_powered_by || false
+
   const inputClass = 'w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 transition-all'
 
   if (state === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-3" style={{ borderColor: `${brandColor} transparent transparent transparent` }} />
           <p className="text-slate-500 text-sm">Loading your invitation...</p>
         </div>
       </div>
@@ -97,7 +106,7 @@ function TeamAcceptForm() {
           </div>
           <h1 className="text-xl font-bold text-slate-900 mb-2">Already accepted</h1>
           <p className="text-slate-500 text-sm mb-6">This invitation has already been used. Sign in to access the workspace.</p>
-          <a href="/login" className="block w-full py-2.5 bg-[#1A56DB] text-white rounded-xl font-bold text-sm hover:bg-[#1547b3] transition-colors text-center">
+          <a href="/login" className="block w-full py-2.5 text-white rounded-xl font-bold text-sm transition-colors text-center" style={{ backgroundColor: brandColor }}>
             Sign in
           </a>
         </div>
@@ -114,7 +123,7 @@ function TeamAcceptForm() {
           </div>
           <h1 className="text-xl font-bold text-slate-900 mb-2">Invalid invitation</h1>
           <p className="text-slate-500 text-sm mb-6">{invalidMsg}</p>
-          <a href="/login" className="text-[#1A56DB] font-semibold text-sm hover:underline">Sign in instead</a>
+          <a href="/login" className="font-semibold text-sm hover:underline" style={{ color: brandColor }}>Sign in instead</a>
         </div>
       </div>
     )
@@ -122,14 +131,26 @@ function TeamAcceptForm() {
 
   const roleLabel = info?.role === 'admin' ? 'Admin' : 'Member'
 
+  const brandIcon = logoUrl ? (
+    <img src={logoUrl} alt={brandName} className="max-h-12 mx-auto mb-4 object-contain" />
+  ) : (
+    <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: brandColor }}>
+      <span className="material-symbols-outlined text-white text-2xl">group</span>
+    </div>
+  )
+
+  const poweredBy = !hidePoweredBy && brandName !== 'PagePersona' ? (
+    <p className="text-center text-xs text-slate-400 mt-6">{brandName} · Powered by PagePersona</p>
+  ) : brandName === 'PagePersona' ? (
+    <p className="text-center text-xs text-slate-400 mt-6">Powered by PagePersona</p>
+  ) : null
+
   if (state === 'existing_user') {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
-            <div className="w-12 h-12 rounded-xl bg-[#1A56DB] flex items-center justify-center mx-auto mb-4">
-              <span className="material-symbols-outlined text-white text-2xl">group</span>
-            </div>
+            {brandIcon}
             <h1 className="text-2xl font-bold text-slate-900">You're invited!</h1>
             <p className="text-slate-500 text-sm mt-1">
               Join <strong>{info?.workspace_name}</strong> as a team {roleLabel}
@@ -139,7 +160,7 @@ function TeamAcceptForm() {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
             <p className="text-sm text-slate-600 mb-4">
               You've been invited to collaborate on <strong>{info?.workspace_name}</strong>.
-              Since you already have a PagePersona account, just click below to accept.
+              Since you already have an account, just click below to accept.
             </p>
             <p className="text-xs text-slate-400 mb-6">
               Accepting as <span className="font-semibold text-slate-600">{info?.email}</span>
@@ -152,7 +173,8 @@ function TeamAcceptForm() {
             <button
               onClick={handleExistingUser}
               disabled={submitting}
-              className="w-full py-3 bg-[#1A56DB] text-white rounded-xl font-bold text-sm disabled:opacity-60 hover:bg-[#1547b3] transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3 text-white rounded-xl font-bold text-sm disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
+              style={{ backgroundColor: brandColor }}
             >
               {submitting ? (
                 <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Accepting...</>
@@ -161,11 +183,11 @@ function TeamAcceptForm() {
 
             <p className="text-center text-xs text-slate-400 mt-6">
               Not you?{' '}
-              <a href="/login" className="font-semibold text-[#1A56DB]">Sign in with a different account</a>
+              <a href="/login" className="font-semibold" style={{ color: brandColor }}>Sign in with a different account</a>
             </p>
           </div>
 
-          <p className="text-center text-xs text-slate-400 mt-6">Powered by PagePersona</p>
+          {poweredBy}
         </div>
       </div>
     )
@@ -176,9 +198,7 @@ function TeamAcceptForm() {
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-[#1A56DB] flex items-center justify-center mx-auto mb-4">
-            <span className="material-symbols-outlined text-white text-2xl">group</span>
-          </div>
+          {brandIcon}
           <h1 className="text-2xl font-bold text-slate-900">You're invited!</h1>
           <p className="text-slate-500 text-sm mt-1">
             Join <strong>{info?.workspace_name}</strong> as a team {roleLabel}
@@ -225,7 +245,8 @@ function TeamAcceptForm() {
             </div>
             <button
               type="submit" disabled={submitting}
-              className="w-full py-3 bg-[#1A56DB] text-white rounded-xl font-bold text-sm disabled:opacity-60 hover:bg-[#1547b3] transition-colors mt-2 flex items-center justify-center gap-2"
+              className="w-full py-3 text-white rounded-xl font-bold text-sm disabled:opacity-60 transition-colors mt-2 flex items-center justify-center gap-2"
+              style={{ backgroundColor: brandColor }}
             >
               {submitting ? (
                 <><div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Creating account...</>
@@ -235,11 +256,11 @@ function TeamAcceptForm() {
 
           <p className="text-center text-xs text-slate-400 mt-6">
             Already have an account?{' '}
-            <a href="/login" className="font-semibold text-[#1A56DB]">Sign in</a>
+            <a href="/login" className="font-semibold" style={{ color: brandColor }}>Sign in</a>
           </p>
         </div>
 
-        <p className="text-center text-xs text-slate-400 mt-6">Powered by PagePersona</p>
+        {poweredBy}
       </div>
     </div>
   )
