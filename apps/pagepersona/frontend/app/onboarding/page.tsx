@@ -20,7 +20,7 @@ function OnboardingInner() {
   const { t } = useTranslation('common')
   const router = useRouter()
   const { activeWorkspace, loading: wsLoading } = useWorkspace()
-  const { brandName, logo, icon } = useWhiteLabel()
+  const { brandName, logo, icon, hidePoweredBy } = useWhiteLabel()
 
   const [step, setStep] = useState(1)
   const [url, setUrl] = useState('')
@@ -94,7 +94,9 @@ function OnboardingInner() {
               </div>
               <div className="flex flex-col">
                 <span className="text-xl font-bold tracking-tight text-slate-900">{brandName}</span>
-                <span className="text-xs text-slate-500 font-medium">Turn any sales page into a smart sales page</span>
+                {brandName === 'PagePersona' && (
+                  <span className="text-xs text-slate-500 font-medium">{t('app.tagline')}</span>
+                )}
               </div>
             </>
           )}
@@ -108,8 +110,12 @@ function OnboardingInner() {
           {/* Progress */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-brand uppercase tracking-wider">Step {step} of {TOTAL_STEPS}</span>
-              <span className="text-sm font-medium text-slate-500">{pct}% Complete</span>
+              <span className="text-sm font-semibold text-brand uppercase tracking-wider">
+                {t('onboarding.step_of').replace('{{current}}', String(step)).replace('{{total}}', String(TOTAL_STEPS))}
+              </span>
+              <span className="text-sm font-medium text-slate-500">
+                {t('onboarding.progress_complete').replace('{{pct}}', String(pct))}
+              </span>
             </div>
             <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
               <div className="h-full bg-brand rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
@@ -161,11 +167,11 @@ function OnboardingInner() {
               <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-center gap-6">
                 <div className="flex items-center gap-2 text-slate-400">
                   <Icon name="shield" className="text-lg" />
-                  <span className="text-xs font-medium">Secure data</span>
+                  <span className="text-xs font-medium">{t('onboarding.trust_secure')}</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-400">
                   <Icon name="sync" className="text-lg" />
-                  <span className="text-xs font-medium">Auto-save</span>
+                  <span className="text-xs font-medium">{t('onboarding.trust_autosave')}</span>
                 </div>
               </div>
 
@@ -247,9 +253,9 @@ function OnboardingInner() {
           )}
 
           <p className="mt-8 text-center text-slate-500 text-sm">
-            Need help?{' '}
+            {t('onboarding.need_help')}{' '}
             <a href="mailto:support@chovtech.com" className="text-brand font-semibold hover:underline">
-              Contact support
+              {t('onboarding.contact_support')}
             </a>
           </p>
 
@@ -257,9 +263,11 @@ function OnboardingInner() {
       </main>
 
       {/* ── Footer ── */}
-      <footer className="p-6 text-center text-slate-400 text-[10px] uppercase tracking-[0.2em] bg-white">
-        © {new Date().getFullYear()} PagePersona Inc. All rights reserved.
-      </footer>
+      {!hidePoweredBy && (
+        <footer className="p-6 text-center text-slate-400 text-[10px] uppercase tracking-[0.2em] bg-white">
+          © {new Date().getFullYear()} {brandName}. All rights reserved.
+        </footer>
+      )}
 
     </div>
   )

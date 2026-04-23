@@ -9,16 +9,36 @@ interface WhiteLabelValue {
   logo: string | null
   icon: string | null
   primaryColor: string
+  hidePoweredBy: boolean
 }
 
 const CACHE_KEY = 'pp_wl_branding'
+const AUTH_CACHE_KEY = 'pp_auth_branding'
 
 function readCache(): WhiteLabelValue | null {
   if (typeof window === 'undefined') return null
-  try { return JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null') } catch { return null }
+  try {
+    const ss = JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null')
+    if (ss) return ss
+    // Bridge: use auth branding written during login/signup on a custom domain
+    const authRaw = localStorage.getItem(AUTH_CACHE_KEY)
+    if (authRaw) {
+      const auth = JSON.parse(authRaw)
+      if (auth?.brand_name) {
+        return {
+          brandName: auth.brand_name,
+          logo: auth.logo_url || null,
+          icon: auth.icon_url || null,
+          primaryColor: auth.brand_color || '#1A56DB',
+          hidePoweredBy: auth.hide_powered_by || false,
+        }
+      }
+    }
+    return null
+  } catch { return null }
 }
 
-const defaults: WhiteLabelValue = { brandName: 'PagePersona', logo: null, icon: null, primaryColor: '#1A56DB' }
+const defaults: WhiteLabelValue = { brandName: 'PagePersona', logo: null, icon: null, primaryColor: '#1A56DB', hidePoweredBy: false }
 
 const WhiteLabelContext = createContext<WhiteLabelValue>(defaults)
 
@@ -40,6 +60,7 @@ export function WhiteLabelProvider({ children }: { children: React.ReactNode }) 
     logo: activeWorkspace.white_label_logo || null,
     icon: activeWorkspace.white_label_icon || null,
     primaryColor: activeWorkspace.white_label_primary_color || '#1A56DB',
+    hidePoweredBy: activeWorkspace.hide_powered_by || false,
   } : null
 
   const display = live || cached || defaults

@@ -79,8 +79,17 @@ function BrandingLoader({ onResolved }: { onResolved: (b: Branding | null) => vo
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation('common')
-  const [branding, setBranding] = useState<Branding | null>(null)
-  const [resolved, setResolved] = useState(false)
+  const [branding, setBranding] = useState<Branding | null>(() => {
+    if (typeof window === 'undefined') return null
+    try {
+      const raw = localStorage.getItem(BRANDING_CACHE_KEY)
+      return raw ? JSON.parse(raw) as Branding : null
+    } catch { return null }
+  })
+  const [resolved, setResolved] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return !!localStorage.getItem(BRANDING_CACHE_KEY)
+  })
 
   useEffect(() => {
     document.title = branding?.brand_name || 'PagePersona'
