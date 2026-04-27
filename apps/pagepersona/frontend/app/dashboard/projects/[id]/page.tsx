@@ -7,6 +7,7 @@ import Icon from '@/components/ui/Icon'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { projectApi, rulesApi, apiClient, aiApi } from '@/lib/api/client'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
+import { useWhiteLabel } from '@/lib/context/WhiteLabelContext'
 import AssetLibrary from '@/components/ui/AssetLibrary'
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
@@ -453,6 +454,7 @@ export default function ProjectDashboardPage() {
   const router = useRouter()
   const projectId = params.id as string
   const { loading: workspaceLoading, activeWorkspace } = useWorkspace()
+  const { brandName } = useWhiteLabel()
   const isViewOnly = activeWorkspace?.member_role === 'client' && activeWorkspace?.client_access_level === 'view_only'
   const canManageProject = !isViewOnly && activeWorkspace?.member_role !== 'member'
   const [project, setProject] = useState<Project | null>(null)
@@ -714,7 +716,7 @@ export default function ProjectDashboardPage() {
             <Icon name="warning" className="text-amber-500 text-xl shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm font-bold text-amber-800">Script not detected on your page</p>
-              <p className="text-xs text-amber-700 mt-0.5">PagePersona checked your page and could not find the script. Personalization is paused until the script is reinstalled.</p>
+              <p className="text-xs text-amber-700 mt-0.5">{brandName} checked your page and could not find the script. Personalization is paused until the script is reinstalled.</p>
             </div>
             <button onClick={() => setShowInstall(true)} className="shrink-0 text-xs font-bold text-amber-800 underline hover:text-amber-900 transition-colors">Fix it</button>
           </div>
