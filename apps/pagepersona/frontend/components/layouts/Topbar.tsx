@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { authApi, aiApi } from '@/lib/api/client'
 import Icon from '@/components/ui/Icon'
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
@@ -19,6 +19,7 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
   const { t } = useTranslation('common')
   const { activeWorkspace } = useWorkspace()
   const router = useRouter()
+  const pathname = usePathname()
   const isViewOnly = activeWorkspace?.member_role === 'client' && activeWorkspace?.client_access_level === 'view_only'
   const canCreateProject = !isViewOnly && activeWorkspace?.member_role !== 'member'
   const { isAtLimit } = usePlanLimits()
@@ -137,7 +138,13 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
 
         {/* Create with AI — opens New Project modal on dashboard */}
         {canCreateProject && <button
-          onClick={() => !isAtLimit('projects') && router.push('/dashboard?new=1')}
+          onClick={() => {
+            if (!isAtLimit('projects')) {
+              sessionStorage.setItem('pp_open_new_project', '1')
+              window.dispatchEvent(new CustomEvent('openNewProject'))
+              if (pathname !== '/dashboard') router.push('/dashboard')
+            }
+          }}
           disabled={isAtLimit('projects')}
           title={isAtLimit('projects') ? 'Project limit reached — upgrade your plan' : undefined}
           className="flex items-center gap-2 px-4 py-2 bg-brand hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-all shadow-md shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100">

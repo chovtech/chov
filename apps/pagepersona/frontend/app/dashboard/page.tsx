@@ -27,10 +27,16 @@ export default function DashboardPage() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
   useEffect(() => {
-    if (window.location.search.includes('new=1')) {
-      if (canCreateProject && !isAtLimit('projects')) setModalOpen(true)
-      window.history.replaceState({}, '', '/dashboard')
+    if (sessionStorage.getItem('pp_open_new_project') === '1') {
+      sessionStorage.removeItem('pp_open_new_project')
+      setModalOpen(true)
     }
+  }, [])
+
+  useEffect(() => {
+    const handler = () => setModalOpen(true)
+    window.addEventListener('openNewProject', handler)
+    return () => window.removeEventListener('openNewProject', handler)
   }, [])
 
   const fetchProjects = async () => {
