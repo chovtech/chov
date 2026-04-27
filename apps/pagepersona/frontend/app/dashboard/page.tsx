@@ -26,6 +26,13 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
+  useEffect(() => {
+    if (window.location.search.includes('new=1')) {
+      if (canCreateProject && !isAtLimit('projects')) setModalOpen(true)
+      window.history.replaceState({}, '', '/dashboard')
+    }
+  }, [])
+
   const fetchProjects = async () => {
     setLoading(true)
     try { const res = await projectApi.list(activeWorkspace?.id); setProjects(res.data) }

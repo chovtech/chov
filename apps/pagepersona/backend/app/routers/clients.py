@@ -199,6 +199,11 @@ async def self_signup(
         client_ws_id, ws_name, ws_slug, str(agency['owner_id']),
         agency_id, body.email
     )
+    await db.execute(
+        """INSERT INTO ai_coins (id, workspace_id, balance, lifetime_earned)
+           VALUES ($1, $2, 0, 0) ON CONFLICT (workspace_id) DO NOTHING""",
+        uuid.uuid4(), uuid.UUID(client_ws_id)
+    )
 
     # Create workspace_members row so client can access it
     await db.execute(
@@ -289,6 +294,11 @@ async def invite_client(
                VALUES ($1, $2, $3, 'client', $4, $5, 'full')
                RETURNING *""",
             body.client_email, slug, current_user['id'], body.workspace_id, body.client_email
+        )
+        await db.execute(
+            """INSERT INTO ai_coins (id, workspace_id, balance, lifetime_earned)
+               VALUES ($1, $2, 0, 0) ON CONFLICT (workspace_id) DO NOTHING""",
+            uuid.uuid4(), client_ws['id']
         )
 
     token = str(uuid.uuid4())

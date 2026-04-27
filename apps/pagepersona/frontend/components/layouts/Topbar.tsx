@@ -2,11 +2,13 @@
 
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { authApi, aiApi } from '@/lib/api/client'
 import Icon from '@/components/ui/Icon'
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
 import { useTranslation } from '@/lib/hooks/useTranslation'
 import { useWorkspace } from '@/lib/context/WorkspaceContext'
+import { usePlanLimits } from '@/lib/hooks/usePlanLimits'
 
 interface User { name: string; email: string }
 interface CoinBalance { balance: number | null; plan: string; is_unlimited: boolean; allocations: Record<string, number | null> }
@@ -16,7 +18,10 @@ const USER_LEVEL = 'Solo'
 export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceName?: string }) {
   const { t } = useTranslation('common')
   const { activeWorkspace } = useWorkspace()
+  const router = useRouter()
   const isViewOnly = activeWorkspace?.member_role === 'client' && activeWorkspace?.client_access_level === 'view_only'
+  const canCreateProject = !isViewOnly && activeWorkspace?.member_role !== 'member'
+  const { isAtLimit } = usePlanLimits()
   const [user, setUser] = useState<User | null>(null)
   const [coins, setCoins] = useState<CoinBalance | null>(null)
   const [showCredits, setShowCredits] = useState(false)
@@ -122,16 +127,20 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
           )}
         </div>}
 
-        {/* Level badge */}
-        {!isViewOnly && <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/30">
+        {/* Level badge — founders badge, hidden for now */}
+        {/* {!isViewOnly && <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/30">
           <span className="text-base">🏅</span>
           <span className="text-xs font-bold text-amber-700 dark:text-amber-400">{USER_LEVEL}</span>
-        </div>}
+        </div>} */}
 
         {!isViewOnly && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />}
 
-        {/* Create with AI */}
-        {!isViewOnly && <button className="flex items-center gap-2 px-4 py-2 bg-brand hover:bg-brand/90 text-white rounded-xl text-sm font-bold transition-all shadow-md shadow-brand/20 hover:scale-[1.02] active:scale-[0.98]">
+        {/* Create with AI — opens New Project modal on dashboard */}
+        {canCreateProject && <button
+          onClick={() => !isAtLimit('projects') && router.push('/dashboard?new=1')}
+          disabled={isAtLimit('projects')}
+          title={isAtLimit('projects') ? 'Project limit reached — upgrade your plan' : undefined}
+          className="flex items-center gap-2 px-4 py-2 bg-brand hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-all shadow-md shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100">
           <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none">
             <path d="M12 2L13.09 8.26L19 7L14.74 11.74L21 12L14.74 12.26L19 17L13.09 15.74L12 22L10.91 15.74L5 17L9.26 12.26L3 12L9.26 11.74L5 7L10.91 8.26L12 2Z" fill="currentColor"/>
           </svg>
