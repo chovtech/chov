@@ -1251,30 +1251,30 @@ export default function SettingsPage() {
                   {activeWorkspace && (
                     <div className="mb-6">
                       <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('settings.whitelabel.signup_link_label')}</label>
-                      <div className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
-                        <span className="text-xs text-slate-600 dark:text-slate-400 truncate flex-1 font-mono">{`https://app.usepagepersona.com/join/${activeWorkspace.slug}`}</span>
-                        <button
-                          type="button"
-                          onClick={() => { navigator.clipboard.writeText(`https://app.usepagepersona.com/join/${activeWorkspace.slug}`); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000) }}
-                          className="shrink-0 flex items-center gap-1 text-xs font-semibold text-brand hover:underline"
-                        >
-                          <Icon name={linkCopied ? 'check' : 'content_copy'} className="text-sm" />
-                          {linkCopied ? t('settings.whitelabel.copied') : t('settings.whitelabel.copy')}
-                        </button>
-                      </div>
-                      {activeWorkspace.custom_domain && activeWorkspace.custom_domain_verified && (
-                        <div className="flex items-center gap-2 px-3 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl mt-2">
-                          <span className="text-xs text-emerald-700 truncate flex-1 font-mono">{`https://${activeWorkspace.custom_domain}`}</span>
-                          <button
-                            type="button"
-                            onClick={() => { navigator.clipboard.writeText(`https://${activeWorkspace.custom_domain}`); setCustomLinkCopied(true); setTimeout(() => setCustomLinkCopied(false), 2000) }}
-                            className="shrink-0 flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:underline"
-                          >
-                            <Icon name={customLinkCopied ? 'check' : 'content_copy'} className="text-sm" />
-                            {customLinkCopied ? t('settings.whitelabel.copied') : t('settings.whitelabel.copy')}
-                          </button>
-                        </div>
-                      )}
+                      {(() => {
+                        const hasCustomDomain = activeWorkspace.custom_domain && activeWorkspace.custom_domain_verified
+                        const joinUrl = hasCustomDomain
+                          ? `https://${activeWorkspace.custom_domain}/join/${activeWorkspace.slug}`
+                          : `https://app.usepagepersona.com/join/${activeWorkspace.slug}`
+                        return (
+                          <>
+                            <div className={`flex items-center gap-2 px-3 py-2.5 border rounded-xl ${hasCustomDomain ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
+                              <span className={`text-xs truncate flex-1 font-mono ${hasCustomDomain ? 'text-emerald-700' : 'text-slate-600 dark:text-slate-400'}`}>{joinUrl}</span>
+                              <button
+                                type="button"
+                                onClick={() => { navigator.clipboard.writeText(joinUrl); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000) }}
+                                className={`shrink-0 flex items-center gap-1 text-xs font-semibold hover:underline ${hasCustomDomain ? 'text-emerald-700' : 'text-brand'}`}
+                              >
+                                <Icon name={linkCopied ? 'check' : 'content_copy'} className="text-sm" />
+                                {linkCopied ? t('settings.whitelabel.copied') : t('settings.whitelabel.copy')}
+                              </button>
+                            </div>
+                            {!hasCustomDomain && (
+                              <p className="text-xs text-slate-400 mt-1.5">Set up a custom domain below to use your own branded URL instead.</p>
+                            )}
+                          </>
+                        )
+                      })()}
                     </div>
                   )}
 
