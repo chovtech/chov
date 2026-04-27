@@ -149,7 +149,7 @@ function AcceptForm() {
 
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
             <p className="text-sm text-slate-600 mb-6">
-              <strong>{brandName}</strong> has granted you access to their workspace. Since you already have a PagePersona account, just click below to accept — no new password needed.
+              <strong>{brandName}</strong> has granted you access to their workspace. Since you already have a {brandName} account, just click below to accept — no new password needed.
             </p>
             <p className="text-xs text-slate-400 mb-6">Accepting as <span className="font-semibold text-slate-600">{info?.client_email}</span></p>
 
@@ -175,7 +175,9 @@ function AcceptForm() {
           </div>
 
           {showPoweredBy && (
-            <p className="text-center text-xs text-slate-400 mt-6">Powered by PagePersona</p>
+            <p className="text-center text-xs text-slate-400 mt-6">
+              {brandName === 'PagePersona' ? 'Powered by PagePersona' : `${brandName} · Powered by PagePersona`}
+            </p>
           )}
         </div>
       </div>

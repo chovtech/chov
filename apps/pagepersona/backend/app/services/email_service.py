@@ -171,7 +171,7 @@ def send_client_invite_existing_user_email(
       <h2 style="color:{brand_color}">You're invited!</h2>
       <p>Hi,</p>
       <p><strong>{brand_name}</strong> has invited you to access your personalisation dashboard.</p>
-      <p>Since you already have a PagePersona account, just click the button below to accept — no sign-up needed:</p>
+      <p>Since you already have a {brand_name} account, just click the button below to accept — no sign-up needed:</p>
       <p><a href="{accept_url}" style="background:{brand_color};color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;">Accept Invitation</a></p>
       <p style="color:#94a3b8;font-size:12px">This link expires in 7 days. You'll be taken straight to the dashboard after accepting.</p>
       {footer_html}

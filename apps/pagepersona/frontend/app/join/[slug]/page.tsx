@@ -199,7 +199,9 @@ export default function JoinPage() {
           </section>
 
           {showPoweredBy && (
-            <p className="text-center text-xs text-slate-400 mt-6">Powered by PagePersona</p>
+            <p className="text-center text-xs text-slate-400 mt-6">
+              {info.brand_name === 'PagePersona' ? 'Powered by PagePersona' : `${info.brand_name} · Powered by PagePersona`}
+            </p>
           )}
         </div>
       </main>
