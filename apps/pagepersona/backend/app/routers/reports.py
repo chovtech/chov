@@ -117,9 +117,13 @@ async def _build_snapshot(db: asyncpg.Connection, project_id: str, period: int) 
     }
 
 
-def _report_public_url(token: str) -> str:
-    base = getattr(settings, "FRONTEND_URL", "https://app.usepagepersona.com")
-    return f"{base}/r/{token}"
+def _report_public_url(token: str, project: dict = None) -> str:
+    if project:
+        domain = project.get("custom_domain")
+        verified = project.get("custom_domain_verified")
+        if domain and verified:
+            return f"https://{domain}/r/{token}"
+    return f"{settings.FRONTEND_URL}/r/{token}"
 
 
 # ── schemas ────────────────────────────────────────────────────────────────────
@@ -164,7 +168,7 @@ async def create_report(
     brand_name = project.get("white_label_brand_name") or "PagePersona"
     brand_color = project.get("white_label_primary_color") or "#1A56DB"
     hide_powered_by = bool(project.get("hide_powered_by"))
-    report_url = _report_public_url(report["public_token"])
+    report_url = _report_public_url(report["public_token"], project)
     sender_name = current_user.get("name") or current_user.get("email", "")
 
     subject, html = render_project_report(
@@ -194,7 +198,7 @@ async def list_reports(
     db: asyncpg.Connection = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
-    await _get_project_for_user(db, project_id, current_user["id"])
+    project = await _get_project_for_user(db, project_id, current_user["id"])
     rows = await db.fetch(
         """SELECT id, recipient_email, recipient_name, message, public_token,
                   period, created_at
@@ -203,7 +207,6 @@ async def list_reports(
            ORDER BY created_at DESC""",
         uuid.UUID(project_id),
     )
-    base = getattr(settings, "FRONTEND_URL", "https://app.usepagepersona.com")
     return [
         {
             "id": str(r["id"]),
@@ -212,7 +215,7 @@ async def list_reports(
             "message": r["message"],
             "period": r["period"],
             "public_token": r["public_token"],
-            "report_url": f"{base}/r/{r['public_token']}",
+            "report_url": _report_public_url(r["public_token"], project),
             "created_at": r["created_at"].isoformat(),
         }
         for r in rows
@@ -242,7 +245,7 @@ async def resend_report(
     brand_name = project.get("white_label_brand_name") or "PagePersona"
     brand_color = project.get("white_label_primary_color") or "#1A56DB"
     hide_powered_by = bool(project.get("hide_powered_by"))
-    report_url = _report_public_url(report["public_token"])
+    report_url = _report_public_url(report["public_token"], project)
     sender_name = current_user.get("name") or current_user.get("email", "")
 
     subject, html = render_project_report(

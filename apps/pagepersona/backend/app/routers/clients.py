@@ -9,6 +9,7 @@ from app.database import get_db
 from app.core.security import get_current_user, hash_password, create_access_token, create_refresh_token
 from app.services.email_service import send_client_access_restored_email
 from app.core.plan_limits import enforce_plan_limit
+from app.core.config import settings
 
 router = APIRouter(prefix="/api/clients", tags=["clients"])
 
@@ -458,7 +459,8 @@ async def restore_access(
     ws = await db.fetchrow(
         """SELECT w.id, w.name AS workspace_name, w.client_email,
                   parent.white_label_brand_name, parent.white_label_logo,
-                  parent.white_label_primary_color, parent.hide_powered_by
+                  parent.white_label_primary_color, parent.hide_powered_by,
+                  parent.custom_domain, parent.custom_domain_verified
            FROM workspaces w
            JOIN workspaces parent ON w.parent_workspace_id = parent.id
            WHERE w.id = $1 AND parent.owner_id = $2""",
@@ -481,17 +483,18 @@ async def restore_access(
     # Send restoration email
     client_email = ws['client_email']
     if client_email:
-        from app.core.config import settings
         brand_name = ws['white_label_brand_name'] or 'PagePersona'
         logo_url = ws['white_label_logo']
         brand_color = ws['white_label_primary_color'] or '#1A56DB'
         hide_powered_by = ws['hide_powered_by'] or False
+        _domain = ws['custom_domain'] if ws['custom_domain'] and ws['custom_domain_verified'] else None
+        _base = f"https://{_domain}" if _domain else settings.FRONTEND_URL
         send_client_access_restored_email(
             to_email=client_email,
             workspace_name=ws['workspace_name'],
             logo_url=logo_url,
             brand_color=brand_color,
-            dashboard_url=f"{settings.FRONTEND_URL}/dashboard",
+            dashboard_url=f"{_base}/dashboard",
             brand_name=brand_name,
             hide_powered_by=hide_powered_by,
         )
@@ -567,7 +570,9 @@ async def send_report(
     logo_url = agency_ws['white_label_logo']
     brand_color = agency_ws['white_label_primary_color'] or '#1A56DB'
     custom_msg = body.message or "Here is your latest personalisation report."
-    report_url = "https://app.usepagepersona.com/dashboard/analytics"
+    _domain = agency_ws['custom_domain'] if agency_ws['custom_domain'] and agency_ws['custom_domain_verified'] else None
+    _base = f"https://{_domain}" if _domain else settings.FRONTEND_URL
+    report_url = f"{_base}/dashboard/analytics"
 
     logo_html = f'<img src="{logo_url}" alt="{brand_name}" style="max-height:50px;margin-bottom:16px"/><br/>' if logo_url else ''
     footer_html = '' if agency_ws.get('hide_powered_by') else '<p style="color:#94a3b8;font-size:12px">Powered by PagePersona</p>'
