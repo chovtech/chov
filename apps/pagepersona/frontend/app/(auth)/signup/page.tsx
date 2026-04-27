@@ -34,6 +34,14 @@ function SignUpForm() {
     if (err === 'google_account_exists') setError(t('errors.googleAccountExists'))
     else if (err === 'google_failed') setError(t('errors.googleFailed'))
   }, [])
+
+  // If this signup is happening in an agency context (custom domain or ?slug),
+  // redirect to the join page which correctly creates a client account under that agency.
+  useEffect(() => {
+    if (branding?.slug) {
+      router.replace(`/join/${branding.slug}`)
+    }
+  }, [branding?.slug])
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   function validate() {

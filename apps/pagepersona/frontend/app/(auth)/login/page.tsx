@@ -200,7 +200,7 @@ export default function LoginPage() {
       <footer className="mt-8 text-center">
         <p className="text-gray-600">
           {t('login.noAccount')}{' '}
-          <Link href={slug ? `/signup?slug=${slug}` : '/signup'} className="font-semibold hover:underline" style={{ color: brandColor }}>{t('login.signUp')}</Link>
+          <Link href={branding?.slug ? `/join/${branding.slug}` : '/signup'} className="font-semibold hover:underline" style={{ color: brandColor }}>{t('login.signUp')}</Link>
         </p>
       </footer>
     </>

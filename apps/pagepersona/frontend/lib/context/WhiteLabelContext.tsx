@@ -14,23 +14,34 @@ interface WhiteLabelValue {
 
 const CACHE_KEY = 'pp_wl_branding'
 const AUTH_CACHE_KEY = 'pp_auth_branding'
+const PP_DEFAULT_DOMAIN = 'app.usepagepersona.com'
+
+function isOnCustomDomain(): boolean {
+  if (typeof window === 'undefined') return false
+  const host = window.location.hostname
+  return host !== PP_DEFAULT_DOMAIN && host !== 'localhost' && host !== '127.0.0.1'
+}
 
 function readCache(): WhiteLabelValue | null {
   if (typeof window === 'undefined') return null
   try {
     const ss = JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null')
     if (ss) return ss
-    // Bridge: use auth branding written during login/signup on a custom domain
-    const authRaw = localStorage.getItem(AUTH_CACHE_KEY)
-    if (authRaw) {
-      const auth = JSON.parse(authRaw)
-      if (auth?.brand_name) {
-        return {
-          brandName: auth.brand_name,
-          logo: auth.logo_url || null,
-          icon: auth.icon_url || null,
-          primaryColor: auth.brand_color || '#1A56DB',
-          hidePoweredBy: auth.hide_powered_by || false,
+    // Only use the auth branding cache when actually on a custom domain.
+    // On the default domain a stale cache entry from a past visit to an agency
+    // domain would incorrectly apply agency branding to an unrelated user.
+    if (isOnCustomDomain()) {
+      const authRaw = localStorage.getItem(AUTH_CACHE_KEY)
+      if (authRaw) {
+        const auth = JSON.parse(authRaw)
+        if (auth?.brand_name) {
+          return {
+            brandName: auth.brand_name,
+            logo: auth.logo_url || null,
+            icon: auth.icon_url || null,
+            primaryColor: auth.brand_color || '#1A56DB',
+            hidePoweredBy: auth.hide_powered_by || false,
+          }
         }
       }
     }
@@ -68,9 +79,16 @@ export function WhiteLabelProvider({ children }: { children: React.ReactNode }) 
 
   const display = live || cached || defaults
 
-  // Persist to sessionStorage whenever real workspace data arrives
+  // Persist to sessionStorage whenever real workspace data arrives.
+  // If workspace loaded with no branding and we're on the default domain,
+  // clear any stale auth branding cache from a past visit to an agency domain.
   useEffect(() => {
-    if (live) sessionStorage.setItem(CACHE_KEY, JSON.stringify(live))
+    if (live) {
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify(live))
+    } else if (activeWorkspace && !isOnCustomDomain()) {
+      localStorage.removeItem(AUTH_CACHE_KEY)
+      sessionStorage.removeItem(CACHE_KEY)
+    }
   }, [activeWorkspace?.id, live?.brandName, live?.logo, live?.icon, live?.primaryColor])
 
   useEffect(() => {
