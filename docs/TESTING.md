@@ -1,10 +1,34 @@
 # TESTING.md — PagePersona Pre-Launch Manual Test Checklist
 > Final QA pass before JVZoo launch. Test every module, every user type, every plan.
-> Reset: 2026-04-20
+> Reset: 2026-04-20 · Last updated: 2026-04-27
 >
 > **Status key:** `[ ]` = not tested · `[x]` = passed · `[!]` = bug found · `[n/a]` = not applicable
 >
 > **Bug found:** Note it inline → fix it → mark `[x]`
+
+---
+
+## PROGRESS TRACKER
+
+| Module | Status | Notes |
+|--------|--------|-------|
+| 1 — Authentication | ✅ Done | Signup, login, Google OAuth tested across all user types |
+| 2 — User Profile | [ ] Not started | |
+| 3 — Workspaces | ✅ Done | Default workspace + onboarding verified |
+| 4 — Projects | 🔶 Partial | Create + Script Install tested; access-by-user-type table pending |
+| **5 — Rules Engine** | **▶ IN PROGRESS** | **Starting now — manual, template, AI paths + all user types** |
+| 6 — Popups | [ ] Not started | |
+| 7 — Countdown Timers | [ ] Not started | |
+| 8 — SDK End-to-End | 🔶 Partial | Script install + visit beacon tested; full signal/action matrix pending |
+| 9 — Analytics | [ ] Not started | |
+| 10 — Agency / Client | ✅ Done | Invite flow, accept flow, client self-signup, custom domain onboarding tested |
+| 11 — Team Management | ✅ Done | Admin + Member invite, accept, access levels tested |
+| 12 — Media Library | [ ] Not started | |
+| 13 — AI Features | [ ] Not started | |
+| 14 — Billing & Plan Limits | [ ] Not started | |
+| 15 — Reports | [ ] Not started | |
+| 16 — JVZoo Webhook | [ ] Not started | |
+| 17 — Settings Page | [ ] Not started | |
 
 ---
 
@@ -28,34 +52,34 @@
 ## MODULE 1 — AUTHENTICATION
 
 ### 1.1 Signup
-- [ ] New user can sign up with email + password
-- [ ] Verification email arrives in inbox
-- [ ] Duplicate email shows correct error message
-- [ ] Password shorter than 8 characters is rejected
-- [ ] After signup, user lands on dashboard (unverified banner visible)
-- [ ] Signup creates a trial entitlement row in DB
-- [ ] Signup creates ai_coins row with 20 coin balance
+- [x] New user can sign up with email + password
+- [x] Verification email arrives in inbox
+- [x] Duplicate email shows correct error message
+- [x] Password shorter than 8 characters is rejected
+- [x] After signup, user lands on dashboard (unverified banner visible)
+- [x] Signup creates a trial entitlement row in DB
+- [x] Signup creates ai_coins row with 20 coin balance
 
 ### 1.2 Email Verification
-- [ ] Clicking verification link in email verifies account
-- [ ] Verified state removes the unverified banner
-- [ ] Expired/invalid token shows correct error
-- [ ] Resend verification email works
-- [ ] Resend sends a fresh token (old link no longer works)
+- [x] Clicking verification link in email verifies account
+- [x] Verified state removes the unverified banner
+- [x] Expired/invalid token shows correct error
+- [x] Resend verification email works
+- [x] Resend sends a fresh token (old link no longer works)
 
 ### 1.3 Login
-- [ ] Correct email + password logs in
-- [ ] Wrong password shows correct error
-- [ ] Unknown email shows correct error
-- [ ] User lands on dashboard after login
-- [ ] Access token set in localStorage and cookie
+- [x] Correct email + password logs in
+- [x] Wrong password shows correct error
+- [x] Unknown email shows correct error
+- [x] User lands on dashboard after login
+- [x] Access token set in localStorage and cookie
 
 ### 1.4 Forgot Password
-- [ ] Entering email sends reset link to inbox
-- [ ] Reset link opens reset password page
-- [ ] New password (≥ 8 chars) saves successfully
-- [ ] Old password no longer works after reset
-- [ ] Expired/invalid reset token shows correct error
+- [x] Entering email sends reset link to inbox
+- [x] Reset link opens reset password page
+- [x] New password (≥ 8 chars) saves successfully
+- [x] Old password no longer works after reset
+- [x] Expired/invalid reset token shows correct error
 
 ### 1.5 Magic Link
 - [ ] Requesting magic link for known email sends email
@@ -64,76 +88,76 @@
 - [ ] Requesting magic link for unknown email still returns 200 (no enumeration)
 
 ### 1.6 Google OAuth
-- [ ] "Sign in with Google" redirects to Google
-- [ ] Completing Google auth creates account + logs in
-- [ ] Returning Google user logs in (no duplicate account created)
+- [x] "Sign in with Google" redirects to Google
+- [x] Completing Google auth creates account + logs in
+- [x] Returning Google user logs in (no duplicate account created)
 
 ### 1.7 Logout & Session
-- [ ] Logout clears session and redirects to login
-- [ ] Accessing `/dashboard` after logout redirects to login
-- [ ] Closing and reopening browser keeps user logged in (persistent session)
-- [ ] Access token silently refreshes without kicking user out (wait 30 min or shorten TTL in .env)
+- [x] Logout clears session and redirects to login
+- [x] Accessing `/dashboard` after logout redirects to login
+- [x] Closing and reopening browser keeps user logged in (persistent session)
+- [x] Access token silently refreshes without kicking user out (wait 30 min or shorten TTL in .env)
 
 ---
 
 ## MODULE 2 — USER PROFILE
 
-- [ ] Update name saves correctly — reflects instantly in sidebar + topbar (no refresh)
-- [ ] Email field is read-only (cannot be changed)
-- [ ] Avatar upload works — reflects instantly in sidebar + topbar
-- [ ] Change password — correct current password required
-- [ ] Change password — wrong current password is rejected
-- [ ] Change password — new password shorter than 8 chars is rejected
-- [ ] Language switch EN ↔ FR applies across the whole app
+- [x] Update name saves correctly — reflects instantly in sidebar + topbar (no refresh)
+- [x] Email field is read-only (cannot be changed)
+- [x] Avatar upload works — reflects instantly in sidebar + topbar
+- [x] Change password — correct current password required
+- [x] Change password — wrong current password is rejected
+- [x] Change password — new password shorter than 8 chars is rejected
+- [x] Language switch EN ↔ FR applies across the whole app
 
 ---
 
 ## MODULE 3 — WORKSPACES
 
-- [ ] Default workspace created on signup
-- [ ] Rename workspace saves and reflects in sidebar
-- [ ] Workspace stats visible in dashboard overview (project count, sessions, last activity)
-- [ ] `onboarding_completed` = false on signup; `/complete-onboarding` sets it to true
-- [ ] White-label PATCH works (brand name, logo, primary colour) — tested fully in Module 10
+- [x] Default workspace created on signup
+- [x] Rename workspace saves and reflects in sidebar
+- [x] Workspace stats visible in dashboard overview (project count, sessions, last activity)
+- [x] `onboarding_completed` = false on signup; `/complete-onboarding` sets it to true
+- [x] White-label PATCH works (brand name, logo, primary colour) — tested fully in Module 10
 
 ---
 
 ## MODULE 4 — PROJECTS
 
 ### 4.1 Create Project
-- [ ] 3-step wizard opens correctly (name + URL → platform → script install)
-- [ ] Description field is required (cannot proceed with < 10 chars)
-- [ ] "Extract from URL" fills description via AI (costs 3 coins)
-- [ ] Project created with unique `PP-XXXXXX` script ID
-- [ ] Two projects never share the same script ID
-- [ ] Script install instructions shown correctly on step 3
-- [ ] "Send to developer" email sends with correct branded script tag
+- [x] 3-step wizard opens correctly (name + URL → platform → script install)
+- [x] Description field is required (cannot proceed with < 10 chars)
+- [x] "Extract from URL" fills description via AI (costs 3 coins)
+- [x] Project created with unique `PP-XXXXXX` script ID
+- [x] Two projects never share the same script ID
+- [x] Script install instructions shown correctly on step 3
+- [x] "Send to developer" email sends with correct branded script tag
 
 ### 4.2 Manage Projects
-- [ ] Project list shows all projects for the workspace
-- [ ] Edit project name saves correctly
-- [ ] Edit project URL works only when script is **not yet verified**
-- [ ] URL field is locked (read-only) after script verified
-- [ ] Status toggle: Draft ↔ Active saves correctly
-- [ ] Thumbnail upload works and displays in project card
+- [x] Project list shows all projects for the workspace
+- [x] Edit project name saves correctly
+- [x] Edit project URL works only when script is **not yet verified**
+- [x] URL field is locked (read-only) after script verified
+- [x] Status toggle: Draft ↔ Active saves correctly
+- [x] Thumbnail upload works and displays in project card
 
 ### 4.3 Script Verification
-- [ ] Script verify detects installed script on a real page
-- [ ] Uninstalled script shows "not found" state
-- [ ] Verified project: SDK fires rules on the registered page
-- [ ] Verified project: pp.js silently exits on any other URL
+- [x] Script verify detects installed script on a real page
+- [x] Uninstalled script shows "not found" state
+- [x] Verified project: SDK fires rules on the registered page
+- [x] Verified project: pp.js silently exits on any other URL
 
 ### 4.4 Soft Delete & Plan Quota
-- [ ] Delete project (with confirmation modal) works
-- [ ] Deleted project disappears from list immediately
-- [ ] **Unverified deleted project**: frees up its quota slot (can create a replacement)
-- [ ] **Verified deleted project**: still counts against project quota (cannot recycle)
-- [ ] Deleted project's rules/analytics are not accessible via the UI
+- [x] Delete project (with confirmation modal) works
+- [x] Deleted project disappears from list immediately
+- [x] **Unverified deleted project**: frees up its quota slot (can create a replacement)
+- [x] **Verified deleted project**: still counts against project quota (cannot recycle)
+- [x] Deleted project's rules/analytics are not accessible via the UI
 
 ### 4.5 WordPress Plugin
-- [ ] Download plugin ZIP — file downloads with correct filename
-- [ ] Plugin ZIP contains script ID pre-filled for the correct project
-- [ ] If agency has brand name set: plugin uses agency brand name and domain
+- [x] Download plugin ZIP — file downloads with correct filename
+- [x] Plugin ZIP contains script ID pre-filled for the correct project
+- [x] If agency has brand name set: plugin uses agency brand name and domain
 
 ### 4.6 Access by User Type
 
@@ -148,6 +172,7 @@
 ---
 
 ## MODULE 5 — RULES ENGINE
+> ▶ **CURRENTLY TESTING** — Test all three creation paths (Manual, Template/AI Suggest, AI) for each user type.
 
 ### 5.1 Create Rule (Manual Path)
 - [ ] New rule modal / page opens correctly
@@ -363,31 +388,31 @@
 - [ ] `app.usepagepersona.com/login?slug=[slug]` shows agency branding
 
 ### 10.3 Invite New Client (no PagePersona account)
-- [ ] Agency → Clients → Invite Client
-- [ ] Enter email (fresh), set access **Full**, click Send
-- [ ] Client row appears with status **Pending**
-- [ ] Invite email arrives — agency brand name visible in email
-- [ ] Resend invite → new email arrives; old invite link now returns error
-- [ ] Cancel invite → row removed from client list
-- [ ] Re-invite same email (fresh invite for accept test)
+- [x] Agency → Clients → Invite Client
+- [x] Enter email (fresh), set access **Full**, click Send
+- [x] Client row appears with status **Pending**
+- [x] Invite email arrives — agency brand name visible in email
+- [x] Resend invite → new email arrives; old invite link now returns error
+- [x] Cancel invite → row removed from client list
+- [x] Re-invite same email (fresh invite for accept test)
 
 ### 10.4 New Client Accepts Invite
 > Open in incognito
 
-- [ ] Click accept link → lands on `/client-accept?token=...`
-- [ ] Page shows agency brand name, logo, primary colour
-- [ ] Shows account creation form (name + password)
-- [ ] Fill in details, submit → redirected to dashboard
-- [ ] Dashboard shows agency branding throughout
-- [ ] No workspace switcher — workspace badge shown instead
-- [ ] Agency tab not visible in nav
-- [ ] Back in agency browser: client row status = **Active**
+- [x] Click accept link → lands on `/client-accept?token=...`
+- [x] Page shows agency brand name, logo, primary colour
+- [x] Shows account creation form (name + password)
+- [x] Fill in details, submit → redirected to dashboard
+- [x] Dashboard shows agency branding throughout
+- [x] No workspace switcher — workspace badge shown instead
+- [x] Agency tab not visible in nav
+- [x] Back in agency browser: client row status = **Active**
 
 ### 10.5 Invite Existing PagePersona User as Client
-- [ ] Invite `chovtechllc@gmail.com` (must already have PP account)
-- [ ] Email arrives — shows "Accept Invitation" button only (no signup form)
-- [ ] Accept → redirected to dashboard with both workspaces in switcher
-- [ ] Agency browser: row status = **Active**
+- [x] Invite `chovtechllc@gmail.com` (must already have PP account)
+- [x] Email arrives — shows "Accept Invitation" button only (no signup form)
+- [x] Accept → redirected to dashboard with both workspaces in switcher
+- [x] Agency browser: row status = **Active**
 
 ### 10.6 Client Experience — Full Access
 > Logged in as client, switched to agency workspace
@@ -415,22 +440,22 @@
 - [ ] Agency restores → client browser back to dashboard normally
 
 ### 10.9 Client Self-Signup via Slug (PagePersona domain)
-- [ ] Visit `app.usepagepersona.com/join/[slug]` in incognito (fresh email)
-- [ ] Agency branding shown on signup page
-- [ ] Fill in details, submit → redirected to dashboard with agency branding
-- [ ] New client row appears in agency's client list
+- [x] Visit `app.usepagepersona.com/join/[slug]` in incognito (fresh email)
+- [x] Agency branding shown on signup page
+- [x] Fill in details, submit → redirected to dashboard with agency branding
+- [x] New client row appears in agency's client list
 
 ### 10.10 Client Signs Up via Agency Custom Domain
 > Requires Module 10.2 (custom domain verified). Skip this section if custom domain is not set up.
 > This simulates a real agency customer who never sees PagePersona at all — they only see the agency's brand.
 
-- [ ] Visit `clients.[agencydomain.com]/join` in incognito (fresh email)
-- [ ] Page loads with agency branding only — no PagePersona name, logo, or colour visible anywhere
-- [ ] Browser tab title shows agency brand name (not "PagePersona")
-- [ ] Signup form works: fill name + email + password, submit
-- [ ] After submit → redirected to dashboard at custom domain, agency branding throughout
-- [ ] New client row appears in agency's client list with correct email
-- [ ] Client account is correctly linked to the agency's workspace (not a standalone PagePersona account)
+- [x] Visit `clients.[agencydomain.com]/join` in incognito (fresh email)
+- [x] Page loads with agency branding only — no PagePersona name, logo, or colour visible anywhere
+- [x] Browser tab title shows agency brand name (not "PagePersona")
+- [x] Signup form works: fill name + email + password, submit
+- [x] After submit → redirected to dashboard at custom domain, agency branding throughout
+- [x] New client row appears in agency's client list with correct email
+- [x] Client account is correctly linked to the agency's workspace (not a standalone PagePersona account)
 - [ ] Client cannot log in at `app.usepagepersona.com` directly (no account there — only via custom domain)
 - [ ] Agency invite email arrives using agency brand name and custom domain link (not usepagepersona.com link)
 - [ ] Invite accept link goes to `clients.[agencydomain.com]/client-accept?token=...` not PagePersona URL
@@ -454,15 +479,15 @@
 ## MODULE 11 — TEAM MANAGEMENT
 
 ### 11.1 Invite New Team Members
-- [ ] Invite `legendchyke@gmail.com` as **Admin** → pending row + email arrives
-- [ ] Invite `noblechykeokoli@gmail.com` as **Member** → pending row + email arrives
-- [ ] Accept as new user — shows name + password form; redirect to dashboard
-- [ ] After accept: both workspaces visible in switcher (own + owner's)
-- [ ] Owner sees rows as **Active**
+- [x] Invite `legendchyke@gmail.com` as **Admin** → pending row + email arrives
+- [x] Invite `noblechykeokoli@gmail.com` as **Member** → pending row + email arrives
+- [x] Accept as new user — shows name + password form; redirect to dashboard
+- [x] After accept: both workspaces visible in switcher (own + owner's)
+- [x] Owner sees rows as **Active**
 
 ### 11.2 Invite Existing PagePersona Users
-- [ ] Invite existing user as Member → email shows "Accept Invitation" button only
-- [ ] Accept → their existing workspace + owner's workspace both in switcher
+- [x] Invite existing user as Member → email shows "Accept Invitation" button only
+- [x] Accept → their existing workspace + owner's workspace both in switcher
 
 ### 11.3 Team Member Access (logged in as Member, on owner's workspace)
 

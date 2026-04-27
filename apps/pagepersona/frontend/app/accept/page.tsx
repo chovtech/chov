@@ -84,6 +84,10 @@ function AcceptForm() {
   const logo = info?.white_label_logo
   const showPoweredBy = !info?.hide_powered_by
 
+  useEffect(() => {
+    if (info) document.title = brandName
+  }, [info])
+
   const inputClass = 'w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent outline-none text-gray-900 transition-all'
 
   if (state === 'loading') {

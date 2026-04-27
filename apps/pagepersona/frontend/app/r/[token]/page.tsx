@@ -49,7 +49,10 @@ export default function PublicReportPage() {
   useEffect(() => {
     if (!token) return
     reportsApi.getPublic(token)
-      .then(r => setData(r.data))
+      .then(r => {
+        setData(r.data)
+        document.title = `${r.data.project_name} Report — ${r.data.brand_name}`
+      })
       .catch(() => setError(true))
   }, [token])
 
