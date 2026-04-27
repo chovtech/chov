@@ -570,7 +570,7 @@ async def send_report(
     report_url = "https://app.usepagepersona.com/dashboard/analytics"
 
     logo_html = f'<img src="{logo_url}" alt="{brand_name}" style="max-height:50px;margin-bottom:16px"/><br/>' if logo_url else ''
-    footer_html = '' if agency_ws.get('brand_name') else '<p style="color:#94a3b8;font-size:12px">Powered by PagePersona</p>'
+    footer_html = '' if agency_ws.get('hide_powered_by') else '<p style="color:#94a3b8;font-size:12px">Powered by PagePersona</p>'
 
     report_html = f"""
     <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
