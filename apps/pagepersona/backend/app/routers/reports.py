@@ -24,7 +24,7 @@ router = APIRouter(tags=["reports"])
 async def _get_project_for_user(db: asyncpg.Connection, project_id: str, user_id) -> dict:
     row = await db.fetchrow(
         """SELECT p.*, w.owner_id, w.white_label_brand_name, w.white_label_primary_color,
-                  w.custom_domain, w.custom_domain_verified
+                  w.hide_powered_by, w.custom_domain, w.custom_domain_verified
            FROM projects p
            JOIN workspaces w ON p.workspace_id = w.id
            WHERE p.id = $1 AND (
@@ -163,6 +163,7 @@ async def create_report(
 
     brand_name = project.get("white_label_brand_name") or "PagePersona"
     brand_color = project.get("white_label_primary_color") or "#1A56DB"
+    hide_powered_by = bool(project.get("hide_powered_by"))
     report_url = _report_public_url(report["public_token"])
     sender_name = current_user.get("name") or current_user.get("email", "")
 
@@ -175,6 +176,7 @@ async def create_report(
         snapshot=snapshot,
         brand_name=brand_name,
         brand_color=brand_color,
+        hide_powered_by=hide_powered_by,
     )
     send_email(body.recipient_email, subject, html, sender_name=brand_name)
 
@@ -239,6 +241,7 @@ async def resend_report(
 
     brand_name = project.get("white_label_brand_name") or "PagePersona"
     brand_color = project.get("white_label_primary_color") or "#1A56DB"
+    hide_powered_by = bool(project.get("hide_powered_by"))
     report_url = _report_public_url(report["public_token"])
     sender_name = current_user.get("name") or current_user.get("email", "")
 
@@ -251,6 +254,7 @@ async def resend_report(
         snapshot=snapshot,
         brand_name=brand_name,
         brand_color=brand_color,
+        hide_powered_by=hide_powered_by,
     )
     send_email(to_email, subject, html, sender_name=brand_name)
     return {"sent_to": to_email, "report_url": report_url}

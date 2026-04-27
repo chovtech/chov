@@ -5,14 +5,20 @@ Keys must match the language codes in /locales/languages.ts
 """
 
 # ── BASE LAYOUT ────────────────────────────────────────
-def base_layout(content: str, lang: str = "en") -> str:
+def base_layout(content: str, lang: str = "en", brand_name: str = "PagePersona", hide_powered_by: bool = False) -> str:
+    if brand_name == "PagePersona":
+        footer_text = "PagePersona · usepagepersona.com"
+    elif hide_powered_by:
+        footer_text = brand_name
+    else:
+        footer_text = f"{brand_name} · Powered by PagePersona"
     return f"""
     <html>
     <body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1e293b">
       {content}
       <hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0"/>
       <p style="color:#94a3b8;font-size:12px;text-align:center">
-        PagePersona · usepagepersona.com
+        {footer_text}
       </p>
     </body>
     </html>
@@ -222,6 +228,7 @@ def render_project_report(
     snapshot: dict,
     brand_name: str = "PagePersona",
     brand_color: str = "#1A56DB",
+    hide_powered_by: bool = False,
 ) -> tuple[str, str]:
     """Email sent to report recipient — summary in body, link to full public report."""
     total_visits    = snapshot.get("total_visits", 0)
@@ -259,5 +266,5 @@ def render_project_report(
         View Full Report →
       </a>
       <p style="color:#94a3b8;font-size:12px">This report was sent to you by {sender_name} via {brand_name}. No account needed to view it.</p>
-    """)
+    """, brand_name=brand_name, hide_powered_by=hide_powered_by)
     return subject, html
