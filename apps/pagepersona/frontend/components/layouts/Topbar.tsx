@@ -136,8 +136,8 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
 
         {!isViewOnly && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />}
 
-        {/* Create with AI — opens New Project modal on dashboard; hidden on dashboard itself since the page has its own button */}
-        {canCreateProject && pathname !== '/dashboard' && <button
+        {/* Create with AI — opens New Project modal on dashboard */}
+        {canCreateProject && <button
           onClick={() => {
             if (!isAtLimit('projects')) {
               sessionStorage.setItem('pp_open_new_project', '1')
@@ -147,7 +147,7 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
           }}
           disabled={isAtLimit('projects')}
           title={isAtLimit('projects') ? 'Project limit reached — upgrade your plan' : undefined}
-          className="flex items-center gap-2 px-4 py-2 bg-brand hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-all shadow-md shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100">
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-brand text-brand hover:bg-brand/5 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100">
           <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none">
             <path d="M12 2L13.09 8.26L19 7L14.74 11.74L21 12L14.74 12.26L19 17L13.09 15.74L12 22L10.91 15.74L5 17L9.26 12.26L3 12L9.26 11.74L5 7L10.91 8.26L12 2Z" fill="currentColor"/>
           </svg>
