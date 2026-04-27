@@ -136,8 +136,8 @@ export default function Topbar({ workspaceName = 'My Workspace' }: { workspaceNa
 
         {!isViewOnly && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />}
 
-        {/* Create with AI — opens New Project modal on dashboard */}
-        {canCreateProject && <button
+        {/* Create with AI — opens New Project modal on dashboard; hidden on dashboard itself since the page has its own button */}
+        {canCreateProject && pathname !== '/dashboard' && <button
           onClick={() => {
             if (!isAtLimit('projects')) {
               sessionStorage.setItem('pp_open_new_project', '1')
