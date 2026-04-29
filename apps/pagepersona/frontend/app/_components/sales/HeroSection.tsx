@@ -27,19 +27,19 @@ const HeroSection = () => {
 
         {/* Main headline */}
         <h1
-          className="text-4xl md:text-5xl lg:text-[56px] font-black leading-[1.1] mb-5 max-w-4xl"
-          style={{ fontFamily: 'var(--font-syne)' }}
+          className="leading-[1.25] mb-5 max-w-4xl"
+          style={{ fontFamily: 'var(--font-outfit)', fontSize: '54px', fontWeight: 400 }}
         >
-          <span style={{ color: '#14B8A6' }}>Finally: </span>
-          <span className="text-white">The AI System That Makes Any Sales Page, Landing Page Or Website </span>
+          <span style={{ color: 'rgb(21, 234, 175)' }}>Finally: </span>
+          <span style={{ color: '#ffffff', fontWeight: 900 }}>The AI System That Makes Any Sales Page, Landing Page Or Website </span>
           <span
             className="px-2 py-0.5 rounded"
-            style={{ color: '#0F172A', backgroundColor: '#14B8A6' }}
+            style={{ color: '#0F172A', backgroundColor: 'rgb(21, 234, 175)', fontWeight: 900 }}
           >
             SMART
           </span>
-          <span className="text-white"> Enough To Automatically Change Itself For Every Single Visitor — </span>
-          <span style={{ color: '#5EEAD4' }}>So You Convert More Of The Traffic You&apos;re Already Getting</span>
+          <span style={{ color: '#ffffff', fontWeight: 900 }}> Enough To Automatically Change Itself For Every Single Visitor — </span>
+          <span style={{ color: 'rgb(21, 234, 175)' }}>So You Convert More Of The Traffic You&apos;re Already Getting</span>
         </h1>
 
         {/* One-liner — Amazon/Netflix credibility + salesperson angle */}
