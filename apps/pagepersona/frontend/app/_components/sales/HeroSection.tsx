@@ -71,9 +71,9 @@ const HeroSection = () => {
             color: 'rgb(223, 223, 241)',
           }}
         >
-          Our Advanced AI detects who is visiting your page — then automatically changes it in real time to match what that visitor actually wants to see.
-          <br />
-          <span style={{ fontWeight: 700 }}>No code. No developer. No guesswork.</span>
+          Our Advanced AI detects who is visiting your page,<br />
+          then adapts the page to what they need to see<br />
+          — in real time
         </p>
 
         {/* Label — moved here after subheadline, pill badge */}
