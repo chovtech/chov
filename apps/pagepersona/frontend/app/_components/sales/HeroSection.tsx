@@ -97,7 +97,8 @@ const HeroSection = () => {
 
         {/* Demo video — premium floating card */}
         <div
-          className="w-full max-w-2xl mb-10"
+          className="w-full mb-10"
+          style={{ maxWidth: '873px' }}
           style={{
             borderRadius: '20px',
             overflow: 'hidden',
@@ -123,16 +124,14 @@ const HeroSection = () => {
             </p>
           </div>
 
-          {/* Video iframe */}
-          <div style={{ aspectRatio: '16/9' }}>
+          {/* Video iframe — VLF dimensions: 873px wide, 56.25% padding = 16:9 */}
+          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
             <iframe
               src="https://player.vimeo.com/video/459138259"
-              width="100%"
-              height="100%"
               frameBorder="0"
               allow="autoplay; fullscreen; picture-in-picture"
               allowFullScreen
-              style={{ display: 'block' }}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block' }}
             />
           </div>
 
