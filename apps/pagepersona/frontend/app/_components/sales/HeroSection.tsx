@@ -13,13 +13,11 @@ const HeroSection = () => {
 
         {/* Logo */}
         <div className="mb-8">
-          <span
-            className="text-2xl font-black tracking-tight"
-            style={{ fontFamily: 'var(--font-syne)' }}
-          >
-            <span style={{ color: '#14B8A6' }}>Page</span>
-            <span className="text-white">Persona</span>
-          </span>
+          <img
+            src="http://viralleadfunnels.com/wp-content/uploads/2022/04/VLF-FE-02-Logo-01.png"
+            alt="PagePersona"
+            className="h-10 w-auto mx-auto"
+          />
         </div>
 
         {/* Attention label */}
