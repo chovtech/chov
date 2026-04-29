@@ -76,7 +76,7 @@ const HeroSection = () => {
           <strong style={{ fontWeight: 700 }}>PagePersona</strong> detects who is visiting your page, then adapts the page{' '}
           <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>IN REAL TIME</strong>{' '}
           to what they need to see to convert ...{' '}
-          <strong style={{ fontWeight: 700 }}>No code. No developer. No guesswork.</strong>
+          <strong style={{ fontWeight: 700 }}>No coding. No guesswork.</strong>
         </p>
 
         {/* Label — moved here after subheadline, pill badge */}
