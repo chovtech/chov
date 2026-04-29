@@ -109,14 +109,13 @@ const HeroSection = () => {
             marginTop: '30px',
           }}
         >
-          {/* Video iframe — scaled 1% to bleed past edges, overflow:hidden clips clean */}
-          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, background: '#000', lineHeight: 0, overflow: 'hidden' }}>
+          {/* Video iframe — Wistia with videoFoam fills container seamlessly */}
+          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, background: '#000', lineHeight: 0 }}>
             <iframe
-              src="https://player.vimeo.com/video/459138259"
+              src="https://fast.wistia.net/embed/iframe/0ssmmjex3v?chromeless=false&controlsVisibleOnLoad=true&playbar=true&fullscreenButton=true&playerColor=034327&videoFoam=true"
               frameBorder="0"
-              allow="autoplay; fullscreen; picture-in-picture"
               allowFullScreen
-              style={{ position: 'absolute', top: '-1%', left: '-1%', width: '102%', height: '102%', display: 'block', border: 'none' }}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block', border: 'none' }}
             />
           </div>
 
