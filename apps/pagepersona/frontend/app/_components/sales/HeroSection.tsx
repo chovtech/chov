@@ -73,7 +73,7 @@ const HeroSection = () => {
             maxWidth: '900px',
           }}
         >
-          Our <strong style={{ fontWeight: 700 }}>Advanced AI</strong> detects who is visiting your page, then adapts the page to what they need to see —{' '}
+          <strong style={{ fontWeight: 700 }}>PagePersona</strong> detects who is visiting your page, then adapts the page to what they need to see —{' '}
           <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>IN REAL TIME</strong>. One page. Every visitor feels like it was built just for them.
         </p>
 
