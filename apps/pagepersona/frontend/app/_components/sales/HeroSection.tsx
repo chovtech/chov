@@ -21,8 +21,54 @@ const HeroSection = () => {
           />
         </div>
 
-        {/* Small label — pill badge */}
-        <div className="mb-6">
+        {/* Headline — 2 lines, VLF style */}
+        <div
+          className="mb-6 text-center"
+          style={{ width: 'calc(100vw - 80px)', maxWidth: '1100px' }}
+        >
+          {/* Line 1 — teal */}
+          <h1
+            style={{
+              fontFamily: 'var(--font-outfit)',
+              fontSize: '64px',
+              fontWeight: 900,
+              lineHeight: 1.1,
+              color: 'rgb(21, 234, 175)',
+            }}
+          >
+            Makes Your Sales Page, Landing Page or Website SMART
+          </h1>
+
+          {/* Line 2 — brush stroke bg */}
+          <div className="mt-2">
+            <span
+              style={{
+                backgroundImage: 'url(/images/PP-FE-78-Image-48.png)',
+                backgroundSize: '100% 100%',
+                backgroundRepeat: 'no-repeat',
+                color: '#0F172A',
+                padding: '6px 28px',
+                fontFamily: 'var(--font-outfit)',
+                fontSize: '64px',
+                fontWeight: 900,
+                lineHeight: 1.2,
+                display: 'inline-block',
+              }}
+            >
+              Read Every Visitor&apos;s Mind — Convert MORE
+            </span>
+          </div>
+        </div>
+
+        {/* Subheadline */}
+        <p className="text-gray-200 text-lg md:text-xl mb-6 max-w-3xl leading-relaxed">
+          PagePersona detects who is visiting your page — then automatically changes it in real time to match what that visitor actually wants to see. One page. Every visitor feels like it was built just for them.
+          <br /><br />
+          <span className="text-white font-semibold">No code. No developer. No guesswork.</span>
+        </p>
+
+        {/* Label — moved here after subheadline, pill badge */}
+        <div className="mb-8">
           <span
             className="inline-flex items-center gap-2 px-5 py-2 rounded-full font-bold text-sm md:text-base tracking-wide"
             style={{
@@ -35,29 +81,6 @@ const HeroSection = () => {
             <span>•</span>
           </span>
         </div>
-
-        {/* Main headline — breaks out of parent max-w to use full viewport width */}
-        <h1
-          className="mb-6 text-white text-center"
-          style={{
-            fontFamily: 'var(--font-outfit)',
-            fontSize: '58px',
-            fontWeight: 900,
-            lineHeight: 1.15,
-            width: 'calc(100vw - 80px)',
-            maxWidth: '1300px',
-          }}
-        >
-          Finally: The AI System That Makes Your Sales Page SMART<br />
-          Read Every Visitor&apos;s Mind — Convert MORE Of Them
-        </h1>
-
-        {/* Subheadline */}
-        <p className="text-gray-200 text-lg md:text-xl mb-10 max-w-3xl leading-relaxed">
-          PagePersona detects who is visiting your page — then automatically changes it in real time to match what that visitor actually wants to see. One page. Every visitor feels like it was built just for them.
-          <br /><br />
-          <span className="text-white font-semibold">No code. No developer. No guesswork.</span>
-        </p>
 
         {/* Demo video */}
         <div className="w-full max-w-2xl mb-4 rounded-2xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
