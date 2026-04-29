@@ -55,7 +55,7 @@ const HeroSection = () => {
                 display: 'inline-block',
               }}
             >
-              Read Every Visitor&apos;s Mind
+              Read Every Visitor&apos;s MIND
             </span>
           </div>
         </div>
@@ -76,7 +76,8 @@ const HeroSection = () => {
           <strong style={{ fontWeight: 700 }}>PagePersona</strong> detects who is visiting your page, then adapts the page{' '}
           <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>IN REAL TIME</strong>{' '}
           to what they need to see to convert ...{' '}
-          <strong style={{ fontWeight: 700 }}>No coding needed.</strong>
+          <strong style={{ fontWeight: 700 }}>Zero</strong> coding.{' '}
+          <strong style={{ fontWeight: 700 }}>Zero</strong> guesswork.
         </p>
 
         {/* Label — solid teal pill, VLF style */}
@@ -136,7 +137,7 @@ const HeroSection = () => {
             <p
               style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(52, 51, 91)', fontSize: '20px', lineHeight: '1.4', fontWeight: 300 }}
             >
-              While Your Competitors Show Every Visitor The Same Generic Page — Yours Knows Each Visitor And Adapts Automatically.
+              While Your Competitors Show Every Visitor <span style={{ textDecoration: 'underline' }}>The Same Generic Page</span> — <strong style={{ fontWeight: 700 }}>Yours Knows Each Visitor And Adapts Automatically.</strong>
             </p>
           </div>
 
@@ -147,7 +148,7 @@ const HeroSection = () => {
           className="text-center mb-6 max-w-2xl"
           style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(223, 223, 241)', fontSize: '26px', lineHeight: '1.25em', fontWeight: 300 }}
         >
-          If you can paste a link, you&apos;re set up in 5 minutes.<br />
+          If you can paste a link, you&apos;re set up in <strong style={{ fontWeight: 700 }}>5 minutes</strong>.<br />
           Works on WordPress, Shopify, GoHighLevel, ClickFunnels, Webflow and more.
         </p>
 
@@ -190,7 +191,7 @@ const HeroSection = () => {
           className="text-center mb-6"
           style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(223, 223, 241)', fontSize: '26px', lineHeight: '1.25em', fontWeight: 300 }}
         >
-          All Upgrades Included When You Act Today
+          <span style={{ textDecoration: 'underline' }}>All Upgrades Included</span> When You Act Today
         </p>
 
         {/* Bouncing down arrow */}
