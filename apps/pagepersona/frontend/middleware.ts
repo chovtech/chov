@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 const APP_DOMAIN = 'app.usepagepersona.com'
+const MAIN_DOMAINS = ['usepagepersona.com', 'www.usepagepersona.com']
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get('access_token')?.value
@@ -11,8 +12,9 @@ export async function middleware(request: NextRequest) {
   // Resolve custom domain white label (set by Nginx header, or fall back to host)
   const customDomainHeader = request.headers.get('x-custom-domain')
   const host = (request.headers.get('host') || '').split(':')[0]
+  const isMainDomain = MAIN_DOMAINS.includes(host)
   const customDomain = customDomainHeader || (
-    host && host !== APP_DOMAIN && !host.includes('localhost') && !host.includes('127.0.0.1')
+    !isMainDomain && host && host !== APP_DOMAIN && !host.includes('localhost') && !host.includes('127.0.0.1')
       ? host
       : null
   )
