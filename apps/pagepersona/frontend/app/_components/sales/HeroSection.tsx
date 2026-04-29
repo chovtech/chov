@@ -21,10 +21,17 @@ const HeroSection = () => {
           />
         </div>
 
-        {/* Small label */}
-        <p className="text-white text-sm md:text-base mb-5 font-semibold tracking-wide">
-          The Same Personalisation Technology Amazon &amp; Netflix Use — Now On Your Sales Page
-        </p>
+        {/* Small label — pill badge */}
+        <div className="mb-6">
+          <span
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-full font-bold text-sm md:text-base tracking-wide text-white"
+            style={{ backgroundColor: '#F97316' }}
+          >
+            <span>•</span>
+            <span>The Same Personalisation Technology Amazon &amp; Netflix Use — Now On Your Sales Page</span>
+            <span>•</span>
+          </span>
+        </div>
 
         {/* Main headline — layout pass, no colours yet */}
         <h1
