@@ -20,9 +20,9 @@ const HeroSection = () => {
           />
         </div>
 
-        {/* Attention label */}
-        <p className="text-gray-300 text-sm md:text-base mb-5 italic">
-          Attention: A Must Have For Marketers, Coaches, Agency Owners &amp; Anyone With A Landing Page…
+        {/* Small label */}
+        <p className="text-white text-sm md:text-base mb-5 font-semibold tracking-wide">
+          The Same Personalisation Technology Amazon &amp; Netflix Use — Now On Your Sales Page
         </p>
 
         {/* Main headline */}
@@ -31,15 +31,16 @@ const HeroSection = () => {
           style={{ fontFamily: 'var(--font-outfit)', fontSize: '54px', fontWeight: 400 }}
         >
           <span style={{ color: 'rgb(21, 234, 175)' }}>Finally: </span>
-          <span style={{ color: '#ffffff', fontWeight: 900 }}>The AI System That Makes Any Sales Page, Landing Page Or Website </span>
+          <span style={{ color: '#ffffff', fontWeight: 900 }}>The AI System That Makes Your Sales Page </span>
           <span
             className="px-2 py-0.5 rounded"
             style={{ color: '#0F172A', backgroundColor: 'rgb(21, 234, 175)', fontWeight: 900 }}
           >
             SMART
           </span>
-          <span style={{ color: '#ffffff', fontWeight: 900 }}> Enough To Automatically Change Itself For Every Single Visitor — </span>
-          <span style={{ color: 'rgb(21, 234, 175)' }}>So You Convert More Of The Traffic You&apos;re Already Getting</span>
+          <span style={{ color: '#ffffff', fontWeight: 900 }}> Enough To Read Every Visitor&apos;s Mind — And Convert </span>
+          <span style={{ color: 'rgb(21, 234, 175)', fontWeight: 900 }}>MORE</span>
+          <span style={{ color: '#ffffff', fontWeight: 900 }}> Of Them</span>
         </h1>
 
         {/* One-liner — Amazon/Netflix credibility + salesperson angle */}
