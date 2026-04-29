@@ -76,21 +76,21 @@ const HeroSection = () => {
           <strong style={{ fontWeight: 700 }}>PagePersona</strong> detects who is visiting your page, then adapts the page{' '}
           <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>IN REAL TIME</strong>{' '}
           to what they need to see to convert ...{' '}
-          <strong style={{ fontWeight: 700 }}>No coding. No guesswork.</strong>
+          <strong style={{ fontWeight: 700 }}>No coding needed.</strong>
         </p>
 
-        {/* Label — moved here after subheadline, pill badge */}
+        {/* Label — solid teal pill, VLF style */}
         <div className="mb-8">
           <span
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-full font-bold text-sm md:text-base tracking-wide"
+            className="inline-flex items-center px-7 py-2 rounded-full font-bold tracking-wide"
             style={{
-              background: 'linear-gradient(to right, rgb(6, 148, 110), rgb(21, 234, 175))',
+              backgroundColor: 'rgb(21, 234, 175)',
               color: '#0F172A',
+              fontFamily: 'var(--font-outfit)',
+              fontSize: '18px',
             }}
           >
-            <span>•</span>
-            <span>The Same Personalisation Technology Amazon &amp; Netflix Use — Now On Your Sales Page</span>
-            <span>•</span>
+            Same Technology used by Amazon &amp; Netflix
           </span>
         </div>
 
