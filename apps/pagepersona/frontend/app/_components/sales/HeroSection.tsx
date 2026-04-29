@@ -67,9 +67,9 @@ const HeroSection = () => {
             color: 'rgb(223, 223, 241)',
           }}
         >
-          PagePersona <strong style={{ fontWeight: 700 }}>detects who is visiting</strong> your page, then{' '}
-          <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>adapts the page</strong>{' '}
-          IN REAL TIME to what they need to see to convert ...{' '}
+          PagePersona <strong style={{ fontWeight: 700 }}>detects</strong> who is visiting your page, then{' '}
+          <strong style={{ fontWeight: 700 }}>adapts</strong> the page{' '}
+          <strong style={{ fontWeight: 700 }}>in real time</strong> to what they need to see to convert ...{' '}
           <strong style={{ fontWeight: 700 }}>Zero</strong> coding.{' '}
           <strong style={{ fontWeight: 700 }}>Zero</strong> developer.{' '}
           <strong style={{ fontWeight: 700 }}>Zero</strong> guesswork.
@@ -78,7 +78,7 @@ const HeroSection = () => {
         {/* Label — solid teal pill, VLF style */}
         <div className="mb-8">
           <span
-            className="inline-flex items-center px-5 py-2 rounded-full text-[15px] sm:text-[20px] lg:text-[26px]"
+            className="inline-flex items-center justify-center px-5 py-2 rounded-full text-[14px] sm:text-[18px] lg:text-[26px] text-center max-w-xs sm:max-w-none"
             style={{
               backgroundColor: 'rgb(21, 234, 175)',
               color: 'rgb(52, 51, 91)',
@@ -86,7 +86,7 @@ const HeroSection = () => {
               fontWeight: 300,
             }}
           >
-            SAME Personilization used by <strong style={{ fontWeight: 600 }}>Amazon &amp; Netflix</strong>
+            Same Personalisation Technology Used By <strong style={{ fontWeight: 600 }}>Amazon &amp; Netflix</strong>
           </span>
         </div>
 
@@ -131,7 +131,7 @@ const HeroSection = () => {
             <p
               style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(52, 51, 91)', fontSize: '20px', lineHeight: '1.4', fontWeight: 300 }}
             >
-              While Your <span style={{ textDecoration: 'underline' }}>Competitors</span> Show Every Visitor <span style={{ textDecoration: 'underline' }}>The Same Generic Page</span> — <strong style={{ fontWeight: 700 }}>Yours Knows Each Visitor And Adapts Automatically.</strong>
+              While Your Competitors Show Every Visitor <span style={{ textDecoration: 'underline' }}>The Same Generic Page</span> — <strong style={{ fontWeight: 700 }}>Yours Knows Each Visitor And Adapts Automatically.</strong>
             </p>
           </div>
 
@@ -149,15 +149,13 @@ const HeroSection = () => {
         {/* CTA button */}
         <a
           href="#buy"
-          className="inline-block transition-all duration-200 hover:scale-105 mb-4"
+          className="inline-block transition-all duration-200 hover:scale-105 mb-4 text-[16px] sm:text-[20px] lg:text-[24px] px-8 sm:px-14 py-4 sm:py-5"
           style={{
             fontFamily: 'var(--font-outfit)',
             fontWeight: 900,
-            fontSize: '24px',
             backgroundColor: '#F97316',
             color: '#ffffff',
             borderRadius: '999px',
-            padding: '20px 64px',
             boxShadow: '0 8px 40px rgba(249,115,22,0.45)',
             letterSpacing: '0.01em',
           }}
