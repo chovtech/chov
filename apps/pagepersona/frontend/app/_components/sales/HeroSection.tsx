@@ -95,23 +95,51 @@ const HeroSection = () => {
           </span>
         </div>
 
-        {/* Demo video */}
-        <div className="w-full max-w-2xl mb-4 rounded-2xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
-          <iframe
-            src="https://player.vimeo.com/video/459138259"
-            width="100%"
-            height="100%"
-            frameBorder="0"
-            allow="autoplay; fullscreen; picture-in-picture"
-            allowFullScreen
-            style={{ display: 'block' }}
-          />
-        </div>
+        {/* Demo video — styled like ReddifyAI */}
+        <div className="w-full max-w-2xl mb-10 rounded-xl overflow-hidden" style={{ border: '2px solid rgba(255,255,255,0.1)' }}>
 
-        {/* Video caption */}
-        <p className="text-gray-400 text-sm italic mb-10 max-w-2xl">
-          While Your Competitors Show Every Visitor The Same Generic Page — Yours Knows Each Visitor And Adapts Automatically.
-        </p>
+          {/* Top orange caption bar */}
+          <div
+            className="flex items-center gap-2 px-4 py-3"
+            style={{ backgroundColor: '#F97316' }}
+          >
+            <span className="material-symbols-outlined text-white" style={{ fontSize: 20 }}>play_circle</span>
+            <p
+              className="text-white font-black text-sm tracking-wide uppercase"
+              style={{ fontFamily: 'var(--font-outfit)' }}
+            >
+              Watch How PagePersona Reads Your Visitors &amp; Adapts Your Page In Real Time
+            </p>
+          </div>
+
+          {/* Video */}
+          <div style={{ aspectRatio: '16/9' }}>
+            <iframe
+              src="https://player.vimeo.com/video/459138259"
+              width="100%"
+              height="100%"
+              frameBorder="0"
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowFullScreen
+              style={{ display: 'block' }}
+            />
+          </div>
+
+          {/* Bottom caption bar */}
+          <div
+            className="flex items-start gap-2 px-4 py-3"
+            style={{ backgroundColor: '#0F172A' }}
+          >
+            <span className="font-black text-lg" style={{ color: '#F97316', lineHeight: 1.4 }}>»</span>
+            <p
+              className="text-white font-semibold text-sm italic"
+              style={{ fontFamily: 'var(--font-outfit)' }}
+            >
+              While Your Competitors Show Every Visitor The Same Generic Page — Yours Knows Each Visitor And Adapts Automatically.
+            </p>
+          </div>
+
+        </div>
 
         {/* Before button */}
         <p className="text-gray-200 text-base mb-1">
