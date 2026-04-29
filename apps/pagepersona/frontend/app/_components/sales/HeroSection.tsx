@@ -48,7 +48,8 @@ const HeroSection = () => {
             maxWidth: '1300px',
           }}
         >
-          Finally: The AI System That Makes Your Sales Page SMART Enough To Read Every Visitor&apos;s Mind — And Convert MORE Of Them
+          Finally: The AI System That Makes Your Sales Page SMART<br />
+          Read Every Visitor&apos;s Mind — Convert MORE Of Them
         </h1>
 
         {/* Subheadline */}
