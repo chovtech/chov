@@ -145,18 +145,17 @@ const HeroSection = () => {
 
         {/* Before button */}
         <p
-          className="text-center mb-6 max-w-xl"
-          style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(223, 223, 241)', fontSize: '20px', lineHeight: '1.5', fontWeight: 300 }}
+          className="text-center mb-6 max-w-2xl"
+          style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(223, 223, 241)', fontSize: '26px', lineHeight: '1.25em', fontWeight: 300 }}
         >
-          If you can paste a link, you&apos;re set up in 5 minutes.{' '}
-          <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>Works on WordPress, Shopify, GoHighLevel, ClickFunnels, Webflow</strong>{' '}
-          and more.
+          If you can paste a link, you&apos;re set up in 5 minutes.<br />
+          Works on WordPress, Shopify, GoHighLevel, ClickFunnels, Webflow and more.
         </p>
 
         {/* CTA button */}
         <a
           href="#buy"
-          className="inline-block transition-all duration-200 hover:scale-105 mb-6"
+          className="inline-block transition-all duration-200 hover:scale-105 mb-4"
           style={{
             fontFamily: 'var(--font-outfit)',
             fontWeight: 900,
@@ -172,6 +171,11 @@ const HeroSection = () => {
           Get Instant Access — Make My Pages SMART
         </a>
 
+        {/* No download line */}
+        <p className="mb-4 text-sm" style={{ color: '#64646a' }}>
+          No Download or Installation Required
+        </p>
+
         {/* Trust strip — image with logos + guarantee */}
         <div className="mb-4">
           <img
@@ -184,8 +188,8 @@ const HeroSection = () => {
 
         {/* Bottom line */}
         <p
-          className="font-semibold"
-          style={{ color: 'rgb(21, 234, 175)', fontSize: '16px', fontFamily: 'var(--font-outfit)' }}
+          className="text-center"
+          style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(223, 223, 241)', fontSize: '26px', lineHeight: '1.25em', fontWeight: 300 }}
         >
           All Upgrades Included When You Act Today — No Monthly Fees Trap.
         </p>
