@@ -95,36 +95,18 @@ const HeroSection = () => {
           </span>
         </div>
 
-        {/* Demo video — premium floating card */}
+        {/* Demo video */}
         <div
           className="w-full mb-10"
-          style={{ maxWidth: '873px' }}
           style={{
-            borderRadius: '20px',
+            maxWidth: '730px',
+            borderRadius: '16px',
             overflow: 'hidden',
-            boxShadow: '0 30px 70px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.07)',
+            border: '2px solid rgba(255,255,255,0.18)',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.55)',
           }}
         >
-          {/* Top dark banner — slightly lighter than page bg */}
-          <div
-            className="flex items-center gap-3 px-5 py-3"
-            style={{ backgroundColor: '#1a2740' }}
-          >
-            <span
-              className="flex items-center justify-center rounded-full flex-shrink-0"
-              style={{ backgroundColor: 'rgba(255,255,255,0.12)', width: 30, height: 30 }}
-            >
-              <span className="material-symbols-outlined text-white" style={{ fontSize: 18 }}>play_arrow</span>
-            </span>
-            <p
-              className="text-white font-black text-sm uppercase tracking-widest"
-              style={{ fontFamily: 'var(--font-outfit)' }}
-            >
-              Watch To See How PagePersona Turns Your Page Into A Converting Machine
-            </p>
-          </div>
-
-          {/* Video iframe — VLF dimensions: 873px wide, 56.25% padding = 16:9 */}
+          {/* Video iframe */}
           <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
             <iframe
               src="https://player.vimeo.com/video/459138259"
@@ -150,8 +132,8 @@ const HeroSection = () => {
               »
             </span>
             <p
-              className="font-semibold text-sm leading-snug"
-              style={{ fontFamily: 'var(--font-outfit)', color: '#0F172A' }}
+              className="font-bold leading-snug"
+              style={{ fontFamily: 'var(--font-outfit)', color: '#0F172A', fontSize: '18px' }}
             >
               While Your Competitors Show Every Visitor The Same Generic Page — Yours Knows Each Visitor And Adapts Automatically.
             </p>
