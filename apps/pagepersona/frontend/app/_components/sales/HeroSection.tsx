@@ -26,33 +26,12 @@ const HeroSection = () => {
           The Same Personalisation Technology Amazon &amp; Netflix Use — Now On Your Sales Page
         </p>
 
-        {/* Main headline — 3 lines, wider container to prevent mid-line wrapping */}
+        {/* Main headline — layout pass, no colours yet */}
         <h1
-          className="mb-6 w-full max-w-6xl"
-          style={{ fontFamily: 'var(--font-outfit)', fontSize: '46px', fontWeight: 900, lineHeight: 1.2 }}
+          className="mb-6 w-full max-w-6xl text-white"
+          style={{ fontFamily: 'var(--font-outfit)', fontSize: '58px', fontWeight: 900, lineHeight: 1.15 }}
         >
-          {/* Line 1 */}
-          <span style={{ color: 'rgb(21, 234, 175)' }}>Finally: </span>
-          <span style={{ color: '#ffffff' }}>The AI System That Makes Your Sales Page</span>
-          <br />
-          {/* Line 2 — brush stroke bg */}
-          <span
-            style={{
-              backgroundImage: 'url(/images/PP-FE-78-Image-48.png)',
-              backgroundSize: '100% 100%',
-              backgroundRepeat: 'no-repeat',
-              color: '#0F172A',
-              padding: '4px 20px',
-              display: 'inline',
-            }}
-          >
-            SMART Enough To Read Every Visitor&apos;s Mind
-          </span>
-          <br />
-          {/* Line 3 */}
-          <span style={{ color: '#ffffff' }}>— And Convert </span>
-          <span style={{ color: 'rgb(21, 234, 175)' }}>MORE</span>
-          <span style={{ color: '#ffffff' }}> Of Them</span>
+          Finally: The AI System That Makes Your Sales Page SMART Enough To Read Every Visitor&apos;s Mind — And Convert MORE Of Them
         </h1>
 
         {/* Subheadline */}
