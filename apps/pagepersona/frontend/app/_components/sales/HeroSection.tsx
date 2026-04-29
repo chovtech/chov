@@ -43,7 +43,7 @@ const HeroSection = () => {
           <div className="mt-2">
             <span
               style={{
-                backgroundImage: 'url(/images/PP-FE-78-Image-48.png)',
+                backgroundImage: 'url(/images/VLF-FE-03-Image-01.png)',
                 backgroundSize: '100% 100%',
                 backgroundRepeat: 'no-repeat',
                 color: '#ffffff',
