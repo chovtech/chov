@@ -1,5 +1,9 @@
-import { redirect } from 'next/navigation'
+import HeroSection from './_components/sales/HeroSection'
 
-export default function Home() {
-  redirect('/login')
+export default function SalesPage() {
+  return (
+    <main>
+      <HeroSection />
+    </main>
+  )
 }

@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
-import { Public_Sans } from 'next/font/google'
+import { Public_Sans, Syne } from 'next/font/google'
 import './globals.css'
 
-const publicSans = Public_Sans({ subsets: ['latin'] })
+const publicSans = Public_Sans({ subsets: ['latin'], variable: '--font-public-sans' })
+const syne = Syne({ subsets: ['latin'], weight: ['700', '800'], variable: '--font-syne' })
 
 export const metadata: Metadata = {
   title: 'PagePersona',
@@ -22,7 +23,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={publicSans.className}>
+      <body className={`${publicSans.variable} ${syne.variable} ${publicSans.className}`}>
         {children}
       </body>
     </html>
