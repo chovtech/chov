@@ -62,18 +62,19 @@ const HeroSection = () => {
 
         {/* Subheadline */}
         <p
-          className="mb-6 max-w-3xl text-center"
+          className="mb-6 text-center"
           style={{
             fontFamily: 'var(--font-outfit)',
             fontWeight: 300,
             fontSize: '40px',
             lineHeight: '1.25em',
             color: 'rgb(223, 223, 241)',
+            width: 'calc(100vw - 80px)',
+            maxWidth: '900px',
           }}
         >
-          Our Advanced AI detects who is visiting your page,<br />
-          then adapts the page to what they need to see<br />
-          — in real time
+          Our <strong style={{ fontWeight: 700 }}>Advanced AI</strong> detects who is visiting your page, then adapts the page to what they need to see —{' '}
+          <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>IN REAL TIME</strong>
         </p>
 
         {/* Label — moved here after subheadline, pill badge */}
