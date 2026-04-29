@@ -144,50 +144,49 @@ const HeroSection = () => {
         </div>
 
         {/* Before button */}
-        <p className="text-gray-200 text-base mb-1">
-          If you can paste a link, you&apos;re set up in 5 minutes.
-        </p>
-        <p className="text-gray-400 text-sm mb-6">
-          Works on WordPress · Shopify · GoHighLevel · ClickFunnels · Webflow and more
+        <p
+          className="text-center mb-6 max-w-xl"
+          style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(223, 223, 241)', fontSize: '20px', lineHeight: '1.5', fontWeight: 300 }}
+        >
+          If you can paste a link, you&apos;re set up in 5 minutes.{' '}
+          <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>Works on WordPress, Shopify, GoHighLevel, ClickFunnels, Webflow</strong>{' '}
+          and more.
         </p>
 
         {/* CTA button */}
         <a
           href="#buy"
-          className="inline-block font-black text-xl px-14 py-5 rounded-full transition-all duration-200 hover:scale-105 mb-6"
+          className="inline-block transition-all duration-200 hover:scale-105 mb-6"
           style={{
             fontFamily: 'var(--font-outfit)',
             fontWeight: 900,
+            fontSize: '24px',
             backgroundColor: '#F97316',
             color: '#ffffff',
-            boxShadow: '0 8px 32px rgba(249,115,22,0.4)',
+            borderRadius: '999px',
+            padding: '20px 64px',
+            boxShadow: '0 8px 40px rgba(249,115,22,0.45)',
+            letterSpacing: '0.01em',
           }}
         >
           Get Instant Access — Make My Pages SMART
         </a>
 
-        {/* Trust strip — line 1 */}
-        <p className="text-gray-400 text-xs mb-3">
-          No Download or Installation Required
-        </p>
-
-        {/* Trust strip — platforms + guarantee */}
-        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mb-4">
-          <span className="text-gray-300 text-xs">WordPress · Shopify · GoHighLevel · ClickFunnels · Webflow &amp; More</span>
-          <span className="text-gray-600">|</span>
-          <span className="flex items-center gap-1 text-xs" style={{ color: 'rgb(21, 234, 175)' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>verified</span>
-            30 Days Money Back Guarantee
-          </span>
-        </div>
-
-        {/* Trust strip — payment logos (text placeholder) */}
-        <div className="flex items-center justify-center gap-2 mb-5">
-          <span className="text-gray-500 text-xs">PayPal · Visa · Mastercard · Amex · Discover</span>
+        {/* Trust strip — image with logos + guarantee */}
+        <div className="mb-4">
+          <img
+            src="/images/VLF-FE-05-Image-02.png"
+            alt="Secure payment — PayPal, Visa, Mastercard, Amex, Discover · 30 Days Money Back Guarantee"
+            className="mx-auto"
+            style={{ maxWidth: '480px', width: '100%' }}
+          />
         </div>
 
         {/* Bottom line */}
-        <p className="font-semibold text-sm" style={{ color: 'rgb(21, 234, 175)' }}>
+        <p
+          className="font-semibold"
+          style={{ color: 'rgb(21, 234, 175)', fontSize: '16px', fontFamily: 'var(--font-outfit)' }}
+        >
           All Upgrades Included When You Act Today — No Monthly Fees Trap.
         </p>
 
