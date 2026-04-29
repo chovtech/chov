@@ -36,7 +36,7 @@ const HeroSection = () => {
               color: 'rgb(21, 234, 175)',
             }}
           >
-            Makes Your Sales Page, Landing Page or Website SMART
+            Makes Your Sales Page SMART
           </h1>
 
           {/* Line 2 — brush stroke bg */}
@@ -55,7 +55,7 @@ const HeroSection = () => {
                 display: 'inline-block',
               }}
             >
-              Read Every Visitor&apos;s Mind — Convert MORE
+              Read Every Visitor&apos;s Mind
             </span>
           </div>
         </div>
