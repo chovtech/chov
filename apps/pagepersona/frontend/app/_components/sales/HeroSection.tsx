@@ -73,8 +73,10 @@ const HeroSection = () => {
             maxWidth: '900px',
           }}
         >
-          <strong style={{ fontWeight: 700 }}>PagePersona</strong> detects who is visiting your page, then adapts the page to what they need to see —{' '}
-          <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>IN REAL TIME</strong>. One page. Every visitor feels like it was built just for them.
+          <strong style={{ fontWeight: 700 }}>PagePersona</strong> detects who is visiting your page, then adapts the page{' '}
+          <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>IN REAL TIME</strong>{' '}
+          to what they need to see to convert ...{' '}
+          <strong style={{ fontWeight: 700 }}>No code. No developer. No guesswork.</strong>
         </p>
 
         {/* Label — moved here after subheadline, pill badge */}
