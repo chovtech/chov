@@ -22,15 +22,12 @@ const HeroSection = () => {
         </div>
 
         {/* Headline — 2 lines, VLF style */}
-        <div
-          className="mb-2 text-center"
-          style={{ width: 'calc(100vw - 80px)', maxWidth: '1100px' }}
-        >
+        <div className="mb-2 text-center w-full px-4 max-w-[1100px]">
           {/* Line 1 — teal */}
           <h1
+            className="text-[38px] sm:text-[50px] lg:text-[62px]"
             style={{
               fontFamily: 'var(--font-outfit)',
-              fontSize: '62px',
               fontWeight: 900,
               lineHeight: 1.1,
               color: 'rgb(21, 234, 175)',
@@ -39,9 +36,10 @@ const HeroSection = () => {
             Makes Your Sales Page SMART
           </h1>
 
-          {/* Line 2 — brush stroke bg, pulled up tight */}
+          {/* Line 2 — brush stroke bg */}
           <div className="mt-0">
             <span
+              className="text-[32px] sm:text-[44px] lg:text-[56px]"
               style={{
                 backgroundImage: 'url(/images/VLF-FE-03-Image-01.png)',
                 backgroundSize: '100% 100%',
@@ -49,7 +47,6 @@ const HeroSection = () => {
                 color: '#ffffff',
                 padding: '6px 28px',
                 fontFamily: 'var(--font-outfit)',
-                fontSize: '56px',
                 fontWeight: 900,
                 lineHeight: 1.1,
                 display: 'inline-block',
@@ -62,15 +59,12 @@ const HeroSection = () => {
 
         {/* Subheadline */}
         <p
-          className="mb-6 text-center"
+          className="mb-6 text-center px-4 w-full max-w-[900px] text-[20px] sm:text-[28px] lg:text-[40px]"
           style={{
             fontFamily: 'var(--font-outfit)',
             fontWeight: 300,
-            fontSize: '40px',
             lineHeight: '1.25em',
             color: 'rgb(223, 223, 241)',
-            width: 'calc(100vw - 80px)',
-            maxWidth: '900px',
           }}
         >
           PagePersona <strong style={{ fontWeight: 700 }}>detects who is visiting</strong> your page, then{' '}
@@ -84,13 +78,12 @@ const HeroSection = () => {
         {/* Label — solid teal pill, VLF style */}
         <div className="mb-8">
           <span
-            className="inline-flex items-center px-7 py-2 rounded-full"
+            className="inline-flex items-center px-5 py-2 rounded-full text-[15px] sm:text-[20px] lg:text-[26px]"
             style={{
               backgroundColor: 'rgb(21, 234, 175)',
               color: 'rgb(52, 51, 91)',
               fontFamily: 'var(--font-outfit)',
               fontWeight: 300,
-              fontSize: '26px',
             }}
           >
             SAME Personilization used by <strong style={{ fontWeight: 600 }}>Amazon &amp; Netflix</strong>
@@ -146,8 +139,8 @@ const HeroSection = () => {
 
         {/* Before button */}
         <p
-          className="text-center mb-6 max-w-2xl"
-          style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(223, 223, 241)', fontSize: '26px', lineHeight: '1.25em', fontWeight: 300 }}
+          className="text-center mb-6 max-w-2xl px-4 text-[17px] sm:text-[20px] lg:text-[26px]"
+          style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(223, 223, 241)', lineHeight: '1.25em', fontWeight: 300 }}
         >
           <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>If You Can Paste A Link,</strong> you&apos;re set up in <strong style={{ fontWeight: 700 }}>5 minutes</strong>.<br />
           Works on WordPress, Shopify, GoHighLevel, ClickFunnels, Webflow and more.
@@ -189,8 +182,8 @@ const HeroSection = () => {
 
         {/* Bottom line */}
         <p
-          className="text-center mb-6"
-          style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(223, 223, 241)', fontSize: '26px', lineHeight: '1.25em', fontWeight: 300 }}
+          className="text-center mb-6 px-4 text-[17px] sm:text-[20px] lg:text-[26px]"
+          style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(223, 223, 241)', lineHeight: '1.25em', fontWeight: 300 }}
         >
           <span style={{ textDecoration: 'underline' }}>All Upgrades Included</span> When You Act Today
         </p>
