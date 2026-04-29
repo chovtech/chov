@@ -36,10 +36,17 @@ const HeroSection = () => {
           </span>
         </div>
 
-        {/* Main headline — layout pass, no colours yet */}
+        {/* Main headline — breaks out of parent max-w to use full viewport width */}
         <h1
-          className="mb-6 w-full max-w-6xl text-white"
-          style={{ fontFamily: 'var(--font-outfit)', fontSize: '58px', fontWeight: 900, lineHeight: 1.15 }}
+          className="mb-6 text-white text-center"
+          style={{
+            fontFamily: 'var(--font-outfit)',
+            fontSize: '58px',
+            fontWeight: 900,
+            lineHeight: 1.15,
+            width: 'calc(100vw - 80px)',
+            maxWidth: '1300px',
+          }}
         >
           Finally: The AI System That Makes Your Sales Page SMART Enough To Read Every Visitor&apos;s Mind — And Convert MORE Of Them
         </h1>
