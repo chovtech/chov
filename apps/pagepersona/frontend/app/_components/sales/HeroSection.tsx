@@ -30,7 +30,7 @@ const HeroSection = () => {
           <h1
             style={{
               fontFamily: 'var(--font-outfit)',
-              fontSize: '56px',
+              fontSize: '62px',
               fontWeight: 900,
               lineHeight: 1.1,
               color: 'rgb(21, 234, 175)',
