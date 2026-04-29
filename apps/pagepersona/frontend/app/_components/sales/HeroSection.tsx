@@ -61,10 +61,19 @@ const HeroSection = () => {
         </div>
 
         {/* Subheadline */}
-        <p className="text-gray-200 text-lg md:text-xl mb-6 max-w-3xl leading-relaxed">
-          PagePersona detects who is visiting your page — then automatically changes it in real time to match what that visitor actually wants to see. One page. Every visitor feels like it was built just for them.
-          <br /><br />
-          <span className="text-white font-semibold">No code. No developer. No guesswork.</span>
+        <p
+          className="mb-6 max-w-3xl text-center"
+          style={{
+            fontFamily: 'var(--font-outfit)',
+            fontWeight: 300,
+            fontSize: '40px',
+            lineHeight: '1.25em',
+            color: 'rgb(223, 223, 241)',
+          }}
+        >
+          Our Advanced AI detects who is visiting your page — then automatically changes it in real time to match what that visitor actually wants to see.
+          <br />
+          <span style={{ fontWeight: 700 }}>No code. No developer. No guesswork.</span>
         </p>
 
         {/* Label — moved here after subheadline, pill badge */}
