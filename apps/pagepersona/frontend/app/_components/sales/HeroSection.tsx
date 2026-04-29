@@ -46,7 +46,7 @@ const HeroSection = () => {
                 backgroundImage: 'url(/images/PP-FE-78-Image-48.png)',
                 backgroundSize: '100% 100%',
                 backgroundRepeat: 'no-repeat',
-                color: '#0F172A',
+                color: '#ffffff',
                 padding: '6px 28px',
                 fontFamily: 'var(--font-outfit)',
                 fontSize: '64px',
