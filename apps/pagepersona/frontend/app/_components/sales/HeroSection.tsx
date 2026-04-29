@@ -54,17 +54,17 @@ const HeroSection = () => {
           Works on WordPress, Shopify, GoHighLevel, ClickFunnels, Webflow and more.
         </p>
 
-        {/* Video placeholder */}
-        <div className="w-full max-w-2xl mb-10 rounded-2xl overflow-hidden border border-white/10 bg-black/50 aspect-video flex flex-col items-center justify-center gap-3">
-          <div
-            className="w-16 h-16 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: '#14B8A6' }}
-          >
-            <span className="material-symbols-outlined text-white" style={{ fontSize: 36 }}>
-              play_arrow
-            </span>
-          </div>
-          <p className="text-gray-400 text-sm">Watch PagePersona in action</p>
+        {/* Demo video */}
+        <div className="w-full max-w-2xl mb-10 rounded-2xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
+          <iframe
+            src="https://player.vimeo.com/video/459138259"
+            width="100%"
+            height="100%"
+            frameBorder="0"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            style={{ display: 'block' }}
+          />
         </div>
 
         {/* Pre-CTA line */}
