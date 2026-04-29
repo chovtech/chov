@@ -26,23 +26,23 @@ const HeroSection = () => {
           The Same Personalisation Technology Amazon &amp; Netflix Use — Now On Your Sales Page
         </p>
 
-        {/* Main headline — 3 lines */}
+        {/* Main headline — 3 lines, wider container to prevent mid-line wrapping */}
         <h1
-          className="mb-6 max-w-5xl"
-          style={{ fontFamily: 'var(--font-outfit)', fontSize: '56px', fontWeight: 900, lineHeight: 1.15 }}
+          className="mb-6 w-full max-w-6xl"
+          style={{ fontFamily: 'var(--font-outfit)', fontSize: '46px', fontWeight: 900, lineHeight: 1.2 }}
         >
           {/* Line 1 */}
           <span style={{ color: 'rgb(21, 234, 175)' }}>Finally: </span>
           <span style={{ color: '#ffffff' }}>The AI System That Makes Your Sales Page</span>
           <br />
-          {/* Line 2 — brush stroke bg on "SMART Enough To Read Every Visitor's Mind" */}
+          {/* Line 2 — brush stroke bg */}
           <span
             style={{
-              backgroundImage: 'url(/images/smart-bg.png)',
+              backgroundImage: 'url(/images/PP-FE-78-Image-48.png)',
               backgroundSize: '100% 100%',
               backgroundRepeat: 'no-repeat',
               color: '#0F172A',
-              padding: '2px 16px',
+              padding: '4px 20px',
               display: 'inline',
             }}
           >
