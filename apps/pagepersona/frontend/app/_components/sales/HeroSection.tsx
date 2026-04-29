@@ -26,30 +26,34 @@ const HeroSection = () => {
           The Same Personalisation Technology Amazon &amp; Netflix Use — Now On Your Sales Page
         </p>
 
-        {/* Main headline — two-tier: "Finally:" intro + main claim */}
-        <div className="mb-6 max-w-4xl">
-          <p
-            className="mb-3"
-            style={{ fontFamily: 'var(--font-outfit)', fontSize: '36px', fontWeight: 400, color: 'rgb(21, 234, 175)' }}
+        {/* Main headline — 3 lines */}
+        <h1
+          className="mb-6 max-w-5xl"
+          style={{ fontFamily: 'var(--font-outfit)', fontSize: '56px', fontWeight: 900, lineHeight: 1.15 }}
+        >
+          {/* Line 1 */}
+          <span style={{ color: 'rgb(21, 234, 175)' }}>Finally: </span>
+          <span style={{ color: '#ffffff' }}>The AI System That Makes Your Sales Page</span>
+          <br />
+          {/* Line 2 — brush stroke bg on "SMART Enough To Read Every Visitor's Mind" */}
+          <span
+            style={{
+              backgroundImage: 'url(/images/smart-bg.png)',
+              backgroundSize: '100% 100%',
+              backgroundRepeat: 'no-repeat',
+              color: '#0F172A',
+              padding: '2px 16px',
+              display: 'inline',
+            }}
           >
-            Finally:
-          </p>
-          <h1
-            className="leading-[1.1]"
-            style={{ fontFamily: 'var(--font-outfit)', fontSize: '60px', fontWeight: 900 }}
-          >
-            <span style={{ color: '#ffffff' }}>The AI System That Makes Your Sales Page </span>
-            <span
-              className="px-2 py-0.5 rounded"
-              style={{ color: '#0F172A', backgroundColor: 'rgb(21, 234, 175)' }}
-            >
-              SMART
-            </span>
-            <span style={{ color: '#ffffff' }}> Enough To Read Every Visitor&apos;s Mind — And Convert </span>
-            <span style={{ color: 'rgb(21, 234, 175)' }}>MORE</span>
-            <span style={{ color: '#ffffff' }}> Of Them</span>
-          </h1>
-        </div>
+            SMART Enough To Read Every Visitor&apos;s Mind
+          </span>
+          <br />
+          {/* Line 3 */}
+          <span style={{ color: '#ffffff' }}>— And Convert </span>
+          <span style={{ color: 'rgb(21, 234, 175)' }}>MORE</span>
+          <span style={{ color: '#ffffff' }}> Of Them</span>
+        </h1>
 
         {/* Subheadline */}
         <p className="text-gray-200 text-lg md:text-xl mb-10 max-w-3xl leading-relaxed">
