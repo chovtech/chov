@@ -104,18 +104,19 @@ const HeroSection = () => {
             overflow: 'hidden',
             border: '2px solid rgba(255,255,255,0.18)',
             boxShadow: '0 25px 60px rgba(0,0,0,0.55)',
+            background: '#000',
             fontSize: 0,
             lineHeight: 0,
           }}
         >
-          {/* Video iframe — fontSize/lineHeight 0 on wrapper kills whitespace gaps */}
-          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, lineHeight: 0 }}>
+          {/* Video iframe */}
+          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, background: '#000', lineHeight: 0 }}>
             <iframe
               src="https://player.vimeo.com/video/459138259"
               frameBorder="0"
               allow="autoplay; fullscreen; picture-in-picture"
               allowFullScreen
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block' }}
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block', border: 'none', background: '#000' }}
             />
           </div>
 
