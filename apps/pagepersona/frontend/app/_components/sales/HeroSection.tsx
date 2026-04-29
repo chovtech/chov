@@ -27,7 +27,7 @@ const HeroSection = () => {
 
         {/* Main headline */}
         <h1
-          className="leading-[1.25] mb-5 max-w-4xl"
+          className="leading-[1.25] mb-6 max-w-4xl"
           style={{ fontFamily: 'var(--font-outfit)', fontSize: '54px', fontWeight: 400 }}
         >
           <span style={{ color: 'rgb(21, 234, 175)' }}>Finally: </span>
@@ -43,20 +43,15 @@ const HeroSection = () => {
           <span style={{ color: '#ffffff', fontWeight: 900 }}> Of Them</span>
         </h1>
 
-        {/* One-liner — Amazon/Netflix credibility + salesperson angle */}
-        <p className="text-white font-semibold text-lg md:text-xl mb-6 max-w-3xl leading-snug">
-          It&apos;s The Same Personalisation Technology Amazon, Netflix And Booking.com Use To Convert Every Visitor — Like Having A Personal Salesperson For Every Single Person On Your Page.
-        </p>
-
         {/* Subheadline */}
-        <p className="text-gray-300 text-base md:text-lg mb-10 max-w-3xl leading-relaxed">
-          Email marketers have been personalising for years — different messages, different offers, different urgency for different subscribers. But every visitor to your website still sees the exact same page. That&apos;s the gap PagePersona closes. It detects who&apos;s visiting — their traffic source, location, device, behaviour and time of day — and instantly swaps your headlines, images, offers and popups to match.{' '}
-          <span className="text-white font-medium">One page. Every visitor gets the version most likely to convert them.</span>{' '}
-          Works on WordPress, Shopify, GoHighLevel, ClickFunnels, Webflow and more.
+        <p className="text-gray-200 text-lg md:text-xl mb-10 max-w-3xl leading-relaxed">
+          PagePersona detects who is visiting your page — then automatically changes it in real time to match what that visitor actually wants to see. One page. Every visitor feels like it was built just for them.
+          <br /><br />
+          <span className="text-white font-semibold">No code. No developer. No guesswork.</span>
         </p>
 
         {/* Demo video */}
-        <div className="w-full max-w-2xl mb-10 rounded-2xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
+        <div className="w-full max-w-2xl mb-4 rounded-2xl overflow-hidden" style={{ aspectRatio: '16/9' }}>
           <iframe
             src="https://player.vimeo.com/video/459138259"
             width="100%"
@@ -68,58 +63,59 @@ const HeroSection = () => {
           />
         </div>
 
-        {/* Pre-CTA line */}
-        <p className="text-gray-300 text-sm mb-3">
-          <strong className="text-white">All Upgrades Included When You Act NOW…</strong>
+        {/* Video caption */}
+        <p className="text-gray-400 text-sm italic mb-10 max-w-2xl">
+          While Your Competitors Show Every Visitor The Same Generic Page — Yours Knows Each Visitor And Adapts Automatically.
         </p>
 
-        {/* Pricing line */}
-        <p className="text-gray-400 text-base mb-4">
-          Get PagePersona For Just{' '}
-          <span className="line-through text-gray-500">$197</span>{' '}
-          <strong className="text-white text-xl">$37</strong>
+        {/* Before button */}
+        <p className="text-gray-200 text-base mb-1">
+          If you can paste a link, you&apos;re set up in 5 minutes.
+        </p>
+        <p className="text-gray-400 text-sm mb-6">
+          Works on WordPress · Shopify · GoHighLevel · ClickFunnels · Webflow and more
         </p>
 
         {/* CTA button */}
         <a
           href="#buy"
-          className="inline-block font-black text-xl px-14 py-5 rounded-full transition-all duration-200 hover:scale-105 mb-5 shadow-lg"
+          className="inline-block font-black text-xl px-14 py-5 rounded-full transition-all duration-200 hover:scale-105 mb-6"
           style={{
-            fontFamily: 'var(--font-syne)',
+            fontFamily: 'var(--font-outfit)',
+            fontWeight: 900,
             backgroundColor: '#F97316',
             color: '#ffffff',
             boxShadow: '0 8px 32px rgba(249,115,22,0.4)',
           }}
         >
-          Get Instant Access Now
+          Get Instant Access — Make My Pages SMART
         </a>
 
-        {/* Payment logos row */}
-        <div className="flex items-center justify-center gap-2 mb-5">
-          <span className="text-gray-500 text-xs">Secure checkout via</span>
-          <span className="text-gray-300 text-xs font-medium">PayPal · Visa · Mastercard · Amex</span>
-        </div>
-
-        {/* Trust strip */}
-        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-gray-400 text-xs">
-          <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-xs" style={{ color: '#14B8A6', fontSize: 14 }}>
-              verified
-            </span>
-            30 Day Money Back Guarantee
-          </span>
-          <span className="text-gray-600">·</span>
-          <span>No Monthly Fees</span>
-          <span className="text-gray-600">·</span>
-          <span>Works On Any Platform</span>
-          <span className="text-gray-600">·</span>
-          <span>No Coding Required</span>
-        </div>
-
-        {/* Fine print */}
-        <p className="text-gray-600 text-xs mt-4">
-          One-time payment · No upsells required to use the core product · No hidden fees
+        {/* Trust strip — line 1 */}
+        <p className="text-gray-400 text-xs mb-3">
+          No Download or Installation Required
         </p>
+
+        {/* Trust strip — platforms + guarantee */}
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mb-4">
+          <span className="text-gray-300 text-xs">WordPress · Shopify · GoHighLevel · ClickFunnels · Webflow &amp; More</span>
+          <span className="text-gray-600">|</span>
+          <span className="flex items-center gap-1 text-xs" style={{ color: 'rgb(21, 234, 175)' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>verified</span>
+            30 Days Money Back Guarantee
+          </span>
+        </div>
+
+        {/* Trust strip — payment logos (text placeholder) */}
+        <div className="flex items-center justify-center gap-2 mb-5">
+          <span className="text-gray-500 text-xs">PayPal · Visa · Mastercard · Amex · Discover</span>
+        </div>
+
+        {/* Bottom line */}
+        <p className="font-semibold text-sm" style={{ color: 'rgb(21, 234, 175)' }}>
+          All Upgrades Included When You Act Today — No Monthly Fees Trap.
+        </p>
+
       </div>
     </section>
   )
