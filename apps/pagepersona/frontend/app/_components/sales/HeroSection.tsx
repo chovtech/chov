@@ -16,7 +16,8 @@ const HeroSection = () => {
           <img
             src="http://viralleadfunnels.com/wp-content/uploads/2022/04/VLF-FE-02-Logo-01.png"
             alt="PagePersona"
-            className="h-10 w-auto mx-auto"
+            style={{ width: '100%', maxWidth: '220px' }}
+            className="mx-auto"
           />
         </div>
 
