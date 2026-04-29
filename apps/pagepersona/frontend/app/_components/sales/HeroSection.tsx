@@ -23,14 +23,14 @@ const HeroSection = () => {
 
         {/* Headline — 2 lines, VLF style */}
         <div
-          className="mb-6 text-center"
+          className="mb-2 text-center"
           style={{ width: 'calc(100vw - 80px)', maxWidth: '1100px' }}
         >
           {/* Line 1 — teal */}
           <h1
             style={{
               fontFamily: 'var(--font-outfit)',
-              fontSize: '64px',
+              fontSize: '56px',
               fontWeight: 900,
               lineHeight: 1.1,
               color: 'rgb(21, 234, 175)',
@@ -39,8 +39,8 @@ const HeroSection = () => {
             Makes Your Sales Page SMART
           </h1>
 
-          {/* Line 2 — brush stroke bg */}
-          <div className="mt-2">
+          {/* Line 2 — brush stroke bg, pulled up tight */}
+          <div className="mt-0">
             <span
               style={{
                 backgroundImage: 'url(/images/VLF-FE-03-Image-01.png)',
@@ -49,9 +49,9 @@ const HeroSection = () => {
                 color: '#ffffff',
                 padding: '6px 28px',
                 fontFamily: 'var(--font-outfit)',
-                fontSize: '64px',
+                fontSize: '56px',
                 fontWeight: 900,
-                lineHeight: 1.2,
+                lineHeight: 1.1,
                 display: 'inline-block',
               }}
             >
@@ -82,12 +82,13 @@ const HeroSection = () => {
         {/* Label — solid teal pill, VLF style */}
         <div className="mb-8">
           <span
-            className="inline-flex items-center px-7 py-2 rounded-full font-bold tracking-wide"
+            className="inline-flex items-center px-7 py-2 rounded-full"
             style={{
               backgroundColor: 'rgb(21, 234, 175)',
-              color: '#0F172A',
+              color: 'rgb(52, 51, 91)',
               fontFamily: 'var(--font-outfit)',
-              fontSize: '18px',
+              fontWeight: 300,
+              fontSize: '26px',
             }}
           >
             Same Technology used by Amazon &amp; Netflix
