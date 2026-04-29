@@ -188,11 +188,21 @@ const HeroSection = () => {
 
         {/* Bottom line */}
         <p
-          className="text-center"
+          className="text-center mb-6"
           style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(223, 223, 241)', fontSize: '26px', lineHeight: '1.25em', fontWeight: 300 }}
         >
-          All Upgrades Included When You Act Today — No Monthly Fees Trap.
+          All Upgrades Included When You Act Today
         </p>
+
+        {/* Bouncing down arrow */}
+        <div className="animate-bounce">
+          <img
+            src="/images/arrow2.webp"
+            alt="scroll down"
+            style={{ width: '40px', height: 'auto' }}
+            className="mx-auto"
+          />
+        </div>
 
       </div>
     </section>
