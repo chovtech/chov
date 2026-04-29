@@ -95,24 +95,35 @@ const HeroSection = () => {
           </span>
         </div>
 
-        {/* Demo video — styled like ReddifyAI */}
-        <div className="w-full max-w-2xl mb-10 rounded-xl overflow-hidden" style={{ border: '2px solid rgba(255,255,255,0.1)' }}>
-
-          {/* Top orange caption bar */}
+        {/* Demo video — premium floating card */}
+        <div
+          className="w-full max-w-2xl mb-10"
+          style={{
+            borderRadius: '20px',
+            overflow: 'hidden',
+            boxShadow: '0 30px 70px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.07)',
+          }}
+        >
+          {/* Top dark banner — slightly lighter than page bg */}
           <div
-            className="flex items-center gap-2 px-4 py-3"
-            style={{ backgroundColor: '#F97316' }}
+            className="flex items-center gap-3 px-5 py-3"
+            style={{ backgroundColor: '#1a2740' }}
           >
-            <span className="material-symbols-outlined text-white" style={{ fontSize: 20 }}>play_circle</span>
+            <span
+              className="flex items-center justify-center rounded-full flex-shrink-0"
+              style={{ backgroundColor: 'rgba(255,255,255,0.12)', width: 30, height: 30 }}
+            >
+              <span className="material-symbols-outlined text-white" style={{ fontSize: 18 }}>play_arrow</span>
+            </span>
             <p
-              className="text-white font-black text-sm tracking-wide uppercase"
+              className="text-white font-black text-sm uppercase tracking-widest"
               style={{ fontFamily: 'var(--font-outfit)' }}
             >
-              Watch How PagePersona Reads Your Visitors &amp; Adapts Your Page In Real Time
+              Watch To See How PagePersona Turns Your Page Into A Converting Machine
             </p>
           </div>
 
-          {/* Video */}
+          {/* Video iframe */}
           <div style={{ aspectRatio: '16/9' }}>
             <iframe
               src="https://player.vimeo.com/video/459138259"
@@ -125,15 +136,23 @@ const HeroSection = () => {
             />
           </div>
 
-          {/* Bottom caption bar */}
+          {/* Caption — teal box with glow */}
           <div
-            className="flex items-start gap-2 px-4 py-3"
-            style={{ backgroundColor: '#0F172A' }}
+            className="flex items-center gap-3 px-5 py-4"
+            style={{
+              backgroundColor: 'rgb(21, 234, 175)',
+              boxShadow: '0 0 30px rgba(21,234,175,0.25)',
+            }}
           >
-            <span className="font-black text-lg" style={{ color: '#F97316', lineHeight: 1.4 }}>»</span>
+            <span
+              className="font-black text-2xl flex-shrink-0"
+              style={{ color: '#0F172A', lineHeight: 1 }}
+            >
+              »
+            </span>
             <p
-              className="text-white font-semibold text-sm italic"
-              style={{ fontFamily: 'var(--font-outfit)' }}
+              className="font-semibold text-sm leading-snug"
+              style={{ fontFamily: 'var(--font-outfit)', color: '#0F172A' }}
             >
               While Your Competitors Show Every Visitor The Same Generic Page — Yours Knows Each Visitor And Adapts Automatically.
             </p>
