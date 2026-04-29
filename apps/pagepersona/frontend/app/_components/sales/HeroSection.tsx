@@ -26,23 +26,30 @@ const HeroSection = () => {
           The Same Personalisation Technology Amazon &amp; Netflix Use — Now On Your Sales Page
         </p>
 
-        {/* Main headline */}
-        <h1
-          className="leading-[1.25] mb-6 max-w-4xl"
-          style={{ fontFamily: 'var(--font-outfit)', fontSize: '54px', fontWeight: 400 }}
-        >
-          <span style={{ color: 'rgb(21, 234, 175)' }}>Finally: </span>
-          <span style={{ color: '#ffffff', fontWeight: 900 }}>The AI System That Makes Your Sales Page </span>
-          <span
-            className="px-2 py-0.5 rounded"
-            style={{ color: '#0F172A', backgroundColor: 'rgb(21, 234, 175)', fontWeight: 900 }}
+        {/* Main headline — two-tier: "Finally:" intro + main claim */}
+        <div className="mb-6 max-w-4xl">
+          <p
+            className="mb-3"
+            style={{ fontFamily: 'var(--font-outfit)', fontSize: '36px', fontWeight: 400, color: 'rgb(21, 234, 175)' }}
           >
-            SMART
-          </span>
-          <span style={{ color: '#ffffff', fontWeight: 900 }}> Enough To Read Every Visitor&apos;s Mind — And Convert </span>
-          <span style={{ color: 'rgb(21, 234, 175)', fontWeight: 900 }}>MORE</span>
-          <span style={{ color: '#ffffff', fontWeight: 900 }}> Of Them</span>
-        </h1>
+            Finally:
+          </p>
+          <h1
+            className="leading-[1.1]"
+            style={{ fontFamily: 'var(--font-outfit)', fontSize: '60px', fontWeight: 900 }}
+          >
+            <span style={{ color: '#ffffff' }}>The AI System That Makes Your Sales Page </span>
+            <span
+              className="px-2 py-0.5 rounded"
+              style={{ color: '#0F172A', backgroundColor: 'rgb(21, 234, 175)' }}
+            >
+              SMART
+            </span>
+            <span style={{ color: '#ffffff' }}> Enough To Read Every Visitor&apos;s Mind — And Convert </span>
+            <span style={{ color: 'rgb(21, 234, 175)' }}>MORE</span>
+            <span style={{ color: '#ffffff' }}> Of Them</span>
+          </h1>
+        </div>
 
         {/* Subheadline */}
         <p className="text-gray-200 text-lg md:text-xl mb-10 max-w-3xl leading-relaxed">
