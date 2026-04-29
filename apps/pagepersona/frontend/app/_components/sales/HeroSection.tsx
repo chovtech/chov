@@ -99,15 +99,17 @@ const HeroSection = () => {
         <div
           className="w-full mb-10"
           style={{
-            maxWidth: '730px',
+            maxWidth: '850px',
             borderRadius: '16px',
             overflow: 'hidden',
             border: '2px solid rgba(255,255,255,0.18)',
             boxShadow: '0 25px 60px rgba(0,0,0,0.55)',
+            fontSize: 0,
+            lineHeight: 0,
           }}
         >
-          {/* Video iframe */}
-          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+          {/* Video iframe — fontSize/lineHeight 0 on wrapper kills whitespace gaps */}
+          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, lineHeight: 0 }}>
             <iframe
               src="https://player.vimeo.com/video/459138259"
               frameBorder="0"
@@ -132,8 +134,8 @@ const HeroSection = () => {
               »
             </span>
             <p
-              className="font-bold leading-snug"
-              style={{ fontFamily: 'var(--font-outfit)', color: '#0F172A', fontSize: '18px' }}
+              className="font-bold"
+              style={{ fontFamily: 'var(--font-outfit)', color: '#0F172A', fontSize: '18px', lineHeight: '1.4' }}
             >
               While Your Competitors Show Every Visitor The Same Generic Page — Yours Knows Each Visitor And Adapts Automatically.
             </p>
