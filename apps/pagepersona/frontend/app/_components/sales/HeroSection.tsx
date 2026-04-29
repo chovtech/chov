@@ -77,6 +77,7 @@ const HeroSection = () => {
           <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>adapts the page</strong>{' '}
           IN REAL TIME to what they need to see to convert ...{' '}
           <strong style={{ fontWeight: 700 }}>Zero</strong> coding.{' '}
+          <strong style={{ fontWeight: 700 }}>Zero</strong> developer.{' '}
           <strong style={{ fontWeight: 700 }}>Zero</strong> guesswork.
         </p>
 
@@ -148,7 +149,7 @@ const HeroSection = () => {
           className="text-center mb-6 max-w-2xl"
           style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(223, 223, 241)', fontSize: '26px', lineHeight: '1.25em', fontWeight: 300 }}
         >
-          <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>If you can paste a link,</strong> you&apos;re set up in <strong style={{ fontWeight: 700 }}>5 minutes</strong>.<br />
+          <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>If You Can Paste A Link,</strong> you&apos;re set up in <strong style={{ fontWeight: 700 }}>5 minutes</strong>.<br />
           Works on WordPress, Shopify, GoHighLevel, ClickFunnels, Webflow and more.
         </p>
 
