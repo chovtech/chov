@@ -99,14 +99,14 @@ const HeroSection = () => {
         <div
           className="w-full mb-10"
           style={{
-            maxWidth: '850px',
-            borderRadius: '16px',
+            maxWidth: '875px',
+            borderRadius: '20px',
             overflow: 'hidden',
-            border: '2px solid rgba(255,255,255,0.18)',
             boxShadow: '0 25px 60px rgba(0,0,0,0.55)',
             background: '#000',
             fontSize: 0,
             lineHeight: 0,
+            marginTop: '30px',
           }}
         >
           {/* Video iframe — scaled 1% to bleed past edges, overflow:hidden clips clean */}
