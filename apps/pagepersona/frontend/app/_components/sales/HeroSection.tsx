@@ -73,9 +73,9 @@ const HeroSection = () => {
             maxWidth: '900px',
           }}
         >
-          <strong style={{ fontWeight: 700 }}>PagePersona</strong> detects who is visiting your page, then adapts the page{' '}
-          <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>IN REAL TIME</strong>{' '}
-          to what they need to see to convert ...{' '}
+          PagePersona <strong style={{ fontWeight: 700 }}>detects who is visiting</strong> your page, then{' '}
+          <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>adapts the page</strong>{' '}
+          IN REAL TIME to what they need to see to convert ...{' '}
           <strong style={{ fontWeight: 700 }}>Zero</strong> coding.{' '}
           <strong style={{ fontWeight: 700 }}>Zero</strong> guesswork.
         </p>
@@ -92,7 +92,7 @@ const HeroSection = () => {
               fontSize: '26px',
             }}
           >
-            Same Technology used by Amazon &amp; Netflix
+            SAME Personilization used by <strong style={{ fontWeight: 600 }}>Amazon &amp; Netflix</strong>
           </span>
         </div>
 
@@ -137,7 +137,7 @@ const HeroSection = () => {
             <p
               style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(52, 51, 91)', fontSize: '20px', lineHeight: '1.4', fontWeight: 300 }}
             >
-              While Your Competitors Show Every Visitor <span style={{ textDecoration: 'underline' }}>The Same Generic Page</span> — <strong style={{ fontWeight: 700 }}>Yours Knows Each Visitor And Adapts Automatically.</strong>
+              While Your <span style={{ textDecoration: 'underline' }}>Competitors</span> Show Every Visitor <span style={{ textDecoration: 'underline' }}>The Same Generic Page</span> — <strong style={{ fontWeight: 700 }}>Yours Knows Each Visitor And Adapts Automatically.</strong>
             </p>
           </div>
 
@@ -148,7 +148,7 @@ const HeroSection = () => {
           className="text-center mb-6 max-w-2xl"
           style={{ fontFamily: 'var(--font-outfit)', color: 'rgb(223, 223, 241)', fontSize: '26px', lineHeight: '1.25em', fontWeight: 300 }}
         >
-          If you can paste a link, you&apos;re set up in <strong style={{ fontWeight: 700 }}>5 minutes</strong>.<br />
+          <strong style={{ fontWeight: 700, textDecoration: 'underline' }}>If you can paste a link,</strong> you&apos;re set up in <strong style={{ fontWeight: 700 }}>5 minutes</strong>.<br />
           Works on WordPress, Shopify, GoHighLevel, ClickFunnels, Webflow and more.
         </p>
 
