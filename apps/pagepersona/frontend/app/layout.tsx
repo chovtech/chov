@@ -8,6 +8,9 @@ const outfit = Outfit({ subsets: ['latin'], weight: ['400', '600', '700', '900']
 export const metadata: Metadata = {
   title: 'PagePersona',
   description: 'Turn any sales page into a smart sales page',
+  icons: {
+    icon: '/images/favicon.png',
+  },
 }
 
 export default function RootLayout({
