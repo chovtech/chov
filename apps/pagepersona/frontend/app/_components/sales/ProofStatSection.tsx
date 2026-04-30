@@ -46,7 +46,8 @@ const ProofStatSection = () => {
             style={{
               borderRadius: '50px',
               background: 'linear-gradient(rgb(223, 222, 255), rgb(223, 222, 255))',
-              maxWidth: '620px',
+              maxWidth: '850px',
+              marginTop: '5px',
             }}
           >
             <p
