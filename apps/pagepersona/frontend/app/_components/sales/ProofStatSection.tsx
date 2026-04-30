@@ -137,19 +137,13 @@ const ProofStatSection = () => {
             style={{ width: '120px', right: '-50px', top: '30px', zIndex: 2 }}
           />
 
-          {/* Purple brush stroke behind proof image */}
+          {/* Proof screenshot */}
           <div className="relative">
             <img
-              src="/images/PP-FE-66-Image-40.png"
-              alt=""
-              className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-              style={{ zIndex: 1 }}
-            />
-            <img
-              src="/images/PP_NewProof01-1024x463.png"
+              src="/images/PP_NewProof01-1024x463-1.png"
               alt="PagePersona real results — 3,847 visitors, 2,219 conversions"
               className="relative w-full"
-              style={{ zIndex: 2, borderRadius: '12px', boxShadow: '0 20px 60px rgba(0,0,0,0.12)' }}
+              style={{ borderRadius: '12px', boxShadow: '0 20px 60px rgba(0,0,0,0.12)' }}
             />
           </div>
 
