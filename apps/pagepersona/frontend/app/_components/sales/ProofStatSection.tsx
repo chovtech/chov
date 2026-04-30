@@ -11,12 +11,12 @@ const ProofStatSection = () => {
     >
       <div className="relative z-10 max-w-4xl mx-auto text-center">
 
-        {/* Line 1 — purple, 30px */}
+        {/* Line 1 — purple, 30px bold */}
         <p
           className="mb-1"
           style={{
             fontFamily: 'var(--font-outfit)',
-            fontWeight: 400,
+            fontWeight: 'bold',
             fontSize: '30px',
             lineHeight: '1.25em',
             color: 'rgb(66, 61, 207)',
@@ -25,12 +25,12 @@ const ProofStatSection = () => {
           3,847 Visitors. 2,219 Conversions.
         </p>
 
-        {/* Line 2 — green/teal, 30px */}
+        {/* Line 2 — green/teal, 30px bold */}
         <p
           className="mb-8"
           style={{
             fontFamily: 'var(--font-outfit)',
-            fontWeight: 400,
+            fontWeight: 'bold',
             fontSize: '30px',
             lineHeight: '1.25em',
             color: 'rgb(66, 196, 160)',
@@ -52,10 +52,10 @@ const ProofStatSection = () => {
             <p
               style={{
                 fontFamily: 'var(--font-outfit)',
-                fontWeight: 700,
+                fontWeight: 400,
                 fontSize: '26px',
                 lineHeight: '1.25em',
-                color: 'rgb(35, 34, 69)',
+                color: 'rgb(66, 61, 207)',
               }}
             >
               Extra Money Spent On Ads?
