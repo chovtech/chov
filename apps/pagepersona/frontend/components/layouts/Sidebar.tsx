@@ -118,22 +118,23 @@ export default function Sidebar() {
       <div className="px-5 pt-6 pb-4">
         <div className="flex items-center gap-2.5">
           {logo ? (
-            // Full logo image — contains the brand name visually, no text needed
+            // Agency full logo
             <img src={logo} alt={brandName} className="h-8 object-contain" />
+          ) : brandName === 'PagePersona' ? (
+            // Default PagePersona logo
+            <img src="/images/PP-Logo_logo_dark.png" alt="PagePersona" className="h-8 object-contain" />
           ) : (
+            // Agency fallback — icon + brand name text
             <>
               <div className="size-8 rounded-lg flex items-center justify-center text-white shadow-md overflow-hidden"
                 style={{ backgroundColor: primaryColor }}>
                 {icon
                   ? <img src={icon} alt={brandName} className="w-full h-full object-cover" />
-                  : brandName === 'PagePersona'
-                    ? <Icon name="layers" className="text-[18px]" />
-                    : <span className="text-sm font-bold">{brandName.slice(0, 2).toUpperCase()}</span>
+                  : <span className="text-sm font-bold">{brandName.slice(0, 2).toUpperCase()}</span>
                 }
               </div>
               <div>
                 <h1 className="text-base font-bold leading-none text-slate-900 dark:text-white">{brandName}</h1>
-                {brandName === 'PagePersona' && <p className="text-[10px] text-slate-400 mt-0.5">{t('app.tagline')}</p>}
               </div>
             </>
           )}
