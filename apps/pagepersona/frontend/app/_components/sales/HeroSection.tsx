@@ -157,6 +157,7 @@ const HeroSection = () => {
             color: '#ffffff',
             borderRadius: '999px',
             boxShadow: '0 8px 40px rgba(249,115,22,0.45)',
+            border: '1.5px solid rgba(255,255,255,0.35)',
             letterSpacing: '0.01em',
           }}
         >
