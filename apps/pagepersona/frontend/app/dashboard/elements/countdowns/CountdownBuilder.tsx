@@ -33,7 +33,7 @@ interface CountdownStyleConfig {
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const DEFAULT_CONFIG: CountdownStyleConfig = {
-  digit_bg: '#1A56DB',
+  digit_bg: '#00AE7E',
   digit_color: '#ffffff',
   label_color: '#64748b',
   bg_color: '#ffffff',
@@ -54,7 +54,7 @@ const DEFAULT_CONFIG: CountdownStyleConfig = {
 }
 
 const PRESETS = [
-  { key: 'blue',   label: 'Blue',    digit_bg: '#1A56DB', digit_color: '#ffffff', label_color: '#475569', bg_color: '#ffffff' },
+  { key: 'blue',   label: 'Blue',    digit_bg: '#00AE7E', digit_color: '#ffffff', label_color: '#475569', bg_color: '#ffffff' },
   { key: 'dark',   label: 'Dark',    digit_bg: '#0F172A', digit_color: '#ffffff', label_color: '#94a3b8', bg_color: '#0F172A' },
   { key: 'teal',   label: 'Teal',    digit_bg: '#14B8A6', digit_color: '#ffffff', label_color: '#475569', bg_color: '#ffffff' },
   { key: 'urgent', label: 'Urgent',  digit_bg: '#DC2626', digit_color: '#ffffff', label_color: '#94a3b8', bg_color: '#1e1e1e' },
@@ -64,7 +64,7 @@ const TEMPLATES = [
   {
     key: 'blue_boxes',
     label: 'Blue Boxes',
-    config: { digit_bg: '#1A56DB', digit_color: '#ffffff', label_color: '#475569', bg_color: '#ffffff', width: 480, height: 'auto', padding: 24, show_labels: true, show_days: true, show_hours: true, show_minutes: true, show_seconds: true, digit_size: 36, digit_radius: 8, gap: 12 },
+    config: { digit_bg: '#00AE7E', digit_color: '#ffffff', label_color: '#475569', bg_color: '#ffffff', width: 480, height: 'auto', padding: 24, show_labels: true, show_days: true, show_hours: true, show_minutes: true, show_seconds: true, digit_size: 36, digit_radius: 8, gap: 12 },
   },
   {
     key: 'dark_urgency',
@@ -306,7 +306,7 @@ export default function CountdownBuilder({ countdownId }: CountdownBuilderProps)
 
         {/* Center — Preview / Template picker */}
         <main className="flex-1 flex flex-col items-center justify-center overflow-auto p-8 relative">
-          <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#1A56DB 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+          <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#00AE7E 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
           {/* Template picker */}
           {showTemplates ? (

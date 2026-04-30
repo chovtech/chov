@@ -112,13 +112,13 @@ export default function ImageUploader({ value, onChange, placeholder, workspaceI
           onClick={handleZoneClick}
           className={`relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
             dragOver
-              ? 'border-[#1A56DB] bg-[#1A56DB]/5'
-              : 'border-slate-200 hover:border-[#1A56DB]/50 hover:bg-slate-50'
+              ? 'border-[#00AE7E] bg-[#00AE7E]/5'
+              : 'border-slate-200 hover:border-[#00AE7E]/50 hover:bg-slate-50'
           }`}
         >
           {uploading ? (
             <div className="flex flex-col items-center gap-2">
-              <div className="w-6 h-6 border-2 border-[#1A56DB] border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-[#00AE7E] border-t-transparent rounded-full animate-spin" />
               <p className="text-xs text-slate-500">Uploading...</p>
             </div>
           ) : (
@@ -163,7 +163,7 @@ export default function ImageUploader({ value, onChange, placeholder, workspaceI
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder || 'https://your-image-url.com/image.jpg'}
-        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#1A56DB] transition-all"
+        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#00AE7E] transition-all"
       />
 
       {error && (

@@ -11,7 +11,7 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer,
 } from 'recharts'
 
-const COLORS = ['#1A56DB', '#14B8A6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#10b981', '#f97316']
+const COLORS = ['#00AE7E', '#14B8A6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#10b981', '#f97316']
 
 export default function AnalyticsPage() {
   const { t } = useTranslation('common')
@@ -110,7 +110,7 @@ export default function AnalyticsPage() {
                       tickFormatter={(v: string) => { const dt = new Date(v); return (dt.getMonth()+1) + '/' + dt.getDate() }} />
                     <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
                     <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
-                    <Bar dataKey="personalised" stackId="a" fill="#1A56DB" name={t('analytics.personalised')} />
+                    <Bar dataKey="personalised" stackId="a" fill="#00AE7E" name={t('analytics.personalised')} />
                     <Bar dataKey="unpersonalised" stackId="a" fill="#e2e8f0" name={t('analytics.unpersonalised')} radius={[2, 2, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -151,7 +151,7 @@ export default function AnalyticsPage() {
                         <XAxis type="number" tick={{ fontSize: 10, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
                         <YAxis type="category" dataKey="country" tick={{ fontSize: 11, fill: '#475569' }} tickLine={false} axisLine={false} width={90} />
                         <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
-                        <Bar dataKey="visits" fill="#1A56DB" radius={[0, 4, 4, 0]} name={t('analytics.visits')} />
+                        <Bar dataKey="visits" fill="#00AE7E" radius={[0, 4, 4, 0]} name={t('analytics.visits')} />
                       </BarChart>
                     </ResponsiveContainer>
                   )}

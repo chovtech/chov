@@ -41,7 +41,7 @@ function TeamAcceptForm() {
           // localStorage format — read by auth layout BrandingLoader (snake_case + slug)
           localStorage.setItem('pp_auth_branding', JSON.stringify({
             brand_name: d.brand_name,
-            brand_color: d.brand_color || '#1A56DB',
+            brand_color: d.brand_color || '#00AE7E',
             logo_url: d.logo_url || null,
             icon_url: d.icon_url || null,
             hide_powered_by: d.hide_powered_by || false,
@@ -52,7 +52,7 @@ function TeamAcceptForm() {
             brandName: d.brand_name,
             logo: d.logo_url || null,
             icon: d.icon_url || null,
-            primaryColor: d.brand_color || '#1A56DB',
+            primaryColor: d.brand_color || '#00AE7E',
             hidePoweredBy: d.hide_powered_by || false,
           }))
         }
@@ -102,7 +102,7 @@ function TeamAcceptForm() {
     document.cookie = `access_token=${access_token}; path=/; max-age=${60 * 60 * 24 * 30}`
   }
 
-  const brandColor = info?.brand_color || '#1A56DB'
+  const brandColor = info?.brand_color || '#00AE7E'
   const brandName = info?.brand_name || 'PagePersona'
   const logoUrl = info?.logo_url || null
   const hidePoweredBy = info?.hide_powered_by || false

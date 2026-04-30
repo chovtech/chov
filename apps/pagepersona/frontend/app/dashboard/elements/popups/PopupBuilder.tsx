@@ -114,7 +114,7 @@ const DEFAULT_CONFIG: PopupConfig = {
   layout: 'single',
   col_split: '50-50',
   position: 'center',
-  bg_color: '#1A56DB',
+  bg_color: '#00AE7E',
   bg_image: '',
   bg_image_opacity: 40,
   border_radius: 16,
@@ -131,7 +131,7 @@ const DEFAULT_CONFIG: PopupConfig = {
   animation: 'fade',
   blocks: [
     { id: 'b1', type: 'text', text: 'Your headline here', font_size: 24, font_weight: '800', text_align: 'center', text_color: '#ffffff' },
-    { id: 'b2', type: 'button', btn_label: 'Click Here', btn_url: '', btn_action: 'link', btn_color: '#ffffff', btn_text_color: '#1A56DB', btn_radius: 10, btn_bold: true },
+    { id: 'b2', type: 'button', btn_label: 'Click Here', btn_url: '', btn_action: 'link', btn_color: '#ffffff', btn_text_color: '#00AE7E', btn_radius: 10, btn_bold: true },
   ]
 }
 
@@ -242,7 +242,7 @@ const TEMPLATES: { key: string; label: string; config: Partial<PopupConfig> }[] 
           { id: uid(), type: 'text', text: 'Join the Circle of Verified SMI Investors', font_size: 24, font_weight: '800', text_align: 'left', text_color: '#0F172A' },
           { id: uid(), type: 'text', text: 'Join School Management Institute (SMI) in transforming school leadership across Nigeria.', font_size: 14, font_weight: '400', text_align: 'left', text_color: '#64748b' },
           { id: uid(), type: 'embed', embed_code: '<input type="text" placeholder="Name:" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:10px;box-sizing:border-box"/><input type="email" placeholder="Email Address:" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box"/>' },
-          { id: uid(), type: 'button', btn_label: 'Submit', btn_url: '', btn_action: 'link', btn_color: '#1A56DB', btn_text_color: '#ffffff', btn_radius: 8, btn_bold: true },
+          { id: uid(), type: 'button', btn_label: 'Submit', btn_url: '', btn_action: 'link', btn_color: '#00AE7E', btn_text_color: '#ffffff', btn_radius: 8, btn_bold: true },
         ]},
       ]
     }
@@ -260,7 +260,7 @@ const TEMPLATES: { key: string; label: string; config: Partial<PopupConfig> }[] 
         { id: uid(), type: 'image', image_url: 'https://pub-f4f0504e96a04026adad9d727d7ad64e.r2.dev/uploads/141f57c6d92741d7a8bfdb210aa3cc11.png', image_height: 140, image_fit: 'contain', image_link: '' },
         { id: uid(), type: 'text', text: "Don't Leave Just Yet...", font_size: 26, font_weight: '800', text_align: 'center', text_color: '#0F172A' },
         { id: uid(), type: 'text', text: 'Get 10% off your order and free shipping!', font_size: 15, font_weight: '400', text_align: 'center', text_color: '#64748b' },
-        { id: uid(), type: 'button', btn_label: 'GET THE DEAL', btn_url: '', btn_action: 'link', btn_color: '#1A56DB', btn_text_color: '#ffffff', btn_radius: 8, btn_bold: true },
+        { id: uid(), type: 'button', btn_label: 'GET THE DEAL', btn_url: '', btn_action: 'link', btn_color: '#00AE7E', btn_text_color: '#ffffff', btn_radius: 8, btn_bold: true },
       ]
     }
   },
@@ -456,7 +456,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
     const defaults: Record<BlockType, Partial<Block>> = {
       text:      { text: 'New text block', font_size: 14, font_weight: '400', text_align: 'left', text_color: config.bg_color === '#ffffff' ? '#0F172A' : '#ffffff' },
       image:     { image_url: '', image_height: 200, image_fit: 'cover', image_link: '' },
-      button:    { btn_label: 'Click Here', btn_url: '', btn_action: 'link', btn_color: '#ffffff', btn_text_color: '#1A56DB', btn_radius: 10, btn_bold: true },
+      button:    { btn_label: 'Click Here', btn_url: '', btn_action: 'link', btn_color: '#ffffff', btn_text_color: '#00AE7E', btn_radius: 10, btn_bold: true },
       embed:     { embed_code: '' },
       no_thanks: { no_thanks_label: 'No thanks', no_thanks_color: '#94a3b8', no_thanks_dont_show: false },
       columns:   { col_left: [{ id: uid(), type: 'image', image_url: '', image_height: 280, image_fit: 'cover', image_link: '' }], col_right: [{ id: uid(), type: 'text', text: 'Add content here', font_size: 16, font_weight: '700', text_align: 'left', text_color: '#0F172A' }] },
@@ -641,7 +641,7 @@ export default function PopupBuilder({ popupId }: PopupBuilderProps) {
 
         {/* Center — Canvas */}
         <main className="flex-1 flex items-center justify-center overflow-auto p-8 relative">
-          <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#1A56DB 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+          <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#00AE7E 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
           {/* Template picker */}
           {showTemplates && (

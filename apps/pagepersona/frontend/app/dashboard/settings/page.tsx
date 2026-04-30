@@ -769,7 +769,7 @@ export default function SettingsPage() {
   const [wsNameMsg, setWsNameMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   // White label state
-  const [wlForm, setWlForm] = useState({ brand_name: '', logo: '', icon: '', primary_color: '#1A56DB', hide_powered_by: false })
+  const [wlForm, setWlForm] = useState({ brand_name: '', logo: '', icon: '', primary_color: '#00AE7E', hide_powered_by: false })
   const [wlLoading, setWlLoading] = useState(false)
   const [wlMsg, setWlMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
@@ -1215,7 +1215,7 @@ export default function SettingsPage() {
                           type="text"
                           value={wlForm.primary_color}
                           onChange={e => setWlForm(p => ({ ...p, primary_color: e.target.value }))}
-                          placeholder="#1A56DB"
+                          placeholder="#00AE7E"
                           className={inputClass + ' font-mono flex-1'}
                         />
                       </div>

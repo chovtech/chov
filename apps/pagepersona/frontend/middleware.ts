@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest) {
         response.headers.set('x-workspace-id', data.workspace_id || '')
         response.headers.set('x-white-label-brand-name', data.white_label_brand_name || '')
         response.headers.set('x-white-label-logo', data.white_label_logo || '')
-        response.headers.set('x-white-label-primary-color', data.white_label_primary_color || '#1A56DB')
+        response.headers.set('x-white-label-primary-color', data.white_label_primary_color || '#00AE7E')
       }
     } catch {
       // Domain not mapped — continue with default branding

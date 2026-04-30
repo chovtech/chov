@@ -80,7 +80,7 @@ function AcceptForm() {
   }
 
   const brandName = info?.white_label_brand_name || 'PagePersona'
-  const primaryColor = info?.white_label_primary_color || '#1A56DB'
+  const primaryColor = info?.white_label_primary_color || '#00AE7E'
   const logo = info?.white_label_logo
   const showPoweredBy = !info?.hide_powered_by
 
@@ -110,7 +110,7 @@ function AcceptForm() {
           </div>
           <h1 className="text-xl font-bold text-slate-900 mb-2">Already accepted</h1>
           <p className="text-slate-500 text-sm mb-6">This invitation has already been used. Sign in to your account instead.</p>
-          <a href="/login" className="block w-full py-2.5 bg-[#1A56DB] text-white rounded-xl font-bold text-sm hover:bg-[#1547b3] transition-colors text-center">
+          <a href="/login" className="block w-full py-2.5 bg-[#00AE7E] text-white rounded-xl font-bold text-sm hover:bg-[#009970] transition-colors text-center">
             Sign in
           </a>
         </div>
@@ -127,7 +127,7 @@ function AcceptForm() {
           </div>
           <h1 className="text-xl font-bold text-slate-900 mb-2">Invalid invitation</h1>
           <p className="text-slate-500 text-sm mb-6">{invalidMsg}</p>
-          <a href="/login" className="text-[#1A56DB] font-semibold text-sm hover:underline">Sign in instead</a>
+          <a href="/login" className="text-[#00AE7E] font-semibold text-sm hover:underline">Sign in instead</a>
         </div>
       </div>
     )

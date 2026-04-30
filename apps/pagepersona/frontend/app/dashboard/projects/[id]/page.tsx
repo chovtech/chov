@@ -752,7 +752,7 @@ export default function ProjectDashboardPage() {
             </div>
           )
           const d = analyticsData
-          const COLORS = ['#1A56DB', '#14B8A6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#10b981', '#f97316']
+          const COLORS = ['#00AE7E', '#14B8A6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#10b981', '#f97316']
           const hasData = d && d.headline.total_visits > 0
           return (
             <div className="space-y-6">
@@ -828,7 +828,7 @@ export default function ProjectDashboardPage() {
                         <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
                         <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
                         <Legend wrapperStyle={{ fontSize: 12 }} />
-                        <Line type="monotone" dataKey="visits" stroke="#1A56DB" strokeWidth={2} dot={false} name={t('analytics.visits')} />
+                        <Line type="monotone" dataKey="visits" stroke="#00AE7E" strokeWidth={2} dot={false} name={t('analytics.visits')} />
                         <Line type="monotone" dataKey="rules_fired" stroke="#14B8A6" strokeWidth={2} dot={false} name={t('analytics.rules_fired_over_time')} />
                       </LineChart>
                     </ResponsiveContainer>
@@ -844,7 +844,7 @@ export default function ProjectDashboardPage() {
                             <XAxis type="number" tick={{ fontSize: 10, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
                             <YAxis type="category" dataKey="country" tick={{ fontSize: 11, fill: '#475569' }} tickLine={false} axisLine={false} width={90} />
                             <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
-                            <Bar dataKey="visits" fill="#1A56DB" radius={[0, 4, 4, 0]} name={t('analytics.visits')} />
+                            <Bar dataKey="visits" fill="#00AE7E" radius={[0, 4, 4, 0]} name={t('analytics.visits')} />
                           </BarChart>
                         </ResponsiveContainer>
                       )}
@@ -903,7 +903,7 @@ export default function ProjectDashboardPage() {
                           <ResponsiveContainer width={140} height={140}>
                             <PieChart>
                               <Pie data={d.visitor_split} dataKey="count" nameKey="type" cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={2}>
-                                <Cell fill="#1A56DB" />
+                                <Cell fill="#00AE7E" />
                                 <Cell fill="#14B8A6" />
                               </Pie>
                               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
@@ -912,7 +912,7 @@ export default function ProjectDashboardPage() {
                           <div className="space-y-2">
                             {d.visitor_split.map((s: any, i: number) => (
                               <div key={s.type} className="flex items-center gap-2">
-                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: i === 0 ? '#1A56DB' : '#14B8A6' }} />
+                                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: i === 0 ? '#00AE7E' : '#14B8A6' }} />
                                 <span className="text-sm text-slate-600">{s.type === 'new' ? t('analytics.visitor_new') : t('analytics.visitor_returning')}</span>
                                 <span className="text-sm font-bold text-slate-900 ml-auto">{s.count}</span>
                               </div>
@@ -1033,7 +1033,7 @@ export default function ProjectDashboardPage() {
                     tickFormatter={(v: string) => { const dt = new Date(v); return (dt.getMonth()+1) + '/' + dt.getDate() }} />
                   <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
                   <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
-                  <Line type="monotone" dataKey="visits" stroke="#1A56DB" strokeWidth={2} dot={false} name={t('analytics.visits')} />
+                  <Line type="monotone" dataKey="visits" stroke="#00AE7E" strokeWidth={2} dot={false} name={t('analytics.visits')} />
                   <Line type="monotone" dataKey="rules_fired" stroke="#14B8A6" strokeWidth={2} dot={false} name={t('analytics.rules_fired_over_time')} />
                 </LineChart>
               </ResponsiveContainer>

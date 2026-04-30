@@ -63,7 +63,7 @@ function buildTemplateGoals(scan: any): TemplateGoal[] {
       icon: 'public',
       title: 'Personalise for Location',
       description: 'Show location-specific messaging to visitors from different countries.',
-      color: '#1A56DB',
+      color: '#00AE7E',
       rules: [
         {
           name: 'US visitors — localised headline',

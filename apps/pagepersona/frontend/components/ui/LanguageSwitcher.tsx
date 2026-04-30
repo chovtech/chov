@@ -41,7 +41,7 @@ export default function LanguageSwitcher() {
                 onClick={() => { setLanguage(lang.code); setOpen(false) }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                   currentLanguage.code === lang.code
-                    ? 'bg-[#1A56DB]/10 text-[#1A56DB] font-semibold'
+                    ? 'bg-[#00AE7E]/10 text-[#00AE7E] font-semibold'
                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 font-medium'
                 }`}
               >
@@ -51,7 +51,7 @@ export default function LanguageSwitcher() {
                   <p className="text-[10px] text-slate-400">{lang.name}</p>
                 </div>
                 {currentLanguage.code === lang.code && (
-                  <svg className="w-3.5 h-3.5 ml-auto text-[#1A56DB]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-3.5 h-3.5 ml-auto text-[#00AE7E]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/>
                   </svg>
                 )}

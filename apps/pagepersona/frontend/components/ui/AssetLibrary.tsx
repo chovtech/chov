@@ -85,7 +85,7 @@ export default function AssetLibrary({ workspaceId, onInsert, onClose, t }: Asse
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1A56DB] text-white rounded-lg text-sm font-semibold hover:bg-[#1A56DB]/90 transition-colors disabled:opacity-60"
+              className="flex items-center gap-2 px-4 py-2 bg-[#00AE7E] text-white rounded-lg text-sm font-semibold hover:bg-[#00AE7E]/90 transition-colors disabled:opacity-60"
             >
               {uploading
                 ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin flex-shrink-0" />
@@ -118,7 +118,7 @@ export default function AssetLibrary({ workspaceId, onInsert, onClose, t }: Asse
         <div className="flex-1 overflow-y-auto p-6 min-h-0">
           {loading ? (
             <div className="flex items-center justify-center h-52">
-              <div className="w-8 h-8 border-2 border-[#1A56DB] border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-[#00AE7E] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : assets.length === 0 && !uploading ? (
             <div className="flex flex-col items-center justify-center h-52 gap-4 text-slate-400">
@@ -132,7 +132,7 @@ export default function AssetLibrary({ workspaceId, onInsert, onClose, t }: Asse
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56DB] text-white rounded-lg text-sm font-semibold hover:bg-[#1A56DB]/90 transition-colors"
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#00AE7E] text-white rounded-lg text-sm font-semibold hover:bg-[#00AE7E]/90 transition-colors"
               >
                 <Icon name="cloud_upload" className="text-base" />
                 {t('library.upload_new')}
@@ -142,8 +142,8 @@ export default function AssetLibrary({ workspaceId, onInsert, onClose, t }: Asse
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
               {/* Uploading placeholder */}
               {uploading && (
-                <div className="aspect-square rounded-xl border-2 border-dashed border-[#1A56DB]/40 bg-[#1A56DB]/5 flex items-center justify-center">
-                  <div className="w-6 h-6 border-2 border-[#1A56DB] border-t-transparent rounded-full animate-spin" />
+                <div className="aspect-square rounded-xl border-2 border-dashed border-[#00AE7E]/40 bg-[#00AE7E]/5 flex items-center justify-center">
+                  <div className="w-6 h-6 border-2 border-[#00AE7E] border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
               {assets.map(asset => {
@@ -155,8 +155,8 @@ export default function AssetLibrary({ workspaceId, onInsert, onClose, t }: Asse
                     title={asset.filename || ''}
                     className={`group relative aspect-square rounded-xl overflow-hidden cursor-pointer transition-all border-2 bg-slate-50 ${
                       isSelected
-                        ? 'border-[#1A56DB] ring-2 ring-[#1A56DB]/30'
-                        : 'border-slate-200 hover:border-[#1A56DB]/50'
+                        ? 'border-[#00AE7E] ring-2 ring-[#00AE7E]/30'
+                        : 'border-slate-200 hover:border-[#00AE7E]/50'
                     }`}
                   >
                     <img
@@ -167,8 +167,8 @@ export default function AssetLibrary({ workspaceId, onInsert, onClose, t }: Asse
 
                     {/* Selected overlay */}
                     {isSelected && (
-                      <div className="absolute inset-0 bg-[#1A56DB]/10 flex items-center justify-center">
-                        <div className="w-8 h-8 bg-[#1A56DB] rounded-full flex items-center justify-center shadow-lg">
+                      <div className="absolute inset-0 bg-[#00AE7E]/10 flex items-center justify-center">
+                        <div className="w-8 h-8 bg-[#00AE7E] rounded-full flex items-center justify-center shadow-lg">
                           <Icon name="check" className="text-white text-sm" />
                         </div>
                       </div>
@@ -222,7 +222,7 @@ export default function AssetLibrary({ workspaceId, onInsert, onClose, t }: Asse
               type="button"
               onClick={handleInsert}
               disabled={!selectedUrl}
-              className="px-5 py-2 bg-[#1A56DB] text-white rounded-lg text-sm font-semibold hover:bg-[#1A56DB]/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-5 py-2 bg-[#00AE7E] text-white rounded-lg text-sm font-semibold hover:bg-[#00AE7E]/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {t('library.insert')}
             </button>

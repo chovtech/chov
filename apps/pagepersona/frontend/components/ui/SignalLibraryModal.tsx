@@ -112,7 +112,7 @@ export default function SignalLibraryModal({ isOpen, onClose, onSelect }: Props)
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder={t('signal_modal.search_placeholder')}
-              className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] transition-all"
+              className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#00AE7E]/20 focus:border-[#00AE7E] transition-all"
             />
           </div>
         </div>
@@ -126,7 +126,7 @@ export default function SignalLibraryModal({ isOpen, onClose, onSelect }: Props)
                 className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <Icon name={group.icon} className="text-[#1A56DB]" />
+                  <Icon name={group.icon} className="text-[#00AE7E]" />
                   <span className="font-semibold text-slate-900">{t(group.labelKey)}</span>
                   <span className="text-xs text-slate-400">{group.signals.length} {t('signal_modal.signals_count')}</span>
                 </div>
@@ -138,17 +138,17 @@ export default function SignalLibraryModal({ isOpen, onClose, onSelect }: Props)
                     <button
                       key={signal.key}
                       onClick={() => setSelected(signal)}
-                      className={"w-full flex items-center gap-4 p-3 rounded-lg transition-colors text-left " + (selected?.key === signal.key ? "border-2 border-[#1A56DB] bg-[#1A56DB]/5" : "hover:bg-slate-50 border-2 border-transparent")}
+                      className={"w-full flex items-center gap-4 p-3 rounded-lg transition-colors text-left " + (selected?.key === signal.key ? "border-2 border-[#00AE7E] bg-[#00AE7E]/5" : "hover:bg-slate-50 border-2 border-transparent")}
                     >
-                      <div className={"p-2 rounded-lg " + (selected?.key === signal.key ? "bg-[#1A56DB] text-white" : "bg-[#1A56DB]/10 text-[#1A56DB]")}>
+                      <div className={"p-2 rounded-lg " + (selected?.key === signal.key ? "bg-[#00AE7E] text-white" : "bg-[#00AE7E]/10 text-[#00AE7E]")}>
                         <Icon name={signal.icon} className="text-xl" />
                       </div>
                       <div className="flex-1">
-                        <p className={"font-bold text-sm " + (selected?.key === signal.key ? "text-[#1A56DB]" : "text-slate-900")}>{t(signal.labelKey)}</p>
+                        <p className={"font-bold text-sm " + (selected?.key === signal.key ? "text-[#00AE7E]" : "text-slate-900")}>{t(signal.labelKey)}</p>
                         <p className="text-xs text-slate-500 mt-0.5">{t(signal.descKey)}</p>
                       </div>
                       {selected?.key === signal.key && (
-                        <Icon name="check_circle" className="text-[#1A56DB] text-xl shrink-0" />
+                        <Icon name="check_circle" className="text-[#00AE7E] text-xl shrink-0" />
                       )}
                     </button>
                   ))}
@@ -170,7 +170,7 @@ export default function SignalLibraryModal({ isOpen, onClose, onSelect }: Props)
             <button
               onClick={handleConfirm}
               disabled={!selected}
-              className="px-6 py-2 bg-[#1A56DB] text-white text-sm font-bold rounded-xl shadow-md shadow-[#1A56DB]/20 hover:bg-[#1A56DB]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="px-6 py-2 bg-[#00AE7E] text-white text-sm font-bold rounded-xl shadow-md shadow-[#00AE7E]/20 hover:bg-[#00AE7E]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               {t('signal_modal.confirm')}
             </button>
