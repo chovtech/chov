@@ -39,7 +39,7 @@ function readCache(): WhiteLabelValue | null {
             brandName: auth.brand_name,
             logo: auth.logo_url || null,
             icon: auth.icon_url || null,
-            primaryColor: auth.brand_color || '#15EAAF',
+            primaryColor: auth.brand_color || '#00AE7E',
             hidePoweredBy: auth.hide_powered_by || false,
           }
         }
@@ -49,7 +49,7 @@ function readCache(): WhiteLabelValue | null {
   } catch { return null }
 }
 
-const defaults: WhiteLabelValue = { brandName: 'PagePersona', logo: null, icon: null, primaryColor: '#15EAAF', hidePoweredBy: false }
+const defaults: WhiteLabelValue = { brandName: 'PagePersona', logo: null, icon: null, primaryColor: '#00AE7E', hidePoweredBy: false }
 
 const WhiteLabelContext = createContext<WhiteLabelValue>(defaults)
 
@@ -73,7 +73,7 @@ export function WhiteLabelProvider({ children }: { children: React.ReactNode }) 
     brandName: activeWorkspace.white_label_brand_name,
     logo: activeWorkspace.white_label_logo || null,
     icon: activeWorkspace.white_label_icon || null,
-    primaryColor: activeWorkspace.white_label_primary_color || '#15EAAF',
+    primaryColor: activeWorkspace.white_label_primary_color || '#00AE7E',
     hidePoweredBy: activeWorkspace.hide_powered_by || false,
   } : null
 

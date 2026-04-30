@@ -10,7 +10,7 @@ import { useAuthBranding } from '@/lib/context/AuthBrandingContext'
 export default function ForgotPasswordPage() {
   const { t } = useTranslation('auth')
   const branding = useAuthBranding()
-  const brandColor = branding?.brand_color || '#15EAAF'
+  const brandColor = branding?.brand_color || '#00AE7E'
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
@@ -97,7 +97,7 @@ export default function ForgotPasswordPage() {
               <button
                 onClick={handleResend}
                 disabled={resending}
-                className="flex items-center justify-center gap-1.5 mx-auto text-sm font-semibold text-[#15EAAF] hover:text-[#0fd49e] transition-colors disabled:opacity-60"
+                className="flex items-center justify-center gap-1.5 mx-auto text-sm font-semibold text-[#00AE7E] hover:text-[#009970] transition-colors disabled:opacity-60"
               >
                 <Icon name="refresh" className={`text-lg ${resending ? 'animate-spin' : ''}`} />
                 {resending ? t('forgotPassword.resending') : t('forgotPassword.resend')}
@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center size-12 bg-[#15EAAF]/10 text-[#15EAAF] rounded-full mb-4">
+        <div className="inline-flex items-center justify-center size-12 bg-[#00AE7E]/10 text-[#00AE7E] rounded-full mb-4">
           <Icon name="lock_reset" className="text-2xl" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('forgotPassword.title')}</h1>
@@ -137,7 +137,7 @@ export default function ForgotPasswordPage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="name@company.com"
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#15EAAF]/20 focus:border-[#15EAAF] outline-none text-gray-900 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00AE7E]/20 focus:border-[#00AE7E] outline-none text-gray-900 transition-all"
             />
           </div>
         </div>
@@ -168,7 +168,7 @@ export default function ForgotPasswordPage() {
       <div className="mt-8 pt-6 border-t border-slate-100 text-center">
         <Link
           href="/login"
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-[#15EAAF] transition-colors"
+          className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-[#00AE7E] transition-colors"
         >
           <Icon name="arrow_back" className="text-base" />
           {t('forgotPassword.backToLogin')}
