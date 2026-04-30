@@ -6,7 +6,7 @@ const publicSans = Public_Sans({ subsets: ['latin'], variable: '--font-public-sa
 const outfit = Outfit({ subsets: ['latin'], weight: ['400', '600', '700', '900'], variable: '--font-outfit' })
 
 export const metadata: Metadata = {
-  title: 'PagePersona',
+  title: 'Special Lifetime Offer - PagePersona',
   description: 'Turn any sales page into a smart sales page',
 }
 
