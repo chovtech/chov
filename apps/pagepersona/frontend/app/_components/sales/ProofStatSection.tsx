@@ -20,6 +20,7 @@ const ProofStatSection = () => {
             fontSize: '30px',
             lineHeight: '1.25em',
             color: 'rgb(66, 61, 207)',
+            marginTop: '-50px',
           }}
         >
           3,847 Visitors. 2,219 Conversions.
@@ -73,9 +74,10 @@ const ProofStatSection = () => {
             fontSize: '54px',
             lineHeight: '1.25em',
             color: 'rgb(35, 34, 69)',
+            marginTop: '-15px',
           }}
         >
-          Zero. None. Not A Penny.
+          Zero. None. Nada.
         </h2>
 
         {/* Sub-copy */}
@@ -97,7 +99,7 @@ const ProofStatSection = () => {
           <img
             src="/images/VLF-FE-08-Image-04.png"
             alt=""
-            style={{ maxWidth: '320px', width: '100%' }}
+            style={{ maxWidth: '220px', width: '100%' }}
           />
         </div>
 
