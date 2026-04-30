@@ -53,8 +53,8 @@ const ProofStatSection = () => {
             <p
               style={{
                 fontFamily: 'var(--font-outfit)',
-                fontWeight: 400,
-                fontSize: '26px',
+                fontWeight: 900,
+                fontSize: '54px',
                 lineHeight: '1.25em',
                 color: 'rgb(66, 61, 207)',
               }}
