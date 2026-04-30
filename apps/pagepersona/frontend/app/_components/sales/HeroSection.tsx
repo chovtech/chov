@@ -104,14 +104,20 @@ const HeroSection = () => {
             marginTop: '30px',
           }}
         >
-          {/* Video iframe — Wistia with videoFoam fills container seamlessly */}
-          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, background: '#000', lineHeight: 0 }}>
-            <iframe
-              src="https://fast.wistia.net/embed/iframe/0ssmmjex3v?chromeless=false&controlsVisibleOnLoad=true&playbar=true&fullscreenButton=true&playerColor=034327&videoFoam=true"
-              frameBorder="0"
-              allowFullScreen
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block', border: 'none' }}
-            />
+          {/* Video placeholder */}
+          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, background: '#0d1117', lineHeight: 0 }}>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+              <div style={{
+                width: '72px', height: '72px', borderRadius: '50%',
+                background: 'rgba(255,255,255,0.1)', border: '2px solid rgba(255,255,255,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <div style={{ width: 0, height: 0, borderTop: '14px solid transparent', borderBottom: '14px solid transparent', borderLeft: '22px solid rgba(255,255,255,0.7)', marginLeft: '4px' }} />
+              </div>
+              <p style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-outfit)', fontSize: '14px', letterSpacing: '0.08em', textTransform: 'uppercase', margin: 0, lineHeight: 1 }}>
+                Demo Video Coming Soon
+              </p>
+            </div>
           </div>
 
           {/* Caption — teal box with glow */}
