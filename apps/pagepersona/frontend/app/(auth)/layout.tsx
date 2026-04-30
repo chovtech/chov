@@ -131,14 +131,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               )}
             </div>
           ) : (
-            <Link href="/" className="flex items-center gap-2">
-              <div className="size-8 bg-[#1A56DB] rounded-lg flex items-center justify-center text-white shadow-md shadow-[#1A56DB]/30">
-                <Icon name="layers" className="text-[18px]" />
-              </div>
-              <div>
-                <h1 className="text-base font-bold leading-none text-slate-900">{t('app.name')}</h1>
-                <p className="text-[10px] text-slate-400 mt-0.5">{t('app.tagline')}</p>
-              </div>
+            <Link href="/">
+              <img src="/images/PP-Logo_logo_dark.png" alt="PagePersona" className="h-8 object-contain" />
             </Link>
           )
         ) : (

@@ -52,7 +52,7 @@ function ResetPasswordForm() {
         <p className="text-slate-500 text-sm leading-relaxed mb-8">{t('resetPassword.successDesc')}</p>
         <Link
           href="/login"
-          className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#1A56DB] hover:bg-[#1547b3] text-white font-bold rounded-xl transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#15EAAF] hover:bg-[#0fd49e] text-[#131432] font-bold rounded-xl transition-colors"
         >
           {t('resetPassword.goToLogin')}
         </Link>
@@ -63,7 +63,7 @@ function ResetPasswordForm() {
   return (
     <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center size-12 bg-[#1A56DB]/10 text-[#1A56DB] rounded-full mb-4">
+        <div className="inline-flex items-center justify-center size-12 bg-[#15EAAF]/10 text-[#15EAAF] rounded-full mb-4">
           <Icon name="lock" className="text-2xl" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('resetPassword.title')}</h1>
@@ -88,7 +88,7 @@ function ResetPasswordForm() {
               value={form.password}
               onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
               placeholder={t('resetPassword.newPlaceholder')}
-              className="w-full pl-10 pr-12 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] outline-none text-gray-900 transition-all"
+              className="w-full pl-10 pr-12 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#15EAAF]/20 focus:border-[#15EAAF] outline-none text-gray-900 transition-all"
             />
             <button type="button" onClick={() => setShowPass(p => !p)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-400 hover:text-slate-600">
@@ -108,7 +108,7 @@ function ResetPasswordForm() {
               value={form.confirm}
               onChange={e => setForm(p => ({ ...p, confirm: e.target.value }))}
               placeholder={t('resetPassword.confirmPlaceholder')}
-              className="w-full pl-10 pr-12 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1A56DB]/20 focus:border-[#1A56DB] outline-none text-gray-900 transition-all"
+              className="w-full pl-10 pr-12 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#15EAAF]/20 focus:border-[#15EAAF] outline-none text-gray-900 transition-all"
             />
             <button type="button" onClick={() => setShowConfirm(p => !p)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-400 hover:text-slate-600">
@@ -125,7 +125,7 @@ function ResetPasswordForm() {
         <button
           type="submit"
           disabled={loading || !token}
-          className="w-full py-3.5 bg-[#1A56DB] hover:bg-[#1547b3] disabled:opacity-60 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md shadow-[#1A56DB]/20"
+          className="w-full py-3.5 bg-[#15EAAF] hover:bg-[#0fd49e] disabled:opacity-60 text-[#131432] font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md shadow-[#15EAAF]/20"
         >
           {loading ? (
             <>
@@ -140,7 +140,7 @@ function ResetPasswordForm() {
       </form>
 
       <div className="mt-8 text-center">
-        <Link href="/login" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-[#1A56DB] transition-colors">
+        <Link href="/login" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-[#15EAAF] transition-colors">
           <Icon name="arrow_back" className="text-base" />
           {t('resetPassword.backToLogin')}
         </Link>

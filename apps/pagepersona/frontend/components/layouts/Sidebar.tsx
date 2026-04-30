@@ -110,9 +110,15 @@ export default function Sidebar() {
             ? fullNavigation
             : fullNavigation.filter(item => item.key !== 'clients')
 
+  // Sidebar is always dark navy — use white logo for PagePersona default
+  const sidebarBg = '#131432'
+
   return (
     <>
-    <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col fixed inset-y-0 left-0 z-50">
+    <aside
+      className="w-64 flex flex-col fixed inset-y-0 left-0 z-50 border-r border-white/5"
+      style={{ backgroundColor: sidebarBg }}
+    >
 
       {/* Logo */}
       <div className="px-5 pt-6 pb-4">
@@ -121,8 +127,8 @@ export default function Sidebar() {
             // Agency full logo
             <img src={logo} alt={brandName} className="h-8 object-contain" />
           ) : brandName === 'PagePersona' ? (
-            // Default PagePersona logo
-            <img src="/images/PP-Logo_logo_dark.png" alt="PagePersona" className="h-8 object-contain" />
+            // White logo on dark navy sidebar
+            <img src="/images/PP-Logo_logo.png" alt="PagePersona" className="h-8 object-contain" />
           ) : (
             // Agency fallback — icon + brand name text
             <>
@@ -134,7 +140,7 @@ export default function Sidebar() {
                 }
               </div>
               <div>
-                <h1 className="text-base font-bold leading-none text-slate-900 dark:text-white">{brandName}</h1>
+                <h1 className="text-base font-bold leading-none text-white">{brandName}</h1>
               </div>
             </>
           )}
@@ -144,13 +150,13 @@ export default function Sidebar() {
       {/* Workspace badge for client users with only one workspace — non-interactive */}
       {isClientUser && workspaces.length === 1 && activeWorkspace && (
         <div className="px-3 pb-3">
-          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-[#14B8A6]/8 border border-[#14B8A6]/20">
-            <div className="size-7 rounded-lg bg-[#14B8A6]/15 flex items-center justify-center flex-shrink-0">
+          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-[#14B8A6]/10 border border-[#14B8A6]/20">
+            <div className="size-7 rounded-lg bg-[#14B8A6]/20 flex items-center justify-center flex-shrink-0">
               <Icon name="hub" className="text-[#14B8A6] text-[16px]" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('nav.workspace')}</p>
-              <p className="text-xs font-semibold text-slate-700 truncate">{activeWorkspace.name}</p>
+              <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{t('nav.workspace')}</p>
+              <p className="text-xs font-semibold text-white truncate">{activeWorkspace.name}</p>
             </div>
           </div>
         </div>
@@ -160,61 +166,68 @@ export default function Sidebar() {
       {(!isClientUser || workspaces.length > 1) && <div className="relative px-3 pb-3">
         <button
           onClick={() => setWorkspaceOpen(!workspaceOpen)}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group"
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-colors group"
+          style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.10)')}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
         >
-          <div className="size-7 rounded-lg bg-brand/10 flex items-center justify-center flex-shrink-0">
-            <Icon name="hub" className="text-brand text-[16px]" />
+          <div className="size-7 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: `${primaryColor}20` }}>
+            <Icon name="hub" className="text-[16px]" style={{ color: primaryColor }} />
           </div>
           <div className="flex-1 text-left min-w-0">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('nav.workspace')}</p>
-            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{workspaceName}</p>
+            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{t('nav.workspace')}</p>
+            <p className="text-xs font-semibold text-white truncate">{workspaceName}</p>
           </div>
-          <Icon name="unfold_more" className="text-slate-400 text-[18px] flex-shrink-0" />
+          <Icon name="unfold_more" className="text-white/30 text-[18px] flex-shrink-0" />
         </button>
 
         {workspaceOpen && (
-          <div className="absolute top-full left-3 right-3 z-50 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-80 overflow-y-auto">
+          <div className="absolute top-full left-3 right-3 z-50 mt-1 border border-white/10 rounded-xl shadow-2xl max-h-80 overflow-y-auto"
+            style={{ backgroundColor: '#1c1f52' }}>
             <div className="p-2">
               {/* My Workspace section */}
-              <p className="px-2 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('nav.myWorkspace')}</p>
+              <p className="px-2 pt-1 pb-1.5 text-[10px] font-bold text-white/40 uppercase tracking-widest">{t('nav.myWorkspace')}</p>
               {workspaces.filter(ws => ws.parent_workspace_id === null).map(ws => {
                 const isActivews = activeWorkspace?.id === ws.id
                 return (
                   <button
                     key={ws.id}
                     onClick={() => { setActiveWorkspaceId(ws.id); setWorkspaceOpen(false); router.push('/dashboard') }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors ${isActivews ? 'bg-brand/5 border border-brand/10' : 'hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors ${isActivews ? 'border' : 'hover:bg-white/5'}`}
+                    style={isActivews ? { backgroundColor: `${primaryColor}12`, borderColor: `${primaryColor}25` } : {}}
                   >
-                    <div className="size-6 rounded-md bg-brand flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                    <div className="size-6 rounded-md flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+                      style={{ backgroundColor: primaryColor }}>
                       {ws.name.slice(0, 2).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0 text-left">
-                      <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{ws.name}</p>
-                      <p className="text-[10px] text-slate-400">{t('nav.myWorkspace')}</p>
+                      <p className="text-xs font-bold text-white truncate">{ws.name}</p>
+                      <p className="text-[10px] text-white/40">{t('nav.myWorkspace')}</p>
                     </div>
-                    {isActivews && <Icon name="check" className="text-brand text-[16px] flex-shrink-0" />}
+                    {isActivews && <Icon name="check" className="text-[16px] flex-shrink-0" style={{ color: primaryColor }} />}
                   </button>
                 )
               })}
 
               {/* Client Workspaces section — only if any exist */}
               {workspaces.filter(ws => ws.parent_workspace_id !== null).length > 0 && <>
-                <div className="my-1.5 border-t border-slate-100 dark:border-slate-700" />
-                <p className="px-2 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('nav.clientWorkspaces')}</p>
+                <div className="my-1.5 border-t border-white/10" />
+                <p className="px-2 pt-1 pb-1.5 text-[10px] font-bold text-white/40 uppercase tracking-widest">{t('nav.clientWorkspaces')}</p>
                 {workspaces.filter(ws => ws.parent_workspace_id !== null).map(ws => {
                   const isActivews = activeWorkspace?.id === ws.id
                   return (
                     <button
                       key={ws.id}
                       onClick={() => { setActiveWorkspaceId(ws.id); setWorkspaceOpen(false); router.push('/dashboard') }}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors ${isActivews ? 'bg-[#14B8A6]/5 border border-[#14B8A6]/10' : 'hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors ${isActivews ? 'bg-[#14B8A6]/10 border border-[#14B8A6]/20' : 'hover:bg-white/5'}`}
                     >
                       <div className="size-6 rounded-md bg-[#14B8A6] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
                         {ws.name.slice(0, 2).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0 text-left">
-                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{ws.name}</p>
-                        <p className="text-[10px] text-slate-400 truncate">{ws.client_name || ws.client_email || t('nav.clientWorkspaces')}</p>
+                        <p className="text-xs font-bold text-white truncate">{ws.name}</p>
+                        <p className="text-[10px] text-white/40 truncate">{ws.client_name || ws.client_email || t('nav.clientWorkspaces')}</p>
                       </div>
                       {isActivews && <Icon name="check" className="text-[#14B8A6] text-[16px] flex-shrink-0" />}
                     </button>
@@ -235,12 +248,10 @@ export default function Sidebar() {
             <Link
               key={item.key}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
-                active
-                  ? 'font-semibold'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium'
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all font-medium ${
+                active ? 'font-semibold' : 'text-white/60 hover:text-white hover:bg-white/5'
               }`}
-              style={active ? { backgroundColor: `${primaryColor}1a`, color: primaryColor } : {}}
+              style={active ? { backgroundColor: `${primaryColor}20`, color: primaryColor } : {}}
             >
               <span style={active ? { color: primaryColor } : {}}><Icon name={item.icon} className="text-[22px]" /></span>
               <span>{t(`nav.${item.key}`)}</span>
@@ -251,7 +262,8 @@ export default function Sidebar() {
 
       {/* Plan card — hidden for client users */}
       {!isClientUser && <div className="px-3 py-4">
-        <div className="bg-gradient-to-br from-brand to-brand/90 rounded-2xl p-4 text-white shadow-lg shadow-brand/25">
+        <div className="rounded-2xl p-4 text-white shadow-lg"
+          style={{ background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`, boxShadow: `0 8px 24px ${primaryColor}35` }}>
           <div className="flex items-center gap-2 mb-3">
             <div className="size-6 rounded-md bg-white/20 flex items-center justify-center">
               <Icon name="workspace_premium" className="text-[14px] text-white" />
@@ -275,7 +287,8 @@ export default function Sidebar() {
               <>
                 <p className="text-[10px] text-white/70 mb-3 leading-relaxed">{n.teaser}</p>
                 <a href={n.href} target="_blank" rel="noopener noreferrer"
-                  className="block w-full py-2 text-center bg-white text-brand rounded-xl text-xs font-bold hover:bg-white/90 transition-colors">
+                  className="block w-full py-2 text-center rounded-xl text-xs font-bold transition-colors"
+                  style={{ backgroundColor: '#131432', color: primaryColor }}>
                   {n.label}
                 </a>
               </>
@@ -285,21 +298,22 @@ export default function Sidebar() {
       </div>}
 
       {/* User footer */}
-      <div className="px-3 pb-4 border-t border-slate-100 dark:border-slate-800">
+      <div className="px-3 pb-4 border-t border-white/10">
         <div className="flex items-center gap-3 px-3 py-3">
-          <div className="size-8 rounded-full bg-brand/10 border-2 border-brand/20 flex items-center justify-center text-brand font-bold text-xs flex-shrink-0 overflow-hidden">
+          <div className="size-8 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center font-bold text-xs flex-shrink-0 overflow-hidden"
+            style={{ color: primaryColor }}>
             {user?.avatar_url ? (
               <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display="none"; }} />
             ) : initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{user?.name || '...'}</p>
-            <p className="text-[10px] text-slate-400 truncate">{user?.email}</p>
+            <p className="text-xs font-bold text-white truncate">{user?.name || '...'}</p>
+            <p className="text-[10px] text-white/40 truncate">{user?.email}</p>
           </div>
           <button
             onClick={handleLogout}
             title={t('nav.logout')}
-            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+            className="p-1.5 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors flex-shrink-0"
           >
             <Icon name="logout" className="text-[18px]" />
           </button>

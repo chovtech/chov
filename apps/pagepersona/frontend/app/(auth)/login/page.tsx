@@ -33,7 +33,7 @@ export default function LoginPage() {
 
 
   const branding = useAuthBranding()
-  const brandColor = branding?.brand_color || '#1A56DB'
+  const brandColor = branding?.brand_color || '#15EAAF'
   const [slug, setSlug] = useState('')
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
@@ -130,7 +130,7 @@ export default function LoginPage() {
               id="email" name="email" type="email"
               placeholder={t('login.emailPlaceholder')}
               value={form.email} onChange={handleChange}
-              className={`w-full px-4 py-2.5 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-[#1A56DB] focus:border-[#1A56DB] transition-all outline-none text-gray-900 ${fieldErrors.email ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+              className={`w-full px-4 py-2.5 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-[#15EAAF] focus:border-[#15EAAF] transition-all outline-none text-gray-900 ${fieldErrors.email ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
             />
             {fieldErrors.email && <p className="mt-1 text-xs text-red-500">{fieldErrors.email}</p>}
           </div>
@@ -140,7 +140,7 @@ export default function LoginPage() {
               <label className="block text-sm font-semibold text-gray-700" htmlFor="password">
                 {t('login.passwordLabel')}
               </label>
-              <Link href={slug ? `/forgot-password?slug=${slug}` : '/forgot-password'} className="text-xs text-[#1A56DB] hover:underline font-medium">
+              <Link href={slug ? `/forgot-password?slug=${slug}` : '/forgot-password'} className="text-xs text-[#15EAAF] hover:underline font-medium">
                 {t('login.forgotPassword')}
               </Link>
             </div>
@@ -150,7 +150,7 @@ export default function LoginPage() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder={t('login.passwordPlaceholder')}
                 value={form.password} onChange={handleChange}
-                className={`w-full px-4 py-2.5 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-[#1A56DB] focus:border-[#1A56DB] transition-all outline-none text-gray-900 pr-16 ${fieldErrors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                className={`w-full px-4 py-2.5 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-[#15EAAF] focus:border-[#15EAAF] transition-all outline-none text-gray-900 pr-16 ${fieldErrors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
               />
               <button
                 type="button"
