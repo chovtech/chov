@@ -137,13 +137,18 @@ const ProofStatSection = () => {
             style={{ width: '120px', right: '-50px', top: '30px', zIndex: 2 }}
           />
 
-          {/* Proof screenshot */}
-          <div className="relative">
+          {/* Brush bg div with proof screenshot inside */}
+          <div style={{
+            backgroundImage: 'url(/images/PP-FE-66-Image-40.png)',
+            backgroundSize: '100% 100%',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            padding: '40px 30px',
+          }}>
             <img
               src="/images/PP_NewProof01-1024x463-1.png"
               alt="PagePersona real results — 3,847 visitors, 2,219 conversions"
-              className="relative w-full"
-              style={{ borderRadius: '12px', boxShadow: '0 20px 60px rgba(0,0,0,0.12)' }}
+              className="w-full"
             />
           </div>
 
