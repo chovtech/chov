@@ -137,13 +137,13 @@ const ProofStatSection = () => {
             style={{ width: '120px', right: '-50px', top: '30px', zIndex: 2 }}
           />
 
-          {/* Brush bg — decorative, proof image dominates */}
+          {/* Brush bg div with proof screenshot inside */}
           <div style={{
             backgroundImage: 'url(/images/PP-FE-66-Image-40.png)',
-            backgroundSize: '108% 120%',
+            backgroundSize: '100% 100%',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
-            padding: '18px 8px',
+            padding: '40px 30px',
           }}>
             <img
               src="/images/PP_NewProof01-1024x463-1.png"
